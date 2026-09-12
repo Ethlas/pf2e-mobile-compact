@@ -706,6 +706,55 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       "thievery"
     ]);
 
+    const KNOWN_SKILL_ACTION_SLUGS = new Set([
+      // Acrobatics
+      "balance", "tumble-through", "maneuver-in-flight", "squeeze", "kip-up", "steady-balance",
+      // Arcana
+      "borrow-an-arcane-spell", "decipher-writing", "identify-magic", "learn-a-spell", "safely-borrow-an-arcane-spell",
+      // Athletics
+      "climb", "force-open", "grapple", "high-jump", "jump", "long-jump", "shove", "swim", "trip", "disarm", "escape", "reposition",
+      // Crafting
+      "craft", "earn-income", "identify-alchemy", "repair",
+      // Deception
+      "create-a-diversion", "feint", "impersonate", "lie",
+      // Diplomacy
+      "bon-mot", "gather-information", "make-an-impression", "request",
+      // Intimidation
+      "coerce", "demoralize",
+      // Medicine
+      "administer-first-aid", "battle-medicine", "treat-disease", "treat-poison", "treat-wounds",
+      // Nature
+      "command-an-animal",
+      // Performance
+      "perform",
+      // Society
+      "create-forgery", "subsist",
+      // Stealth
+      "conceal-an-object", "hide", "sneak",
+      // Survival
+      "cover-tracks", "sense-direction", "track",
+      // Thievery
+      "disable-device", "palm-an-object", "pick-a-lock", "steal",
+      // Shared / General
+      "recall-knowledge", "seek", "sense-motive", "scramble"
+    ]);
+
+    const KNOWN_SKILL_ACTION_NAMES = new Set([
+      "administer first aid", "balance", "battle medicine", "bon mot",
+      "borrow an arcane spell", "climb", "coerce", "command an animal",
+      "conceal an object", "craft", "create a diversion", "create forgery",
+      "decipher writing", "demoralize", "disable device", "disarm",
+      "earn income", "escape", "feint", "force open", "gather information",
+      "grapple", "hide", "high jump", "identify alchemy", "identify magic",
+      "impersonate", "jump", "leap", "learn a spell", "lie", "long jump",
+      "make an impression", "maneuver in flight", "palm an object", "perform",
+      "pick a lock", "recall knowledge", "repair", "reposition", "request",
+      "safely borrow an arcane spell", "scramble", "seek", "sense direction",
+      "sense motive", "shove", "sneak", "squeeze", "steal", "subsist",
+      "swim", "track", "treat disease", "treat poison", "treat wounds",
+      "trip", "tumble through"
+    ]);
+
     const getGlyph = (actionCost) => {
       const type = actionCost?.type;
       const value = actionCost?.value;
@@ -735,8 +784,22 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const isExploration = traits.includes("exploration") || actionCategory === "exploration";
       const isDowntime = traits.includes("downtime") || actionCategory === "downtime";
 
-      // Skill Action identification: traits matching known skills or skill feat categories
+      // Check system action registry if available in PF2e
+      const systemAction = game.pf2e?.actions?.get?.(item.slug);
+      const isSystemSkillAction = systemAction?.section === "skill" || !!systemAction?.statistic;
+
+      const itemSlug = String(item.slug ?? "").toLowerCase();
+      const normalizedName = String(item.name ?? "").trim().toLowerCase();
+
+      // Skill Action identification:
+      // 1. Slug or name matches known PF2e skill actions (e.g. administer-first-aid, balance, demoralize, etc.)
+      // 2. System registry declares it as a skill action or assigns a skill statistic
+      // 3. Skill feat (item category "skill")
+      // 4. Traits match any of the 17 PF2e skills or "skill"
       const isSkillAction = !isExploration && !isDowntime && (
+        KNOWN_SKILL_ACTION_SLUGS.has(itemSlug) ||
+        KNOWN_SKILL_ACTION_NAMES.has(normalizedName) ||
+        isSystemSkillAction ||
         traits.some(t => PF2E_SKILL_SLUGS.has(t) || t === "skill") ||
         actionCategory === "skill" ||
         item.category === "skill" ||
