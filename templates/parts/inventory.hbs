@@ -1,0 +1,100 @@
+<div class="tab-pane inventory-tab" data-tab="inventory">
+  <!-- Bulk & Encumbrance Status Bar -->
+  <div class="inventory-status-bar">
+    <div class="bulk-info">
+      <span>Bulk: <strong>{{encumbrance.bulk}} / {{encumbrance.max}}</strong></span>
+      {{#if encumbrance.isEncumbered}}
+      <span class="encumbered-badge warning">Encumbered</span>
+      {{/if}}
+      {{#if encumbrance.isOverLimit}}
+      <span class="encumbered-badge danger">Over Limit</span>
+      {{/if}}
+    </div>
+    <button type="button" class="touch-target btn-primary" data-action="openCompendiumPicker" data-type="equipment">
+      <i class="fas fa-plus"></i> Add Gear
+    </button>
+  </div>
+
+  <!-- Consumables Section -->
+  <section class="inventory-section">
+    <h3 class="section-title"><i class="fas fa-flask"></i> Consumables</h3>
+    <div class="inventory-list">
+      {{#each inventory.consumables as |item|}}
+      <div class="action-card inventory-item-card" data-item-id="{{item.id}}">
+        <div class="action-card-header">
+          <div class="item-identity">
+            <img class="item-img" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
+            <span class="item-name"><strong>{{item.name}}</strong> (x{{item.quantity}})</span>
+          </div>
+          <button type="button" class="touch-target btn-consume" data-action="consumeItem" data-item-id="{{item.id}}">
+            Use
+          </button>
+        </div>
+      </div>
+      {{else}}
+      <p class="empty-hint">No consumable items.</p>
+      {{/each}}
+    </div>
+  </section>
+
+  <!-- Weapons Section -->
+  <section class="inventory-section">
+    <h3 class="section-title"><i class="fas fa-sword"></i> Weapons</h3>
+    <div class="inventory-list">
+      {{#each inventory.weapons as |item|}}
+      <div class="action-card inventory-item-card" data-item-id="{{item.id}}">
+        <div class="action-card-header">
+          <div class="item-identity">
+            <img class="item-img" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
+            <span class="item-name"><strong>{{item.name}}</strong></span>
+          </div>
+          <span class="item-bulk">Bulk: {{item.bulk}}</span>
+        </div>
+      </div>
+      {{else}}
+      <p class="empty-hint">No weapons equipped or carried.</p>
+      {{/each}}
+    </div>
+  </section>
+
+  <!-- Armor Section -->
+  <section class="inventory-section">
+    <h3 class="section-title"><i class="fas fa-shield-alt"></i> Armor & Shields</h3>
+    <div class="inventory-list">
+      {{#each inventory.armor as |item|}}
+      <div class="action-card inventory-item-card" data-item-id="{{item.id}}">
+        <div class="action-card-header">
+          <div class="item-identity">
+            <img class="item-img" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
+            <span class="item-name"><strong>{{item.name}}</strong></span>
+          </div>
+          <span class="item-bulk">Bulk: {{item.bulk}}</span>
+        </div>
+      </div>
+      {{else}}
+      <p class="empty-hint">No armor equipped.</p>
+      {{/each}}
+    </div>
+  </section>
+
+  <!-- Other Gear Section -->
+  <section class="inventory-section">
+    <h3 class="section-title"><i class="fas fa-backpack"></i> Other Gear</h3>
+    <div class="inventory-list">
+      {{#each inventory.gear as |item|}}
+      <div class="action-card inventory-item-card" data-item-id="{{item.id}}">
+        <div class="action-card-header">
+          <div class="item-identity">
+            <img class="item-img" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
+            <span class="item-name"><strong>{{item.name}}</strong> (x{{item.quantity}})</span>
+          </div>
+          <span class="item-bulk">Bulk: {{item.bulk}}</span>
+        </div>
+      </div>
+      {{else}}
+      <p class="empty-hint">No other gear carried.</p>
+      {{/each}}
+    </div>
+  </section>
+</div>
+

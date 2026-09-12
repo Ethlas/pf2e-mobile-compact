@@ -1,0 +1,42 @@
+<div class="compendium-picker">
+  <div class="compendium-search-bar">
+    <input
+      type="search"
+      class="compendium-search-input touch-target"
+      placeholder="Search {{type}}..."
+      value="{{query}}"
+      data-action="search"
+      autofocus
+    />
+  </div>
+
+  <ul class="compendium-results-list">
+    {{#each entries}}
+    <li class="compendium-item-row">
+      <div class="compendium-item-info">
+        {{#if this.img}}
+        <img src="{{this.img}}" alt="{{this.name}}" width="36" height="36" />
+        {{/if}}
+        <div class="compendium-item-text">
+          <span class="compendium-item-name"><strong>{{this.name}}</strong></span>
+          {{#if this.system.level.value}}
+          <span class="compendium-item-sub">Rank/Level {{this.system.level.value}}</span>
+          {{/if}}
+        </div>
+      </div>
+      <button
+        type="button"
+        class="touch-target btn-import"
+        data-action="importItem"
+        data-entry-id="{{this._id}}"
+        title="Add to Character"
+      >
+        <i class="fas fa-plus"></i> Add
+      </button>
+    </li>
+    {{else}}
+    <li class="empty-hint">No items found matching your search.</li>
+    {{/each}}
+  </ul>
+</div>
+

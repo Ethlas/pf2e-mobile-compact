@@ -1,0 +1,36 @@
+{
+  "id": "pf2e-mobile-compact",
+  "title": "PF2e Mobile Sheet (Compact)",
+  "description": "A mobile-optimized, battery-efficient character sheet for PF2e, designed for small viewports and in-person play.",
+  "version": "1.0.0",
+  "authors": [
+    {
+      "name": "AI Assistant",
+      "discord": ""
+    }
+  ],
+  "compatibility": {
+    "minimum": "13",
+    "verified": "14"
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "pf2e",
+        "manifest": "https://github.com/foundryvtt/pf2e/releases/latest/download/system.json",
+        "compatibility": {
+          "minimum": "6.0.0"
+        }
+      }
+    ]
+  },
+  "esmodules": [
+    "scripts/pf2e-mobile.js"
+  ],
+  "styles": [
+    "styles/pf2e-mobile.css"
+  ],
+  "flags": {
+    "allowPopout": true
+  }
+}

@@ -1,0 +1,104 @@
+<header class="mobile-header-dashboard">
+  <!-- Top Row: Name / Character Switcher & Defenses -->
+  <div class="header-top-row">
+    <div class="actor-identity-wrapper">
+      {{#if hasMultipleCharacters}}
+      <select class="actor-switcher touch-target" data-action="switchActor" title="Switch Character" aria-label="Switch Character">
+        {{#each ownedCharacters as |char|}}
+        <option value="{{char.id}}" {{#if (eq char.id ../actor.id)}}selected{{/if}}>
+          👤 {{char.name}}
+        </option>
+        {{/each}}
+      </select>
+      {{else}}
+      <span class="actor-name" title="{{actor.name}}">{{actor.name}}</span>
+      {{/if}}
+    </div>
+
+    <div class="header-top-right">
+      <div class="header-defenses">
+        <span class="defense-item ac-badge" title="Armor Class: {{defenses.ac.value}}">
+          <strong>AC</strong> {{defenses.ac.value}}
+        </span>
+        <button type="button" class="defense-btn touch-target" data-action="rollPerception" title="Roll Perception Check (+{{defenses.perception.mod}})">
+          <strong>Perc</strong> +{{defenses.perception.mod}}
+        </button>
+        <button type="button" class="defense-btn touch-target initiative-btn {{#if combat.active}}{{#if combat.hasRolled}}combat-rolled{{else}}combat-active{{/if}}{{/if}}" data-action="rollInitiative" title="{{#if combat.active}}{{#if combat.hasRolled}}Initiative: {{combat.initiative}} (Tap to Reroll){{else}}{{#if combat.inCombat}}Roll Initiative (Combat Active){{else}}Join Combat & Roll Initiative{{/if}}{{/if}}{{else}}Roll Initiative (+{{initiative.mod}}){{/if}}">
+          <strong>Init</strong> {{#if combat.hasRolled}}{{combat.initiative}}{{else}}+{{initiative.mod}}{{/if}}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HP Modification Row: Damage on Left (-), Number Input, Heal on Right (+) -->
+  <div class="header-hp-row">
+    <button type="button" class="touch-target btn-damage" data-action="applyDamage" title="Apply Damage to HP">
+      <i class="fas fa-minus"></i>
+    </button>
+
+    <div class="hp-center-controls">
+      <div class="hp-display">
+        <span class="hp-label">HP</span>
+        <span class="hp-values">{{hp.value}} / {{hp.max}}</span>
+      </div>
+      <input type="number" class="hp-delta-input" placeholder="Amount" min="1" step="1" aria-label="HP Change Amount" />
+    </div>
+
+    <button type="button" class="touch-target btn-heal" data-action="applyHeal" title="Apply Healing to HP">
+      <i class="fas fa-plus"></i>
+    </button>
+  </div>
+
+  <!-- Temp HP & Shield Row -->
+  <div class="header-temp-shield-row">
+    <div class="temp-hp-section">
+      <span class="temp-hp-label">Temp HP:</span>
+      <div class="temp-hp-controls">
+        <button type="button" class="touch-target btn-temp-step" data-action="adjustTempHP" data-delta="-1" title="Decrease Temp HP">-</button>
+        <input type="number" class="temp-hp-input" data-action="setTempHP" value="{{hp.temp}}" min="0" aria-label="Temporary HP" />
+        <button type="button" class="touch-target btn-temp-step" data-action="adjustTempHP" data-delta="1" title="Increase Temp HP">+</button>
+      </div>
+    </div>
+
+    {{#if shield.hp.max}}
+    <div class="shield-section">
+      <span class="shield-display">🛡️ {{shield.hp.value}}/{{shield.hp.max}} (Hard {{shield.hardness}})</span>
+    </div>
+    {{/if}}
+  </div>
+
+  <!-- Saves Row (Interactive Touch-to-Roll) -->
+  <div class="header-saves-row">
+    <button type="button" class="save-item touch-target" data-action="rollSave" data-save="fortitude" title="Roll Fortitude Save">
+      <strong>Fort:</strong> +{{defenses.fortitude.mod}}
+    </button>
+    <button type="button" class="save-item touch-target" data-action="rollSave" data-save="reflex" title="Roll Reflex Save">
+      <strong>Ref:</strong> +{{defenses.reflex.mod}}
+    </button>
+    <button type="button" class="save-item touch-target" data-action="rollSave" data-save="will" title="Roll Will Save">
+      <strong>Will:</strong> +{{defenses.will.mod}}
+    </button>
+  </div>
+
+  <!-- Target & Roll Mode Selector Row -->
+  <div class="header-control-row">
+    <select name="target-select" class="touch-target" data-action="selectTarget" aria-label="Select Target">
+      <option value="">-- Target: None --</option>
+      {{#each targets}}
+      <option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>
+        {{this.name}}
+      </option>
+      {{/each}}
+    </select>
+
+    <select name="roll-mode" class="touch-target" data-action="toggleRollMode" aria-label="Roll Mode">
+      <option value="digital" {{#if (eq rollMode "digital")}}selected{{/if}}>🎲 Digital</option>
+      <option value="physical" {{#if (eq rollMode "physical")}}selected{{/if}}>✋ Physical</option>
+    </select>
+
+    <button type="button" class="touch-target btn-fullscreen" data-action="toggleFullscreen" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">
+      <i class="fas fa-expand"></i>
+    </button>
+  </div>
+</header>
+

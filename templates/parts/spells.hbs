@@ -1,0 +1,61 @@
+<div class="tab-pane spells-tab" data-tab="spells">
+  <!-- Action Bar: Add Spell & Focus Points -->
+  <div class="tab-action-bar">
+    <button type="button" class="touch-target btn-primary" data-action="openCompendiumPicker" data-type="spells">
+      <i class="fas fa-plus"></i> Add Spell from SRD
+    </button>
+    {{#if focus.max}}
+    <div class="focus-pool-tracker">
+      <span>Focus: <strong>{{focus.value}} / {{focus.max}}</strong></span>
+      <div class="focus-buttons">
+        <button type="button" class="touch-target" data-action="adjustFocus" data-delta="-1" title="Spend Focus Point">-1</button>
+        <button type="button" class="touch-target" data-action="adjustFocus" data-delta="1" title="Regain Focus Point">+1</button>
+      </div>
+    </div>
+    {{/if}}
+  </div>
+
+  <!-- Spell Groups by Rank -->
+  {{#each spellGroups as |group|}}
+  <section class="spell-rank-group">
+    <div class="spell-rank-header">
+      <h3 class="rank-title">{{group.label}}</h3>
+      {{#if group.hasSlots}}
+      <div class="slot-counter">
+        <span>Slots: <strong>{{group.slots.value}} / {{group.slots.max}}</strong></span>
+        <button type="button" class="touch-target" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="-1">-</button>
+        <button type="button" class="touch-target" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="1">+</button>
+      </div>
+      {{/if}}
+    </div>
+
+    <div class="spell-list">
+      {{#each group.spells as |spell|}}
+      <div class="action-card spell-card" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}">
+        <div class="action-card-header">
+          <div class="spell-title-info">
+            <span class="action-name"><strong>{{spell.name}}</strong></span>
+            {{#if spell.actionCost}}
+            <span class="action-cost">({{spell.actionCost}})</span>
+            {{/if}}
+          </div>
+          <button type="button" class="touch-target btn-cast" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}">
+            Cast
+          </button>
+        </div>
+        <div class="spell-details">
+          {{#if spell.range}}<span class="detail-tag">Range: {{spell.range}}</span>{{/if}}
+          {{#if spell.target}}<span class="detail-tag">Target: {{spell.target}}</span>{{/if}}
+          {{#if spell.save}}<span class="detail-tag">Save: {{spell.save}}</span>{{/if}}
+        </div>
+      </div>
+      {{else}}
+      <p class="empty-hint">No spells prepared or known for this rank.</p>
+      {{/each}}
+    </div>
+  </section>
+  {{else}}
+  <p class="empty-hint">No spellcasting entries found on this character.</p>
+  {{/each}}
+</div>
+

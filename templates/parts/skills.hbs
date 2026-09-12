@@ -1,0 +1,14 @@
+<div class="tab-pane skills-tab" data-tab="skills">
+  <section class="actions-section">
+    <h3 class="section-title"><i class="fas fa-dice-d20"></i> Skills</h3>
+    <div class="skills-grid">
+      {{#each skills as |skill|}}
+      <button type="button" class="touch-target skill-button" data-action="rollSkill" data-skill="{{skill.slug}}">
+        <span class="skill-name">{{skill.label}}</span>
+        <span class="skill-mod">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
+      </button>
+      {{/each}}
+    </div>
+  </section>
+</div>
+

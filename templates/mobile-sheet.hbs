@@ -1,0 +1,59 @@
+<div class="mobile-sheet-body">
+  <!-- Dynamic Tab Content Area -->
+  <main class="mobile-tab-content">
+    {{#if (eq activeTab "spells")}}
+      {{> "modules/pf2e-mobile-compact/templates/parts/spells.hbs"}}
+    {{else if (eq activeTab "inventory")}}
+      {{> "modules/pf2e-mobile-compact/templates/parts/inventory.hbs"}}
+    {{else if (eq activeTab "skills")}}
+      {{> "modules/pf2e-mobile-compact/templates/parts/skills.hbs"}}
+    {{else}}
+      {{> "modules/pf2e-mobile-compact/templates/parts/actions.hbs"}}
+    {{/if}}
+  </main>
+
+  <!-- Fixed 4-Button Bottom Navigation Bar -->
+  <nav class="mobile-bottom-nav">
+    <button
+      type="button"
+      class="nav-item {{#if (eq activeTab "spells")}}active{{/if}}"
+      data-action="switchTab"
+      data-tab="spells"
+      aria-label="Spells Tab"
+    >
+      <i class="fas fa-wand-magic-sparkles"></i>
+      <span>Spells</span>
+    </button>
+    <button
+      type="button"
+      class="nav-item {{#if (eq activeTab "actions")}}active{{/if}}"
+      data-action="switchTab"
+      data-tab="actions"
+      aria-label="Actions Tab"
+    >
+      <i class="fas fa-hand-fist"></i>
+      <span>Actions</span>
+    </button>
+    <button
+      type="button"
+      class="nav-item {{#if (eq activeTab "inventory")}}active{{/if}}"
+      data-action="switchTab"
+      data-tab="inventory"
+      aria-label="Gear Tab"
+    >
+      <i class="fas fa-shield-halved"></i>
+      <span>Gear</span>
+    </button>
+    <button
+      type="button"
+      class="nav-item {{#if (eq activeTab "skills")}}active{{/if}}"
+      data-action="switchTab"
+      data-tab="skills"
+      aria-label="Skills Tab"
+    >
+      <i class="fas fa-dice-d20"></i>
+      <span>Skills</span>
+    </button>
+  </nav>
+</div>
+

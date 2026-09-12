@@ -1,0 +1,290 @@
+<div class="tab-pane actions-tab" data-tab="actions">
+  <!-- Sub-Navigation for Action Mode: Encounter, Exploration, Downtime -->
+  <div class="action-subtabs">
+    <button type="button" class="touch-target subtab-btn {{#if (eq actionSubTab "encounter")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="encounter">
+      ⚔️ Encounter
+    </button>
+    <button type="button" class="touch-target subtab-btn {{#if (eq actionSubTab "exploration")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="exploration">
+      🧭 Exploration
+    </button>
+    <button type="button" class="touch-target subtab-btn {{#if (eq actionSubTab "downtime")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="downtime">
+      ⛺ Downtime
+    </button>
+  </div>
+
+  {{#if (eq actionSubTab "encounter")}}
+    <!-- 1. Strikes & Attacks Section -->
+    <section class="actions-section">
+      <h3 class="section-title"><i class="fas fa-fist-raised"></i> Attacks</h3>
+      <div class="strikes-list">
+        {{#each strikes as |strike index|}}
+        <div class="action-card strike-card">
+          <div class="action-card-header">
+            <span class="action-name"><strong>{{strike.label}}</strong></span>
+            <span class="action-type-badge">{{strike.type}}</span>
+          </div>
+
+          <!-- Strike MAP Variants & Damage/Critical Buttons -->
+          <div class="action-variants">
+            {{#each strike.variants as |variant vIndex|}}
+            <button type="button" class="touch-target variant-button" data-action="executeStrike" data-strike-index="{{index}}" data-variant-index="{{vIndex}}">
+              {{variant.label}}
+            </button>
+            {{/each}}
+
+            {{#if strike.damage}}
+            <button type="button" class="touch-target variant-button damage-button" data-action="executeDamage" data-strike-index="{{index}}" title="Roll Damage">
+              💥 {{strike.damageFormula}}
+            </button>
+            {{/if}}
+
+            {{#if strike.critical}}
+            <button type="button" class="touch-target variant-button critical-button" data-action="executeCritical" data-strike-index="{{index}}" title="Roll Critical Damage">
+              ⚡ Crit
+            </button>
+            {{/if}}
+          </div>
+        </div>
+        {{else}}
+        <p class="empty-hint">No strikes configured on this character.</p>
+        {{/each}}
+      </div>
+    </section>
+
+    <!-- 2. Actions (from feats etc.) -->
+    {{#if characterActions.actions.length}}
+    <section class="actions-section">
+      <h3 class="section-title"><i class="fas fa-bolt"></i> Actions</h3>
+      <div class="character-actions-list">
+        {{#each characterActions.actions as |act|}}
+        <div class="action-card character-action-card" data-item-id="{{act.id}}">
+          <div class="action-card-header">
+            <div class="action-title-group">
+              <span class="action-cost-glyph">{{act.glyph}}</span>
+              <span class="action-name"><strong>{{act.name}}</strong></span>
+            </div>
+            <div class="action-btn-group">
+              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
+                <i class="fas fa-message"></i>
+              </button>
+              {{#if act.usable}}
+              <button type="button" class="touch-target btn-action-use" data-action="useAction" data-item-id="{{act.id}}" title="Use Action">
+                Use
+              </button>
+              {{/if}}
+            </div>
+          </div>
+
+          {{#if act.traits.length}}
+          <div class="action-traits">
+            {{#each act.traits as |trait|}}
+            <span class="trait-badge">{{trait.label}}</span>
+            {{/each}}
+          </div>
+          {{/if}}
+
+          {{#if act.frequency}}
+          <div class="action-frequency">
+            <span>Uses: {{act.frequency.value}} / {{act.frequency.max}} {{act.frequency.per}}</span>
+          </div>
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+    </section>
+    {{/if}}
+
+    <!-- 3. Reactions -->
+    {{#if characterActions.reactions.length}}
+    <section class="actions-section">
+      <h3 class="section-title"><i class="fas fa-rotate-left"></i> Reactions</h3>
+      <div class="character-actions-list">
+        {{#each characterActions.reactions as |act|}}
+        <div class="action-card character-action-card" data-item-id="{{act.id}}">
+          <div class="action-card-header">
+            <div class="action-title-group">
+              <span class="action-cost-glyph glyph-reaction">⬢</span>
+              <span class="action-name"><strong>{{act.name}}</strong></span>
+            </div>
+            <div class="action-btn-group">
+              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
+                <i class="fas fa-message"></i>
+              </button>
+              {{#if act.usable}}
+              <button type="button" class="touch-target btn-action-use" data-action="useAction" data-item-id="{{act.id}}" title="Use Reaction">
+                Use
+              </button>
+              {{/if}}
+            </div>
+          </div>
+
+          {{#if act.traits.length}}
+          <div class="action-traits">
+            {{#each act.traits as |trait|}}
+            <span class="trait-badge">{{trait.label}}</span>
+            {{/each}}
+          </div>
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+    </section>
+    {{/if}}
+
+    <!-- 4. Free Actions -->
+    {{#if characterActions.free.length}}
+    <section class="actions-section">
+      <h3 class="section-title"><i class="far fa-circle"></i> Free Actions</h3>
+      <div class="character-actions-list">
+        {{#each characterActions.free as |act|}}
+        <div class="action-card character-action-card" data-item-id="{{act.id}}">
+          <div class="action-card-header">
+            <div class="action-title-group">
+              <span class="action-cost-glyph glyph-free">◇</span>
+              <span class="action-name"><strong>{{act.name}}</strong></span>
+            </div>
+            <div class="action-btn-group">
+              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
+                <i class="fas fa-message"></i>
+              </button>
+              {{#if act.usable}}
+              <button type="button" class="touch-target btn-action-use" data-action="useAction" data-item-id="{{act.id}}" title="Use Action">
+                Use
+              </button>
+              {{/if}}
+            </div>
+          </div>
+
+          {{#if act.traits.length}}
+          <div class="action-traits">
+            {{#each act.traits as |trait|}}
+            <span class="trait-badge">{{trait.label}}</span>
+            {{/each}}
+          </div>
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+    </section>
+    {{/if}}
+
+    <!-- 5. Skill actions (those that are possible because of skills) -->
+    {{#if characterActions.skillActions.length}}
+    <section class="actions-section skill-actions-section">
+      <h3 class="section-title"><i class="fas fa-book-sparkles"></i> Skill Actions</h3>
+      <div class="character-actions-list">
+        {{#each characterActions.skillActions as |act|}}
+        <div class="action-card character-action-card" data-item-id="{{act.id}}">
+          <div class="action-card-header">
+            <div class="action-title-group">
+              {{#if act.glyph}}
+              <span class="action-cost-glyph">{{act.glyph}}</span>
+              {{/if}}
+              <span class="action-name"><strong>{{act.name}}</strong></span>
+            </div>
+            <div class="action-btn-group">
+              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
+                <i class="fas fa-message"></i>
+              </button>
+              {{#if act.usable}}
+              <button type="button" class="touch-target btn-action-use" data-action="useAction" data-item-id="{{act.id}}" title="Use Action">
+                Use
+              </button>
+              {{/if}}
+            </div>
+          </div>
+
+          {{#if act.traits.length}}
+          <div class="action-traits">
+            {{#each act.traits as |trait|}}
+            <span class="trait-badge">{{trait.label}}</span>
+            {{/each}}
+          </div>
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+    </section>
+    {{/if}}
+
+  {{else if (eq actionSubTab "exploration")}}
+    <!-- Exploration Activities Tab -->
+    <section class="actions-section">
+      <h3 class="section-title"><i class="fas fa-compass"></i> Exploration Activities</h3>
+      <div class="character-actions-list">
+        {{#each characterActions.exploration as |act|}}
+        <div class="action-card character-action-card" data-item-id="{{act.id}}">
+          <div class="action-card-header">
+            <div class="action-title-group">
+              {{#if act.glyph}}
+              <span class="action-cost-glyph">{{act.glyph}}</span>
+              {{/if}}
+              <span class="action-name"><strong>{{act.name}}</strong></span>
+            </div>
+            <div class="action-btn-group">
+              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
+                <i class="fas fa-message"></i>
+              </button>
+              {{#if act.usable}}
+              <button type="button" class="touch-target btn-action-use" data-action="useAction" data-item-id="{{act.id}}" title="Use Activity">
+                Use
+              </button>
+              {{/if}}
+            </div>
+          </div>
+
+          {{#if act.traits.length}}
+          <div class="action-traits">
+            {{#each act.traits as |trait|}}
+            <span class="trait-badge">{{trait.label}}</span>
+            {{/each}}
+          </div>
+          {{/if}}
+        </div>
+        {{else}}
+        <p class="empty-hint">No exploration activities configured on this character.</p>
+        {{/each}}
+      </div>
+    </section>
+
+  {{else if (eq actionSubTab "downtime")}}
+    <!-- Downtime Activities Tab -->
+    <section class="actions-section">
+      <h3 class="section-title"><i class="fas fa-campground"></i> Downtime Activities</h3>
+      <div class="character-actions-list">
+        {{#each characterActions.downtime as |act|}}
+        <div class="action-card character-action-card" data-item-id="{{act.id}}">
+          <div class="action-card-header">
+            <div class="action-title-group">
+              {{#if act.glyph}}
+              <span class="action-cost-glyph">{{act.glyph}}</span>
+              {{/if}}
+              <span class="action-name"><strong>{{act.name}}</strong></span>
+            </div>
+            <div class="action-btn-group">
+              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
+                <i class="fas fa-message"></i>
+              </button>
+              {{#if act.usable}}
+              <button type="button" class="touch-target btn-action-use" data-action="useAction" data-item-id="{{act.id}}" title="Use Activity">
+                Use
+              </button>
+              {{/if}}
+            </div>
+          </div>
+
+          {{#if act.traits.length}}
+          <div class="action-traits">
+            {{#each act.traits as |trait|}}
+            <span class="trait-badge">{{trait.label}}</span>
+            {{/each}}
+          </div>
+          {{/if}}
+        </div>
+        {{else}}
+        <p class="empty-hint">No downtime activities configured on this character.</p>
+        {{/each}}
+      </div>
+    </section>
+  {{/if}}
+</div>
