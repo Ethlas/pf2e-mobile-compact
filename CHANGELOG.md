@@ -21,7 +21,15 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
   - Added action cost glyphs (`1`, `2`, `3`, `⬢` Reaction, `◇` Free Action), trait badges, and frequency trackers (`Uses: X / Y`).
   - Added direct **Send to Chat** (`data-action="itemToChat"`) and **Use Action** (`data-action="useAction"`) buttons on every character action.
 - **Strike Enhancements**:
-  - Added dedicated **Critical Damage** button (`⚡ Crit` via `data-action="executeCritical"`) alongside standard Damage (`💥 Damage`) and MAP variants.
+  - Prominent **MAP Attacks at the Top**: Moved the 3 Multiple Attack Penalty variant buttons (`+X`, `+Y`, `+Z`) into a dedicated primary attack row at the top of each strike card.
+  - Added **Weapon Artwork / Image Thumbnail**: Displays weapon icon (`strike.img`) alongside strike name and traits.
+  - Added **Weapon Auxiliary Actions Bar**: Provides native weapon actions directly on the card:
+    - 🗡️ **Draw** / **Sheathe**
+    - ⬇️ **Drop**
+    - 🔄 **Reload** (with ammunition action cost)
+    - ✋ **Change Grip** (1H / 2H)
+    - ⚔️ **Versatile** / **Modular** switches
+  - Dedicated **Critical Damage** button (`⚡ Crit` via `data-action="executeCritical"`) alongside standard Damage (`💥 Damage`).
 - **Dedicated Skills View**:
   - Separated general skills from the Actions tab into a dedicated bottom navigation tab (`templates/parts/skills.hbs`).
 - **Accurate PF2e Flanking, Off-Guard & Range Increment Calculations**:

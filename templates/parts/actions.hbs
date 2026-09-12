@@ -19,19 +19,36 @@
       <div class="strikes-list">
         {{#each strikes as |strike index|}}
         <div class="action-card strike-card">
-          <div class="action-card-header">
-            <span class="action-name"><strong>{{strike.label}}</strong></span>
+          <!-- Strike Header: Weapon Image, Name, Glyph, Traits, Badge -->
+          <div class="strike-card-header">
+            <img class="strike-img" src="{{strike.img}}" alt="{{strike.label}}" />
+            <div class="strike-title-group">
+              <div class="strike-name-row">
+                <span class="action-cost-glyph">{{strike.glyph}}</span>
+                <span class="action-name"><strong>{{strike.label}}</strong></span>
+              </div>
+              {{#if strike.traits.length}}
+              <div class="action-traits strike-traits">
+                {{#each strike.traits as |trait|}}
+                <span class="trait-badge">{{trait.label}}</span>
+                {{/each}}
+              </div>
+              {{/if}}
+            </div>
             <span class="action-type-badge">{{strike.type}}</span>
           </div>
 
-          <!-- Strike MAP Variants & Damage/Critical Buttons -->
-          <div class="action-variants">
+          <!-- MAP Variants at the TOP (Prominent attack row) -->
+          <div class="strike-map-row">
             {{#each strike.variants as |variant vIndex|}}
-            <button type="button" class="touch-target variant-button" data-action="executeStrike" data-strike-index="{{index}}" data-variant-index="{{vIndex}}">
+            <button type="button" class="touch-target map-button" data-action="executeStrike" data-strike-index="{{index}}" data-variant-index="{{vIndex}}" title="Attack Variant {{vIndex}}">
               {{variant.label}}
             </button>
             {{/each}}
+          </div>
 
+          <!-- Damage and Critical Buttons Row -->
+          <div class="strike-damage-row">
             {{#if strike.damage}}
             <button type="button" class="touch-target variant-button damage-button" data-action="executeDamage" data-strike-index="{{index}}" title="Roll Damage">
               💥 {{strike.damageFormula}}
@@ -44,6 +61,23 @@
             </button>
             {{/if}}
           </div>
+
+          <!-- Weapon Auxiliary Actions: Draw, Sheathe, Drop, Reload, Change Grip -->
+          {{#if strike.hasAuxiliary}}
+          <div class="strike-auxiliary-row">
+            {{#each strike.auxiliaryActions as |aux|}}
+            <button type="button" class="touch-target aux-action-btn" data-action="executeAuxiliaryAction" data-strike-index="{{index}}" data-aux-index="{{aux.index}}" title="{{aux.label}}">
+              {{#if aux.glyph}}
+              <span class="aux-glyph">{{aux.glyph}}</span>
+              {{/if}}
+              <span class="aux-label">{{aux.label}}</span>
+              {{#if aux.annotation}}
+              <span class="aux-annotation">({{aux.annotation}})</span>
+              {{/if}}
+            </button>
+            {{/each}}
+          </div>
+          {{/if}}
         </div>
         {{else}}
         <p class="empty-hint">No strikes configured on this character.</p>

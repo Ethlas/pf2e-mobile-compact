@@ -398,6 +398,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       executeStrike: PF2eMobileSheet.#onExecuteStrike,
       executeDamage: PF2eMobileSheet.#onExecuteDamage,
       executeCritical: PF2eMobileSheet.#onExecuteCritical,
+      executeAuxiliaryAction: PF2eMobileSheet.#onExecuteAuxiliaryAction,
       itemToChat: PF2eMobileSheet.#onItemToChat,
       useAction: PF2eMobileSheet.#onUseAction,
       rollSkill: PF2eMobileSheet.#onRollSkill,
@@ -639,22 +640,43 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       max: focusResource?.max ?? 0
     };
 
-    // Strikes Context
+    // Strikes Context (with Weapon Image, Traits, MAP Variants, Damage, and Auxiliary Actions)
     const strikesList = actor.system.actions ?? [];
-    context.strikes = strikesList.map((action, idx) => ({
-      index: idx,
-      label: action.label ?? action.name,
-      type: action.type ?? "strike",
-      variants: (action.variants ?? []).map((v, vIdx) => ({
-        index: vIdx,
-        label: v.label
-      })),
-      damage: !!action.damage,
-      critical: typeof action.critical === "function",
-      damageFormula: action.item?.system?.damage?.dice
-        ? `${action.item.system.damage.dice}${action.item.system.damage.die}`
-        : "Damage"
-    }));
+    context.strikes = strikesList.map((action, idx) => {
+      const item = action.item;
+      const rawTraits = action.traits ?? item?.system?.traits?.value ?? [];
+      const traits = Array.isArray(rawTraits)
+        ? rawTraits.map(t => typeof t === "string" ? { label: t } : { label: t.label ?? t.name ?? "" })
+        : [];
+
+      const auxActions = (action.auxiliaryActions ?? []).map((aux, aIdx) => ({
+        index: aIdx,
+        label: aux.label ?? aux.action ?? "Action",
+        glyph: aux.glyph ?? (aux.actions ? String(aux.actions) : ""),
+        annotation: aux.annotation ?? null,
+        purpose: aux.action ?? ""
+      }));
+
+      return {
+        index: idx,
+        label: action.label ?? action.name,
+        type: action.type ?? "strike",
+        glyph: action.glyph ?? (action.actionCost ? String(action.actionCost.value || 1) : "1"),
+        img: item?.img || "systems/pf2e/icons/default-icons/melee.svg",
+        variants: (action.variants ?? []).map((v, vIdx) => ({
+          index: vIdx,
+          label: v.label
+        })),
+        damage: !!action.damage,
+        critical: typeof action.critical === "function",
+        damageFormula: item?.system?.damage?.dice
+          ? `${item.system.damage.dice}${item.system.damage.die}`
+          : (action.damageFormula ?? "Damage"),
+        traits,
+        auxiliaryActions: auxActions,
+        hasAuxiliary: auxActions.length > 0
+      };
+    });
 
     // Character Actions Preparation (Matching PF2e ActorSheet actions tab)
     const encounterActions = [];
@@ -1325,6 +1347,35 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const rollOptions = { event, target: targetToken || undefined };
       if (originToken) rollOptions.token = originToken;
       await strike.critical(rollOptions);
+    }
+  }
+
+  /**
+   * Action handler: execute a weapon auxiliary action (draw, sheathe, drop, reload, change grip).
+   */
+  static async #onExecuteAuxiliaryAction(event, target) {
+    const strikeIndex = parseInt(target.dataset.strikeIndex, 10);
+    const auxIndex = parseInt(target.dataset.auxIndex, 10);
+    const strike = this.actor.system.actions?.[strikeIndex];
+    if (!strike) return;
+
+    const aux = strike.auxiliaryActions?.[auxIndex];
+    if (typeof aux?.execute === "function") {
+      await aux.execute({ event });
+      return;
+    }
+
+    // Fallback if aux.execute is not directly available
+    const weapon = strike.item;
+    if (!weapon) return;
+    const purpose = aux?.action ?? aux?.purpose ?? target.dataset.purpose ?? "";
+
+    if (purpose === "draw") {
+      await weapon.update({ "system.equipped.carryType": "held", "system.equipped.handsHeld": 1 });
+    } else if (purpose === "sheathe") {
+      await weapon.update({ "system.equipped.carryType": "worn", "system.equipped.handsHeld": 0 });
+    } else if (purpose === "drop") {
+      await weapon.update({ "system.equipped.carryType": "dropped", "system.equipped.handsHeld": 0 });
     }
   }
 
