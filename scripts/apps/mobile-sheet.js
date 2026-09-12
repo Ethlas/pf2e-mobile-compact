@@ -807,6 +807,16 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         (item.flags?.pf2e?.skillAction)
       );
 
+      const selfEffect = item.system?.selfEffect;
+      const isEffectActive = !!(selfEffect?.uuid && actor.itemTypes?.effect?.some(e =>
+        e.flags?.core?.sourceId === selfEffect.uuid ||
+        e.sourceId === selfEffect.uuid ||
+        e.system?.slug === selfEffect.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") ||
+        e.name.toLowerCase() === selfEffect.name.toLowerCase()
+      ));
+
+      const isUsable = !!selfEffect || !!item.system?.frequency || !!item.crafting || isSystemSkillAction;
+
       const actionData = {
         id: item.id,
         name: item.name,
@@ -814,7 +824,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         glyph: getGlyph(actionCost),
         actionCostType: actionCost?.type ?? "action",
         actionCostValue: actionCost?.value ?? 1,
-        usable: !!item.system?.selfEffect || !!item.system?.frequency || !!item.crafting,
+        usable: isUsable,
+        active: isEffectActive,
         traits: traits.map(t => ({ label: t })),
         frequency: item.system?.frequency ? {
           value: item.system.frequency.value ?? 0,
@@ -1463,19 +1474,60 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const item = this.actor.items.get(itemId);
     if (!item) return;
 
-    // If PF2e game actions provide a handler
     const actionSlug = item.slug ?? item.system?.slug;
-    if (actionSlug && typeof game.pf2e?.actions?.[actionSlug] === "function") {
-      await game.pf2e.actions[actionSlug]({ event, actors: [this.actor] });
-      return;
+
+    // 1. If PF2e system action registry provides an action implementation (Action.use)
+    const systemAction = game.pf2e?.actions?.get?.(actionSlug) ?? game.pf2e?.actions?.[actionSlug];
+    if (systemAction) {
+      if (typeof systemAction.use === "function") {
+        await systemAction.use({ actors: [this.actor], event });
+        return;
+      } else if (typeof systemAction === "function") {
+        await systemAction({ actors: [this.actor], event });
+        return;
+      }
     }
 
-    // Otherwise reduce frequency and create action message or item toMessage
+    // 2. If the action has a selfEffect (e.g. Dueling Parry, Raise a Shield, Marshall Aura, etc.)
+    const selfEffect = item.system?.selfEffect;
+    if (selfEffect?.uuid) {
+      // Check if the effect is already active on the actor
+      const existingEffect = this.actor.itemTypes?.effect?.find(e =>
+        e.flags?.core?.sourceId === selfEffect.uuid ||
+        e.sourceId === selfEffect.uuid ||
+        e.system?.slug === selfEffect.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") ||
+        e.name.toLowerCase() === selfEffect.name.toLowerCase()
+      );
+
+      if (existingEffect) {
+        // Toggle effect off
+        await existingEffect.delete();
+        ui.notifications?.info?.(`Deactivated ${existingEffect.name} for ${this.actor.name}.`);
+      } else {
+        // Fetch and apply the effect to the actor
+        const effectDoc = await fromUuid(selfEffect.uuid);
+        if (effectDoc) {
+          const effectSource = effectDoc.toObject();
+          effectSource._id = foundry.utils.randomID();
+          const tokenDoc = this.token ?? this.actor.getActiveTokens?.(true, true)?.[0] ?? this.actor.getActiveTokens?.()?.[0]?.document ?? null;
+          foundry.utils.setProperty(effectSource, "system.context.origin", {
+            actor: this.actor.uuid,
+            item: item.uuid,
+            token: tokenDoc?.uuid ?? null
+          });
+          await this.actor.createEmbeddedDocuments("Item", [effectSource]);
+          ui.notifications?.info?.(`Activated ${effectDoc.name} on ${this.actor.name}.`);
+        }
+      }
+    }
+
+    // 3. Deduct frequency if applicable
     if (item.system?.frequency && item.system.frequency.value > 0) {
       const newVal = Math.max(0, (item.system.frequency.value ?? 0) - 1);
       await item.update({ "system.frequency.value": newVal });
     }
 
+    // 4. Send action card to chat
     if (typeof item.toMessage === "function") {
       await item.toMessage(event);
     }
