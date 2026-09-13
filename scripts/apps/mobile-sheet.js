@@ -786,10 +786,11 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const isDowntime = traits.includes("downtime") || actionCategory === "downtime";
 
       // Check system action registry if available in PF2e
-      const systemAction = game.pf2e?.actions?.get?.(item.slug);
+      const actionSlug = item.slug ?? item.system?.slug ?? "";
+      const systemAction = game.pf2e?.actions?.get?.(actionSlug);
       const isSystemSkillAction = systemAction?.section === "skill" || !!systemAction?.statistic;
 
-      const itemSlug = String(item.slug ?? "").toLowerCase();
+      const itemSlug = String(actionSlug).toLowerCase();
       const normalizedName = String(item.name ?? "").trim().toLowerCase();
 
       // Skill Action identification:
@@ -814,7 +815,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         e.flags?.core?.sourceId === selfEffect.uuid ||
         (selfEffect.name && e.name?.toLowerCase() === selfEffect.name.toLowerCase()) ||
         (item.name && e.name?.toLowerCase() === `effect: ${item.name.toLowerCase()}`) ||
-        (item.slug && (e.system?.slug === item.slug || e.system?.slug === `effect-${item.slug}`))
+        (actionSlug && (e.system?.slug === actionSlug || e.system?.slug === `effect-${actionSlug}`))
       ));
 
       const isUsable = !!selfEffect || !!item.system?.frequency || !!item.crafting;
