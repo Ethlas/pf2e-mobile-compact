@@ -771,10 +771,12 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 }
 
 .mobile-chat-mount #chat-log {
-  flex: 1 1 auto !important;
+  flex: 1 1 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch !important;
-  padding: 8px 8px 12px 8px !important;
+  padding: 8px 8px 16px 8px !important;
   margin: 0 !important;
   list-style: none !important;
   display: flex !important;
@@ -782,50 +784,10 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   gap: 8px !important;
 }
 
-.mobile-chat-mount #chat-controls {
-  flex: 0 0 auto !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 6px 8px !important;
-  background: #181818 !important;
-  border-top: 1px solid #333 !important;
-  border-bottom: 1px solid #333 !important;
-}
-
-.mobile-chat-mount #chat-controls select {
-  flex: 1 !important;
-  min-height: 36px !important;
-  height: 36px !important;
-  font-size: 0.85rem !important;
-  background: #242424 !important;
-  border: 1px solid #444 !important;
-  color: #ddd !important;
-  border-radius: 4px !important;
-  padding: 0 6px !important;
-}
-
+/* Chat input and controls removed: chat tab is dedicated to quick damage calculation and roll reviews */
+.mobile-chat-mount #chat-controls,
 .mobile-chat-mount #chat-form {
-  flex: 0 0 auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  padding: 6px 8px !important;
-  background: #181818 !important;
-  border-top: 1px solid #333 !important;
-}
-
-.mobile-chat-mount #chat-message {
-  width: 100% !important;
-  min-height: 44px !important;
-  max-height: 100px !important;
-  resize: vertical !important;
-  background: #242424 !important;
-  border: 1px solid #444 !important;
-  color: #fff !important;
-  border-radius: 6px !important;
-  padding: 8px !important;
-  font-size: 0.95rem !important;
-  box-sizing: border-box !important;
+  display: none !important;
 }
 
 /* Mobile-Optimized PF2e Damage Application Buttons */

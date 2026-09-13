@@ -287,10 +287,7 @@ export function suppressResolutionWarnings() {
   if (!console._mobileResolutionPatched) {
     const isSuppressed = (first) => {
       if (!first) return false;
-      if (isResolutionMessage(first)) return true;
-      const text = typeof first === "string" ? first : (first.message || first.toString?.() || "");
-      if (text.includes("renderChatMessage hook is deprecated")) return true;
-      return false;
+      return isResolutionMessage(first);
     };
 
     const origConsoleError = console.error;
@@ -312,6 +309,70 @@ export function suppressResolutionWarnings() {
   }
 
   sweepResolutionNotifications();
+}
+
+/**
+ * Prevents mobile browsers (e.g. Firefox Mobile / Safari) from failing with
+ * "Invalid URI. Load of media resource failed" when audio/media elements or AudioHelper
+ * receive an empty or whitespace-only source URI.
+ */
+export function patchMediaElements() {
+  if (typeof HTMLMediaElement !== "undefined" && HTMLMediaElement.prototype && !HTMLMediaElement.prototype._pf2eMobilePatched) {
+    const proto = HTMLMediaElement.prototype;
+    const descriptor = Object.getOwnPropertyDescriptor(proto, "src");
+    if (descriptor && descriptor.set) {
+      const origSet = descriptor.set;
+      Object.defineProperty(proto, "src", {
+        set(val) {
+          if (val === "" || val === null || val === undefined || (typeof val === "string" && !val.trim())) {
+            return;
+          }
+          return origSet.call(this, val);
+        },
+        get: descriptor.get,
+        configurable: true,
+        enumerable: true
+      });
+    }
+
+    const origSetAttr = proto.setAttribute;
+    proto.setAttribute = function (name, val) {
+      if (name === "src" && (val === "" || val === null || val === undefined || (typeof val === "string" && !val.trim()))) {
+        return;
+      }
+      return origSetAttr.call(this, name, val);
+    };
+
+    HTMLMediaElement.prototype._pf2eMobilePatched = true;
+  }
+
+  // Guard window.Audio constructor against empty string URLs
+  if (typeof window !== "undefined" && window.Audio && !window.Audio._pf2eMobilePatched) {
+    const OrigAudio = window.Audio;
+    window.Audio = function (src) {
+      if (src === "" || src === null || src === undefined || (typeof src === "string" && !src.trim())) {
+        return new OrigAudio();
+      }
+      return new OrigAudio(src);
+    };
+    window.Audio.prototype = OrigAudio.prototype;
+    window.Audio._pf2eMobilePatched = true;
+  }
+
+  // Guard Foundry's AudioHelper.play against empty audio sources
+  const AudioHelperClass = foundry.audio?.AudioHelper ?? (typeof AudioHelper !== "undefined" ? AudioHelper : null);
+  if (AudioHelperClass && !AudioHelperClass._pf2eMobilePatched) {
+    const origPlay = AudioHelperClass.play;
+    if (typeof origPlay === "function") {
+      AudioHelperClass.play = function (options, ...args) {
+        if (!options || !options.src || typeof options.src !== "string" || !options.src.trim()) {
+          return null;
+        }
+        return origPlay.call(this, options, ...args);
+      };
+    }
+    AudioHelperClass._pf2eMobilePatched = true;
+  }
 }
 
 /**
@@ -356,6 +417,7 @@ export function patchUserActiveTokens() {
 Hooks.once("init", async () => {
   console.log("PF2e Mobile Compact | Initializing module");
   suppressResolutionWarnings();
+  patchMediaElements();
   patchUserActiveTokens();
 
   // Ensure essential Handlebars comparison helpers are available
