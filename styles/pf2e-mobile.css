@@ -54,6 +54,37 @@ body.pf2e-fullscreen {
   overflow: hidden !important;
 }
 
+/* Mobile Notifications Toast Positioning */
+body.pf2e-mobile-active #notifications,
+body.pf2e-fullscreen #notifications {
+  position: fixed !important;
+  top: 10px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: calc(100vw - 24px) !important;
+  max-width: 480px !important;
+  z-index: 1000 !important;
+  pointer-events: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+body.pf2e-mobile-active #notifications .notification,
+body.pf2e-fullscreen #notifications .notification {
+  pointer-events: auto !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+  font-size: 0.9rem !important;
+}
+
+body.pf2e-mobile-active #screen-warning,
+body.pf2e-mobile-active #resolution-warning,
+body.pf2e-fullscreen #screen-warning,
+body.pf2e-fullscreen #resolution-warning {
+  display: none !important;
+}
+
 /* Full-bleed viewport layout on mobile devices or fullscreen mode */
 body.pf2e-mobile-active .pf2e-mobile-sheet,
 body.pf2e-mobile-active.pf2e-mobile-sheet,

@@ -106,8 +106,126 @@ export function optimizeCanvasForMobile() {
   }
 }
 
+/**
+ * Detects whether a notification or dialog message pertains to Foundry's
+ * low resolution or minimum window dimensions warnings.
+ * @param {string|object} msg
+ * @returns {boolean}
+ */
+export function isResolutionMessage(msg) {
+  if (!msg) return false;
+  const text = typeof msg === "string" ? msg : (msg.message || msg.toString?.() || "");
+  const lower = text.toLowerCase();
+
+  const hasDimension = lower.includes("resolution") || lower.includes("dimension") || lower.includes("lowresolution");
+  const hasConstraint = lower.includes("minimum") || lower.includes("recommended") || lower.includes("required") || lower.includes("below") || lower.includes("smaller");
+
+  return hasDimension && hasConstraint;
+}
+
+/**
+ * Sweeps any low-resolution warning notification elements out of the DOM.
+ */
+export function sweepResolutionNotifications() {
+  if (!shouldActivateMobile()) return;
+  try {
+    const elements = document.querySelectorAll("#notifications .notification, .ui-notifications .notification");
+    for (const el of elements) {
+      if (isResolutionMessage(el.textContent)) {
+        el.remove();
+      }
+    }
+  } catch {}
+}
+
+/**
+ * Suppresses Foundry's low resolution / minimum window dimensions warnings
+ * across Game methods, Notifications prototype, and active ui.notifications.
+ */
+export function suppressResolutionWarnings() {
+  // 1. Monkey-patch Game.prototype resolution methods
+  if (typeof Game !== "undefined" && Game.prototype) {
+    for (const key of Object.getOwnPropertyNames(Game.prototype)) {
+      if (/resolution/i.test(key)) {
+        const original = Game.prototype[key];
+        Game.prototype[key] = function (...args) {
+          if (shouldActivateMobile()) return;
+          return original?.apply(this, args);
+        };
+      }
+    }
+  }
+
+  // 2. Monkey-patch game instance methods if present
+  if (typeof game !== "undefined") {
+    for (const key of Object.keys(game)) {
+      if (/resolution/i.test(key) && typeof game[key] === "function") {
+        const orig = game[key];
+        game[key] = function (...args) {
+          if (shouldActivateMobile()) return;
+          return orig.apply(this, args);
+        };
+      }
+    }
+  }
+
+  // 3. Monkey-patch Notifications prototype
+  const NotificationsClass = foundry?.applications?.ui?.Notifications ?? (typeof Notifications !== "undefined" ? Notifications : null);
+  if (NotificationsClass?.prototype && !NotificationsClass.prototype._mobileResolutionPatched) {
+    const origNotify = NotificationsClass.prototype.notify;
+    if (typeof origNotify === "function") {
+      NotificationsClass.prototype.notify = function (message, type = "info", options = {}) {
+        if (shouldActivateMobile() && isResolutionMessage(message)) {
+          console.log("PF2e Mobile Compact | Suppressed low-resolution notification.");
+          return null;
+        }
+        return origNotify.call(this, message, type, options);
+      };
+    }
+    const origWarn = NotificationsClass.prototype.warn;
+    if (typeof origWarn === "function") {
+      NotificationsClass.prototype.warn = function (message, options = {}) {
+        if (shouldActivateMobile() && isResolutionMessage(message)) {
+          console.log("PF2e Mobile Compact | Suppressed low-resolution notification.");
+          return null;
+        }
+        return origWarn.call(this, message, options);
+      };
+    }
+    NotificationsClass.prototype._mobileResolutionPatched = true;
+  }
+
+  // 4. Monkey-patch active ui.notifications instance
+  if (ui?.notifications && !ui.notifications._mobileResolutionPatched) {
+    const origInstNotify = ui.notifications.notify;
+    if (typeof origInstNotify === "function") {
+      ui.notifications.notify = function (message, type = "info", options = {}) {
+        if (shouldActivateMobile() && isResolutionMessage(message)) {
+          console.log("PF2e Mobile Compact | Suppressed low-resolution notification.");
+          return null;
+        }
+        return origInstNotify.call(this, message, type, options);
+      };
+    }
+    const origInstWarn = ui.notifications.warn;
+    if (typeof origInstWarn === "function") {
+      ui.notifications.warn = function (message, options = {}) {
+        if (shouldActivateMobile() && isResolutionMessage(message)) {
+          console.log("PF2e Mobile Compact | Suppressed low-resolution notification.");
+          return null;
+        }
+        return origInstWarn.call(this, message, options);
+      };
+    }
+    ui.notifications._mobileResolutionPatched = true;
+  }
+
+  sweepResolutionNotifications();
+}
+
 Hooks.once("init", async () => {
   console.log("PF2e Mobile Compact | Initializing module");
+  suppressResolutionWarnings();
 
   // Ensure essential Handlebars comparison helpers are available
   if (!Handlebars.helpers.eq) {
@@ -180,6 +298,9 @@ Hooks.once("init", async () => {
 });
 
 Hooks.once("ready", () => {
+  suppressResolutionWarnings();
+  sweepResolutionNotifications();
+
   if (shouldActivateMobile()) {
     console.log("PF2e Mobile Compact | Mobile environment confirmed. Activating mobile engine.");
     document.body.classList.add("pf2e-mobile-active");
@@ -228,8 +349,25 @@ Hooks.once("ready", () => {
       console.log("PF2e Mobile Compact | Viewport entered mobile mode. Activating mobile engine.");
       document.body.classList.add("pf2e-mobile-active");
       optimizeCanvasForMobile();
+      suppressResolutionWarnings();
+      sweepResolutionNotifications();
     }
   }, 200));
+});
+
+// Continuously drop resolution warnings whenever notifications or dialogs render
+Hooks.on("renderNotifications", () => {
+  sweepResolutionNotifications();
+});
+
+Hooks.on("renderDialog", (dialog, html) => {
+  if (shouldActivateMobile()) {
+    const text = `${dialog?.title ?? ""} ${html?.[0]?.textContent ?? ""}`;
+    if (isResolutionMessage(text)) {
+      console.log("PF2e Mobile Compact | Auto-closed low-resolution dialog.");
+      dialog.close();
+    }
+  }
 });
 
 // Re-optimize ticker whenever scene transitions or canvas re-draws

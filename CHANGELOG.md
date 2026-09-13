@@ -23,6 +23,7 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
   - Re-anchored `.mobile-bottom-nav` using sticky positioning and iOS safe-area insets (`env(safe-area-inset-bottom)`), eliminating navigation detachment in windowed or responsive modes.
   - Added bottom drawer modal layout for the compendium picker on mobile viewports.
   - Added modern iPad / iPadOS touch detection (`MacIntel` with touch points > 1) and dynamic resize listeners.
+- **Low-Resolution & Window Dimensions Warning Suppression**: Suppressed Foundry's redundant core warnings regarding minimum display resolutions (e.g. 1024x700 / 1024x768) on mobile devices across `Game.prototype`, `Notifications.prototype`, and `ui.notifications`, preventing low-resolution warning spam when connecting from phone viewports while styling `#notifications` for clean mobile toasts.
 
 ### Milestone 3: Actions Page Refactoring & PF2e Targeting/Flanking Engine
 
