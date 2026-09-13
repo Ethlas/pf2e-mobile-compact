@@ -44,7 +44,17 @@ body.pf2e-fullscreen #ui-middle,
 body.pf2e-fullscreen #ui-bottom,
 body.pf2e-fullscreen #pause,
 body.pf2e-fullscreen #fps,
-body.pf2e-fullscreen #av-controls {
+body.pf2e-fullscreen #av-controls,
+body.pf2e-mobile-active #chat-controls,
+body.pf2e-mobile-active #chat-form,
+body.pf2e-mobile-active #chat-message,
+body.pf2e-mobile-active .chat-controls,
+body.pf2e-mobile-active .chat-form,
+body.pf2e-fullscreen #chat-controls,
+body.pf2e-fullscreen #chat-form,
+body.pf2e-fullscreen #chat-message,
+body.pf2e-fullscreen .chat-controls,
+body.pf2e-fullscreen .chat-form {
   display: none !important;
 }
 
@@ -786,8 +796,28 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 
 /* Chat input and controls removed: chat tab is dedicated to quick damage calculation and roll reviews */
 .mobile-chat-mount #chat-controls,
-.mobile-chat-mount #chat-form {
+.mobile-chat-mount #chat-form,
+.mobile-chat-mount .chat-controls,
+.mobile-chat-mount .chat-form,
+.mobile-chat-mount .control-tools,
+.mobile-chat-mount #chat > form,
+.mobile-chat-mount #chat > nav,
+.mobile-chat-mount #chat > footer,
+.mobile-chat-mount #chat > header,
+.mobile-chat-mount #chat textarea,
+.mobile-chat-mount #chat select:not(.message select),
+.mobile-chat-mount #chat input:not(.message input),
+.mobile-chat-mount #chat-message {
   display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
 }
 
 /* Mobile-Optimized PF2e Damage Application Buttons */

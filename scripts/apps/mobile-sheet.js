@@ -590,6 +590,50 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   /**
+   * Completely removes/hides chat input controls, forms, textareas ("Enter Message"),
+   * and option dropdowns within the mobile chat view, dedicating the tab strictly
+   * to roll card reviews and damage calculation buttons.
+   * @param {HTMLElement} [chatEl]
+   */
+  #disableChatInputs(chatEl) {
+    const root = chatEl ?? this.element?.querySelector(".mobile-chat-mount");
+    if (!root) return;
+
+    // Target forms, controls bar, textareas, inputs, and selects outside of messages
+    const targets = root.querySelectorAll(
+      "#chat-controls, #chat-form, form, textarea, select, .chat-controls, .chat-form, .control-tools, header.chat-header, footer"
+    );
+    for (const el of targets) {
+      // Do not touch buttons, selects, or elements inside chat messages (like damage cards)
+      if (el.closest("#chat-log, .chat-log, .message")) continue;
+
+      el.style.setProperty("display", "none", "important");
+      el.style.setProperty("visibility", "hidden", "important");
+      el.style.setProperty("height", "0px", "important");
+      el.style.setProperty("min-height", "0px", "important");
+      el.style.setProperty("max-height", "0px", "important");
+      el.style.setProperty("margin", "0px", "important");
+      el.style.setProperty("padding", "0px", "important");
+      el.style.setProperty("border", "none", "important");
+      el.style.setProperty("overflow", "hidden", "important");
+      el.style.setProperty("pointer-events", "none", "important");
+      if (el.tagName === "TEXTAREA" || el.tagName === "INPUT" || el.tagName === "SELECT") {
+        el.disabled = true;
+        el.tabIndex = -1;
+      }
+    }
+
+    const chatLog = root.querySelector("#chat-log, .chat-log");
+    if (chatLog) {
+      chatLog.style.setProperty("display", "flex", "important");
+      chatLog.style.setProperty("flex", "1 1 100%", "important");
+      chatLog.style.setProperty("height", "100%", "important");
+      chatLog.style.setProperty("max-height", "100%", "important");
+      chatLog.style.setProperty("overflow-y", "auto", "important");
+    }
+  }
+
+  /**
    * Docks Foundry's ui.chat.element into the mobile sheet's chat mount point.
    */
   #dockChatElement() {
@@ -603,6 +647,18 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         this.#chatOriginalNextSibling = chatEl.nextSibling;
       }
       mount.appendChild(chatEl);
+    }
+
+    // Completely remove/hide chat input forms, textareas, and controls
+    this.#disableChatInputs(chatEl);
+
+    // Watch for dynamic DOM re-renders inside ChatLog to keep inputs stripped
+    if (!chatEl._pf2eMobileInputObserver) {
+      const observer = new MutationObserver(() => {
+        this.#disableChatInputs(chatEl);
+      });
+      observer.observe(chatEl, { childList: true, subtree: true });
+      chatEl._pf2eMobileInputObserver = observer;
     }
 
     // Shield against ApplicationV2 action delegation:
@@ -636,6 +692,10 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   #restoreChatElement() {
     const chatEl = ui.chat?.element?.[0] ?? document.getElementById("chat");
     if (!chatEl) return;
+    if (chatEl._pf2eMobileInputObserver) {
+      chatEl._pf2eMobileInputObserver.disconnect();
+      chatEl._pf2eMobileInputObserver = null;
+    }
     if (this.#chatOriginalParent && this.#chatOriginalParent.isConnected) {
       if (this.#chatOriginalNextSibling && this.#chatOriginalParent.contains(this.#chatOriginalNextSibling)) {
         this.#chatOriginalParent.insertBefore(chatEl, this.#chatOriginalNextSibling);
