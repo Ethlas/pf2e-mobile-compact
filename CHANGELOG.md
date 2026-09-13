@@ -6,6 +6,21 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [1.0.3] - 2026-09-13
 
+### Milestone 3.5: Chat Tab Integration & Native PF2e Damage Application
+
+#### Added
+- **Dedicated Chat Tab in Mobile Sheet**:
+  - Expanded the bottom navigation bar to 5 items: **Actions**, **Spells**, **Gear**, **Skills**, and **Chat**.
+  - Docked Foundry's live `ui.chat.element` directly inside the mobile sheet's persistent chat container.
+  - Streaming updates: new chat messages, attack rolls, and damage cards post and scroll into view seamlessly without losing context or scroll position.
+  - Unread badge indicator on the bottom nav Chat button that tracks new messages when the user is viewing other tabs.
+  - Full chat sending interface with textarea and roll mode selector optimized for mobile keyboards and touch devices.
+- **Native PF2e Damage Application directly from Mobile Chat**:
+  - Tapping **Apply Damage** (1x), **Half Damage**, **Double Damage**, **Triple Damage**, **Apply Healing**, or **Shield Block** on damage cards in the chat directly applies damage using PF2e's native rules engine (accounting for IWR, temporary HP, shield hardness, and damage undo/revert).
+  - Automatically asserts token selection for the mobile sheet's character upon sheet open and immediately prior to damage button execution.
+  - Patched `User.prototype.getActiveTokens` with a fail-safe fallback to the active mobile sheet character's token document if no token is explicitly controlled on the canvas, eliminating the `"No token selected to take damage"` error on mobile devices.
+  - Touch-optimized styling for `.damage-application` buttons with prominent touch targets (min 38px height) and distinct color coding.
+
 ### Added
 - **Expandable Action & Feat Descriptions**: Every action card across all sub-tabs can now be tapped (on the title or chevron) to smoothly expand an inline summary showing the full description, triggers, requirements, and enriched Foundry links. The expanded state is persisted across re-renders and tab navigation.
 - **Action Variant & Skill Selection Modals**: Actions with multiple variants (such as *Administer First Aid* -> *Stabilize* vs *Stop Bleeding*, or *Perform*, *Create a Diversion*) and actions with multiple skill choices (like *Recall Knowledge*) now prompt the user with a touch-friendly selection modal before rolling, resolving the "no variant was requested" error.

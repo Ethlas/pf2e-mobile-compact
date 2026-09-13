@@ -437,6 +437,21 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /** @type {Array<{name: string, id: number}>} */
   #sceneHookIds = [];
 
+  /** @type {number} */
+  #unreadChatCount = 0;
+
+  /** @type {number|null} */
+  #chatHookId = null;
+
+  /** @type {DocumentFragment} */
+  #tempChatFragment = document.createDocumentFragment();
+
+  /** @type {HTMLElement|null} */
+  #chatOriginalParent = null;
+
+  /** @type {Node|null} */
+  #chatOriginalNextSibling = null;
+
   /**
    * Current active tab key.
    * @type {string}
@@ -462,9 +477,36 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   /** @override */
+  _replaceHTML(result, content, options) {
+    const chatMount = content.querySelector?.(".mobile-chat-mount");
+    const chatEl = ui.chat?.element?.[0] ?? document.getElementById("chat");
+    if (chatMount && chatEl && chatMount.contains(chatEl)) {
+      this.#tempChatFragment.appendChild(chatEl);
+    }
+    super._replaceHTML(result, content, options);
+    const newChatMount = content.querySelector?.(".mobile-chat-mount");
+    if (newChatMount && chatEl) {
+      newChatMount.appendChild(chatEl);
+    }
+  }
+
+  /** @override */
   _onRender(context, options) {
     super._onRender(context, options);
     this.#registerSceneListeners();
+    this.#registerChatListener();
+    this.#dockChatElement();
+    this.#ensureTokenControlled();
+
+    if (this.#activeTab === "chat") {
+      this.#unreadChatCount = 0;
+      this.#updateChatBadge();
+      setTimeout(() => {
+        try {
+          ui.chat?.scrollBottom?.();
+        } catch {}
+      }, 50);
+    }
 
     // Synchronize fullscreen toggle button icon and mode
     const isFs = !!(
@@ -497,6 +539,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /** @override */
   _onClose(options) {
     this.#unregisterSceneListeners();
+    this.#unregisterChatListener();
+    this.#restoreChatElement();
     super._onClose(options);
   }
 
@@ -545,6 +589,110 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     this.#sceneHookIds = [];
   }
 
+  /**
+   * Docks Foundry's ui.chat.element into the mobile sheet's chat mount point.
+   */
+  #dockChatElement() {
+    const mount = this.element?.querySelector(".mobile-chat-mount");
+    const chatEl = ui.chat?.element?.[0] ?? document.getElementById("chat");
+    if (!mount || !chatEl) return;
+
+    if (!mount.contains(chatEl)) {
+      if (!this.#chatOriginalParent && chatEl.parentElement) {
+        this.#chatOriginalParent = chatEl.parentElement;
+        this.#chatOriginalNextSibling = chatEl.nextSibling;
+      }
+      mount.appendChild(chatEl);
+    }
+
+    // Capture damage button clicks to guarantee active token selection immediately
+    if (!chatEl._pf2eMobileDamageCapture) {
+      chatEl.addEventListener("click", (event) => {
+        const btn = event.target?.closest?.("button[data-action]");
+        if (btn) {
+          const action = btn.dataset.action;
+          if (["apply-damage", "half-damage", "double-damage", "triple-damage", "apply-healing", "shield-block"].includes(action)) {
+            this.#ensureTokenControlled();
+          }
+        }
+      }, { capture: true });
+      chatEl._pf2eMobileDamageCapture = true;
+    }
+  }
+
+  /**
+   * Restores ui.chat.element back to its original parent upon sheet closure.
+   */
+  #restoreChatElement() {
+    const chatEl = ui.chat?.element?.[0] ?? document.getElementById("chat");
+    if (!chatEl) return;
+    if (this.#chatOriginalParent && this.#chatOriginalParent.isConnected) {
+      if (this.#chatOriginalNextSibling && this.#chatOriginalParent.contains(this.#chatOriginalNextSibling)) {
+        this.#chatOriginalParent.insertBefore(chatEl, this.#chatOriginalNextSibling);
+      } else {
+        this.#chatOriginalParent.appendChild(chatEl);
+      }
+    }
+  }
+
+  /**
+   * Ensures the current sheet actor's token placeable is selected and controlled on canvas.
+   */
+  #ensureTokenControlled() {
+    const actor = this.actor;
+    if (!actor) return;
+    const scene = canvas?.scene ?? game.scenes.viewed ?? game.scenes.active;
+    if (!scene) return;
+
+    const activePlaceables = typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(true, false) : [];
+    const token = activePlaceables?.[0]
+      ?? (canvas?.tokens?.placeables ? canvas.tokens.placeables.find(t => t.actor?.id === actor.id) : null);
+
+    if (token && typeof token.control === "function" && !token.controlled) {
+      try {
+        token.control({ releaseOthers: true });
+      } catch {}
+    }
+  }
+
+  /**
+   * Listens for new chat messages to update unread badge when sheet is on another tab.
+   */
+  #registerChatListener() {
+    if (this.#chatHookId !== null) return;
+    this.#chatHookId = Hooks.on("createChatMessage", () => {
+      if (this.rendered && this.#activeTab !== "chat") {
+        this.#unreadChatCount++;
+        this.#updateChatBadge();
+      }
+    });
+  }
+
+  /**
+   * Unregisters chat message hook.
+   */
+  #unregisterChatListener() {
+    if (this.#chatHookId !== null) {
+      Hooks.off("createChatMessage", this.#chatHookId);
+      this.#chatHookId = null;
+    }
+  }
+
+  /**
+   * Synchronizes unread badge DOM in bottom navigation bar.
+   */
+  #updateChatBadge() {
+    const badge = this.element?.querySelector(".chat-badge");
+    if (!badge) return;
+    if (this.#unreadChatCount > 0) {
+      badge.textContent = this.#unreadChatCount > 99 ? "99+" : String(this.#unreadChatCount);
+      badge.classList.remove("hidden");
+    } else {
+      badge.textContent = "0";
+      badge.classList.add("hidden");
+    }
+  }
+
   /** @override */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
@@ -555,6 +703,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     context.activeTab = this.#activeTab;
     context.actionSubTab = this.#actionSubTab;
     context.rollMode = this.#rollMode;
+    context.unreadChatCount = this.#unreadChatCount;
 
     // Owned Characters Switcher Context
     const owned = game.actors.filter(a => a.type === "character" && a.isOwner);
@@ -1318,6 +1467,9 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const newTab = target.dataset.tab;
     if (newTab && newTab !== this.#activeTab) {
       this.#activeTab = newTab;
+      if (newTab === "chat") {
+        this.#unreadChatCount = 0;
+      }
       this.render({ parts: ["sheet"] });
     }
   }

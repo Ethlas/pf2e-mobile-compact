@@ -691,6 +691,211 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   font-size: 1.2rem;
 }
 
+.nav-icon-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-badge {
+  position: absolute;
+  top: -6px;
+  right: -12px;
+  background: #e53935;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: bold;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+.chat-badge.hidden {
+  display: none !important;
+}
+
+/* ----------------------------------------- */
+/* Persistent Tab Pane & Mobile Chat Stream  */
+/* ----------------------------------------- */
+.mobile-tab-pane.is-hidden {
+  display: none !important;
+}
+
+.mobile-chat-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.mobile-chat-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.mobile-chat-mount {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.mobile-chat-mount #chat {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  width: 100% !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.mobile-chat-mount #chat-log {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 8px 8px 12px 8px !important;
+  margin: 0 !important;
+  list-style: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.mobile-chat-mount #chat-controls {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 8px !important;
+  background: #181818 !important;
+  border-top: 1px solid #333 !important;
+  border-bottom: 1px solid #333 !important;
+}
+
+.mobile-chat-mount #chat-controls select {
+  flex: 1 !important;
+  min-height: 36px !important;
+  height: 36px !important;
+  font-size: 0.85rem !important;
+  background: #242424 !important;
+  border: 1px solid #444 !important;
+  color: #ddd !important;
+  border-radius: 4px !important;
+  padding: 0 6px !important;
+}
+
+.mobile-chat-mount #chat-form {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 6px 8px !important;
+  background: #181818 !important;
+  border-top: 1px solid #333 !important;
+}
+
+.mobile-chat-mount #chat-message {
+  width: 100% !important;
+  min-height: 44px !important;
+  max-height: 100px !important;
+  resize: vertical !important;
+  background: #242424 !important;
+  border: 1px solid #444 !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+  padding: 8px !important;
+  font-size: 0.95rem !important;
+  box-sizing: border-box !important;
+}
+
+/* Mobile-Optimized PF2e Damage Application Buttons */
+.mobile-chat-mount .damage-application,
+.pf2e-mobile-sheet .damage-application {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 5px !important;
+  margin-top: 6px !important;
+  justify-content: stretch !important;
+}
+
+.mobile-chat-mount .damage-application button,
+.pf2e-mobile-sheet .damage-application button {
+  flex: 1 1 calc(33.333% - 5px) !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  min-width: 0 !important;
+  padding: 2px 4px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 4px !important;
+  touch-action: manipulation !important;
+  white-space: nowrap !important;
+}
+
+.mobile-chat-mount .damage-application button[data-action="apply-damage"] {
+  background: #b71c1c !important;
+  color: #fff !important;
+  border: 1px solid #d32f2f !important;
+}
+
+.mobile-chat-mount .damage-application button[data-action="half-damage"] {
+  background: #e65100 !important;
+  color: #fff !important;
+  border: 1px solid #f57c00 !important;
+}
+
+.mobile-chat-mount .damage-application button[data-action="double-damage"] {
+  background: #880e4f !important;
+  color: #fff !important;
+  border: 1px solid #ad1457 !important;
+}
+
+.mobile-chat-mount .damage-application button[data-action="shield-block"] {
+  background: #0277bd !important;
+  color: #fff !important;
+  border: 1px solid #0288d1 !important;
+}
+
+.mobile-chat-mount .damage-application button[data-action="shield-block"].shield-activated {
+  background: #2e7d32 !important;
+  border-color: #4caf50 !important;
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.8) !important;
+}
+
+.mobile-chat-mount .damage-application button[data-action="apply-healing"] {
+  background: #1b5e20 !important;
+  color: #fff !important;
+  border: 1px solid #2e7d32 !important;
+}
+
+.mobile-chat-mount .damage-application button:active {
+  filter: brightness(1.2) !important;
+  transform: scale(0.98) !important;
+}
+
 /* ----------------------------------------- */
 /* Action Cards & Strike Blocks              */
 /* ----------------------------------------- */

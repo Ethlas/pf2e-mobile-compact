@@ -312,9 +312,49 @@ export function suppressResolutionWarnings() {
   sweepResolutionNotifications();
 }
 
+/**
+ * Monkey-patches User.prototype.getActiveTokens to ensure that when a player operates
+ * via the mobile compact sheet, their active character's token is automatically returned
+ * as the damage recipient if no token is explicitly controlled on the canvas.
+ */
+export function patchUserActiveTokens() {
+  const UserClass = CONFIG.User?.documentClass ?? (typeof User !== "undefined" ? User : null);
+  if (UserClass?.prototype && !UserClass.prototype._pf2eMobileActiveTokensPatched) {
+    const origGetActiveTokens = UserClass.prototype.getActiveTokens;
+    UserClass.prototype.getActiveTokens = function (...args) {
+      const tokens = origGetActiveTokens.apply(this, args);
+      if (tokens && tokens.length > 0) return tokens;
+
+      // Fallback: Resolve active token document from currently open mobile sheet
+      try {
+        const mobileSheet = Object.values(ui.windows ?? {}).find(w => w instanceof PF2eMobileSheet && w.rendered)
+          ?? (typeof foundry !== "undefined" && foundry.applications?.instances?.values
+            ? Array.from(foundry.applications.instances.values()).find(a => a instanceof PF2eMobileSheet && a.rendered)
+            : null);
+
+        const actor = mobileSheet?.actor;
+        if (actor) {
+          const activeTokens = typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(true, true) : [];
+          if (activeTokens?.length) return activeTokens;
+
+          const scene = canvas?.scene ?? game.scenes.viewed ?? game.scenes.active;
+          const tokenDoc = scene?.tokens?.find(t => t.actorId === actor.id);
+          if (tokenDoc) return [tokenDoc];
+        }
+      } catch (err) {
+        console.warn("PF2e Mobile Compact | Error resolving fallback active token:", err);
+      }
+
+      return tokens;
+    };
+    UserClass.prototype._pf2eMobileActiveTokensPatched = true;
+  }
+}
+
 Hooks.once("init", async () => {
   console.log("PF2e Mobile Compact | Initializing module");
   suppressResolutionWarnings();
+  patchUserActiveTokens();
 
   // Ensure essential Handlebars comparison helpers are available
   if (!Handlebars.helpers.eq) {
@@ -359,7 +399,8 @@ Hooks.once("init", async () => {
     "modules/pf2e-mobile-compact/templates/parts/spells.hbs",
     "modules/pf2e-mobile-compact/templates/parts/actions.hbs",
     "modules/pf2e-mobile-compact/templates/parts/skills.hbs",
-    "modules/pf2e-mobile-compact/templates/parts/inventory.hbs"
+    "modules/pf2e-mobile-compact/templates/parts/inventory.hbs",
+    "modules/pf2e-mobile-compact/templates/parts/chat.hbs"
   ]);
 
 
@@ -389,6 +430,7 @@ Hooks.once("init", async () => {
 Hooks.once("ready", () => {
   suppressResolutionWarnings();
   sweepResolutionNotifications();
+  patchUserActiveTokens();
 
   if (shouldActivateMobile()) {
     console.log("PF2e Mobile Compact | Mobile environment confirmed. Activating mobile engine.");

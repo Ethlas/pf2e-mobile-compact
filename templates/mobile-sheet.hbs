@@ -7,23 +7,18 @@
       {{> "modules/pf2e-mobile-compact/templates/parts/inventory.hbs"}}
     {{else if (eq activeTab "skills")}}
       {{> "modules/pf2e-mobile-compact/templates/parts/skills.hbs"}}
-    {{else}}
+    {{else if (eq activeTab "actions")}}
       {{> "modules/pf2e-mobile-compact/templates/parts/actions.hbs"}}
     {{/if}}
+
+    <!-- Persistent Chat Pane (always retains live ui.chat socket stream) -->
+    <div class="mobile-tab-pane mobile-chat-pane {{#unless (eq activeTab "chat")}}is-hidden{{/unless}}">
+      {{> "modules/pf2e-mobile-compact/templates/parts/chat.hbs"}}
+    </div>
   </main>
 
-  <!-- Fixed 4-Button Bottom Navigation Bar -->
+  <!-- Fixed 5-Button Bottom Navigation Bar -->
   <nav class="mobile-bottom-nav">
-    <button
-      type="button"
-      class="nav-item {{#if (eq activeTab "spells")}}active{{/if}}"
-      data-action="switchTab"
-      data-tab="spells"
-      aria-label="Spells Tab"
-    >
-      <i class="fas fa-wand-magic-sparkles"></i>
-      <span>Spells</span>
-    </button>
     <button
       type="button"
       class="nav-item {{#if (eq activeTab "actions")}}active{{/if}}"
@@ -33,6 +28,16 @@
     >
       <i class="fas fa-hand-fist"></i>
       <span>Actions</span>
+    </button>
+    <button
+      type="button"
+      class="nav-item {{#if (eq activeTab "spells")}}active{{/if}}"
+      data-action="switchTab"
+      data-tab="spells"
+      aria-label="Spells Tab"
+    >
+      <i class="fas fa-wand-magic-sparkles"></i>
+      <span>Spells</span>
     </button>
     <button
       type="button"
@@ -54,6 +59,18 @@
       <i class="fas fa-dice-d20"></i>
       <span>Skills</span>
     </button>
+    <button
+      type="button"
+      class="nav-item nav-chat {{#if (eq activeTab "chat")}}active{{/if}}"
+      data-action="switchTab"
+      data-tab="chat"
+      aria-label="Chat Tab"
+    >
+      <div class="nav-icon-wrapper">
+        <i class="fas fa-comments"></i>
+        <span class="chat-badge {{#unless unreadChatCount}}hidden{{/unless}}">{{unreadChatCount}}</span>
+      </div>
+      <span>Chat</span>
+    </button>
   </nav>
 </div>
-
