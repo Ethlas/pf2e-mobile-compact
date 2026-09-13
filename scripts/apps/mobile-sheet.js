@@ -1512,17 +1512,21 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           effectSource._id = null;
 
           const tokenDoc = this.token ?? this.actor.getActiveTokens?.(true, true)?.[0] ?? this.actor.getActiveTokens?.()?.[0]?.document ?? null;
-          foundry.utils.setProperty(effectSource, "system.context.origin", {
-            actor: this.actor.uuid,
-            item: item.uuid,
-            token: tokenDoc?.uuid ?? null,
-            spellcasting: null,
-            rollOptions: typeof item.getOriginData === "function" ? item.getOriginData().rollOptions : []
-          });
-          foundry.utils.setProperty(effectSource, "system.context.target", {
-            actor: this.actor.uuid,
-            token: tokenDoc?.uuid ?? null
-          });
+          if (!effectSource.system) effectSource.system = {};
+          effectSource.system.context = {
+            origin: {
+              actor: this.actor.uuid,
+              item: item.uuid,
+              token: tokenDoc?.uuid ?? null,
+              spellcasting: null,
+              rollOptions: typeof item.getOriginData === "function" ? (item.getOriginData()?.rollOptions ?? []) : []
+            },
+            target: {
+              actor: this.actor.uuid,
+              token: tokenDoc?.uuid ?? null
+            },
+            roll: null
+          };
 
           await this.actor.createEmbeddedDocuments("Item", [effectSource]);
           ui.notifications?.info?.(`Activated ${effectDoc.name} on ${this.actor.name}.`);
