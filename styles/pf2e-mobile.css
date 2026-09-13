@@ -1574,3 +1574,272 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   font-size: 0.8rem;
   color: #888;
 }
+
+/* ----------------------------------------- */
+/* Physical Dice Entry Modal                 */
+/* ----------------------------------------- */
+.physical-dice-dialog-app {
+  z-index: 10000 !important;
+}
+
+.physical-dice-dialog-content {
+  padding: 12px;
+  background: #1e1e1e;
+  color: #eee;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.physical-dialog-header {
+  border-bottom: 1px solid #3a3a3a;
+  padding-bottom: 8px;
+}
+
+.physical-action-title {
+  font-size: 1.15rem;
+  font-weight: bold;
+  color: #ffb74d;
+}
+
+.physical-action-subtitle {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-top: 2px;
+}
+
+.physical-target-badge {
+  display: inline-block;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 3px 8px;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #90caf9;
+}
+
+.physical-prompt-msg {
+  font-size: 0.95rem;
+  color: #ddd;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+/* d20 Check Input */
+.physical-d20-section {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.physical-input-wrapper {
+  margin: 12px auto;
+}
+
+.physical-die-input {
+  display: block;
+  margin: 0 auto;
+  font-size: 2rem !important;
+  font-weight: bold;
+  text-align: center;
+  width: 140px;
+  min-height: 54px !important;
+  background: #141414 !important;
+  border: 2px solid #ffb74d !important;
+  border-radius: 8px;
+  color: #fff !important;
+}
+
+.physical-die-input:focus {
+  outline: none;
+  border-color: #ffa726 !important;
+  box-shadow: 0 0 8px rgba(255, 183, 77, 0.5);
+}
+
+.physical-modifier-info {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-top: 8px;
+}
+
+.physical-modifier-info strong {
+  color: #90caf9;
+}
+
+/* Damage Pools Rows */
+.physical-damage-pools {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.physical-damage-row {
+  background: #252525;
+  border: 1px solid #3d3d3d;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.damage-row-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.damage-type-badge {
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #333;
+  color: #fff;
+}
+
+.damage-type-badge.damage-slashing {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+.damage-type-badge.damage-piercing {
+  background: #78350f;
+  color: #fde68a;
+}
+
+.damage-type-badge.damage-bludgeoning {
+  background: #365314;
+  color: #d9f99d;
+}
+
+.damage-type-badge.damage-fire {
+  background: #9a3412;
+  color: #ffedd5;
+}
+
+.damage-type-badge.damage-cold {
+  background: #075985;
+  color: #e0f2fe;
+}
+
+.damage-type-badge.damage-electricity {
+  background: #854d0e;
+  color: #fef08a;
+}
+
+.damage-type-badge.damage-acid {
+  background: #14532d;
+  color: #bbf7d0;
+}
+
+.damage-type-badge.damage-poison {
+  background: #3f3f46;
+  color: #e4e4e7;
+}
+
+.damage-type-badge.damage-vitality,
+.damage-type-badge.damage-positive {
+  background: #ca8a04;
+  color: #fef9c3;
+}
+
+.damage-type-badge.damage-void,
+.damage-type-badge.damage-negative {
+  background: #581c87;
+  color: #f3e8ff;
+}
+
+.damage-type-badge.damage-spirit,
+.damage-type-badge.damage-force {
+  background: #431407;
+  color: #fed7aa;
+}
+
+.damage-type-badge.damage-bleed {
+  background: #9f1239;
+  color: #ffe4e6;
+}
+
+.damage-dice-instruction {
+  font-size: 0.95rem;
+  color: #ffb74d;
+}
+
+.damage-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.damage-input-row label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #ccc;
+  min-width: 80px;
+}
+
+.physical-damage-input {
+  flex: 1;
+  min-height: 48px !important;
+  font-size: 1.3rem !important;
+  font-weight: bold;
+  text-align: center;
+  background: #161616 !important;
+  border: 1px solid #555 !important;
+  border-radius: 6px;
+  color: #fff !important;
+}
+
+.physical-damage-input:focus {
+  outline: none;
+  border-color: #90caf9 !important;
+  box-shadow: 0 0 6px rgba(144, 202, 249, 0.4);
+}
+
+.damage-mod-note {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* Footer & Actions */
+.physical-dialog-footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.physical-dialog-footer .btn-cancel {
+  flex: 1;
+  background: #333 !important;
+  color: #ddd !important;
+  border: 1px solid #444 !important;
+  font-weight: 500;
+}
+
+.physical-dialog-footer .btn-submit {
+  flex: 1.5;
+  background: #1976d2 !important;
+  color: #fff !important;
+  border: 1px solid #1565c0 !important;
+  font-weight: bold;
+}
+
+.physical-error-msg {
+  color: #ff8a80;
+  background: rgba(255, 82, 82, 0.12);
+  border: 1px solid rgba(255, 82, 82, 0.3);
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.physical-error-msg.hidden {
+  display: none !important;
+}

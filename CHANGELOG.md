@@ -4,6 +4,32 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.6] - 2026-09-13
+
+### Milestone 6: Hybrid Physical Dice Entry & Mobile Dropdown Selection Fix
+
+#### Added
+- **Native PF2e Physical Dice Entry Engine (`PhysicalDiceManager`)**:
+  - Implemented roll interception hooking Foundry's `Roll.prototype.evaluate` and PF2e's `CheckRoll` and `DamageRoll` when in Physical Roll mode.
+  - Intercepts raw dice terms and allows players to input outcomes from their real physical table dice while delegating modifier calculations, degree of success, and chat cards entirely to the native PF2e system.
+  - **d20 Check Entry**: Prompt displays action name, modifier, and target token name (if targeted). Players type the d20 result (1-20) into a focused numeric field. Supports keyboard Enter and touch keyboards. Natural 20s and Natural 1s automatically trigger PF2e's degree of success upgrade/downgrade rules!
+  - **Multi-Type Grouped Damage Entry**: Automatically groups weapon and spell damage pools into distinct rows by damage type (e.g. 6d8 Slashing, 1d6 Fire, 1d4 Persistent Bleed).
+  - Prompts players with the exact physical dice to roll on the table and allows them to enter the total sum for all dice in that group.
+  - Flat numeric modifiers are displayed as added automatically by the system and are factored in by PF2e.
+  - Partitions entered sums across dice results (`partitionTotal`), ensuring all dice terms are marked evaluated with valid die faces without triggering random rolls.
+  - Renders complete official PF2e Check and Damage Chat Cards with all damage types intact, enabling the GM and players to click the native damage buttons (`Apply Damage`, `Half Damage`, `Double Damage`, `Shield Block`, `Apply Healing`) with full resistance, weakness, and immunity calculations.
+  - Safe cancellation: Closing or cancelling the physical dialog gracefully aborts the roll without generating broken or empty chat cards.
+- **Persistent Roll Mode**:
+  - Roll mode choice (`Digital` vs `Physical`) is persisted across sheet reopens and browser reloads via `localStorage` (`pf2e-mobile-compact.rollMode`) and client setting (`game.settings.get/set("pf2e-mobile-compact", "rollMode")`), so table players don't have to re-select it every time they reload their phone.
+
+#### Fixed
+- **Mobile Dropdown Selection in Header**:
+  - Resolved mobile bug where tapping the Roll Mode dropdown (`Digital` / `Physical`) on touchscreens did not open the picker.
+  - Root cause: Foundry ApplicationV2 binds a delegated `click` handler to all elements with `data-action` that calls `event.preventDefault()`, which suppresses the native OS select picker on iOS WebKit and Android Chromium and re-renders the header prematurely.
+  - Solution: Replaced `data-action` on select elements with `data-change-action`, stopped click event bubbling on selects so ApplicationV2 never intercepts them, and bound delegated `change` listeners that cleanly trigger `#onToggleRollMode`, `#onSelectTarget`, and `#onSwitchActor` when an option is selected.
+
+---
+
 ## [1.0.3] - 2026-09-13
 
 ### Milestone 3.5: Chat Tab Integration & Native PF2e Damage Application

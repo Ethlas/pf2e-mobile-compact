@@ -2,6 +2,7 @@
  * Entry point for pf2e-mobile-compact module.
  */
 import { PF2eMobileSheet } from "./apps/mobile-sheet.js";
+import { setupPhysicalDiceInterceptor } from "./rolls/physical-dice-interceptor.js";
 
 /**
  * Check if the client is running in a mobile context via standalone app mode,
@@ -420,6 +421,53 @@ Hooks.once("init", async () => {
   patchMediaElements();
   patchUserActiveTokens();
 
+  // Register the custom mobile character sheet with Actors collection (namespaced in v13+)
+  const ActorsCollection = foundry.documents?.collections?.Actors ?? (typeof Actors !== "undefined" ? Actors : null);
+  if (ActorsCollection) {
+    ActorsCollection.registerSheet("pf2e", PF2eMobileSheet, {
+      types: ["character"],
+      makeDefault: false,
+      label: "PF2e Mobile Compact Sheet"
+    });
+  }
+
+  // Dynamically route character sheets to PF2eMobileSheet on mobile clients
+  const ActorClass = getDocumentClass?.("Actor") ?? CONFIG.Actor?.documentClass ?? (typeof Actor !== "undefined" ? Actor : null);
+  if (ActorClass) {
+    const originalGetSheetClass = ActorClass.prototype._getSheetClass;
+    ActorClass.prototype._getSheetClass = function () {
+      if (shouldActivateMobile() && this.type === "character") {
+        return PF2eMobileSheet;
+      }
+      return originalGetSheetClass.call(this);
+    };
+
+    // Override actor.sheet getter directly so accessing .sheet on mobile is guaranteed to return PF2eMobileSheet
+    let sheetDescriptor = null;
+    let proto = ActorClass.prototype;
+    while (proto && proto !== Object.prototype) {
+      sheetDescriptor = Object.getOwnPropertyDescriptor(proto, "sheet");
+      if (sheetDescriptor?.get) break;
+      proto = Object.getPrototypeOf(proto);
+    }
+    if (sheetDescriptor?.get) {
+      const origSheetGetter = sheetDescriptor.get;
+      Object.defineProperty(ActorClass.prototype, "sheet", {
+        get() {
+          if (shouldActivateMobile() && this.type === "character") {
+            if (!this._mobileSheetInstance || !(this._mobileSheetInstance instanceof PF2eMobileSheet)) {
+              this._mobileSheetInstance = new PF2eMobileSheet({ document: this });
+            }
+            return this._mobileSheetInstance;
+          }
+          return origSheetGetter.call(this);
+        },
+        configurable: true,
+        enumerable: true
+      });
+    }
+  }
+
   // Ensure essential Handlebars comparison helpers are available
   if (!Handlebars.helpers.eq) {
     Handlebars.registerHelper("eq", (a, b) => a === b);
@@ -457,8 +505,24 @@ Hooks.once("init", async () => {
     default: true
   });
 
+  // Client Setting: Default Roll Mode (Digital vs Physical Dice)
+  game.settings.register("pf2e-mobile-compact", "rollMode", {
+    name: "Default Roll Mode",
+    hint: "Controls whether rolls default to digital dice or manual physical table dice entry.",
+    scope: "client",
+    config: false,
+    type: String,
+    choices: {
+      "digital": "Digital",
+      "physical": "Physical"
+    },
+    default: "digital"
+  });
+
   // Preload Handlebars template parts
   await loadTemplates([
+    "modules/pf2e-mobile-compact/templates/mobile-sheet.hbs",
+    "modules/pf2e-mobile-compact/templates/physical-dice-dialog.hbs",
     "modules/pf2e-mobile-compact/templates/parts/header.hbs",
     "modules/pf2e-mobile-compact/templates/parts/spells.hbs",
     "modules/pf2e-mobile-compact/templates/parts/actions.hbs",
@@ -466,35 +530,17 @@ Hooks.once("init", async () => {
     "modules/pf2e-mobile-compact/templates/parts/inventory.hbs",
     "modules/pf2e-mobile-compact/templates/parts/chat.hbs"
   ]);
-
-
-  // Register the custom mobile character sheet with Actors collection (namespaced in v13+)
-  const ActorsCollection = foundry.documents?.collections?.Actors ?? (typeof Actors !== "undefined" ? Actors : null);
-  if (ActorsCollection) {
-    ActorsCollection.registerSheet("pf2e", PF2eMobileSheet, {
-      types: ["character"],
-      makeDefault: false,
-      label: "PF2e Mobile Compact Sheet"
-    });
-  }
-
-  // Dynamically route character sheets to PF2eMobileSheet on mobile clients
-  const ActorClass = getDocumentClass?.("Actor") ?? CONFIG.Actor?.documentClass ?? (typeof Actor !== "undefined" ? Actor : null);
-  if (ActorClass) {
-    const originalGetSheetClass = ActorClass.prototype._getSheetClass;
-    ActorClass.prototype._getSheetClass = function () {
-      if (shouldActivateMobile() && this.type === "character") {
-        return PF2eMobileSheet;
-      }
-      return originalGetSheetClass.call(this);
-    };
-  }
 });
 
 Hooks.once("ready", () => {
   suppressResolutionWarnings();
   sweepResolutionNotifications();
   patchUserActiveTokens();
+  try {
+    setupPhysicalDiceInterceptor();
+  } catch (err) {
+    console.warn("PF2e Mobile Compact | setupPhysicalDiceInterceptor error:", err);
+  }
 
   if (shouldActivateMobile()) {
     console.log("PF2e Mobile Compact | Mobile environment confirmed. Activating mobile engine.");
@@ -511,13 +557,58 @@ Hooks.once("ready", () => {
       );
     }
 
+    // Resolve assigned or owned character
+    const character = game.user.character
+      ?? game.actors.find(a => a.type === "character" && a.isOwner)
+      ?? (game.user.isGM ? game.actors.find(a => a.type === "character") : null);
+
     // If auto-open setting is enabled, launch the assigned or owned character sheet
     if (game.settings.get("pf2e-mobile-compact", "autoOpenSheet")) {
-      const character = game.user.character ?? game.actors.find(a => a.type === "character" && a.isOwner);
       if (character) {
         console.log(`PF2e Mobile Compact | Auto-opening mobile sheet for ${character.name}`);
-        character.sheet.render(true);
+        try {
+          if (!character._mobileSheetInstance || !(character._mobileSheetInstance instanceof PF2eMobileSheet)) {
+            character._mobileSheetInstance = new PF2eMobileSheet({ document: character });
+          }
+          character._mobileSheetInstance.render(true);
+        } catch (err) {
+          console.error("PF2e Mobile Compact | Error auto-opening mobile sheet:", err);
+          character.sheet?.render?.(true);
+        }
       }
+    }
+
+    // Floating launcher button (FAB) for mobile in case sheet was closed or needs opening
+    if (!document.getElementById("pf2e-mobile-fab")) {
+      const fab = document.createElement("button");
+      fab.id = "pf2e-mobile-fab";
+      fab.type = "button";
+      fab.title = "Open Mobile Sheet";
+      fab.innerHTML = '<i class="fas fa-user-shield"></i>';
+      fab.style.cssText = "position:fixed;bottom:20px;right:20px;z-index:9999;width:52px;height:52px;border-radius:50%;background:#e65100;color:#fff;border:2px solid #ffb74d;box-shadow:0 4px 12px rgba(0,0,0,0.6);font-size:22px;display:none;align-items:center;justify-content:center;cursor:pointer;";
+      fab.addEventListener("click", () => {
+        const char = game.user.character
+          ?? game.actors.find(a => a.type === "character" && a.isOwner)
+          ?? (game.user.isGM ? game.actors.find(a => a.type === "character") : null);
+        if (char) {
+          if (!char._mobileSheetInstance || !(char._mobileSheetInstance instanceof PF2eMobileSheet)) {
+            char._mobileSheetInstance = new PF2eMobileSheet({ document: char });
+          }
+          char._mobileSheetInstance.render(true);
+        } else {
+          ui.notifications?.warn?.("PF2e Mobile: No character actor found for this user.");
+        }
+      });
+      document.body.appendChild(fab);
+
+      setInterval(() => {
+        if (shouldActivateMobile()) {
+          const isOpen = !!document.querySelector(".pf2e-mobile-sheet");
+          fab.style.display = isOpen ? "none" : "flex";
+        } else {
+          fab.style.display = "none";
+        }
+      }, 1000);
     }
   } else {
     console.log("PF2e Mobile Compact | Desktop environment active. Mobile overrides dormant.");

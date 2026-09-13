@@ -1,6 +1,7 @@
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
 import { CompendiumPickerApp } from "./compendium-picker.js";
+import { PhysicalDiceManager } from "../rolls/physical-dice-interceptor.js";
 
 /** Safe mathematical clamp */
 const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
@@ -452,6 +453,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /** @type {Node|null} */
   #chatOriginalNextSibling = null;
 
+
   /**
    * Current active tab key.
    * @type {string}
@@ -479,7 +481,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /** @override */
   _replaceHTML(result, content, options) {
     const chatMount = content.querySelector?.(".mobile-chat-mount");
-    const chatEl = ui.chat?.element?.[0] ?? document.getElementById("chat");
+    const chatEl = (ui.chat?.element instanceof HTMLElement ? ui.chat.element : ui.chat?.element?.[0]) ?? document.getElementById("chat");
     if (chatMount && chatEl && chatMount.contains(chatEl)) {
       this.#tempChatFragment.appendChild(chatEl);
     }
@@ -520,13 +522,21 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       fsIcon.className = isFs ? "fas fa-compress" : "fas fa-expand";
     }
 
-    // ApplicationV2 actions only listen for click events by default.
-    // Delegate change events for select and input elements carrying data-action.
+    // ApplicationV2 actions only listen for click events by default and invoke preventDefault().
+    // We prevent select elements from triggering ApplicationV2's click delegator so that the native
+    // mobile picker opens properly, and delegate change events for select and input elements.
+    this.element.querySelectorAll("select").forEach(sel => {
+      if (!sel._mobileClickGuard) {
+        sel.addEventListener("click", e => e.stopPropagation());
+        sel._mobileClickGuard = true;
+      }
+    });
+
     if (!this.element._mobileActionChangeBound) {
       this.element.addEventListener("change", (event) => {
-        const actionEl = event.target?.closest?.("select[data-action], input[data-action]");
+        const actionEl = event.target?.closest?.("select[data-change-action], select[data-action], input[data-change-action], input[data-action]");
         if (!actionEl) return;
-        const actionName = actionEl.dataset.action;
+        const actionName = actionEl.dataset.changeAction || actionEl.dataset.action;
         const handler = this.options.actions?.[actionName];
         if (typeof handler === "function") {
           handler.call(this, event, actionEl);
@@ -652,52 +662,56 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Docks Foundry's ui.chat.element into the mobile sheet's chat mount point.
    */
   #dockChatElement() {
-    const mount = this.element?.querySelector(".mobile-chat-mount");
-    const chatEl = ui.chat?.element?.[0] ?? document.getElementById("chat");
-    if (!mount || !chatEl) return;
+    try {
+      const mount = this.element?.querySelector(".mobile-chat-mount");
+      const chatEl = (ui.chat?.element instanceof HTMLElement ? ui.chat.element : ui.chat?.element?.[0]) ?? document.getElementById("chat");
+      if (!mount || !chatEl) return;
 
-    if (!mount.contains(chatEl)) {
-      if (!this.#chatOriginalParent && chatEl.parentElement) {
-        this.#chatOriginalParent = chatEl.parentElement;
-        this.#chatOriginalNextSibling = chatEl.nextSibling;
-      }
-      mount.appendChild(chatEl);
-    }
-
-    // Completely remove/hide chat input forms, textareas, and controls
-    this.#disableChatInputs(chatEl);
-
-    // Watch for dynamic DOM re-renders inside ChatLog to keep inputs stripped
-    if (!chatEl._pf2eMobileInputObserver) {
-      const observer = new MutationObserver(() => {
-        this.#disableChatInputs(chatEl);
-      });
-      observer.observe(chatEl, { childList: true, subtree: true });
-      chatEl._pf2eMobileInputObserver = observer;
-    }
-
-    // Shield against ApplicationV2 action delegation:
-    // Any click inside the chat mount should NOT bubble up to ApplicationV2,
-    // allowing PF2e's native chat log click listener on #chat to execute completely undisturbed.
-    if (!mount._pf2eChatEventShield) {
-      mount.addEventListener("click", (event) => {
-        event.stopPropagation();
-      });
-      mount._pf2eChatEventShield = true;
-    }
-
-    // Capture damage button clicks to guarantee active token selection immediately
-    if (!chatEl._pf2eMobileDamageCapture) {
-      chatEl.addEventListener("click", (event) => {
-        const btn = event.target?.closest?.("button[data-action]");
-        if (btn) {
-          const action = btn.dataset.action;
-          if (["apply-damage", "half-damage", "double-damage", "triple-damage", "apply-healing", "shield-block"].includes(action)) {
-            this.#ensureTokenControlled();
-          }
+      if (!mount.contains(chatEl)) {
+        if (!this.#chatOriginalParent && chatEl.parentElement) {
+          this.#chatOriginalParent = chatEl.parentElement;
+          this.#chatOriginalNextSibling = chatEl.nextSibling;
         }
-      }, { capture: true });
-      chatEl._pf2eMobileDamageCapture = true;
+        mount.appendChild(chatEl);
+      }
+
+      // Completely remove/hide chat input forms, textareas, and controls
+      this.#disableChatInputs(chatEl);
+
+      // Watch for dynamic DOM re-renders inside ChatLog to keep inputs stripped
+      if (!chatEl._pf2eMobileInputObserver) {
+        const observer = new MutationObserver(() => {
+          this.#disableChatInputs(chatEl);
+        });
+        observer.observe(chatEl, { childList: true, subtree: true });
+        chatEl._pf2eMobileInputObserver = observer;
+      }
+
+      // Shield against ApplicationV2 action delegation:
+      // Any click inside the chat mount should NOT bubble up to ApplicationV2,
+      // allowing PF2e's native chat log click listener on #chat to execute completely undisturbed.
+      if (!mount._pf2eChatEventShield) {
+        mount.addEventListener("click", (event) => {
+          event.stopPropagation();
+        });
+        mount._pf2eChatEventShield = true;
+      }
+
+      // Capture damage button clicks to guarantee active token selection immediately
+      if (!chatEl._pf2eMobileDamageCapture) {
+        chatEl.addEventListener("click", (event) => {
+          const btn = event.target?.closest?.("button[data-action]");
+          if (btn) {
+            const action = btn.dataset.action;
+            if (["apply-damage", "half-damage", "double-damage", "triple-damage", "apply-healing", "shield-block"].includes(action)) {
+              this.#ensureTokenControlled();
+            }
+          }
+        }, { capture: true });
+        chatEl._pf2eMobileDamageCapture = true;
+      }
+    } catch (err) {
+      console.warn("pf2e-mobile-compact | Error docking chat element:", err);
     }
   }
 
@@ -705,18 +719,22 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Restores ui.chat.element back to its original parent upon sheet closure.
    */
   #restoreChatElement() {
-    const chatEl = ui.chat?.element?.[0] ?? document.getElementById("chat");
-    if (!chatEl) return;
-    if (chatEl._pf2eMobileInputObserver) {
-      chatEl._pf2eMobileInputObserver.disconnect();
-      chatEl._pf2eMobileInputObserver = null;
-    }
-    if (this.#chatOriginalParent && this.#chatOriginalParent.isConnected) {
-      if (this.#chatOriginalNextSibling && this.#chatOriginalParent.contains(this.#chatOriginalNextSibling)) {
-        this.#chatOriginalParent.insertBefore(chatEl, this.#chatOriginalNextSibling);
-      } else {
-        this.#chatOriginalParent.appendChild(chatEl);
+    try {
+      const chatEl = (ui.chat?.element instanceof HTMLElement ? ui.chat.element : ui.chat?.element?.[0]) ?? document.getElementById("chat");
+      if (!chatEl) return;
+      if (chatEl._pf2eMobileInputObserver) {
+        chatEl._pf2eMobileInputObserver.disconnect();
+        chatEl._pf2eMobileInputObserver = null;
       }
+      if (this.#chatOriginalParent && this.#chatOriginalParent.isConnected) {
+        if (this.#chatOriginalNextSibling && this.#chatOriginalParent.contains(this.#chatOriginalNextSibling)) {
+          this.#chatOriginalParent.insertBefore(chatEl, this.#chatOriginalNextSibling);
+        } else {
+          this.#chatOriginalParent.appendChild(chatEl);
+        }
+      }
+    } catch (err) {
+      console.warn("pf2e-mobile-compact | Error restoring chat element:", err);
     }
   }
 
@@ -787,6 +805,12 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     context.actor = actor;
     context.activeTab = this.#activeTab;
     context.actionSubTab = this.#actionSubTab;
+    try {
+      const savedMode = localStorage.getItem("pf2e-mobile-compact.rollMode");
+      if (savedMode === "physical" || savedMode === "digital") {
+        this.#rollMode = savedMode;
+      }
+    } catch {}
     context.rollMode = this.#rollMode;
     context.unreadChatCount = this.#unreadChatCount;
 
@@ -1369,46 +1393,32 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const saveStat = this.actor.saves?.[saveKey];
     const saveLabel = saveKey.charAt(0).toUpperCase() + saveKey.slice(1);
 
-    if (this.#rollMode === "physical") {
-      const mod = saveStat?.mod ?? saveStat?.check?.mod ?? saveStat?.totalModifier ?? this.actor.system.saves?.[saveKey]?.value ?? 0;
-      const manualD20 = await this.#promptPhysicalRoll(`${saveLabel} Save`, "d20 Check");
-      if (manualD20 !== null) {
-        const total = manualD20 + mod;
-        await ChatMessage.create({
-          speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-          content: `<div><strong>${saveLabel} Save</strong>: 🎲 [${manualD20}] + ${mod} = <strong>${total}</strong></div>`
-        });
-      }
-    } else {
+    await PhysicalDiceManager.withPhysicalMode({
+      title: `${saveLabel} Save`,
+      actor: this.actor
+    }, async () => {
       if (typeof saveStat?.roll === "function") {
         await saveStat.roll({ event });
       } else if (typeof this.actor.rollSave === "function") {
         await this.actor.rollSave(event, saveKey);
       }
-    }
+    }, this.rollMode === "physical");
   }
 
   /**
    * Action handler: roll Perception check.
    */
   static async #onRollPerception(event, target) {
-    if (this.#rollMode === "physical") {
-      const percMod = this.actor.perception?.mod ?? this.actor.perception?.check?.mod ?? this.actor.perception?.totalModifier ?? this.actor.system.perception?.mod ?? this.actor.system.attributes?.perception?.value ?? 0;
-      const manualD20 = await this.#promptPhysicalRoll("Perception Check", "d20 Check");
-      if (manualD20 !== null) {
-        const total = manualD20 + percMod;
-        await ChatMessage.create({
-          speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-          content: `<div><strong>Perception Check</strong>: 🎲 [${manualD20}] + ${percMod} = <strong>${total}</strong></div>`
-        });
-      }
-    } else {
+    await PhysicalDiceManager.withPhysicalMode({
+      title: "Perception Check",
+      actor: this.actor
+    }, async () => {
       if (typeof this.actor.perception?.roll === "function") {
         await this.actor.perception.roll({ event });
       } else if (typeof this.actor.rollPerception === "function") {
         await this.actor.rollPerception({ event });
       }
-    }
+    }, this.rollMode === "physical");
   }
 
   /**
@@ -1445,20 +1455,10 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       }
     }
 
-    if (this.#rollMode === "physical") {
-      const initMod = this.actor.initiative?.mod ?? this.actor.initiative?.totalModifier ?? this.actor.perception?.mod ?? 0;
-      const manualD20 = await this.#promptPhysicalRoll("Initiative Check", "d20 Check");
-      if (manualD20 !== null) {
-        const total = manualD20 + initMod;
-        if (combatant && typeof combat?.setInitiative === "function") {
-          await combat.setInitiative(combatant.id, total);
-        }
-        await ChatMessage.create({
-          speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-          content: `<div><strong>Initiative Check</strong>: 🎲 [${manualD20}] + ${initMod} = <strong>${total}</strong></div>`
-        });
-      }
-    } else {
+    await PhysicalDiceManager.withPhysicalMode({
+      title: "Initiative Check",
+      actor: this.actor
+    }, async () => {
       if (typeof this.actor.initiative?.roll === "function" && combat) {
         await this.actor.initiative.roll({ event, combatant: combatant || undefined });
       } else if (typeof this.actor.initiative?.statistic?.roll === "function") {
@@ -1469,7 +1469,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       } else if (typeof this.actor.perception?.roll === "function") {
         await this.actor.perception.roll({ event });
       }
-    }
+    }, this.rollMode === "physical");
   }
 
   /**
@@ -1487,6 +1487,14 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const newMode = target.value;
     if (newMode === "digital" || newMode === "physical") {
       this.#rollMode = newMode;
+      try {
+        localStorage.setItem("pf2e-mobile-compact.rollMode", newMode);
+      } catch {}
+      try {
+        if (game.settings?.settings?.has?.("pf2e-mobile-compact.rollMode")) {
+          await game.settings.set("pf2e-mobile-compact", "rollMode", newMode);
+        }
+      } catch {}
       this.render({ parts: ["header"] });
     }
   }
@@ -1656,30 +1664,25 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       await setTargetToken(targetToken.id);
     }
 
-    if (this.#rollMode === "physical") {
-      // Prompt for physical dice entry
-      const manualRoll = await this.#promptPhysicalRoll(strike.label, variant.label);
-      if (manualRoll !== null) {
-        await ChatMessage.create({
-          speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-          content: `<div><strong>${strike.label} (${variant.label})</strong>: 🎲 Physical Result: ${manualRoll}</div>`
-        });
-      }
-    } else {
-      // Digital roll via PF2e strike action passing target directly to CheckContext.
-      // Ensure origin token placeable / token doc and event/context are passed.
+    const rollOptions = {
+      event,
+      target: targetToken || undefined
+    };
+    const originToken = getOriginToken(this.actor);
+    if (originToken) {
+      rollOptions.token = originToken;
+    }
+
+    await PhysicalDiceManager.withPhysicalMode({
+      title: `${strike.label} (${variant.label})`,
+      subtitle: "Attack Roll",
+      target: targetToken,
+      actor: this.actor
+    }, async () => {
       if (typeof variant.roll === "function") {
-        const rollOptions = {
-          event,
-          target: targetToken || undefined
-        };
-        const originToken = getOriginToken(this.actor);
-        if (originToken) {
-          rollOptions.token = originToken;
-        }
         await variant.roll(rollOptions);
       }
-    }
+    }, this.rollMode === "physical");
   }
 
   /**
@@ -1701,11 +1704,19 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       await setTargetToken(targetToken.id);
     }
 
-    if (typeof strike.damage === "function") {
-      const rollOptions = { event, target: targetToken || undefined };
-      if (originToken) rollOptions.token = originToken;
-      await strike.damage(rollOptions);
-    }
+    const rollOptions = { event, target: targetToken || undefined };
+    if (originToken) rollOptions.token = originToken;
+
+    await PhysicalDiceManager.withPhysicalMode({
+      title: `${strike.label}`,
+      subtitle: "Damage Roll",
+      target: targetToken,
+      actor: this.actor
+    }, async () => {
+      if (typeof strike.damage === "function") {
+        await strike.damage(rollOptions);
+      }
+    }, this.rollMode === "physical");
   }
 
   /**
@@ -1727,11 +1738,19 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       await setTargetToken(targetToken.id);
     }
 
-    if (typeof strike.critical === "function") {
-      const rollOptions = { event, target: targetToken || undefined };
-      if (originToken) rollOptions.token = originToken;
-      await strike.critical(rollOptions);
-    }
+    const rollOptions = { event, target: targetToken || undefined };
+    if (originToken) rollOptions.token = originToken;
+
+    await PhysicalDiceManager.withPhysicalMode({
+      title: `${strike.label}`,
+      subtitle: "Critical Damage Roll",
+      target: targetToken,
+      actor: this.actor
+    }, async () => {
+      if (typeof strike.critical === "function") {
+        await strike.critical(rollOptions);
+      }
+    }, this.rollMode === "physical");
   }
 
   /**
@@ -1959,94 +1978,100 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     // Ensure origin token adapter is initialized
     getOriginToken(this.actor);
 
-    // 2. PF2e System Action Registry (e.g. Demoralize, Trip, Grapple, Disarm, Feint, Administer First Aid, etc.)
-    const systemAction = game.pf2e?.actions?.get?.(actionSlug) ?? game.pf2e?.actions?.[actionSlug];
-    if (systemAction) {
-      const useOptions = {
-        actors: [this.actor],
-        event
-      };
-      if (targetToken) {
-        useOptions.target = targetToken.object ?? targetToken;
-      }
+    await PhysicalDiceManager.withPhysicalMode({
+      title: label,
+      target: targetToken,
+      actor: this.actor
+    }, async () => {
+      // 2. PF2e System Action Registry (e.g. Demoralize, Trip, Grapple, Disarm, Feint, Administer First Aid, etc.)
+      const systemAction = game.pf2e?.actions?.get?.(actionSlug) ?? game.pf2e?.actions?.[actionSlug];
+      if (systemAction) {
+        const useOptions = {
+          actors: [this.actor],
+          event
+        };
+        if (targetToken) {
+          useOptions.target = targetToken.object ?? targetToken;
+        }
 
-      // Check if action offers multiple variants (e.g. Administer First Aid, Perform, Create a Diversion, etc.)
-      const variantsCollection = systemAction.variants;
-      if (variantsCollection && variantsCollection.size > 1) {
-        const variantList = Array.from(variantsCollection.values()).map(v => ({
-          slug: v.slug,
-          name: v.name || v.label || v.slug,
-          glyph: v.glyph,
-          cost: v.cost
-        }));
-        const chosenVariant = await this.#promptVariantSelection(label, variantList);
-        if (chosenVariant === false) return; // User cancelled prompt
-        if (chosenVariant) {
-          useOptions.variant = chosenVariant;
+        // Check if action offers multiple variants (e.g. Administer First Aid, Perform, Create a Diversion, etc.)
+        const variantsCollection = systemAction.variants;
+        if (variantsCollection && variantsCollection.size > 1) {
+          const variantList = Array.from(variantsCollection.values()).map(v => ({
+            slug: v.slug,
+            name: v.name || v.label || v.slug,
+            glyph: v.glyph,
+            cost: v.cost
+          }));
+          const chosenVariant = await this.#promptVariantSelection(label, variantList);
+          if (chosenVariant === false) return; // User cancelled prompt
+          if (chosenVariant) {
+            useOptions.variant = chosenVariant;
+          }
+        }
+
+        // Check if action offers multiple statistics (e.g. Recall Knowledge)
+        if (Array.isArray(systemAction.statistic) && systemAction.statistic.length > 1) {
+          const chosenStat = await this.#promptStatisticSelection(label, systemAction.statistic);
+          if (chosenStat === false) return; // User cancelled prompt
+          if (chosenStat) {
+            useOptions.statistic = chosenStat;
+          }
+        }
+
+        try {
+          if (typeof systemAction?.use === "function") {
+            await systemAction.use(useOptions);
+            return;
+          } else if (typeof systemAction === "function") {
+            await systemAction(useOptions);
+            return;
+          }
+        } catch (err) {
+          console.warn(`pf2e-mobile-compact | Error executing action check ${label}:`, err);
+          ui.notifications?.warn?.(`Action roll: ${err.message}`);
         }
       }
 
-      // Check if action offers multiple statistics (e.g. Recall Knowledge)
-      if (Array.isArray(systemAction.statistic) && systemAction.statistic.length > 1) {
-        const chosenStat = await this.#promptStatisticSelection(label, systemAction.statistic);
-        if (chosenStat === false) return; // User cancelled prompt
-        if (chosenStat) {
-          useOptions.statistic = chosenStat;
-        }
-      }
-
-      try {
-        if (typeof systemAction.use === "function") {
-          await systemAction.use(useOptions);
+      // 3. Action declaring a specific skill statistic (e.g. item.system.statistic)
+      const statistic = item?.system?.statistic;
+      if (statistic) {
+        const stat = this.actor.getStatistic?.(statistic) ?? this.actor.skills?.[statistic];
+        if (stat && typeof stat.roll === "function") {
+          await stat.roll({
+            event,
+            target: targetToken?.object ?? targetToken
+          });
           return;
-        } else if (typeof systemAction === "function") {
-          await systemAction(useOptions);
+        }
+      }
+
+      // 4. Attack Activity Feat: roll strike if action has the attack trait
+      const itemTraits = item?.system?.traits?.value ?? [];
+      const isAttack = itemTraits.includes("attack") || (Array.isArray(itemTraits) && itemTraits.some(t => (t?.value ?? t) === "attack"));
+      if (isAttack) {
+        const strikes = this.actor.system.actions ?? [];
+        let selectedStrike = strikes[0];
+        if (strikes.length > 1) {
+          const chosen = await this.#promptStrikeSelection(label, strikes);
+          if (chosen === false) return; // User cancelled prompt
+          if (chosen) selectedStrike = chosen;
+        }
+
+        if (selectedStrike && typeof selectedStrike.roll === "function") {
+          await selectedStrike.roll({
+            event,
+            target: targetToken?.object ?? targetToken
+          });
           return;
         }
-      } catch (err) {
-        console.warn(`pf2e-mobile-compact | Error executing action check ${label}:`, err);
-        ui.notifications?.warn?.(`Action roll: ${err.message}`);
-      }
-    }
-
-    // 3. Action declaring a specific skill statistic (e.g. item.system.statistic)
-    const statistic = item?.system?.statistic;
-    if (statistic) {
-      const stat = this.actor.getStatistic?.(statistic) ?? this.actor.skills?.[statistic];
-      if (stat && typeof stat.roll === "function") {
-        await stat.roll({
-          event,
-          target: targetToken?.object ?? targetToken
-        });
-        return;
-      }
-    }
-
-    // 4. Attack Activity Feat: roll strike if action has the attack trait
-    const itemTraits = item?.system?.traits?.value ?? [];
-    const isAttack = itemTraits.includes("attack") || (Array.isArray(itemTraits) && itemTraits.some(t => (t?.value ?? t) === "attack"));
-    if (isAttack) {
-      const strikes = this.actor.system.actions ?? [];
-      let selectedStrike = strikes[0];
-      if (strikes.length > 1) {
-        const chosen = await this.#promptStrikeSelection(label, strikes);
-        if (chosen === false) return; // User cancelled prompt
-        if (chosen) selectedStrike = chosen;
       }
 
-      if (selectedStrike && typeof selectedStrike.roll === "function") {
-        await selectedStrike.roll({
-          event,
-          target: targetToken?.object ?? targetToken
-        });
-        return;
+      // Fallback: send action card to chat
+      if (typeof item?.toMessage === "function") {
+        await item.toMessage(event);
       }
-    }
-
-    // Fallback: send action card to chat
-    if (typeof item?.toMessage === "function") {
-      await item.toMessage(event);
-    }
+    }, this.rollMode === "physical");
   }
 
   /**
@@ -2056,22 +2081,15 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const skillSlug = target.dataset.skill;
     if (!skillSlug) return;
 
-    if (this.#rollMode === "physical") {
-      const skill = this.actor.system.skills?.[skillSlug];
-      const mod = skill?.mod ?? 0;
-      const manualD20 = await this.#promptPhysicalRoll(skill?.label ?? skillSlug, "d20 Check");
-      if (manualD20 !== null) {
-        const total = manualD20 + mod;
-        await ChatMessage.create({
-          speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-          content: `<div><strong>${skill?.label ?? skillSlug} Check</strong>: 🎲 [${manualD20}] + ${mod} = <strong>${total}</strong></div>`
-        });
-      }
-    } else {
+    const skill = this.actor.system.skills?.[skillSlug];
+    await PhysicalDiceManager.withPhysicalMode({
+      title: `${skill?.label ?? skillSlug} Check`,
+      actor: this.actor
+    }, async () => {
       if (typeof this.actor.rollSkill === "function") {
         await this.actor.rollSkill(event, skillSlug);
       }
-    }
+    }, this.rollMode === "physical");
   }
 
   /**
@@ -2107,7 +2125,13 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
 
     if (typeof entry.cast === "function") {
-      await entry.cast(spell, { slot: rank > 0 ? rank : 0, level: rank, target: targetToken || undefined });
+      await PhysicalDiceManager.withPhysicalMode({
+        title: `Cast ${spell.name}`,
+        target: targetToken,
+        actor: this.actor
+      }, async () => {
+        await entry.cast(spell, { slot: rank > 0 ? rank : 0, level: rank, target: targetToken || undefined });
+      }, this.rollMode === "physical");
     }
   }
 
@@ -2197,45 +2221,6 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     });
   }
 
-  /**
-   * Simple touch-friendly modal for physical roll entry.
-   * @param {string} title
-   * @param {string} subtitle
-   * @returns {Promise<number|null>}
-   */
-  static async #promptPhysicalRoll(title, subtitle) {
-    return new Promise(resolve => {
-      const { DialogV2 } = foundry.applications.api;
-      if (DialogV2) {
-        const content = `
-          <div style="padding: 10px; text-align: center;">
-            <p><strong>${title}</strong> (${subtitle})</p>
-            <label for="physical-die-val" style="display:block; margin: 8px 0;">Enter Raw Die Result:</label>
-            <input type="number" id="physical-die-val" style="font-size: 1.5rem; text-align:center; min-height: 48px; width: 100px;" min="1" max="100" value="10" autofocus />
-          </div>
-        `;
-        DialogV2.prompt({
-          window: { title: "Physical Die Input" },
-          content,
-          ok: {
-            label: "Submit",
-            callback: (event, button, dialog) => {
-              const input = dialog.element.querySelector("#physical-die-val");
-              const val = parseInt(input?.value, 10);
-              resolve(isNaN(val) ? null : val);
-            }
-          },
-          rejectClose: false
-        }).then(res => {
-          if (res === null) resolve(null);
-        });
-      } else {
-        const res = window.prompt(`Enter raw physical die result for ${title} (${subtitle}):`, "10");
-        const val = parseInt(res, 10);
-        resolve(isNaN(val) ? null : val);
-      }
-    });
-  }
 
   /**
    * Prompts user to select an action variant when multiple variants exist.

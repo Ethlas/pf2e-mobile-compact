@@ -1,0 +1,107 @@
+<div class="physical-dice-dialog-content">
+  <!-- Header / Action Title & Target Info -->
+  <div class="physical-dialog-header">
+    <div class="physical-action-title">{{title}}</div>
+    {{#if subtitle}}
+    <div class="physical-action-subtitle">{{subtitle}}</div>
+    {{/if}}
+    {{#if target}}
+    <div class="physical-target-badge">
+      🎯 Target: <strong>{{target.name}}</strong>
+    </div>
+    {{/if}}
+  </div>
+
+  <form class="physical-roll-form" onsubmit="return false;">
+    {{#if isCheck}}
+    <!-- Check / d20 Roll Entry Section -->
+    <div class="physical-d20-section">
+      <div class="physical-prompt-msg">
+        Roll <strong>1d20</strong> physically on the table:
+      </div>
+
+      <div class="physical-input-wrapper">
+        <label for="physical-d20-input" class="visually-hidden">d20 Result</label>
+        <input 
+          type="number" 
+          id="physical-d20-input"
+          name="d20-val" 
+          class="physical-die-input touch-target" 
+          inputmode="numeric" 
+          pattern="[0-9]*" 
+          min="1" 
+          max="20" 
+          placeholder="1 - 20" 
+          required 
+          autofocus 
+        />
+      </div>
+
+      <div class="physical-modifier-info">
+        Modifier: <strong>{{#if (gte modifier 0)}}+{{/if}}{{modifier}}</strong> (will be added automatically)
+      </div>
+      <div class="physical-error-msg hidden"></div>
+    </div>
+
+    {{else}}
+    <!-- Damage Roll Entry Section (Multiple Dice Pools in Rows) -->
+    <div class="physical-damage-section">
+      <div class="physical-prompt-msg">
+        Roll physical dice for each damage type and enter the total below:
+      </div>
+
+      <div class="physical-damage-pools">
+        {{#each pools}}
+        <div class="physical-damage-row" data-pool-id="{{this.id}}">
+          <div class="damage-row-header">
+            <span class="damage-type-badge damage-{{this.type}}">
+              {{this.typeLabel}}{{#if this.persistent}} (Persistent){{/if}}
+            </span>
+            <span class="damage-dice-instruction">
+              🎲 Roll <strong>{{this.formula}}</strong>
+            </span>
+          </div>
+
+          <div class="damage-input-row">
+            <label for="pool-input-{{this.id}}">Dice Total:</label>
+            <input 
+              type="number" 
+              id="pool-input-{{this.id}}"
+              name="pool-{{this.id}}" 
+              class="physical-damage-input touch-target" 
+              inputmode="numeric" 
+              pattern="[0-9]*" 
+              data-pool-id="{{this.id}}" 
+              data-min="{{this.min}}" 
+              data-max="{{this.max}}" 
+              min="{{this.min}}" 
+              max="{{this.max}}" 
+              placeholder="{{this.min}} - {{this.max}}" 
+              required 
+              {{#if @first}}autofocus{{/if}} 
+            />
+          </div>
+
+          {{#if this.mod}}
+          <div class="damage-mod-note">
+            Modifier: {{#if (gte this.mod 0)}}+{{/if}}{{this.mod}} {{this.typeLabel}} will be added automatically
+          </div>
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+      <div class="physical-error-msg hidden"></div>
+    </div>
+    {{/if}}
+
+    <!-- Dialog Actions -->
+    <div class="physical-dialog-footer">
+      <button type="button" class="btn-cancel touch-target" data-action="cancel">
+        Cancel
+      </button>
+      <button type="button" class="btn-submit btn-primary touch-target" data-action="submit">
+        Submit Roll
+      </button>
+    </div>
+  </form>
+</div>

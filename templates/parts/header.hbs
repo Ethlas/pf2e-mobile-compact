@@ -3,7 +3,7 @@
   <div class="header-top-row">
     <div class="actor-identity-wrapper">
       {{#if hasMultipleCharacters}}
-      <select class="actor-switcher touch-target" data-action="switchActor" title="Switch Character" aria-label="Switch Character">
+      <select class="actor-switcher touch-target" data-change-action="switchActor" title="Switch Character" aria-label="Switch Character">
         {{#each ownedCharacters as |char|}}
         <option value="{{char.id}}" {{#if (eq char.id ../actor.id)}}selected{{/if}}>
           👤 {{char.name}}
@@ -82,7 +82,7 @@
 
   <!-- Target & Roll Mode Selector Row -->
   <div class="header-control-row">
-    <select name="target-select" class="touch-target" data-action="selectTarget" aria-label="Select Target">
+    <select name="target-select" class="touch-target target-select" data-change-action="selectTarget" aria-label="Select Target">
       <option value="">-- Target: None --</option>
       {{#each targets}}
       <option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>
@@ -91,7 +91,7 @@
       {{/each}}
     </select>
 
-    <select name="roll-mode" class="touch-target" data-action="toggleRollMode" aria-label="Roll Mode">
+    <select name="roll-mode" class="touch-target roll-mode-select" data-change-action="toggleRollMode" aria-label="Roll Mode">
       <option value="digital" {{#if (eq rollMode "digital")}}selected{{/if}}>🎲 Digital</option>
       <option value="physical" {{#if (eq rollMode "physical")}}selected{{/if}}>✋ Physical</option>
     </select>
