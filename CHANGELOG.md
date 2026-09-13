@@ -4,14 +4,10 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
-## [1.0.4] - 2026-09-13
+## [1.0.3] - 2026-09-13
 
 ### Fixed
 - **Sheet Render ReferenceError**: Fixed `ReferenceError: actionSlug is not defined` in `PF2eMobileSheet._prepareContext` when processing character action data for the attack and roll buttons.
-
----
-
-## [Unreleased] - 2026-09-12
 
 ### Milestone 3: Actions Page Refactoring & PF2e Targeting/Flanking Engine
 
