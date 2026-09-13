@@ -809,6 +809,11 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const savedMode = localStorage.getItem("pf2e-mobile-compact.rollMode");
       if (savedMode === "physical" || savedMode === "digital") {
         this.#rollMode = savedMode;
+      } else if (game.settings?.settings?.has?.("pf2e-mobile-compact.rollMode")) {
+        const settingMode = game.settings.get("pf2e-mobile-compact", "rollMode");
+        if (settingMode === "physical" || settingMode === "digital") {
+          this.#rollMode = settingMode;
+        }
       }
     } catch {}
     context.rollMode = this.#rollMode;

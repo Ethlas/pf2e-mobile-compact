@@ -4,6 +4,25 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.7] - 2026-09-13
+
+### Physical Damage Dice Roll Resolution & Native PF2e Evaluation Fix
+
+#### Fixed
+- **Physical Damage Dice Detection**: Fixed an issue where damage rolls in Physical mode rolled digital dice instead of prompting for manual table dice entry.
+  - Root cause: In PF2e (`DamageRoll` / `DamageInstance`), `terms` contains AST expressions (such as `Grouping` or `ArithmeticExpression`) rather than direct `Die` terms. The interceptor checked `inst.terms` for `t.faces`, which returned `false` and bypassed the prompt.
+  - Fix: Updated `extractDiceFromInstance` to inspect `inst.dice` (the official PF2e dice getter) and recursively traverse AST nodes, properly detecting all unevaluated dice.
+- **Pure Native PF2e Evaluation ("No Custom Calculations")**:
+  - Eliminated all manual calculation of damage totals (`roll._total`).
+  - The interceptor now populates physical dice outcomes directly into `term.results` and delegates entirely to Foundry and PF2e's native `evaluate()` with `allowInteractive: false`.
+  - PF2e natively evaluates all modifiers, critical hit rules (`double-damage` / `double-dice`), weaknesses, resistances, and canvas target AC/defenses, rendering the authentic PF2e damage card with native damage application buttons (`Apply Damage`, `Half Damage`, `Double Damage`, `Shield Block`, `Apply Healing`).
+- **Chat Card Damage Button Interception**:
+  - Enabled physical dice interception for damage buttons clicked directly on chat cards (not just from the mobile sheet) by checking active client settings and `localStorage.getItem("pf2e-mobile-compact.rollMode")`.
+- **Nested Instance Double-Evaluation Guard**:
+  - Added `_isPhysicalIntercepted` flag across rolls and instances to ensure child terms don't re-prompt during AST evaluation.
+
+---
+
 ## [1.0.6] - 2026-09-13
 
 ### Milestone 6: Hybrid Physical Dice Entry & Mobile Dropdown Selection Fix

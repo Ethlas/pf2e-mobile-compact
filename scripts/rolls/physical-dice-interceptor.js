@@ -56,14 +56,36 @@ export function partitionTotal(total, count, faces) {
 export class PhysicalDiceManager {
   /**
    * Active context for the currently executing physical roll.
-   * @type {{ title?: string, subtitle?: string, target?: object, actor?: object } | null}
+   * @type {{ title?: string, subtitle?: string, target?: object, actor?: object, isPhysical?: boolean } | null}
    */
   static activeContext = null;
 
   /**
+   * Checks whether Physical Dice mode is currently active for this client.
+   * Scans explicit context override, localStorage, and client game setting.
+   * @returns {boolean}
+   */
+  static isPhysicalModeActive() {
+    if (this.activeContext?.isPhysical === false) return false;
+    if (this.activeContext?.isPhysical === true) return true;
+
+    try {
+      if (typeof localStorage !== "undefined" && localStorage.getItem("pf2e-mobile-compact.rollMode") === "physical") {
+        return true;
+      }
+    } catch {}
+
+    try {
+      if (game.settings?.settings?.has?.("pf2e-mobile-compact.rollMode")) {
+        return game.settings.get("pf2e-mobile-compact", "rollMode") === "physical";
+      }
+    } catch {}
+
+    return false;
+  }
+
+  /**
    * Evaluates a callback within a physical roll interception context.
-   * When isPhysical is true, any roll.evaluate() called during fn() will be intercepted
-   * to prompt the user for manual physical dice results.
    *
    * @param {object} context Context details (title, subtitle, target, actor)
    * @param {Function} fn Async function that executes the roll
@@ -71,12 +93,9 @@ export class PhysicalDiceManager {
    * @returns {Promise<any>}
    */
   static async withPhysicalMode(context, fn, isPhysical = true) {
-    if (!isPhysical) {
-      return await fn();
-    }
-
+    const prevContext = this.activeContext;
     try {
-      this.activeContext = context ?? {};
+      this.activeContext = { ...context, isPhysical: !!isPhysical };
       return await fn();
     } catch (err) {
       if (err?.isPhysicalRollCancelled) {
@@ -85,8 +104,96 @@ export class PhysicalDiceManager {
       }
       throw err;
     } finally {
-      this.activeContext = null;
+      this.activeContext = prevContext;
     }
+  }
+
+  /**
+   * Recursively extracts all unevaluated DiceTerm objects within a DamageInstance or Roll.
+   * @param {object} inst
+   * @returns {Array<object>}
+   */
+  static extractDiceFromInstance(inst) {
+    if (!inst) return [];
+    if (Array.isArray(inst.dice) && inst.dice.length > 0) {
+      return inst.dice;
+    }
+
+    const results = [];
+    const findDice = (term) => {
+      if (!term) return;
+      if (typeof term.faces === "number" && typeof term.number === "number") {
+        results.push(term);
+        return;
+      }
+      if (Array.isArray(term.dice)) {
+        for (const d of term.dice) findDice(d);
+      }
+      if (Array.isArray(term.terms)) {
+        for (const t of term.terms) findDice(t);
+      }
+      if (term.term) findDice(term.term);
+      if (Array.isArray(term.operands)) {
+        for (const op of term.operands) findDice(op);
+      }
+      if (Array.isArray(term.rolls)) {
+        for (const r of term.rolls) {
+          if (r.terms) {
+            for (const t of r.terms) findDice(t);
+          }
+        }
+      }
+    };
+
+    if (Array.isArray(inst.terms)) {
+      for (const t of inst.terms) findDice(t);
+    }
+    return results;
+  }
+
+  /**
+   * Computes the flat modifier for a DamageInstance.
+   * Uses PF2e's native minimumValue difference when available, or walks numeric AST terms.
+   * @param {object} inst
+   * @param {Array<object>} [diceTerms=[]]
+   * @returns {number}
+   */
+  static extractNumericModifier(inst, diceTerms = []) {
+    if (!inst) return 0;
+
+    // In PF2e, inst.minimumValue is a getter on DamageInstance
+    if (typeof inst.minimumValue === "number" && Number.isFinite(inst.minimumValue)) {
+      const diceMin = diceTerms.reduce((sum, d) => sum + (d.number ?? 1), 0);
+      return inst.minimumValue - diceMin;
+    }
+
+    let mod = 0;
+    const findNumbers = (term, sign = 1) => {
+      if (!term) return;
+      if (typeof term.number === "number" && typeof term.faces !== "number") {
+        mod += term.number * sign;
+        return;
+      }
+      if (Array.isArray(term.terms)) {
+        let currentSign = 1;
+        for (const t of term.terms) {
+          if (t.operator === "-") currentSign = -1;
+          else if (t.operator === "+") currentSign = 1;
+          else findNumbers(t, currentSign);
+        }
+      }
+      if (term.operands) {
+        const op = term.operator;
+        findNumbers(term.operands[0], sign);
+        findNumbers(term.operands[1], op === "-" ? -sign : sign);
+      }
+      if (term.term) findNumbers(term.term, sign);
+    };
+
+    if (Array.isArray(inst.terms)) {
+      for (const t of inst.terms) findNumbers(t);
+    }
+    return mod;
   }
 
   /**
@@ -95,60 +202,90 @@ export class PhysicalDiceManager {
    * @returns {boolean}
    */
   static shouldIntercept(roll) {
-    if (!this.activeContext) return false;
-    if (roll._evaluated) return false;
+    if (!this.isPhysicalModeActive()) return false;
+    if (roll._evaluated || roll._isPhysicalIntercepted) return false;
 
     // Check for unevaluated dice in DamageRoll instances
     if (Array.isArray(roll.instances) && roll.instances.length > 0) {
       return roll.instances.some(inst => {
-        const terms = inst.terms ?? [];
-        return terms.some(t => !t._evaluated && (typeof t.faces === "number" || typeof t.number === "number"));
+        if (inst._evaluated || inst._isPhysicalIntercepted) return false;
+        const dice = this.extractDiceFromInstance(inst);
+        return dice.some(d => !d._evaluated && (!Array.isArray(d.results) || d.results.length === 0));
       });
     }
 
-    // Check for unevaluated dice in regular roll terms
+    // Check if roll has dice (DamageRoll.dice, CheckRoll.dice, Roll.dice)
+    const dice = roll.dice;
+    if (Array.isArray(dice) && dice.length > 0) {
+      return dice.some(d => !d._evaluated && (!Array.isArray(d.results) || d.results.length === 0));
+    }
+
+    // Check roll.terms directly
     if (Array.isArray(roll.terms)) {
-      return roll.terms.some(t => !t._evaluated && (typeof t.faces === "number" || typeof t.number === "number"));
+      return roll.terms.some(t => {
+        if (t._evaluated || t._isPhysicalIntercepted) return false;
+        if (typeof t.faces === "number" && typeof t.number === "number") {
+          return !t._evaluated && (!Array.isArray(t.results) || t.results.length === 0);
+        }
+        if (Array.isArray(t.dice)) {
+          return t.dice.some(d => !d._evaluated && (!Array.isArray(d.results) || d.results.length === 0));
+        }
+        return false;
+      });
     }
 
     return false;
   }
 
   /**
-   * Intercepts a roll evaluation, prompting the user for physical dice inputs
-   * and populating the terms with the entered results.
+   * Intercepts a roll evaluation, prompting the user for physical dice inputs,
+   * populating term results with the entered values, and delegating natively
+   * to Foundry / PF2e evaluate() without performing custom arithmetic.
    *
    * @param {Roll} roll
    * @param {object} [options={}]
+   * @param {Function} [origEvaluate=null] Original evaluate method
    * @returns {Promise<boolean>} True if handled, false if bypassed
    */
-  static async interceptRoll(roll, options = {}) {
+  static async interceptRoll(roll, options = {}, origEvaluate = null) {
+    const evaluateFn = origEvaluate ?? roll.constructor?.prototype?.evaluate ?? globalThis.Roll?.prototype?.evaluate;
     const context = this.activeContext ?? {};
-    const title = context.title ?? roll.options?.title ?? roll.options?.flavor ?? "Roll";
-    const subtitle = context.subtitle ?? roll.options?.action ?? "";
-    const target = context.target ?? null;
 
     // Target information extraction (name only to preserve GM secrecy)
-    const targetInfo = target ? {
-      name: target.name ?? "Target"
-    } : null;
+    let target = context.target ?? null;
+    if (!target) {
+      const userTarget = game.user?.targets?.first();
+      if (userTarget) {
+        target = { name: userTarget.name ?? userTarget.document?.name ?? "Target" };
+      }
+    }
+    const targetInfo = target ? { name: target.name ?? "Target" } : null;
+
+    const isDamage = (Array.isArray(roll.instances) && roll.instances.length > 0) || roll.constructor?.name === "DamageRoll";
+
+    const title = context.title 
+      ?? roll.options?.title 
+      ?? roll.options?.flavor 
+      ?? (isDamage ? "Damage Roll" : "Roll");
+    const subtitle = context.subtitle 
+      ?? roll.options?.action 
+      ?? (isDamage ? "Damage" : "");
 
     // -------------------------------------------------------------
-    // Scenario A: PF2e DamageRoll (with multiple damage instances)
+    // Scenario A: DamageRoll (with multiple damage instances or pools)
     // -------------------------------------------------------------
-    if (Array.isArray(roll.instances) && roll.instances.length > 0) {
+    if (isDamage) {
       const pools = [];
       let poolCounter = 0;
 
-      for (let i = 0; i < roll.instances.length; i++) {
-        const inst = roll.instances[i];
-        const terms = inst.terms ?? [];
+      const instances = Array.isArray(roll.instances) && roll.instances.length > 0 
+        ? roll.instances 
+        : [roll];
 
-        // Find dice terms
-        const diceTerms = terms.filter(t => typeof t.faces === "number" && typeof t.number === "number");
-        // Find numeric modifier terms
-        const modTerms = terms.filter(t => typeof t.number === "number" && typeof t.faces !== "number");
-        const instanceMod = modTerms.reduce((sum, t) => sum + (t.number ?? 0), 0);
+      for (let i = 0; i < instances.length; i++) {
+        const inst = instances[i];
+        const diceTerms = this.extractDiceFromInstance(inst);
+        const instanceMod = this.extractNumericModifier(inst, diceTerms);
 
         for (const term of diceTerms) {
           const count = term.number ?? 1;
@@ -177,40 +314,39 @@ export class PhysicalDiceManager {
       }
 
       // Prompt user for damage totals for each pool
-      const enteredTotals = await PhysicalDiceDialog.promptDamage({
-        title,
-        subtitle,
-        target: targetInfo,
-        pools
-      });
+      let enteredTotals;
+      try {
+        enteredTotals = await PhysicalDiceDialog.promptDamage({
+          title,
+          subtitle,
+          target: targetInfo,
+          pools
+        });
+      } catch {
+        enteredTotals = null;
+      }
 
       if (!enteredTotals) {
         throw new PhysicalRollCancelledError();
       }
 
-      // Assign manual outcomes to dice terms
+      // Assign manual outcomes to dice terms (keeping _evaluated=false so Foundry/PF2e evaluate() executes cleanly)
       for (const pool of pools) {
         const totalVal = enteredTotals[pool.id];
         const diceResults = partitionTotal(totalVal, pool.number, pool.faces);
         pool.term.results = diceResults.map(r => ({ result: r, active: true }));
-        pool.term._total = totalVal;
-        pool.term._evaluated = true;
+        pool.term._isPhysicalIntercepted = true;
       }
 
-      // Complete evaluation of all instances
-      for (const inst of roll.instances) {
-        if (typeof inst.evaluate === "function" && !inst._evaluated) {
-          await inst.evaluate(options);
-        }
+      // Mark parent and instances so child evaluations don't re-prompt
+      roll._isPhysicalIntercepted = true;
+      for (const inst of instances) {
+        inst._isPhysicalIntercepted = true;
       }
 
-      // Compute DamageRoll total
-      if (typeof roll._evaluateTotal === "function") {
-        roll._total = roll._evaluateTotal();
-      } else {
-        roll._total = roll.instances.reduce((sum, inst) => sum + (inst.total ?? 0), 0);
-      }
-      roll._evaluated = true;
+      // Delegate entirely to native PF2e / Foundry evaluate
+      // Passing allowInteractive: false ensures Foundry does not open internal roll resolver
+      await evaluateFn.call(roll, { ...options, allowInteractive: false });
       return true;
     }
 
@@ -218,49 +354,46 @@ export class PhysicalDiceManager {
     // Scenario B: CheckRoll or Standard Roll (e.g. 1d20 + mod)
     // -------------------------------------------------------------
     const terms = roll.terms ?? [];
-    const diceTerms = terms.filter(t => typeof t.faces === "number" && typeof t.number === "number");
+    let diceTerms = roll.dice ?? [];
+    if (!diceTerms.length) {
+      diceTerms = terms.filter(t => typeof t.faces === "number" && typeof t.number === "number");
+    }
 
     if (diceTerms.length === 0) {
       return false;
     }
 
-    // Check if this is a d20 check
+    // Find d20 or primary die term
     const d20Term = diceTerms.find(t => t.faces === 20) ?? diceTerms[0];
     const modTerms = terms.filter(t => typeof t.number === "number" && typeof t.faces !== "number");
     const totalMod = modTerms.reduce((sum, t) => sum + (t.number ?? 0), 0);
 
-    const d20Result = await PhysicalDiceDialog.promptCheck({
-      title,
-      subtitle,
-      target: targetInfo,
-      modifier: totalMod,
-      term: d20Term
-    });
+    let d20Result;
+    try {
+      d20Result = await PhysicalDiceDialog.promptCheck({
+        title,
+        subtitle,
+        target: targetInfo,
+        modifier: totalMod,
+        term: d20Term
+      });
+    } catch {
+      d20Result = null;
+    }
 
     if (typeof d20Result !== "number" || isNaN(d20Result)) {
       throw new PhysicalRollCancelledError();
     }
 
-    // Populate d20 term
+    // Populate d20 term results
     const count = d20Term.number ?? 1;
     const partitioned = partitionTotal(d20Result, count, d20Term.faces ?? 20);
     d20Term.results = partitioned.map(r => ({ result: r, active: true }));
-    d20Term._total = d20Result;
-    d20Term._evaluated = true;
+    d20Term._isPhysicalIntercepted = true;
+    roll._isPhysicalIntercepted = true;
 
-    // Evaluate remaining non-dice terms
-    for (const term of terms) {
-      if (!term._evaluated && typeof term.evaluate === "function") {
-        await term.evaluate(options);
-      }
-    }
-
-    if (typeof roll._evaluateTotal === "function") {
-      roll._total = roll._evaluateTotal();
-    } else {
-      roll._total = d20Result + totalMod;
-    }
-    roll._evaluated = true;
+    // Delegate entirely to native PF2e / Foundry evaluate
+    await evaluateFn.call(roll, { ...options, allowInteractive: false });
     return true;
   }
 }
@@ -281,17 +414,25 @@ export function setupPhysicalDiceInterceptor() {
   ].filter(Boolean));
 
   for (const RollCls of rollClasses) {
-    if (RollCls?.prototype && !RollCls.prototype._pf2eMobilePhysicalPatched) {
+    if (!RollCls?.prototype) continue;
+    const isRootRoll = RollCls === globalThis.Roll;
+    const hasOwnEvaluate = Object.prototype.hasOwnProperty.call(RollCls.prototype, "evaluate");
+
+    if ((isRootRoll || hasOwnEvaluate) && !RollCls.prototype.hasOwnProperty("_pf2eMobilePhysicalPatched")) {
       const origEvaluate = RollCls.prototype.evaluate;
       RollCls.prototype.evaluate = async function(options = {}) {
         if (this._evaluated) return this;
         if (PhysicalDiceManager.shouldIntercept(this)) {
-          const handled = await PhysicalDiceManager.interceptRoll(this, options);
+          const handled = await PhysicalDiceManager.interceptRoll(this, options, origEvaluate);
           if (handled) return this;
         }
         return origEvaluate.call(this, options);
       };
-      RollCls.prototype._pf2eMobilePhysicalPatched = true;
+      Object.defineProperty(RollCls.prototype, "_pf2eMobilePhysicalPatched", {
+        value: true,
+        writable: false,
+        configurable: true
+      });
     }
   }
 
