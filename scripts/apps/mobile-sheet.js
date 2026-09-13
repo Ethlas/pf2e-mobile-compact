@@ -809,13 +809,14 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
       const selfEffect = item.system?.selfEffect;
       const isEffectActive = !!(selfEffect?.uuid && actor.itemTypes?.effect?.some(e =>
-        e.flags?.core?.sourceId === selfEffect.uuid ||
         e.sourceId === selfEffect.uuid ||
-        e.system?.slug === selfEffect.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") ||
-        e.name.toLowerCase() === selfEffect.name.toLowerCase()
+        e.flags?.core?.sourceId === selfEffect.uuid ||
+        (selfEffect.name && e.name?.toLowerCase() === selfEffect.name.toLowerCase()) ||
+        (item.name && e.name?.toLowerCase() === `effect: ${item.name.toLowerCase()}`) ||
+        (item.slug && (e.system?.slug === item.slug || e.system?.slug === `effect-${item.slug}`))
       ));
 
-      const isUsable = !!selfEffect || !!item.system?.frequency || !!item.crafting || isSystemSkillAction;
+      const isUsable = !!selfEffect || !!item.system?.frequency || !!item.crafting;
 
       const actionData = {
         id: item.id,
@@ -1468,56 +1469,113 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   /**
    * Action handler: execute character action / feat ability.
+   * Handles both self-inflicted actions (selfEffect / self-buffs applied to actor, ignoring targets)
+   * and targeted / attack actions (affecting the targeted token).
    */
   static async #onUseAction(event, target) {
     const itemId = target.dataset.itemId;
     const item = this.actor.items.get(itemId);
     if (!item) return;
 
-    const actionSlug = item.slug ?? item.system?.slug;
+    const actionSlug = item.slug ?? item.system?.slug ?? "";
+    const rawTraits = item.system?.traits?.value ?? [];
+    const traits = Array.isArray(rawTraits) ? rawTraits.map(t => typeof t === "string" ? t.toLowerCase() : String(t?.value ?? "").toLowerCase()) : [];
 
-    // 1. If PF2e system action registry provides an action implementation (Action.use)
-    const systemAction = game.pf2e?.actions?.get?.(actionSlug) ?? game.pf2e?.actions?.[actionSlug];
-    if (systemAction) {
-      if (typeof systemAction.use === "function") {
-        await systemAction.use({ actors: [this.actor], event });
-        return;
-      } else if (typeof systemAction === "function") {
-        await systemAction({ actors: [this.actor], event });
-        return;
-      }
-    }
-
-    // 2. If the action has a selfEffect (e.g. Dueling Parry, Raise a Shield, Marshall Aura, etc.)
+    // 1. If the action has a selfEffect (e.g. Dueling Parry, Raise a Shield, Marshall Aura, etc.)
+    // These actions are explicitly on self and MUST NOT affect any targeted enemy token.
     const selfEffect = item.system?.selfEffect;
     if (selfEffect?.uuid) {
-      // Check if the effect is already active on the actor
+      const targetUuid = selfEffect.uuid;
+      const targetName = (selfEffect.name ?? "").trim().toLowerCase();
+      const itemName = (item.name ?? "").trim().toLowerCase();
+      const itemSlug = (actionSlug || "").toLowerCase();
+
+      // Check if the effect is already active on the actor (self)
       const existingEffect = this.actor.itemTypes?.effect?.find(e =>
-        e.flags?.core?.sourceId === selfEffect.uuid ||
-        e.sourceId === selfEffect.uuid ||
-        e.system?.slug === selfEffect.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") ||
-        e.name.toLowerCase() === selfEffect.name.toLowerCase()
+        e.sourceId === targetUuid ||
+        e.flags?.core?.sourceId === targetUuid ||
+        (targetName && e.name?.toLowerCase() === targetName) ||
+        (itemName && e.name?.toLowerCase() === `effect: ${itemName}`) ||
+        (itemSlug && (e.system?.slug === itemSlug || e.system?.slug === `effect-${itemSlug}`))
       );
 
       if (existingEffect) {
-        // Toggle effect off
+        // Toggle effect off on actor
         await existingEffect.delete();
         ui.notifications?.info?.(`Deactivated ${existingEffect.name} for ${this.actor.name}.`);
       } else {
-        // Fetch and apply the effect to the actor
+        // Fetch and apply the effect to the actor (self only)
         const effectDoc = await fromUuid(selfEffect.uuid);
         if (effectDoc) {
           const effectSource = effectDoc.toObject();
-          effectSource._id = foundry.utils.randomID();
+          delete effectSource._id;
+          effectSource._id = null;
+
           const tokenDoc = this.token ?? this.actor.getActiveTokens?.(true, true)?.[0] ?? this.actor.getActiveTokens?.()?.[0]?.document ?? null;
           foundry.utils.setProperty(effectSource, "system.context.origin", {
             actor: this.actor.uuid,
             item: item.uuid,
+            token: tokenDoc?.uuid ?? null,
+            spellcasting: null,
+            rollOptions: typeof item.getOriginData === "function" ? item.getOriginData().rollOptions : []
+          });
+          foundry.utils.setProperty(effectSource, "system.context.target", {
+            actor: this.actor.uuid,
             token: tokenDoc?.uuid ?? null
           });
+
           await this.actor.createEmbeddedDocuments("Item", [effectSource]);
           ui.notifications?.info?.(`Activated ${effectDoc.name} on ${this.actor.name}.`);
         }
+      }
+
+      // Deduct frequency if applicable
+      if (item.system?.frequency && item.system.frequency.value > 0) {
+        const newVal = Math.max(0, (item.system.frequency.value ?? 0) - 1);
+        await item.update({ "system.frequency.value": newVal });
+      }
+
+      // Send action card to chat
+      if (typeof item.toMessage === "function") {
+        await item.toMessage(event);
+      }
+
+      this.render({ parts: ["sheet"] });
+      return;
+    }
+
+    // 2. If PF2e system action registry provides an action implementation (Action.use)
+    const systemAction = game.pf2e?.actions?.get?.(actionSlug) ?? game.pf2e?.actions?.[actionSlug];
+    if (systemAction) {
+      const SELF_ACTION_SLUGS = new Set([
+        "raise-a-shield", "take-cover", "end-cover", "point-out", "delay",
+        "drop-prone", "stand", "step", "stride", "burrow", "climb", "fly",
+        "leap", "swim", "escape", "hide", "sneak"
+      ]);
+
+      const isSelfAction = SELF_ACTION_SLUGS.has(actionSlug);
+
+      let targetToken = null;
+      if (!isSelfAction) {
+        // Targeted action: resolve the selected target or prompt for one
+        targetToken = await this.#resolveTargetForAction(item.name);
+        if (targetToken === false) return; // User cancelled prompt
+      }
+
+      const useOptions = {
+        actors: [this.actor],
+        event
+      };
+      if (targetToken) {
+        useOptions.target = targetToken.object ?? targetToken;
+      }
+
+      if (typeof systemAction.use === "function") {
+        await systemAction.use(useOptions);
+        return;
+      } else if (typeof systemAction === "function") {
+        await systemAction(useOptions);
+        return;
       }
     }
 
@@ -1531,6 +1589,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     if (typeof item.toMessage === "function") {
       await item.toMessage(event);
     }
+
+    this.render({ parts: ["sheet"] });
   }
 
   /**

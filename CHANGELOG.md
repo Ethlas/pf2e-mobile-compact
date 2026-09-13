@@ -21,10 +21,11 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
   - Added action cost glyphs (`1`, `2`, `3`, `⬢` Reaction, `◇` Free Action), trait badges, and frequency trackers (`Uses: X / Y`).
   - Added direct **Send to Chat** (`data-action="itemToChat"`) and **Use Action** (`data-action="useAction"`) buttons on every character action.
 - **Feat Action Execution & Self-Effect Toggling**:
-  - Clicking "Use" on actions with an embedded `selfEffect` (e.g. *Dueling Parry*, *Raise a Shield*, Marshall stances) directly applies the effect document to the actor with origin context (`actor`, `item`, `token`), applying stat modifications (e.g. AC +2) instantly.
-  - Tapping "Active" on an active effect toggles it off and deletes the effect document from the actor.
-  - Button dynamically updates to a distinct green **Active** badge (`.btn-action-use.active`) when the effect is currently active on the actor.
-  - System action execution via `game.pf2e.actions.get(slug).use({ actors: [actor], event })` for actions registered in PF2e's action system.
+  - Tapping "Use" on actions with an embedded `selfEffect` (e.g. *Dueling Parry*, *Raise a Shield*, Marshall stances) directly applies the effect to the character (self only) with origin and target set to the user actor, ensuring that any currently targeted enemy token is never affected by self-inflicted actions.
+  - Tapping "Active" cleanly toggles the effect off and removes it from the character.
+  - Button dynamically updates to a distinct green **Active** badge (`.btn-action-use.active`) when the effect is currently active on the actor, and re-renders the sheet immediately.
+  - Removed unwanted "Use" buttons from generic skill actions (Administer First Aid, Balance, Demoralize, Trip, Grapple, etc.), showing only the chat icon like the standard PF2e character sheet unless the action has a self-effect, frequency, or crafting.
+  - Actions that target an enemy (e.g. offensive checks or attack actions) resolve and apply against the selected target token.
 - **Strike Enhancements**:
   - Prominent **MAP Attacks at the Top**: Moved the 3 Multiple Attack Penalty variant buttons (`+X`, `+Y`, `+Z`) into a dedicated primary attack row at the top of each strike card.
   - Added **Weapon Artwork / Image Thumbnail**: Displays weapon icon (`strike.img`) alongside strike name and traits.
