@@ -407,7 +407,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       castSpell: PF2eMobileSheet.#onCastSpell,
       switchActor: PF2eMobileSheet.#onSwitchActor,
       toggleFullscreen: PF2eMobileSheet.#onToggleFullscreen,
-      switchActionSubTab: PF2eMobileSheet.#onSwitchActionSubTab
+      switchActionSubTab: PF2eMobileSheet.#onSwitchActionSubTab,
+      toggleActionSummary: PF2eMobileSheet.#onToggleActionSummary
     }
   };
 
@@ -429,6 +430,9 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   /** @type {"digital" | "physical"} */
   #rollMode = "digital";
+
+  /** @type {Set<string>} */
+  #expandedActionIds = new Set();
 
   /** @type {Array<{name: string, id: number}>} */
   #sceneHookIds = [];
@@ -823,6 +827,24 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const isSkillStatistic = !!systemAction?.statistic || !!item.system?.statistic || KNOWN_SKILL_ACTION_SLUGS.has(itemSlug);
       const hasRoll = !selfEffect && (!!systemAction || isAttack || isSkillStatistic);
 
+      let rawDescription = item.system?.description?.value ?? "";
+      if (!rawDescription && systemAction?.description) {
+        rawDescription = game.i18n.localize(systemAction.description);
+      }
+      const TextEditorClass = foundry.applications?.ux?.TextEditor ?? TextEditor;
+      let enrichedDescription = rawDescription;
+      if (rawDescription && typeof TextEditorClass?.enrichHTML === "function") {
+        try {
+          enrichedDescription = await TextEditorClass.enrichHTML(rawDescription, {
+            secrets: item.isOwner,
+            rollData: actor.getRollData(),
+            async: true
+          });
+        } catch {
+          enrichedDescription = rawDescription;
+        }
+      }
+
       const actionData = {
         id: item.id,
         name: item.name,
@@ -841,7 +863,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           max: item.system.frequency.max ?? 0,
           per: item.system.frequency.per ?? ""
         } : null,
-        description: item.system?.description?.value ?? ""
+        description: enrichedDescription || rawDescription,
+        isExpanded: this.#expandedActionIds.has(item.id) || this.#expandedActionIds.has(actionSlug)
       };
 
       if (isDowntime) {
@@ -1582,12 +1605,42 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         useOptions.target = targetToken.object ?? targetToken;
       }
 
-      if (typeof systemAction.use === "function") {
-        await systemAction.use(useOptions);
-        return;
-      } else if (typeof systemAction === "function") {
-        await systemAction(useOptions);
-        return;
+      // Check if action offers multiple variants (e.g. Administer First Aid, Perform, Create a Diversion, etc.)
+      const variantsCollection = systemAction.variants;
+      if (variantsCollection && variantsCollection.size > 1) {
+        const variantList = Array.from(variantsCollection.values()).map(v => ({
+          slug: v.slug,
+          name: v.name || v.label || v.slug,
+          glyph: v.glyph,
+          cost: v.cost
+        }));
+        const chosenVariant = await this.#promptVariantSelection(item.name, variantList);
+        if (chosenVariant === false) return; // User cancelled prompt
+        if (chosenVariant) {
+          useOptions.variant = chosenVariant;
+        }
+      }
+
+      // Check if action offers multiple statistics (e.g. Recall Knowledge)
+      if (Array.isArray(systemAction.statistic) && systemAction.statistic.length > 1) {
+        const chosenStat = await this.#promptStatisticSelection(item.name, systemAction.statistic);
+        if (chosenStat === false) return; // User cancelled prompt
+        if (chosenStat) {
+          useOptions.statistic = chosenStat;
+        }
+      }
+
+      try {
+        if (typeof systemAction.use === "function") {
+          await systemAction.use(useOptions);
+          return;
+        } else if (typeof systemAction === "function") {
+          await systemAction(useOptions);
+          return;
+        }
+      } catch (err) {
+        console.warn(`pf2e-mobile-compact | Error executing action ${item.name}:`, err);
+        ui.notifications?.warn?.(`Action execution: ${err.message}`);
       }
     }
 
@@ -1639,12 +1692,42 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         useOptions.target = targetToken.object ?? targetToken;
       }
 
-      if (typeof systemAction.use === "function") {
-        await systemAction.use(useOptions);
-        return;
-      } else if (typeof systemAction === "function") {
-        await systemAction(useOptions);
-        return;
+      // Check if action offers multiple variants (e.g. Administer First Aid, Perform, Create a Diversion, etc.)
+      const variantsCollection = systemAction.variants;
+      if (variantsCollection && variantsCollection.size > 1) {
+        const variantList = Array.from(variantsCollection.values()).map(v => ({
+          slug: v.slug,
+          name: v.name || v.label || v.slug,
+          glyph: v.glyph,
+          cost: v.cost
+        }));
+        const chosenVariant = await this.#promptVariantSelection(label, variantList);
+        if (chosenVariant === false) return; // User cancelled prompt
+        if (chosenVariant) {
+          useOptions.variant = chosenVariant;
+        }
+      }
+
+      // Check if action offers multiple statistics (e.g. Recall Knowledge)
+      if (Array.isArray(systemAction.statistic) && systemAction.statistic.length > 1) {
+        const chosenStat = await this.#promptStatisticSelection(label, systemAction.statistic);
+        if (chosenStat === false) return; // User cancelled prompt
+        if (chosenStat) {
+          useOptions.statistic = chosenStat;
+        }
+      }
+
+      try {
+        if (typeof systemAction.use === "function") {
+          await systemAction.use(useOptions);
+          return;
+        } else if (typeof systemAction === "function") {
+          await systemAction(useOptions);
+          return;
+        }
+      } catch (err) {
+        console.warn(`pf2e-mobile-compact | Error executing action check ${label}:`, err);
+        ui.notifications?.warn?.(`Action roll: ${err.message}`);
       }
     }
 
@@ -1662,10 +1745,19 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
 
     // 4. Attack Activity Feat: roll strike if action has the attack trait
-    if (item?.system?.traits?.value?.includes("attack")) {
-      const primaryStrike = this.actor.system.actions?.[0];
-      if (primaryStrike && typeof primaryStrike.roll === "function") {
-        await primaryStrike.roll({
+    const itemTraits = item?.system?.traits?.value ?? [];
+    const isAttack = itemTraits.includes("attack") || (Array.isArray(itemTraits) && itemTraits.some(t => (t?.value ?? t) === "attack"));
+    if (isAttack) {
+      const strikes = this.actor.system.actions ?? [];
+      let selectedStrike = strikes[0];
+      if (strikes.length > 1) {
+        const chosen = await this.#promptStrikeSelection(label, strikes);
+        if (chosen === false) return; // User cancelled prompt
+        if (chosen) selectedStrike = chosen;
+      }
+
+      if (selectedStrike && typeof selectedStrike.roll === "function") {
+        await selectedStrike.roll({
           event,
           target: targetToken?.object ?? targetToken
         });
@@ -1865,5 +1957,190 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         resolve(isNaN(val) ? null : val);
       }
     });
+  }
+
+  /**
+   * Prompts user to select an action variant when multiple variants exist.
+   * @param {string} actionLabel
+   * @param {Array<{slug: string, name: string, glyph?: string, cost?: number}>} variants
+   * @returns {Promise<string|false>} Selected variant slug, or false if cancelled.
+   */
+  async #promptVariantSelection(actionLabel, variants) {
+    if (!variants || variants.length === 0) return null;
+    if (variants.length === 1) return variants[0].slug;
+
+    return new Promise(resolve => {
+      const { DialogV2 } = foundry.applications.api;
+      const optionsHtml = variants
+        .map((v, i) => {
+          const name = game.i18n.localize(v.name || v.label || v.slug);
+          const glyph = v.glyph ? ` [${v.glyph}]` : "";
+          return `<option value="${v.slug}" ${i === 0 ? "selected" : ""}>${name}${glyph}</option>`;
+        })
+        .join("");
+
+      const content = `
+        <div style="padding: 10px; text-align: center;">
+          <p style="margin-bottom: 10px; font-size: 1.05rem;"><strong>${actionLabel}</strong></p>
+          <label for="action-variant-select" style="display:block; margin-bottom: 6px; font-size: 0.9rem; color: #bbb;">Select Action Variant:</label>
+          <select id="action-variant-select" style="width: 100%; min-height: 48px; font-size: 1rem; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444;">
+            ${optionsHtml}
+          </select>
+        </div>
+      `;
+
+      if (DialogV2) {
+        DialogV2.prompt({
+          window: { title: `${actionLabel} - Select Variant` },
+          content,
+          ok: {
+            label: "Proceed",
+            callback: (event, button, dialog) => {
+              const select = dialog.element.querySelector("#action-variant-select");
+              resolve(select?.value ?? variants[0].slug);
+            }
+          },
+          rejectClose: false
+        }).then(res => {
+          if (res === null) resolve(false);
+        });
+      } else {
+        resolve(variants[0].slug);
+      }
+    });
+  }
+
+  /**
+   * Prompts user to select a statistic/skill when an action supports multiple statistics (e.g. Recall Knowledge).
+   * @param {string} actionLabel
+   * @param {Array<string>} statistics
+   * @returns {Promise<string|false>} Selected statistic slug, or false if cancelled.
+   */
+  async #promptStatisticSelection(actionLabel, statistics) {
+    if (!statistics || statistics.length === 0) return null;
+    if (statistics.length === 1) return statistics[0];
+
+    return new Promise(resolve => {
+      const { DialogV2 } = foundry.applications.api;
+      const optionsHtml = statistics
+        .map((statKey, i) => {
+          const stat = this.actor.getStatistic?.(statKey) ?? this.actor.skills?.[statKey];
+          const mod = stat?.totalModifier ?? stat?.mod ?? stat?.check?.mod;
+          const sign = typeof mod === "number" ? (mod >= 0 ? `+${mod}` : `${mod}`) : "";
+          const label = game.i18n.localize(CONFIG.PF2E?.skills?.[statKey] ?? stat?.label ?? statKey);
+          return `<option value="${statKey}" ${i === 0 ? "selected" : ""}>${label} (${sign})</option>`;
+        })
+        .join("");
+
+      const content = `
+        <div style="padding: 10px; text-align: center;">
+          <p style="margin-bottom: 10px; font-size: 1.05rem;"><strong>${actionLabel}</strong></p>
+          <label for="action-stat-select" style="display:block; margin-bottom: 6px; font-size: 0.9rem; color: #bbb;">Select Skill to Check:</label>
+          <select id="action-stat-select" style="width: 100%; min-height: 48px; font-size: 1rem; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444;">
+            ${optionsHtml}
+          </select>
+        </div>
+      `;
+
+      if (DialogV2) {
+        DialogV2.prompt({
+          window: { title: `${actionLabel} - Select Skill` },
+          content,
+          ok: {
+            label: "Roll Check",
+            callback: (event, button, dialog) => {
+              const select = dialog.element.querySelector("#action-stat-select");
+              resolve(select?.value ?? statistics[0]);
+            }
+          },
+          rejectClose: false
+        }).then(res => {
+          if (res === null) resolve(false);
+        });
+      } else {
+        resolve(statistics[0]);
+      }
+    });
+  }
+
+  /**
+   * Prompts user to select a weapon strike when executing an attack feat (e.g. Combat Grab, Power Attack).
+   * @param {string} actionLabel
+   * @param {Array<object>} strikes
+   * @returns {Promise<object|false>} Selected strike object, or false if cancelled.
+   */
+  async #promptStrikeSelection(actionLabel, strikes) {
+    if (!strikes || strikes.length === 0) return null;
+    if (strikes.length === 1) return strikes[0];
+
+    return new Promise(resolve => {
+      const { DialogV2 } = foundry.applications.api;
+      const optionsHtml = strikes
+        .map((s, i) => {
+          const mod = s.totalModifier ?? s.variants?.[0]?.totalModifier;
+          const sign = typeof mod === "number" ? (mod >= 0 ? `+${mod}` : `${mod}`) : "";
+          return `<option value="${i}" ${i === 0 ? "selected" : ""}>${s.label} (${sign})</option>`;
+        })
+        .join("");
+
+      const content = `
+        <div style="padding: 10px; text-align: center;">
+          <p style="margin-bottom: 10px; font-size: 1.05rem;"><strong>${actionLabel}</strong></p>
+          <label for="action-strike-select" style="display:block; margin-bottom: 6px; font-size: 0.9rem; color: #bbb;">Select Weapon Strike to Attack With:</label>
+          <select id="action-strike-select" style="width: 100%; min-height: 48px; font-size: 1rem; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444;">
+            ${optionsHtml}
+          </select>
+        </div>
+      `;
+
+      if (DialogV2) {
+        DialogV2.prompt({
+          window: { title: `${actionLabel} - Select Strike` },
+          content,
+          ok: {
+            label: "Roll Attack",
+            callback: (event, button, dialog) => {
+              const select = dialog.element.querySelector("#action-strike-select");
+              const idx = parseInt(select?.value ?? "0", 10);
+              resolve(strikes[idx] ?? strikes[0]);
+            }
+          },
+          rejectClose: false
+        }).then(res => {
+          if (res === null) resolve(false);
+        });
+      } else {
+        resolve(strikes[0]);
+      }
+    });
+  }
+
+  /**
+   * Action handler: toggle expandable description summary on an action card.
+   */
+  static #onToggleActionSummary(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+    const card = target.closest(".action-card");
+    if (!card) return;
+    const itemId = card.dataset.itemId;
+    const summary = card.querySelector(".action-summary");
+    const icon = card.querySelector(".action-expand-icon");
+    if (!summary) return;
+
+    const isExpanded = summary.classList.contains("expanded");
+    if (isExpanded) {
+      summary.classList.remove("expanded");
+      summary.classList.add("collapsed");
+      card.classList.remove("expanded");
+      icon?.classList?.remove("expanded");
+      if (itemId) this.#expandedActionIds.delete(itemId);
+    } else {
+      summary.classList.remove("collapsed");
+      summary.classList.add("expanded");
+      card.classList.add("expanded");
+      icon?.classList?.add("expanded");
+      if (itemId) this.#expandedActionIds.add(itemId);
+    }
   }
 }

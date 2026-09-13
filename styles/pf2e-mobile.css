@@ -837,6 +837,28 @@ body.pf2e-mobile-active .pf2e-mobile-sheet .window-content {
   gap: 8px;
   flex: 1;
   min-width: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.action-expand-icon {
+  font-size: 0.75rem;
+  color: #888;
+  margin-left: 2px;
+  transition: transform 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.character-action-card.expanded .action-expand-icon,
+.action-expand-icon.expanded {
+  transform: rotate(180deg);
+  color: #ffb74d;
+}
+
+.character-action-card.expanded {
+  border-color: #555;
+  background: #232323;
 }
 
 .action-cost-glyph {
@@ -944,6 +966,46 @@ body.pf2e-mobile-active .pf2e-mobile-sheet .window-content {
   font-size: 0.75rem;
   color: #81d4fa;
   margin-top: 4px;
+}
+
+.action-summary {
+  display: none;
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border-left: 3px solid #ffb74d;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #ddd;
+  overflow-wrap: break-word;
+}
+
+.action-summary.expanded {
+  display: block;
+}
+
+.action-description-content p {
+  margin: 0 0 6px 0;
+}
+
+.action-description-content p:last-child {
+  margin-bottom: 0;
+}
+
+.action-description-content hr {
+  border: 0;
+  border-top: 1px solid #444;
+  margin: 6px 0;
+}
+
+.action-description-content a.content-link,
+.action-description-content a.inline-roll {
+  color: #64b5f6;
+  background: rgba(100, 181, 246, 0.15);
+  padding: 1px 4px;
+  border-radius: 3px;
+  text-decoration: none;
 }
 
 /* Skills Grid */
