@@ -110,21 +110,33 @@ export function optimizeCanvasForMobile() {
  * Detects whether a notification or dialog message pertains to Foundry's
  * low resolution or minimum window dimensions warnings.
  * @param {string|object} msg
+ * @param {object} [options={}]
  * @returns {boolean}
  */
-export function isResolutionMessage(msg) {
+export function isResolutionMessage(msg, options = {}) {
+  if (options?.format?.reqWidth || options?.format?.reqHeight) return true;
   if (!msg) return false;
   const text = typeof msg === "string" ? msg : (msg.message || msg.toString?.() || "");
   const lower = text.toLowerCase();
 
-  const hasDimension = lower.includes("resolution") || lower.includes("dimension") || lower.includes("lowresolution");
-  const hasConstraint = lower.includes("minimum") || lower.includes("recommended") || lower.includes("required") || lower.includes("below") || lower.includes("smaller");
-
-  return hasDimension && hasConstraint;
+  return (
+    lower.includes("error.resolution") ||
+    lower.includes("resolution.screen") ||
+    lower.includes("resolution.scale") ||
+    lower.includes("resolution.window") ||
+    lower.includes("requires a screen resolution") ||
+    lower.includes("requires usable window dimensions") ||
+    lower.includes("requires a usable window dimensions") ||
+    lower.includes("resolution of your browser window is") ||
+    lower.includes("resolution of your browser") ||
+    lower.includes("display resolution") ||
+    lower.includes("resolution of 1366px") ||
+    (lower.includes("resolution") && (lower.includes("screen") || lower.includes("minimum") || lower.includes("recommended") || lower.includes("required") || lower.includes("below") || lower.includes("greater") || lower.includes("display")))
+  );
 }
 
 /**
- * Sweeps any low-resolution warning notification elements out of the DOM.
+ * Sweeps any low-resolution warning notification elements out of the DOM and queues.
  */
 export function sweepResolutionNotifications() {
   if (!shouldActivateMobile()) return;
@@ -135,12 +147,25 @@ export function sweepResolutionNotifications() {
         el.remove();
       }
     }
+
+    if (ui?.notifications) {
+      const active = ui.notifications.active ?? {};
+      for (const [id, notif] of Object.entries(active)) {
+        if (isResolutionMessage(notif.message)) {
+          ui.notifications.remove(id);
+        }
+      }
+      if (Array.isArray(ui.notifications.queue)) {
+        ui.notifications.queue = ui.notifications.queue.filter(n => !isResolutionMessage(n.message));
+      }
+    }
   } catch {}
 }
 
 /**
  * Suppresses Foundry's low resolution / minimum window dimensions warnings
- * across Game methods, Notifications prototype, and active ui.notifications.
+ * across Game methods, ClientIssues, Notifications prototype, active ui.notifications,
+ * and dev console output.
  */
 export function suppressResolutionWarnings() {
   // 1. Monkey-patch Game.prototype resolution methods
@@ -156,7 +181,31 @@ export function suppressResolutionWarnings() {
     }
   }
 
-  // 2. Monkey-patch game instance methods if present
+  // 2. Monkey-patch game.issues (ClientIssues in Foundry v14+)
+  if (game?.issues) {
+    const issues = game.issues;
+    const origDetect = issues._detectUsabilityIssues;
+    if (typeof origDetect === "function") {
+      issues._detectUsabilityIssues = function () {
+        if (shouldActivateMobile()) return;
+        return origDetect.call(this);
+      };
+    }
+
+    const proto = issues.constructor?.prototype;
+    if (proto && !proto._mobileResolutionPatched) {
+      const origProtoDetect = proto._detectUsabilityIssues;
+      if (typeof origProtoDetect === "function") {
+        proto._detectUsabilityIssues = function () {
+          if (shouldActivateMobile()) return;
+          return origProtoDetect.call(this);
+        };
+      }
+      proto._mobileResolutionPatched = true;
+    }
+  }
+
+  // 3. Monkey-patch game instance methods if present
   if (typeof game !== "undefined") {
     for (const key of Object.keys(game)) {
       if (/resolution/i.test(key) && typeof game[key] === "function") {
@@ -169,14 +218,13 @@ export function suppressResolutionWarnings() {
     }
   }
 
-  // 3. Monkey-patch Notifications prototype
+  // 4. Monkey-patch Notifications prototype
   const NotificationsClass = foundry?.applications?.ui?.Notifications ?? (typeof Notifications !== "undefined" ? Notifications : null);
   if (NotificationsClass?.prototype && !NotificationsClass.prototype._mobileResolutionPatched) {
     const origNotify = NotificationsClass.prototype.notify;
     if (typeof origNotify === "function") {
       NotificationsClass.prototype.notify = function (message, type = "info", options = {}) {
-        if (shouldActivateMobile() && isResolutionMessage(message)) {
-          console.log("PF2e Mobile Compact | Suppressed low-resolution notification.");
+        if (shouldActivateMobile() && isResolutionMessage(message, options)) {
           return null;
         }
         return origNotify.call(this, message, type, options);
@@ -185,23 +233,30 @@ export function suppressResolutionWarnings() {
     const origWarn = NotificationsClass.prototype.warn;
     if (typeof origWarn === "function") {
       NotificationsClass.prototype.warn = function (message, options = {}) {
-        if (shouldActivateMobile() && isResolutionMessage(message)) {
-          console.log("PF2e Mobile Compact | Suppressed low-resolution notification.");
+        if (shouldActivateMobile() && isResolutionMessage(message, options)) {
           return null;
         }
         return origWarn.call(this, message, options);
       };
     }
+    const origError = NotificationsClass.prototype.error;
+    if (typeof origError === "function") {
+      NotificationsClass.prototype.error = function (message, options = {}) {
+        if (shouldActivateMobile() && isResolutionMessage(message, options)) {
+          return null;
+        }
+        return origError.call(this, message, options);
+      };
+    }
     NotificationsClass.prototype._mobileResolutionPatched = true;
   }
 
-  // 4. Monkey-patch active ui.notifications instance
+  // 5. Monkey-patch active ui.notifications instance
   if (ui?.notifications && !ui.notifications._mobileResolutionPatched) {
     const origInstNotify = ui.notifications.notify;
     if (typeof origInstNotify === "function") {
       ui.notifications.notify = function (message, type = "info", options = {}) {
-        if (shouldActivateMobile() && isResolutionMessage(message)) {
-          console.log("PF2e Mobile Compact | Suppressed low-resolution notification.");
+        if (shouldActivateMobile() && isResolutionMessage(message, options)) {
           return null;
         }
         return origInstNotify.call(this, message, type, options);
@@ -210,14 +265,48 @@ export function suppressResolutionWarnings() {
     const origInstWarn = ui.notifications.warn;
     if (typeof origInstWarn === "function") {
       ui.notifications.warn = function (message, options = {}) {
-        if (shouldActivateMobile() && isResolutionMessage(message)) {
-          console.log("PF2e Mobile Compact | Suppressed low-resolution notification.");
+        if (shouldActivateMobile() && isResolutionMessage(message, options)) {
           return null;
         }
         return origInstWarn.call(this, message, options);
       };
     }
+    const origInstError = ui.notifications.error;
+    if (typeof origInstError === "function") {
+      ui.notifications.error = function (message, options = {}) {
+        if (shouldActivateMobile() && isResolutionMessage(message, options)) {
+          return null;
+        }
+        return origInstError.call(this, message, options);
+      };
+    }
     ui.notifications._mobileResolutionPatched = true;
+  }
+
+  // 6. Suppress resolution warning in dev console
+  if (!console._mobileResolutionPatched) {
+    const origConsoleError = console.error;
+    console.error = function (...args) {
+      if (shouldActivateMobile()) {
+        const first = args[0];
+        if (first && isResolutionMessage(first)) {
+          return;
+        }
+      }
+      return origConsoleError.apply(console, args);
+    };
+
+    const origConsoleWarn = console.warn;
+    console.warn = function (...args) {
+      if (shouldActivateMobile()) {
+        const first = args[0];
+        if (first && isResolutionMessage(first)) {
+          return;
+        }
+      }
+      return origConsoleWarn.apply(console, args);
+    };
+    console._mobileResolutionPatched = true;
   }
 
   sweepResolutionNotifications();
