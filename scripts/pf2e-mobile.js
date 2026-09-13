@@ -155,21 +155,27 @@ Hooks.once("init", async () => {
   ]);
 
 
-  // Register the custom mobile character sheet with Actors
-  Actors.registerSheet("pf2e", PF2eMobileSheet, {
-    types: ["character"],
-    makeDefault: false,
-    label: "PF2e Mobile Compact Sheet"
-  });
+  // Register the custom mobile character sheet with Actors collection (namespaced in v13+)
+  const ActorsCollection = foundry.documents?.collections?.Actors ?? (typeof Actors !== "undefined" ? Actors : null);
+  if (ActorsCollection) {
+    ActorsCollection.registerSheet("pf2e", PF2eMobileSheet, {
+      types: ["character"],
+      makeDefault: false,
+      label: "PF2e Mobile Compact Sheet"
+    });
+  }
 
   // Dynamically route character sheets to PF2eMobileSheet on mobile clients
-  const originalGetSheetClass = Actor.prototype._getSheetClass;
-  Actor.prototype._getSheetClass = function () {
-    if (shouldActivateMobile() && this.type === "character") {
-      return PF2eMobileSheet;
-    }
-    return originalGetSheetClass.call(this);
-  };
+  const ActorClass = getDocumentClass?.("Actor") ?? CONFIG.Actor?.documentClass ?? (typeof Actor !== "undefined" ? Actor : null);
+  if (ActorClass) {
+    const originalGetSheetClass = ActorClass.prototype._getSheetClass;
+    ActorClass.prototype._getSheetClass = function () {
+      if (shouldActivateMobile() && this.type === "character") {
+        return PF2eMobileSheet;
+      }
+      return originalGetSheetClass.call(this);
+    };
+  }
 });
 
 Hooks.once("ready", () => {

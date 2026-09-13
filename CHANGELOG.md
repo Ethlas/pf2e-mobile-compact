@@ -14,6 +14,7 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 ### Fixed
 - **Sheet Render ReferenceError**: Fixed `ReferenceError: actionSlug is not defined` in `PF2eMobileSheet._prepareContext` when processing character action data for the attack and roll buttons.
 - **Action Execution Error Handling**: Wrapped system action and roll executions in try/catch blocks with friendly user notifications to prevent uncaught promise errors.
+- **Foundry v14 Namespaced Collections**: Updated sheet registration to use `foundry.documents.collections.Actors` and `getDocumentClass("Actor")`, resolving the deprecation warning regarding global `Actors` access.
 
 ### Milestone 3: Actions Page Refactoring & PF2e Targeting/Flanking Engine
 
