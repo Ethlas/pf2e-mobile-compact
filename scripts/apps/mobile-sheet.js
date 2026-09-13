@@ -1973,7 +1973,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const { DialogV2 } = foundry.applications.api;
       const optionsHtml = variants
         .map((v, i) => {
-          const name = game.i18n.localize(v.name || v.label || v.slug);
+          const rawName = v.name || v.label || v.slug;
+          const name = typeof rawName === "string" ? game.i18n.localize(rawName) : String(rawName?.name ?? rawName?.label ?? v.slug);
           const glyph = v.glyph ? ` [${v.glyph}]` : "";
           return `<option value="${v.slug}" ${i === 0 ? "selected" : ""}>${name}${glyph}</option>`;
         })
@@ -2027,7 +2028,9 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           const stat = this.actor.getStatistic?.(statKey) ?? this.actor.skills?.[statKey];
           const mod = stat?.totalModifier ?? stat?.mod ?? stat?.check?.mod;
           const sign = typeof mod === "number" ? (mod >= 0 ? `+${mod}` : `${mod}`) : "";
-          const label = game.i18n.localize(CONFIG.PF2E?.skills?.[statKey] ?? stat?.label ?? statKey);
+          const skillConfig = CONFIG.PF2E?.skills?.[statKey];
+          const rawLabel = stat?.label ?? (typeof skillConfig === "object" ? skillConfig?.label : skillConfig) ?? statKey;
+          const label = typeof rawLabel === "string" ? game.i18n.localize(rawLabel) : String(rawLabel);
           return `<option value="${statKey}" ${i === 0 ? "selected" : ""}>${label} (${sign})</option>`;
         })
         .join("");
