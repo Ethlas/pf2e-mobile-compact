@@ -11,10 +11,11 @@ import { PF2eMobileSheet } from "./apps/mobile-sheet.js";
 export function isMobileDevice() {
   const isStandaloneApp = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
   const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isIPad = (navigator.platform === "MacIntel" || /Macintosh/i.test(navigator.userAgent)) && (navigator.maxTouchPoints > 1);
   const isMobileViewport = window.innerWidth < 768;
   const isTouchCompact = (navigator.maxTouchPoints > 0 || "ontouchstart" in window) && window.innerWidth < 1024;
 
-  return isStandaloneApp || isMobileUA || isMobileViewport || isTouchCompact;
+  return isStandaloneApp || isMobileUA || isIPad || isMobileViewport || isTouchCompact;
 }
 
 /**
@@ -194,18 +195,6 @@ Hooks.once("ready", () => {
       );
     }
 
-    // Keep fullscreen icon synchronized across window changes
-    document.addEventListener("fullscreenchange", () => {
-      const icons = document.querySelectorAll(".btn-fullscreen i");
-      for (const icon of icons) {
-        if (document.fullscreenElement) {
-          icon.className = "fas fa-compress";
-        } else {
-          icon.className = "fas fa-expand";
-        }
-      }
-    });
-
     // If auto-open setting is enabled, launch the assigned or owned character sheet
     if (game.settings.get("pf2e-mobile-compact", "autoOpenSheet")) {
       const character = game.user.character ?? game.actors.find(a => a.type === "character" && a.isOwner);
@@ -217,6 +206,30 @@ Hooks.once("ready", () => {
   } else {
     console.log("PF2e Mobile Compact | Desktop environment active. Mobile overrides dormant.");
   }
+
+  // Keep fullscreen icon and classes synchronized across window changes in all environments
+  const onFullscreenStateChange = () => {
+    const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    if (!isFs) {
+      document.body.classList.remove("pf2e-fullscreen");
+      document.querySelectorAll(".pf2e-mobile-sheet").forEach(s => s.classList.remove("fullscreen-mode"));
+    }
+    const icons = document.querySelectorAll(".btn-fullscreen i");
+    for (const icon of icons) {
+      icon.className = (isFs || document.body.classList.contains("pf2e-fullscreen")) ? "fas fa-compress" : "fas fa-expand";
+    }
+  };
+  document.addEventListener("fullscreenchange", onFullscreenStateChange);
+  document.addEventListener("webkitfullscreenchange", onFullscreenStateChange);
+
+  // Dynamic viewport detection: activate mobile overrides if window is resized or rotated into mobile format
+  window.addEventListener("resize", foundry.utils.debounce(() => {
+    if (shouldActivateMobile() && !document.body.classList.contains("pf2e-mobile-active")) {
+      console.log("PF2e Mobile Compact | Viewport entered mobile mode. Activating mobile engine.");
+      document.body.classList.add("pf2e-mobile-active");
+      optimizeCanvasForMobile();
+    }
+  }, 200));
 });
 
 // Re-optimize ticker whenever scene transitions or canvas re-draws

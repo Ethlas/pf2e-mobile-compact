@@ -466,10 +466,16 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     super._onRender(context, options);
     this.#registerSceneListeners();
 
-    // Synchronize fullscreen toggle button icon
+    // Synchronize fullscreen toggle button icon and mode
+    const isFs = !!(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.body.classList.contains("pf2e-fullscreen") ||
+      this.element.classList.contains("fullscreen-mode")
+    );
     const fsIcon = this.element.querySelector(".btn-fullscreen i");
     if (fsIcon) {
-      fsIcon.className = document.fullscreenElement ? "fas fa-compress" : "fas fa-expand";
+      fsIcon.className = isFs ? "fas fa-compress" : "fas fa-expand";
     }
 
     // ApplicationV2 actions only listen for click events by default.
@@ -1255,18 +1261,53 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Action handler: toggle fullscreen mode for mobile app view.
    */
   static async #onToggleFullscreen(event, target) {
-    if (!document.fullscreenElement) {
-      try {
-        await document.documentElement.requestFullscreen();
-      } catch (err) {
-        console.warn("PF2e Mobile Compact | Fullscreen request failed:", err);
+    const sheetEl = target?.closest?.(".pf2e-mobile-sheet");
+    const isCurrentlyFs = !!(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.body.classList.contains("pf2e-fullscreen") ||
+      sheetEl?.classList.contains("fullscreen-mode")
+    );
+
+    if (!isCurrentlyFs) {
+      if (document.documentElement.requestFullscreen) {
+        try {
+          await document.documentElement.requestFullscreen();
+        } catch (err) {
+          console.warn("PF2e Mobile Compact | Fullscreen request failed, using CSS fullscreen fallback:", err);
+        }
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        try {
+          await document.documentElement.webkitRequestFullscreen();
+        } catch (err) {
+          console.warn("PF2e Mobile Compact | WebKit fullscreen request failed, using CSS fullscreen fallback:", err);
+        }
       }
+      document.body.classList.add("pf2e-fullscreen");
+      sheetEl?.classList.add("fullscreen-mode");
     } else {
-      try {
-        await document.exitFullscreen();
-      } catch (err) {
-        console.warn("PF2e Mobile Compact | Exit fullscreen failed:", err);
+      if (document.fullscreenElement && document.exitFullscreen) {
+        try {
+          await document.exitFullscreen();
+        } catch (err) {
+          console.warn("PF2e Mobile Compact | Exit fullscreen failed:", err);
+        }
+      } else if (document.webkitFullscreenElement && document.webkitExitFullscreen) {
+        try {
+          await document.webkitExitFullscreen();
+        } catch (err) {
+          console.warn("PF2e Mobile Compact | WebKit exit fullscreen failed:", err);
+        }
       }
+      document.body.classList.remove("pf2e-fullscreen");
+      sheetEl?.classList.remove("fullscreen-mode");
+      document.querySelectorAll(".pf2e-mobile-sheet").forEach(s => s.classList.remove("fullscreen-mode"));
+    }
+
+    const isNowFs = !isCurrentlyFs;
+    const icons = document.querySelectorAll(".btn-fullscreen i");
+    for (const icon of icons) {
+      icon.className = isNowFs ? "fas fa-compress" : "fas fa-expand";
     }
   }
 
