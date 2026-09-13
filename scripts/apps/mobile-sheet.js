@@ -382,8 +382,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       height: 750
     },
     actions: {
-      applyDamage: PF2eMobileSheet.#onApplyDamage,
-      applyHeal: PF2eMobileSheet.#onApplyHeal,
+      applyHeaderDamage: PF2eMobileSheet.#onApplyDamage,
+      applyHeaderHeal: PF2eMobileSheet.#onApplyHeal,
       setTempHP: PF2eMobileSheet.#onSetTempHP,
       adjustTempHP: PF2eMobileSheet.#onAdjustTempHP,
       rollSave: PF2eMobileSheet.#onRollSave,
@@ -603,6 +603,16 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         this.#chatOriginalNextSibling = chatEl.nextSibling;
       }
       mount.appendChild(chatEl);
+    }
+
+    // Shield against ApplicationV2 action delegation:
+    // Any click inside the chat mount should NOT bubble up to ApplicationV2,
+    // allowing PF2e's native chat log click listener on #chat to execute completely undisturbed.
+    if (!mount._pf2eChatEventShield) {
+      mount.addEventListener("click", (event) => {
+        event.stopPropagation();
+      });
+      mount._pf2eChatEventShield = true;
     }
 
     // Capture damage button clicks to guarantee active token selection immediately
@@ -1198,7 +1208,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const tokenDoc = this.token ?? this.actor.getActiveTokens(true, true)[0] ?? this.actor.getActiveTokens()[0]?.document ?? null;
 
     if (typeof this.actor.applyDamage === "function") {
-      await this.actor.applyDamage({ damage: amount, token: tokenDoc });
+      await this.actor.applyDamage({ damage: amount, token: tokenDoc, final: true });
     } else {
       // Fallback manual damage calculation
       const hp = this.actor.system.attributes.hp;
@@ -1239,7 +1249,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
     if (typeof this.actor.applyDamage === "function") {
       // In PF2e, negative damage represents healing through the native engine
-      await this.actor.applyDamage({ damage: -amount, token: tokenDoc });
+      await this.actor.applyDamage({ damage: -amount, token: tokenDoc, final: true });
     } else {
       // Fallback manual heal calculation
       const hp = this.actor.system.attributes.hp;

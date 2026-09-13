@@ -285,24 +285,26 @@ export function suppressResolutionWarnings() {
 
   // 6. Suppress resolution warning in dev console
   if (!console._mobileResolutionPatched) {
+    const isSuppressed = (first) => {
+      if (!first) return false;
+      if (isResolutionMessage(first)) return true;
+      const text = typeof first === "string" ? first : (first.message || first.toString?.() || "");
+      if (text.includes("renderChatMessage hook is deprecated")) return true;
+      return false;
+    };
+
     const origConsoleError = console.error;
     console.error = function (...args) {
-      if (shouldActivateMobile()) {
-        const first = args[0];
-        if (first && isResolutionMessage(first)) {
-          return;
-        }
+      if (shouldActivateMobile() && isSuppressed(args[0])) {
+        return;
       }
       return origConsoleError.apply(console, args);
     };
 
     const origConsoleWarn = console.warn;
     console.warn = function (...args) {
-      if (shouldActivateMobile()) {
-        const first = args[0];
-        if (first && isResolutionMessage(first)) {
-          return;
-        }
+      if (shouldActivateMobile() && isSuppressed(args[0])) {
+        return;
       }
       return origConsoleWarn.apply(console, args);
     };
