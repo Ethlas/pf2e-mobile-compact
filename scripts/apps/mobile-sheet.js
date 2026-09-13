@@ -401,6 +401,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       executeAuxiliaryAction: PF2eMobileSheet.#onExecuteAuxiliaryAction,
       itemToChat: PF2eMobileSheet.#onItemToChat,
       useAction: PF2eMobileSheet.#onUseAction,
+      rollActionCheck: PF2eMobileSheet.#onRollActionCheck,
       rollSkill: PF2eMobileSheet.#onRollSkill,
       consumeItem: PF2eMobileSheet.#onConsumeItem,
       castSpell: PF2eMobileSheet.#onCastSpell,
@@ -817,16 +818,22 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       ));
 
       const isUsable = !!selfEffect || !!item.system?.frequency || !!item.crafting;
+      const isAttack = traits.includes("attack") || systemAction?.traits?.includes("attack");
+      const isSkillStatistic = !!systemAction?.statistic || !!item.system?.statistic || KNOWN_SKILL_ACTION_SLUGS.has(itemSlug);
+      const hasRoll = !selfEffect && (!!systemAction || isAttack || isSkillStatistic);
 
       const actionData = {
         id: item.id,
         name: item.name,
+        slug: actionSlug,
         img: item.img || "systems/pf2e/icons/actions/Empty.webp",
         glyph: getGlyph(actionCost),
         actionCostType: actionCost?.type ?? "action",
         actionCostValue: actionCost?.value ?? 1,
         usable: isUsable,
         active: isEffectActive,
+        isAttack,
+        hasRoll,
         traits: traits.map(t => ({ label: t })),
         frequency: item.system?.frequency ? {
           value: item.system.frequency.value ?? 0,
@@ -1595,6 +1602,80 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
 
     this.render({ parts: ["sheet"] });
+  }
+
+  /**
+   * Action handler: roll an action check (skill check, attack activity, or rolled action).
+   * Resolves target token and executes PF2e's native check workflow or statistic roll.
+   */
+  static async #onRollActionCheck(event, target) {
+    const itemId = target.dataset.itemId;
+    const actionSlug = target.dataset.actionSlug;
+    const item = this.actor.items.get(itemId);
+    const label = item?.name ?? actionSlug;
+
+    // 1. Resolve target: check active target or prompt user
+    let targetToken = null;
+    const currentTarget = Array.from(game.user?.targets ?? []).find(t => t.id);
+    if (currentTarget) {
+      targetToken = getTargetableToken(currentTarget.id) ?? currentTarget;
+    } else {
+      targetToken = await this.#resolveTargetForAction(label);
+      if (targetToken === false) return; // User cancelled prompt
+    }
+
+    // Ensure origin token adapter is initialized
+    getOriginToken(this.actor);
+
+    // 2. PF2e System Action Registry (e.g. Demoralize, Trip, Grapple, Disarm, Feint, Administer First Aid, etc.)
+    const systemAction = game.pf2e?.actions?.get?.(actionSlug) ?? game.pf2e?.actions?.[actionSlug];
+    if (systemAction) {
+      const useOptions = {
+        actors: [this.actor],
+        event
+      };
+      if (targetToken) {
+        useOptions.target = targetToken.object ?? targetToken;
+      }
+
+      if (typeof systemAction.use === "function") {
+        await systemAction.use(useOptions);
+        return;
+      } else if (typeof systemAction === "function") {
+        await systemAction(useOptions);
+        return;
+      }
+    }
+
+    // 3. Action declaring a specific skill statistic (e.g. item.system.statistic)
+    const statistic = item?.system?.statistic;
+    if (statistic) {
+      const stat = this.actor.getStatistic?.(statistic) ?? this.actor.skills?.[statistic];
+      if (stat && typeof stat.roll === "function") {
+        await stat.roll({
+          event,
+          target: targetToken?.object ?? targetToken
+        });
+        return;
+      }
+    }
+
+    // 4. Attack Activity Feat: roll strike if action has the attack trait
+    if (item?.system?.traits?.value?.includes("attack")) {
+      const primaryStrike = this.actor.system.actions?.[0];
+      if (primaryStrike && typeof primaryStrike.roll === "function") {
+        await primaryStrike.roll({
+          event,
+          target: targetToken?.object ?? targetToken
+        });
+        return;
+      }
+    }
+
+    // Fallback: send action card to chat
+    if (typeof item?.toMessage === "function") {
+      await item.toMessage(event);
+    }
   }
 
   /**

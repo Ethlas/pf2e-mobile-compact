@@ -867,12 +867,16 @@ body.pf2e-mobile-active .pf2e-mobile-sheet .window-content {
 }
 
 .btn-action-chat,
-.btn-action-use {
+.btn-action-use,
+.btn-action-roll {
   min-height: 38px !important;
   height: 38px;
   padding: 4px 10px !important;
   border-radius: 4px !important;
   font-size: 0.85rem !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .btn-action-chat {
@@ -894,6 +898,29 @@ body.pf2e-mobile-active .pf2e-mobile-sheet .window-content {
   border: 1px solid #4caf50 !important;
   color: #fff !important;
   font-weight: bold;
+}
+
+.btn-action-roll {
+  background: #3949ab !important;
+  border: 1px solid #283593 !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+.btn-action-roll:hover,
+.btn-action-roll:active {
+  background: #5c6bc0 !important;
+}
+
+.btn-action-attack {
+  background: #c62828 !important;
+  border: 1px solid #b71c1c !important;
+  color: #fff !important;
+}
+
+.btn-action-attack:hover,
+.btn-action-attack:active {
+  background: #e53935 !important;
 }
 
 .action-traits {
