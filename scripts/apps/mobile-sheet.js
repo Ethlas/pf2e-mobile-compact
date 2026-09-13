@@ -626,10 +626,25 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const chatLog = root.querySelector("#chat-log, .chat-log");
     if (chatLog) {
       chatLog.style.setProperty("display", "flex", "important");
+      chatLog.style.setProperty("flex-direction", "column", "important");
+      chatLog.style.setProperty("flex-wrap", "nowrap", "important");
       chatLog.style.setProperty("flex", "1 1 100%", "important");
+      chatLog.style.setProperty("width", "100%", "important");
+      chatLog.style.setProperty("max-width", "100%", "important");
       chatLog.style.setProperty("height", "100%", "important");
       chatLog.style.setProperty("max-height", "100%", "important");
       chatLog.style.setProperty("overflow-y", "auto", "important");
+      chatLog.style.setProperty("overflow-x", "hidden", "important");
+
+      for (const msg of chatLog.children) {
+        msg.style.setProperty("display", "flex", "important");
+        msg.style.setProperty("flex-direction", "column", "important");
+        msg.style.setProperty("width", "100%", "important");
+        msg.style.setProperty("min-width", "100%", "important");
+        msg.style.setProperty("max-width", "100%", "important");
+        msg.style.setProperty("box-sizing", "border-box", "important");
+        msg.style.setProperty("flex-shrink", "0", "important");
+      }
     }
   }
 

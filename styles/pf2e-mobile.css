@@ -737,18 +737,30 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 }
 
 .mobile-chat-pane {
-  flex: 1;
+  flex: 1 1 100%;
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
   overflow: hidden;
+  padding: 0;
+  margin: 0;
+}
+
+/* Remove outer tab-content padding and nested scroll when viewing chat */
+.mobile-tab-content:has(.mobile-chat-pane:not(.is-hidden)),
+.mobile-sheet-body:has(.mobile-chat-pane:not(.is-hidden)) .mobile-tab-content {
+  padding: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
 }
 
 .mobile-chat-container {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 1 1 100%;
   height: 100%;
   min-height: 0;
   overflow: hidden;
@@ -758,7 +770,7 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 .mobile-chat-mount {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 1 1 100%;
   height: 100%;
   min-height: 0;
   overflow: hidden;
@@ -767,10 +779,12 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 .mobile-chat-mount #chat {
   display: flex !important;
   flex-direction: column !important;
-  flex: 1 1 auto !important;
+  flex-wrap: nowrap !important;
+  flex: 1 1 100% !important;
   height: 100% !important;
   max-height: 100% !important;
   width: 100% !important;
+  max-width: 100% !important;
   border: none !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -780,18 +794,39 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   overflow: hidden !important;
 }
 
-.mobile-chat-mount #chat-log {
+.mobile-chat-mount #chat-log,
+.mobile-chat-mount .chat-log {
   flex: 1 1 100% !important;
   height: 100% !important;
   max-height: 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
   overflow-y: auto !important;
+  overflow-x: hidden !important;
   -webkit-overflow-scrolling: touch !important;
   padding: 8px 8px 16px 8px !important;
   margin: 0 !important;
   list-style: none !important;
   display: flex !important;
   flex-direction: column !important;
+  flex-wrap: nowrap !important;
   gap: 8px !important;
+}
+
+/* Individual message boxes: strictly vertical column stack with 100% width scrolling up to down */
+.mobile-chat-mount #chat-log > li,
+.mobile-chat-mount #chat-log .chat-message,
+.mobile-chat-mount .chat-log > li,
+.mobile-chat-mount .chat-log .chat-message,
+.mobile-chat-mount .message {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 0 8px 0 !important;
+  flex-shrink: 0 !important;
 }
 
 /* Chat input and controls removed: chat tab is dedicated to quick damage calculation and roll reviews */
