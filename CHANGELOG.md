@@ -4,6 +4,33 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.9] - 2026-09-14
+
+### Milestone 8: Spells Tab Modernization, Expandable Cards & Tap-to-Prepare Overhaul
+
+#### Added
+- **Unified Cast View Grouped by Rank**:
+  - Automatically aggregates spells across all spellcasting sources (Spontaneous, Prepared, Focus, Innate) by spell rank (Cantrips, Rank 1 to 10).
+  - Prominent source badges (`Focus`, `Innate`, `Prepared`, `Spontaneous`) identify how each spell is cast.
+  - Collapsible rank accordions with stop-propagation slot adjustment buttons (`-` / `+`) permit quick folding/unfolding of rank sections without screen clutter.
+- **Expandable Spell Cards & Enriched Descriptions**:
+  - Tap-to-expand details drawer revealing enriched HTML descriptions with formatting, links, and inline roll styling (`TextEditor.enrichHTML`).
+  - Action glyphs (1, 2, 3 actions, Reaction, Free action), traits tags, range, area, target, duration, and defense save badges.
+- **Mobile-First Tap-to-Prepare Slot Workflow**:
+  - Clean `Preparation` sub-tab for characters with prepared spellcasting entries.
+  - Displays slot rows as empty dashed slots or filled spell slots with slot numbers.
+  - Tap "Prepare Spell" or "Change Spell" to open a touch-friendly picker modal with real-time name filtering over the repertoire.
+  - One-tap "Unprepare" (`btn-unprepare-slot`) to clear slots without drag-and-drop.
+- **Spell Loadout Presets**:
+  - Added "Save Current" button in the Preparation sub-tab to capture prepared spell slot configurations.
+  - Presets are saved with custom names and can be loaded or deleted with a single tap.
+- **Daily Prep Reset**:
+  - Added a "Daily Rest" button (`btn-daily-reset`) that instantly unmarks expended states across all prepared slots.
+- **Target Resolution for Attack Spells**:
+  - Casting attack spells or spells with target specifications automatically invokes `#resolveTargetForAction` to ensure targets are designated on the canvas before rolling.
+
+---
+
 ## [1.0.8] - 2026-09-14
 
 ### Milestone 7: Chat Auto-Scroll & Floating Latest Jump Button

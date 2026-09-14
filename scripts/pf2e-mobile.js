@@ -451,11 +451,14 @@ Hooks.once("init", async () => {
       proto = Object.getPrototypeOf(proto);
     }
     if (sheetDescriptor?.get) {
-      const origSheetGetter = sheetDescriptor.get;
       Object.defineProperty(ActorClass.prototype, "sheet", {
         get() {
           if (shouldActivateMobile() && this.type === "character") {
-            if (!this._mobileSheetInstance || !(this._mobileSheetInstance instanceof PF2eMobileSheet)) {
+            const hasPerm = game.user?.isGM || this.isOwner || this.testUserPermission(game.user, "LIMITED");
+            if (!hasPerm) {
+              return origSheetGetter.call(this);
+            }
+            if (!this._mobileSheetInstance || !(this._mobileSheetInstance instanceof PF2eMobileSheet) || this._mobileSheetInstance.document !== this) {
               this._mobileSheetInstance = new PF2eMobileSheet({ document: this });
             }
             return this._mobileSheetInstance;
@@ -558,8 +561,12 @@ Hooks.once("ready", () => {
     }
 
     // Resolve assigned or owned character
-    const character = game.user.character
+    const userChar = game.user.character;
+    const isUserCharValid = userChar && (userChar.isOwner || userChar.testUserPermission(game.user, "LIMITED"));
+
+    const character = (isUserCharValid ? userChar : null)
       ?? game.actors.find(a => a.type === "character" && a.isOwner)
+      ?? game.actors.find(a => a.type === "character" && a.testUserPermission(game.user, "LIMITED"))
       ?? (game.user.isGM ? game.actors.find(a => a.type === "character") : null);
 
     // If auto-open setting is enabled, launch the assigned or owned character sheet
@@ -587,8 +594,12 @@ Hooks.once("ready", () => {
       fab.innerHTML = '<i class="fas fa-user-shield"></i>';
       fab.style.cssText = "position:fixed;bottom:20px;right:20px;z-index:9999;width:52px;height:52px;border-radius:50%;background:#e65100;color:#fff;border:2px solid #ffb74d;box-shadow:0 4px 12px rgba(0,0,0,0.6);font-size:22px;display:none;align-items:center;justify-content:center;cursor:pointer;";
       fab.addEventListener("click", () => {
-        const char = game.user.character
+        const uChar = game.user.character;
+        const isUCharValid = uChar && (uChar.isOwner || uChar.testUserPermission(game.user, "LIMITED"));
+
+        const char = (isUCharValid ? uChar : null)
           ?? game.actors.find(a => a.type === "character" && a.isOwner)
+          ?? game.actors.find(a => a.type === "character" && a.testUserPermission(game.user, "LIMITED"))
           ?? (game.user.isGM ? game.actors.find(a => a.type === "character") : null);
         if (char) {
           if (!char._mobileSheetInstance || !(char._mobileSheetInstance instanceof PF2eMobileSheet)) {

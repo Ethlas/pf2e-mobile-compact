@@ -1,0 +1,36 @@
+<div class="spell-picker-dialog mobile-dialog">
+  <div class="spell-picker-header">
+    <h4><i class="fas fa-book-sparkles"></i> Select Spell for Rank {{rank}}</h4>
+    <p class="dialog-subtitle">Choose a spell from your repertoire to prepare in Slot {{slotNumber}}.</p>
+    <div class="spell-picker-search">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="spell-picker-input touch-target" placeholder="Filter spells by name..." autofocus />
+    </div>
+  </div>
+
+  <div class="spell-picker-list">
+    {{#each spells as |spell|}}
+    <div class="spell-picker-item touch-target" data-action="confirmPrepareSpell" data-item-id="{{spell.id}}" data-spell-name="{{spell.name}}">
+      <img class="spell-item-img" src="{{spell.img}}" alt="{{spell.name}}" />
+      <div class="spell-item-info">
+        <div class="spell-item-title-row">
+          <span class="spell-item-name"><strong>{{spell.name}}</strong></span>
+          {{#if spell.glyph}}
+          <span class="action-cost-glyph">{{spell.glyph}}</span>
+          {{/if}}
+        </div>
+        <div class="spell-item-meta">
+          <span class="detail-tag">Base Rank {{spell.baseRank}}</span>
+          {{#if spell.range}}<span class="detail-tag">Range: {{spell.range}}</span>{{/if}}
+          {{#if spell.target}}<span class="detail-tag">Target: {{spell.target}}</span>{{/if}}
+        </div>
+      </div>
+      <button type="button" class="touch-target btn-select-spell" data-action="confirmPrepareSpell" data-item-id="{{spell.id}}">
+        <i class="fas fa-check"></i> Prepare
+      </button>
+    </div>
+    {{else}}
+    <p class="empty-hint">No spells available to prepare at this rank. Add spells using "Add Spell from SRD".</p>
+    {{/each}}
+  </div>
+</div>

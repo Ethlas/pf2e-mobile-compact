@@ -7,6 +7,23 @@ import { PhysicalDiceManager } from "../rolls/physical-dice-interceptor.js";
 const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
 
 /**
+ * Returns a standardized glyph string ('1', '2', '3', 'R', 'F') from an actionCost structure
+ * @param {object|string|number} actionCost
+ * @returns {string}
+ */
+export function getGlyph(actionCost) {
+  if (!actionCost) return "";
+  if (typeof actionCost === "number" || typeof actionCost === "string") return String(actionCost);
+  const type = actionCost.type;
+  const value = actionCost.value;
+  if (type === "reaction") return "R";
+  if (type === "free") return "F";
+  if (value !== undefined && value !== null && value !== "") return String(value);
+  if (type === "action") return "1";
+  return "";
+}
+
+/**
  * Resolves a token for targeting or origin, supporting both live Canvas Placeables
  * and headless TokenDocuments when canvas rendering is bypassed on mobile.
  * @param {string} tokenId
@@ -378,6 +395,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static DEFAULT_OPTIONS = {
     classes: ["pf2e-mobile-sheet"],
     tag: "div",
+    viewPermission: "LIMITED",
     position: {
       width: 420,
       height: 750
@@ -410,7 +428,16 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       switchActor: PF2eMobileSheet.#onSwitchActor,
       toggleFullscreen: PF2eMobileSheet.#onToggleFullscreen,
       switchActionSubTab: PF2eMobileSheet.#onSwitchActionSubTab,
-      toggleActionSummary: PF2eMobileSheet.#onToggleActionSummary
+      toggleActionSummary: PF2eMobileSheet.#onToggleActionSummary,
+      switchSpellSubTab: PF2eMobileSheet.#onSwitchSpellSubTab,
+      toggleRankGroup: PF2eMobileSheet.#onToggleRankGroup,
+      openSpellPrepPicker: PF2eMobileSheet.#onOpenSpellPrepPicker,
+      unprepareSlot: PF2eMobileSheet.#onUnprepareSlot,
+      toggleSlotExpended: PF2eMobileSheet.#onToggleSlotExpended,
+      resetDailySpells: PF2eMobileSheet.#onResetDailySpells,
+      saveSpellPreset: PF2eMobileSheet.#onSaveSpellPreset,
+      applySpellPreset: PF2eMobileSheet.#onApplySpellPreset,
+      deleteSpellPreset: PF2eMobileSheet.#onDeleteSpellPreset
     }
   };
 
@@ -429,6 +456,12 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   /** @type {"encounter" | "exploration" | "downtime"} */
   #actionSubTab = "encounter";
+
+  /** @type {"spells" | "preparation"} */
+  #spellSubTab = "spells";
+
+  /** @type {Set<number>} */
+  #collapsedRankGroups = new Set();
 
   /** @type {"digital" | "physical"} */
   #rollMode = "digital";
@@ -477,6 +510,14 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    */
   get rollMode() {
     return this.#rollMode;
+  }
+
+  /** @override */
+  _canRender(options) {
+    if (!this.document) return false;
+    const hasPerm = game.user?.isGM || this.document.isOwner || this.document.testUserPermission(game.user, this.options.viewPermission ?? "LIMITED");
+    if (!hasPerm) return false;
+    return true;
   }
 
   /** @override */
@@ -1153,15 +1194,6 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       "trip", "tumble through"
     ]);
 
-    const getGlyph = (actionCost) => {
-      const type = actionCost?.type;
-      const value = actionCost?.value;
-      if (type === "reaction") return "R";
-      if (type === "free") return "F";
-      if (type === "action") return String(value || 1);
-      return "";
-    };
-
     const elementalBlasts = actor.itemTypes?.action?.filter(i => i.slug === "elemental-blast") ?? [];
 
     for (const item of actor.items) {
@@ -1343,80 +1375,293 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       }))
     };
 
-    // Spellcasting Groups Context
-    context.spellGroups = this.#prepareSpellGroups();
+    // Spellcasting Context (Cast View & Preparation View)
+    await this.#prepareSpellcastingContext(context);
 
     return context;
   }
 
   /**
-   * Helper to structure spells by rank and spellcasting entries.
-   * @returns {Array<object>}
+   * Helper to structure spells for both Cast View (unified by rank) and Preparation View (slots & presets).
+   * @param {object} context
    */
-  #prepareSpellGroups() {
-    const groups = [];
+  async #prepareSpellcastingContext(context) {
     const entries = this.actor.spellcasting?.contents ?? [];
+    const hasPreparedEntry = entries.some(e => e.isPrepared || e.system?.prepared?.value === "prepared");
+
+    context.hasPreparedEntry = hasPreparedEntry;
+    context.spellSubTab = hasPreparedEntry ? this.#spellSubTab : "spells";
+
+    // 1. GATHER ALL SPELLS ACROSS ALL ENTRIES
+    // We group by rank: 0 (Cantrips) to 10
+    const rankBuckets = Array.from({ length: 11 }, (_, r) => ({
+      rank: r,
+      label: r === 0 ? "Cantrips" : `Rank ${r}`,
+      isCollapsed: this.#collapsedRankGroups.has(r),
+      spells: [],
+      hasSlots: false,
+      slots: { value: 0, max: 0 },
+      entryId: null
+    }));
 
     for (const entry of entries) {
       const entryId = entry.id;
-      const systemData = entry.system ?? {};
+      const isPrepared = entry.isPrepared || entry.system?.prepared?.value === "prepared";
+      const isSpontaneous = entry.isSpontaneous || entry.system?.prepared?.value === "spontaneous";
+      const isFocus = entry.isFocusPool || entry.system?.prepared?.value === "focus" || entry.system?.category === "focus";
+      const isInnate = entry.isInnate || entry.system?.prepared?.value === "innate" || entry.system?.category === "innate";
 
-      // Spells in this entry
+      const systemData = entry.system ?? {};
       const spells = entry.spells?.contents ?? [];
 
-      // Check cantrips
-      const cantrips = spells.filter(s => s.isCantrip);
-      if (cantrips.length > 0) {
-        groups.push({
-          label: `${entry.name} - Cantrips`,
-          rank: 0,
-          entryId,
-          hasSlots: false,
-          spells: cantrips.map(s => this.#formatSpell(s, entryId))
-        });
+      // Update slot trackers for ranks 0-10
+      for (let r = 0; r <= 10; r++) {
+        const slotKey = `slot${r}`;
+        const slotData = systemData.slots?.[slotKey];
+        if (slotData && slotData.max > 0) {
+          const bucket = rankBuckets[r];
+          bucket.hasSlots = true;
+          bucket.slots.value = Math.max(bucket.slots.value, slotData.value ?? 0);
+          bucket.slots.max = Math.max(bucket.slots.max, slotData.max ?? 0);
+          if (!bucket.entryId) bucket.entryId = entryId;
+        }
       }
 
-      // Check ranks 1 through 10
-      for (let rank = 1; rank <= 10; rank++) {
-        const rankKey = `slot${rank}`;
-        const slotData = systemData.slots?.[rankKey];
-        const rankSpells = spells.filter(s => !s.isCantrip && (s.rank === rank || s.system.level?.value === rank));
+      if (isPrepared) {
+        // Check cantrip slots (slot0)
+        const slot0Prepared = systemData.slots?.slot0?.prepared;
+        if (slot0Prepared) {
+          const prepArr = Array.isArray(slot0Prepared) ? slot0Prepared : Object.values(slot0Prepared);
+          for (let sIdx = 0; sIdx < prepArr.length; sIdx++) {
+            const prepItem = prepArr[sIdx];
+            if (prepItem?.id) {
+              const spell = entry.spells?.get(prepItem.id) ?? this.actor.items.get(prepItem.id);
+              if (spell) {
+                const formatted = await this.#formatSpell(spell, entryId, {
+                  isPrepared: true,
+                  isExpended: !!prepItem.expended,
+                  slotIndex: sIdx
+                });
+                rankBuckets[0].spells.push(formatted);
+              }
+            }
+          }
+        } else {
+          // If no slot0 prepared data, fallback to known cantrips
+          const cantrips = spells.filter(s => s.isCantrip);
+          for (const s of cantrips) {
+            const formatted = await this.#formatSpell(s, entryId, { isPrepared: true });
+            rankBuckets[0].spells.push(formatted);
+          }
+        }
 
-        if ((slotData && slotData.max > 0) || rankSpells.length > 0) {
-          groups.push({
-            label: `${entry.name} - Rank ${rank}`,
-            rank,
-            entryId,
-            hasSlots: !!(slotData && slotData.max > 0),
-            slots: {
-              value: slotData?.value ?? 0,
-              max: slotData?.max ?? 0
-            },
-            spells: rankSpells.map(s => this.#formatSpell(s, entryId))
-          });
+        // Check ranks 1 through 10
+        for (let r = 1; r <= 10; r++) {
+          const slotKey = `slot${r}`;
+          const slotPrepared = systemData.slots?.[slotKey]?.prepared;
+          if (slotPrepared) {
+            const prepArr = Array.isArray(slotPrepared) ? slotPrepared : Object.values(slotPrepared);
+            for (let sIdx = 0; sIdx < prepArr.length; sIdx++) {
+              const prepItem = prepArr[sIdx];
+              if (prepItem?.id) {
+                const spell = entry.spells?.get(prepItem.id) ?? this.actor.items.get(prepItem.id);
+                if (spell) {
+                  const formatted = await this.#formatSpell(spell, entryId, {
+                    isPrepared: true,
+                    isExpended: !!prepItem.expended,
+                    slotIndex: sIdx
+                  });
+                  rankBuckets[r].spells.push(formatted);
+                }
+              }
+            }
+          } else {
+            const rankSpells = spells.filter(s => !s.isCantrip && (s.rank === r || s.system.level?.value === r));
+            for (const s of rankSpells) {
+              const formatted = await this.#formatSpell(s, entryId, { isPrepared: true });
+              rankBuckets[r].spells.push(formatted);
+            }
+          }
+        }
+      } else {
+        // Spontaneous, Focus, Innate, Rituals
+        for (const spell of spells) {
+          const isCantrip = spell.isCantrip;
+          const targetRank = isCantrip ? 0 : (spell.rank ?? spell.system.level?.value ?? 1);
+          if (targetRank >= 0 && targetRank <= 10) {
+            const formatted = await this.#formatSpell(spell, entryId, {
+              isSpontaneous,
+              isFocus,
+              isInnate
+            });
+            rankBuckets[targetRank].spells.push(formatted);
+          }
         }
       }
     }
 
-    return groups;
+    const sortByName = (a, b) => a.name.localeCompare(b.name);
+    for (const b of rankBuckets) {
+      b.spells.sort(sortByName);
+    }
+
+    // Filter rankBuckets: keep ranks that have spells OR slots with max > 0
+    context.spellRanks = rankBuckets.filter(b => b.spells.length > 0 || (b.hasSlots && b.slots.max > 0)).map(b => ({
+      ...b,
+      spellCount: b.spells.length
+    }));
+
+    // 2. PREPARATION VIEW DATA (Slots by rank for prepared entries)
+    if (hasPreparedEntry) {
+      const preparedEntries = [];
+      for (const entry of entries) {
+        const isPrepared = entry.isPrepared || entry.system?.prepared?.value === "prepared";
+        if (!isPrepared) continue;
+
+        const systemData = entry.system ?? {};
+        const ranks = [];
+
+        // Check cantrips (rank 0)
+        const slot0Data = systemData.slots?.slot0;
+        const maxCantripSlots = slot0Data?.max ?? 0;
+        const cantripPrepArr = slot0Data?.prepared ? (Array.isArray(slot0Data.prepared) ? slot0Data.prepared : Object.values(slot0Data.prepared)) : [];
+        if (maxCantripSlots > 0 || cantripPrepArr.length > 0) {
+          const slotCount = Math.max(maxCantripSlots, cantripPrepArr.length);
+          const slots = [];
+          for (let i = 0; i < slotCount; i++) {
+            const pItem = cantripPrepArr[i];
+            let spell = null;
+            if (pItem?.id) {
+              const sDoc = entry.spells?.get(pItem.id) ?? this.actor.items.get(pItem.id);
+              if (sDoc) {
+                spell = await this.#formatSpell(sDoc, entry.id);
+              }
+            }
+            slots.push({
+              slotNumber: i + 1,
+              slotIndex: i,
+              isEmpty: !spell,
+              isExpended: !!pItem?.expended,
+              spell
+            });
+          }
+          ranks.push({
+            rank: 0,
+            label: "Cantrips",
+            maxSlots: slotCount,
+            preparedCount: slots.filter(s => !s.isEmpty).length,
+            slots
+          });
+        }
+
+        // Check ranks 1 through 10
+        for (let r = 1; r <= 10; r++) {
+          const slotKey = `slot${r}`;
+          const slotData = systemData.slots?.[slotKey];
+          const maxSlots = slotData?.max ?? 0;
+          const prepArr = slotData?.prepared ? (Array.isArray(slotData.prepared) ? slotData.prepared : Object.values(slotData.prepared)) : [];
+
+          if (maxSlots > 0 || prepArr.length > 0) {
+            const slotCount = Math.max(maxSlots, prepArr.length);
+            const slots = [];
+            for (let i = 0; i < slotCount; i++) {
+              const pItem = prepArr[i];
+              let spell = null;
+              if (pItem?.id) {
+                const sDoc = entry.spells?.get(pItem.id) ?? this.actor.items.get(pItem.id);
+                if (sDoc) {
+                  spell = await this.#formatSpell(sDoc, entry.id);
+                }
+              }
+              slots.push({
+                slotNumber: i + 1,
+                slotIndex: i,
+                isEmpty: !spell,
+                isExpended: !!pItem?.expended,
+                spell
+              });
+            }
+            ranks.push({
+              rank: r,
+              label: `Rank ${r}`,
+              maxSlots: slotCount,
+              preparedCount: slots.filter(s => !s.isEmpty).length,
+              slots
+            });
+          }
+        }
+
+        preparedEntries.push({
+          id: entry.id,
+          name: entry.name,
+          ranks
+        });
+      }
+
+      context.preparedEntries = preparedEntries;
+
+      // Saved Presets
+      const presets = this.actor.getFlag("pf2e-mobile-compact", "spellPresets") ?? [];
+      context.spellPresets = presets;
+    } else {
+      context.preparedEntries = [];
+      context.spellPresets = [];
+    }
   }
 
   /**
    * Format spell item details.
    * @param {ItemPF2e} spell
    * @param {string} entryId
-   * @returns {object}
+   * @param {object} [extra]
+   * @returns {Promise<object>}
    */
-  #formatSpell(spell, entryId) {
+  async #formatSpell(spell, entryId, extra = {}) {
+    const TextEditorClass = foundry.applications?.ux?.TextEditor ?? TextEditor;
+    let rawDescription = spell.system?.description?.value ?? "";
+    let enrichedDescription = rawDescription;
+    if (rawDescription && typeof TextEditorClass?.enrichHTML === "function") {
+      try {
+        enrichedDescription = await TextEditorClass.enrichHTML(rawDescription, {
+          secrets: spell.isOwner,
+          rollData: this.actor.getRollData(),
+          async: true
+        });
+      } catch {
+        enrichedDescription = rawDescription;
+      }
+    }
+
+    const traits = (spell.system?.traits?.value ?? spell.traits?.value ?? []).map(t => ({ label: String(t) }));
+    const actionCost = spell.actionCost ?? spell.system?.actions;
+    const glyph = getGlyph(actionCost);
+    const isAttack = traits.some(t => t.label.toLowerCase() === "attack") || spell.traits?.has?.("attack");
+
+    let defenseStr = "";
+    if (spell.system?.defense?.save?.statistic) {
+      const basic = spell.system.defense.save.basic ? "Basic " : "";
+      const stat = String(spell.system.defense.save.statistic);
+      const statName = stat.charAt(0).toUpperCase() + stat.slice(1);
+      defenseStr = `${basic}${statName} DC`;
+    }
+
     return {
       id: spell.id,
       entryId,
       name: spell.name,
-      img: spell.img,
-      actionCost: spell.system.actions?.value ? `${spell.system.actions.value} Actions` : "",
+      img: spell.img || "systems/pf2e/icons/default-icons/spell.svg",
+      glyph: glyph || (actionCost?.value ? String(actionCost.value) : ""),
+      actionCost: actionCost?.value ? `${actionCost.value} Actions` : "",
       range: spell.system.range?.value ?? "",
       target: spell.system.target?.value ?? "",
-      save: spell.system.defense?.save?.statistic ?? ""
+      area: spell.system.area?.value ? `${spell.system.area.value}ft ${spell.system.area.type ?? ""}` : "",
+      duration: spell.system.duration?.value ?? "",
+      defense: defenseStr,
+      traits,
+      isAttack,
+      description: enrichedDescription || rawDescription,
+      isExpanded: this.#expandedActionIds.has(spell.id),
+      ...extra
     };
   }
 
@@ -1716,6 +1961,353 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       this.#actionSubTab = newSubTab;
       this.render({ parts: ["sheet"] });
     }
+  }
+
+  /**
+   * Action handler: switch active spell sub-tab (spells, preparation).
+   */
+  static async #onSwitchSpellSubTab(event, target) {
+    const newSubTab = target.dataset.subtab;
+    if (newSubTab && newSubTab !== this.#spellSubTab) {
+      this.#spellSubTab = newSubTab;
+      this.render({ parts: ["sheet"] });
+    }
+  }
+
+  /**
+   * Action handler: toggle expandable rank accordion group in Spells tab.
+   */
+  static #onToggleRankGroup(event, target) {
+    event.preventDefault();
+    const rank = parseInt(target.dataset.rank, 10);
+    const groupEl = target.closest(".spell-rank-group");
+    if (!groupEl) return;
+
+    const listEl = groupEl.querySelector(".spell-list");
+    const iconEl = groupEl.querySelector(".rank-expand-icon");
+    const isCollapsed = listEl?.classList?.contains("collapsed");
+
+    if (isCollapsed) {
+      listEl?.classList?.remove("collapsed");
+      iconEl?.classList?.remove("collapsed");
+      this.#collapsedRankGroups.delete(rank);
+    } else {
+      listEl?.classList?.add("collapsed");
+      iconEl?.classList?.add("collapsed");
+      this.#collapsedRankGroups.add(rank);
+    }
+  }
+
+  /**
+   * Action handler: open touch-friendly spell selection modal to prepare a spell in a slot.
+   */
+  static async #onOpenSpellPrepPicker(event, target) {
+    const entryId = target.dataset.entryId;
+    const rank = parseInt(target.dataset.rank, 10);
+    const slotIndex = parseInt(target.dataset.slotIndex, 10);
+    if (!entryId || isNaN(rank) || isNaN(slotIndex)) return;
+
+    const entry = this.actor.spellcasting?.get(entryId);
+    if (!entry) return;
+
+    const spells = (entry.spells?.contents ?? []).filter(s => {
+      if (rank === 0) return s.isCantrip;
+      const spellBaseRank = s.rank ?? s.system.level?.value ?? 1;
+      return !s.isCantrip && spellBaseRank <= rank;
+    }).map(s => ({
+      id: s.id,
+      name: s.name,
+      img: s.img || "systems/pf2e/icons/default-icons/spell.svg",
+      glyph: getGlyph(s.system.actions) || (s.system.actions?.value ? String(s.system.actions.value) : ""),
+      baseRank: s.rank ?? s.system.level?.value ?? 1,
+      range: s.system.range?.value ?? "",
+      target: s.system.target?.value ?? ""
+    })).sort((a, b) => a.name.localeCompare(b.name));
+
+    const content = await renderTemplate("modules/pf2e-mobile-compact/templates/parts/spell-picker-dialog.hbs", {
+      rank: rank === 0 ? "Cantrips" : rank,
+      slotNumber: slotIndex + 1,
+      spells
+    });
+
+    let dialogInstance = null;
+    const onSelect = async (spellId) => {
+      if (dialogInstance?.close) {
+        await dialogInstance.close();
+      }
+      await PF2eMobileSheet.#prepareSlot(this.actor, entryId, rank, slotIndex, spellId);
+      this.render({ parts: ["sheet"] });
+    };
+
+    const DialogClass = foundry.applications?.api?.DialogV2 ?? Dialog;
+    dialogInstance = new DialogClass({
+      window: { title: `Prepare Spell - Rank ${rank === 0 ? "Cantrips" : rank}` },
+      content,
+      buttons: [{
+        action: "cancel",
+        label: "Cancel",
+        icon: "fa-solid fa-times"
+      }],
+      render: (event, html) => {
+        const root = (html instanceof HTMLElement) ? html : html[0];
+        if (!root) return;
+
+        const searchInput = root.querySelector(".spell-picker-input");
+        const items = root.querySelectorAll(".spell-picker-item");
+        searchInput?.addEventListener("input", (e) => {
+          const query = (e.target.value ?? "").toLowerCase().trim();
+          for (const it of items) {
+            const name = (it.dataset.spellName ?? "").toLowerCase();
+            it.style.display = (!query || name.includes(query)) ? "" : "none";
+          }
+        });
+
+        for (const it of items) {
+          it.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const sId = it.dataset.itemId;
+            if (sId) await onSelect(sId);
+          });
+        }
+      }
+    });
+
+    dialogInstance.render(true);
+  }
+
+  /**
+   * Helper: assign a spell to a prepared slot.
+   */
+  static async #prepareSlot(actor, entryId, rank, slotIndex, spellId) {
+    const entry = actor.spellcasting?.get(entryId);
+    const spell = actor.items.get(spellId);
+    if (!entry || !spell) return;
+
+    if (typeof entry.prepareSpell === "function") {
+      await entry.prepareSpell(spell, rank, slotIndex);
+    } else {
+      const slotKey = `slot${rank}`;
+      const currentPrepared = foundry.utils.deepClone(entry.system.slots?.[slotKey]?.prepared ?? []);
+      const nextPrepared = Array.isArray(currentPrepared) ? currentPrepared : Object.values(currentPrepared);
+      nextPrepared[slotIndex] = { id: spell.id, expended: false };
+      await entry.update({ [`system.slots.${slotKey}.prepared`]: nextPrepared });
+    }
+  }
+
+  /**
+   * Action handler: unprepare a slot.
+   */
+  static async #onUnprepareSlot(event, target) {
+    const entryId = target.dataset.entryId;
+    const rank = parseInt(target.dataset.rank, 10);
+    const slotIndex = parseInt(target.dataset.slotIndex, 10);
+    if (!entryId || isNaN(rank) || isNaN(slotIndex)) return;
+
+    const entry = this.actor.spellcasting?.get(entryId);
+    if (!entry) return;
+
+    if (typeof entry.unprepareSpell === "function") {
+      await entry.unprepareSpell(rank, slotIndex);
+    } else {
+      const slotKey = `slot${rank}`;
+      const currentPrepared = foundry.utils.deepClone(entry.system.slots?.[slotKey]?.prepared ?? []);
+      const nextPrepared = Array.isArray(currentPrepared) ? currentPrepared : Object.values(currentPrepared);
+      nextPrepared[slotIndex] = null;
+      await entry.update({ [`system.slots.${slotKey}.prepared`]: nextPrepared });
+    }
+    this.render({ parts: ["sheet"] });
+  }
+
+  /**
+   * Action handler: toggle expended state of a prepared slot.
+   */
+  static async #onToggleSlotExpended(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+    const entryId = target.dataset.entryId;
+    const rank = parseInt(target.dataset.rank, 10);
+    const slotIndex = parseInt(target.dataset.slotIndex, 10);
+    if (!entryId || isNaN(rank) || isNaN(slotIndex)) return;
+
+    const entry = this.actor.spellcasting?.get(entryId);
+    if (!entry) return;
+
+    const slotKey = `slot${rank}`;
+    const currentPrepared = foundry.utils.deepClone(entry.system.slots?.[slotKey]?.prepared ?? []);
+    const nextPrepared = Array.isArray(currentPrepared) ? currentPrepared : Object.values(currentPrepared);
+
+    if (nextPrepared[slotIndex]) {
+      const wasExpended = !!nextPrepared[slotIndex].expended;
+      nextPrepared[slotIndex].expended = !wasExpended;
+      const curVal = entry.system.slots?.[slotKey]?.value ?? 0;
+      const maxVal = entry.system.slots?.[slotKey]?.max ?? 0;
+      const nextVal = wasExpended ? Math.min(curVal + 1, maxVal) : Math.max(curVal - 1, 0);
+      await entry.update({
+        [`system.slots.${slotKey}.prepared`]: nextPrepared,
+        [`system.slots.${slotKey}.value`]: nextVal
+      });
+    }
+    this.render({ parts: ["sheet"] });
+  }
+
+  /**
+   * Action handler: reset all expended slots and restore focus points.
+   */
+  static async #onResetDailySpells(event, target) {
+    const entries = this.actor.spellcasting?.contents ?? [];
+    for (const entry of entries) {
+      const updates = {};
+      for (let r = 0; r <= 10; r++) {
+        const slotKey = `slot${r}`;
+        const slotData = entry.system.slots?.[slotKey];
+        if (slotData) {
+          updates[`system.slots.${slotKey}.value`] = slotData.max ?? 0;
+          if (slotData.prepared) {
+            const prepared = foundry.utils.deepClone(slotData.prepared);
+            const prepArr = Array.isArray(prepared) ? prepared : Object.values(prepared);
+            for (const s of prepArr) {
+              if (s) s.expended = false;
+            }
+            updates[`system.slots.${slotKey}.prepared`] = prepArr;
+          }
+        }
+      }
+      if (Object.keys(updates).length > 0) {
+        await entry.update(updates);
+      }
+    }
+
+    const focus = this.actor.system.resources?.focus;
+    if (focus && focus.max) {
+      await this.actor.update({ "system.resources.focus.value": focus.max });
+    }
+
+    ui.notifications?.info?.("Daily preparation complete: All spell slots and focus points restored.");
+    this.render({ parts: ["sheet"] });
+  }
+
+  /**
+   * Action handler: save current prepared spells as a preset.
+   */
+  static async #onSaveSpellPreset(event, target) {
+    const name = await new Promise(resolve => {
+      const DialogClass = foundry.applications?.api?.DialogV2 ?? Dialog;
+      new DialogClass({
+        window: { title: "Save Spell Preset" },
+        content: `<div style="margin-bottom: 10px;">
+          <label style="display:block; margin-bottom: 5px; font-weight: bold;">Preset Name:</label>
+          <input type="text" id="preset-name-input" placeholder="e.g. Combat, Dungeon, Social" style="width: 100%; height: 40px;" autofocus />
+        </div>`,
+        buttons: [{
+          action: "save",
+          label: "Save",
+          icon: "fa-solid fa-save",
+          callback: (evt, btn, form) => {
+            const root = btn?.closest(".window-content") ?? document;
+            const input = root.querySelector("#preset-name-input");
+            resolve(input?.value?.trim() || "Default Preset");
+          }
+        }, {
+          action: "cancel",
+          label: "Cancel",
+          icon: "fa-solid fa-times",
+          callback: () => resolve(null)
+        }]
+      }).render(true);
+    });
+
+    if (!name) return;
+
+    const entries = this.actor.spellcasting?.contents ?? [];
+    const loadout = [];
+    for (const entry of entries) {
+      if (entry.isPrepared || entry.system?.prepared?.value === "prepared") {
+        for (let r = 0; r <= 10; r++) {
+          const slotKey = `slot${r}`;
+          const slotData = entry.system.slots?.[slotKey];
+          if (slotData?.prepared) {
+            const prepArr = Array.isArray(slotData.prepared) ? slotData.prepared : Object.values(slotData.prepared);
+            prepArr.forEach((p, idx) => {
+              if (p?.id) {
+                loadout.push({
+                  entryId: entry.id,
+                  rank: r,
+                  slotIndex: idx,
+                  spellId: p.id
+                });
+              }
+            });
+          }
+        }
+      }
+    }
+
+    const existingPresets = this.actor.getFlag("pf2e-mobile-compact", "spellPresets") ?? [];
+    const newPreset = {
+      id: foundry.utils.randomID(),
+      name,
+      slots: loadout,
+      createdAt: Date.now()
+    };
+    await this.actor.setFlag("pf2e-mobile-compact", "spellPresets", [...existingPresets, newPreset]);
+    ui.notifications?.info?.(`Saved spell preset "${name}".`);
+    this.render({ parts: ["sheet"] });
+  }
+
+  /**
+   * Action handler: apply saved spell preset.
+   */
+  static async #onApplySpellPreset(event, target) {
+    const presetId = target.dataset.presetId;
+    if (!presetId) return;
+    const existingPresets = this.actor.getFlag("pf2e-mobile-compact", "spellPresets") ?? [];
+    const preset = existingPresets.find(p => p.id === presetId);
+    if (!preset) return;
+
+    const entries = this.actor.spellcasting?.contents ?? [];
+    for (const entry of entries) {
+      if (entry.isPrepared || entry.system?.prepared?.value === "prepared") {
+        const updates = {};
+        for (let r = 0; r <= 10; r++) {
+          const slotKey = `slot${r}`;
+          const slotData = entry.system.slots?.[slotKey];
+          if (slotData?.prepared) {
+            const prepArr = Array.isArray(slotData.prepared) ? slotData.prepared : Object.values(slotData.prepared);
+            const cleared = prepArr.map(() => null);
+            updates[`system.slots.${slotKey}.prepared`] = cleared;
+          }
+        }
+        if (Object.keys(updates).length > 0) {
+          await entry.update(updates);
+        }
+      }
+    }
+
+    for (const item of preset.slots) {
+      const entry = this.actor.spellcasting?.get(item.entryId);
+      if (entry) {
+        const slotKey = `slot${item.rank}`;
+        const currentPrepared = foundry.utils.deepClone(entry.system.slots?.[slotKey]?.prepared ?? []);
+        const nextPrepared = Array.isArray(currentPrepared) ? currentPrepared : Object.values(currentPrepared);
+        nextPrepared[item.slotIndex] = { id: item.spellId, expended: false };
+        await entry.update({ [`system.slots.${slotKey}.prepared`]: nextPrepared });
+      }
+    }
+
+    ui.notifications?.info?.(`Loaded spell preset "${preset.name}".`);
+    this.render({ parts: ["sheet"] });
+  }
+
+  /**
+   * Action handler: delete saved spell preset.
+   */
+  static async #onDeleteSpellPreset(event, target) {
+    const presetId = target.dataset.presetId;
+    if (!presetId) return;
+    const existingPresets = this.actor.getFlag("pf2e-mobile-compact", "spellPresets") ?? [];
+    const filtered = existingPresets.filter(p => p.id !== presetId);
+    await this.actor.setFlag("pf2e-mobile-compact", "spellPresets", filtered);
+    this.render({ parts: ["sheet"] });
   }
 
   /**
@@ -2252,16 +2844,22 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const itemId = target.dataset.itemId;
     const entryId = target.dataset.entryId;
     const rank = parseInt(target.dataset.rank, 10);
+    const slotIndex = target.dataset.slotIndex !== undefined ? parseInt(target.dataset.slotIndex, 10) : NaN;
 
     const entry = this.actor.spellcasting?.get(entryId);
     const spell = this.actor.items.get(itemId);
     if (!entry || !spell) return;
 
-    // Prompt for target if spell has target or range
+    // Target prompt for attacks, targets, or ranges
     let targetToken = null;
-    if (spell.system.target?.value || spell.system.range?.value) {
+    const hasAttackTrait = spell.system.traits?.value?.includes("attack") || spell.traits?.has?.("attack");
+    if (spell.system.target?.value || spell.system.range?.value || hasAttackTrait) {
       targetToken = await this.#resolveTargetForAction(`Cast ${spell.name}`);
       if (targetToken === false) return; // Cancelled
+    }
+
+    if (targetToken?.id) {
+      await setTargetToken(targetToken.id);
     }
 
     if (typeof entry.cast === "function") {
@@ -2272,6 +2870,30 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       }, async () => {
         await entry.cast(spell, { slot: rank > 0 ? rank : 0, level: rank, target: targetToken || undefined });
       }, this.rollMode === "physical");
+    }
+
+    // Mark prepared slot expended if applicable
+    if (!isNaN(slotIndex) && (entry.isPrepared || entry.system?.prepared?.value === "prepared") && rank > 0) {
+      const slotKey = `slot${rank}`;
+      const currentPrepared = foundry.utils.deepClone(entry.system.slots?.[slotKey]?.prepared ?? []);
+      const nextPrepared = Array.isArray(currentPrepared) ? currentPrepared : Object.values(currentPrepared);
+      if (nextPrepared[slotIndex]) {
+        nextPrepared[slotIndex].expended = true;
+        const curVal = entry.system.slots?.[slotKey]?.value ?? 0;
+        await entry.update({
+          [`system.slots.${slotKey}.prepared`]: nextPrepared,
+          [`system.slots.${slotKey}.value`]: Math.max(curVal - 1, 0)
+        });
+      }
+      this.render({ parts: ["sheet"] });
+    } else if ((entry.isSpontaneous || entry.system?.prepared?.value === "spontaneous") && rank > 0) {
+      // Decrement spontaneous slot pool
+      const slotKey = `slot${rank}`;
+      const currentSlot = entry.system.slots?.[slotKey];
+      if (currentSlot && currentSlot.value > 0) {
+        await entry.update({ [`system.slots.${slotKey}.value`]: currentSlot.value - 1 });
+        this.render({ parts: ["sheet"] });
+      }
     }
   }
 

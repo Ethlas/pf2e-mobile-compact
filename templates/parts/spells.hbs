@@ -1,9 +1,26 @@
 <div class="tab-pane spells-tab" data-tab="spells">
-  <!-- Action Bar: Add Spell & Focus Points -->
+  <!-- Sub-Navigation: Cast Spells vs Preparation Mode (when prepared entries exist) -->
+  {{#if hasPreparedEntry}}
+  <div class="spell-subtabs">
+    <button type="button" class="touch-target subtab-btn {{#if (eq spellSubTab "spells")}}active{{/if}}" data-action="switchSpellSubTab" data-subtab="spells">
+      <i class="fas fa-wand-magic-sparkles"></i> Spells
+    </button>
+    <button type="button" class="touch-target subtab-btn {{#if (eq spellSubTab "preparation")}}active{{/if}}" data-action="switchSpellSubTab" data-subtab="preparation">
+      <i class="fas fa-book-open"></i> Preparation
+    </button>
+  </div>
+  {{/if}}
+
+  <!-- Action Bar: Add Spell from SRD, Daily Prep Reset & Focus Tracker -->
   <div class="tab-action-bar">
     <button type="button" class="touch-target btn-primary" data-action="openCompendiumPicker" data-type="spells">
-      <i class="fas fa-plus"></i> Add Spell from SRD
+      <i class="fas fa-plus"></i> Add Spell
     </button>
+    {{#if hasPreparedEntry}}
+    <button type="button" class="touch-target btn-daily-reset" data-action="resetDailySpells" title="Restore all expended prepared slots">
+      <i class="fas fa-bed"></i> Daily Rest
+    </button>
+    {{/if}}
     {{#if focus.max}}
     <div class="focus-pool-tracker">
       <span>Focus: <strong>{{focus.value}} / {{focus.max}}</strong></span>
@@ -15,47 +32,203 @@
     {{/if}}
   </div>
 
-  <!-- Spell Groups by Rank -->
-  {{#each spellGroups as |group|}}
-  <section class="spell-rank-group">
-    <div class="spell-rank-header">
-      <h3 class="rank-title">{{group.label}}</h3>
-      {{#if group.hasSlots}}
-      <div class="slot-counter">
-        <span>Slots: <strong>{{group.slots.value}} / {{group.slots.max}}</strong></span>
-        <button type="button" class="touch-target" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="-1">-</button>
-        <button type="button" class="touch-target" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="1">+</button>
+  {{#if (or (eq spellSubTab "spells") (not hasPreparedEntry))}}
+  <!-- ======================================================== -->
+  <!-- 1. CAST VIEW: Unified Spells by Rank                    -->
+  <!-- ======================================================== -->
+  <div class="spells-cast-view">
+    {{#each spellRanks as |group|}}
+    <section class="spell-rank-group" data-rank="{{group.rank}}">
+      <!-- Collapsible Rank Header -->
+      <div class="spell-rank-header touch-target" data-action="toggleRankGroup" data-rank="{{group.rank}}" title="Toggle Rank {{group.label}}">
+        <div class="rank-header-left">
+          <i class="fas fa-chevron-down rank-expand-icon {{#if group.isCollapsed}}collapsed{{/if}}"></i>
+          <h3 class="rank-title">{{group.label}}</h3>
+          <span class="rank-count-badge">{{group.spellCount}}</span>
+        </div>
+
+        {{#if group.hasSlots}}
+        <div class="slot-counter" onclick="event.stopPropagation()">
+          <span>Slots: <strong>{{group.slots.value}} / {{group.slots.max}}</strong></span>
+          <button type="button" class="touch-target btn-slot-adjust" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="-1" title="Decrease Slot">-</button>
+          <button type="button" class="touch-target btn-slot-adjust" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="1" title="Increase Slot">+</button>
+        </div>
+        {{/if}}
       </div>
+
+      <!-- Spells in this Rank -->
+      <div class="spell-list {{#if group.isCollapsed}}collapsed{{/if}}">
+        {{#each group.spells as |spell|}}
+        <div class="action-card spell-card {{#if spell.isExpanded}}expanded{{/if}} {{#if spell.isExpended}}expended{{/if}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}">
+          <div class="action-card-header">
+            <!-- Title & Expand Trigger -->
+            <div class="action-title-group touch-target" data-action="toggleActionSummary" data-item-id="{{spell.id}}" title="Toggle Description">
+              {{#if spell.glyph}}
+              <span class="action-cost-glyph">{{spell.glyph}}</span>
+              {{/if}}
+              <span class="action-name"><strong>{{spell.name}}</strong></span>
+
+              <!-- Source Badges -->
+              {{#if spell.isFocus}}
+              <span class="spell-source-badge badge-focus">Focus</span>
+              {{else if spell.isInnate}}
+              <span class="spell-source-badge badge-innate">Innate</span>
+              {{else if spell.isPrepared}}
+              <span class="spell-source-badge badge-prepared">Prepared</span>
+              {{else if spell.isSpontaneous}}
+              <span class="spell-source-badge badge-spontaneous">Spontaneous</span>
+              {{/if}}
+
+              {{#if spell.isExpended}}
+              <span class="spell-expended-badge">Expended</span>
+              {{/if}}
+
+              <i class="fas fa-chevron-down action-expand-icon {{#if spell.isExpanded}}expanded{{/if}}"></i>
+            </div>
+
+            <!-- Action Buttons: Chat, Restore, Cast -->
+            <div class="action-btn-group">
+              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{spell.id}}" title="Send to Chat">
+                <i class="fas fa-message"></i>
+              </button>
+
+              {{#if (and spell.isPrepared spell.isExpended)}}
+              <button type="button" class="touch-target btn-restore-slot" data-action="toggleSlotExpended" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="Restore Expended Slot">
+                <i class="fas fa-arrow-rotate-left"></i> Restore
+              </button>
+              {{else}}
+              <button type="button" class="touch-target btn-cast {{#if spell.isAttack}}btn-cast-attack{{/if}}" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="Cast {{spell.name}}">
+                {{#if spell.isAttack}}
+                  <i class="fas fa-crosshairs"></i> Cast
+                {{else}}
+                  <i class="fas fa-wand-magic"></i> Cast
+                {{/if}}
+              </button>
+              {{/if}}
+            </div>
+          </div>
+
+          <!-- Traits Row -->
+          {{#if spell.traits.length}}
+          <div class="action-traits">
+            {{#each spell.traits as |trait|}}
+            <span class="trait-badge">{{trait.label}}</span>
+            {{/each}}
+          </div>
+          {{/if}}
+
+          <!-- Quick Detail Tags (Compact) -->
+          <div class="spell-details">
+            {{#if spell.range}}<span class="detail-tag"><i class="fas fa-ruler"></i> {{spell.range}}</span>{{/if}}
+            {{#if spell.target}}<span class="detail-tag"><i class="fas fa-crosshairs"></i> {{spell.target}}</span>{{/if}}
+            {{#if spell.area}}<span class="detail-tag"><i class="fas fa-expand"></i> {{spell.area}}</span>{{/if}}
+            {{#if spell.defense}}<span class="detail-tag"><i class="fas fa-shield-halved"></i> {{spell.defense}}</span>{{/if}}
+            {{#if spell.duration}}<span class="detail-tag"><i class="fas fa-clock"></i> {{spell.duration}}</span>{{/if}}
+          </div>
+
+          <!-- Expandable Details Drawer -->
+          <div class="action-summary {{#if spell.isExpanded}}expanded{{else}}collapsed{{/if}}">
+            <div class="action-description-content">
+              {{{spell.description}}}
+            </div>
+          </div>
+        </div>
+        {{else}}
+        <p class="empty-hint">No spells available for this rank.</p>
+        {{/each}}
+      </div>
+    </section>
+    {{else}}
+    <p class="empty-hint">No spellcasting entries or spells configured on this character.</p>
+    {{/each}}
+  </div>
+
+  {{else}}
+  <!-- ======================================================== -->
+  <!-- 2. PREPARATION VIEW: Manage Prepared Slots & Presets    -->
+  <!-- ======================================================== -->
+  <div class="spells-preparation-view">
+    <!-- Presets Toolbar -->
+    <div class="spell-presets-bar">
+      <div class="presets-header">
+        <span class="presets-title"><i class="fas fa-layer-group"></i> <strong>Spell Presets</strong></span>
+        <button type="button" class="touch-target btn-save-preset" data-action="saveSpellPreset" title="Save current prepared loadout as preset">
+          <i class="fas fa-floppy-disk"></i> Save Current
+        </button>
+      </div>
+
+      {{#if spellPresets.length}}
+      <div class="presets-list">
+        {{#each spellPresets as |preset|}}
+        <div class="preset-pill">
+          <span class="preset-name">{{preset.name}}</span>
+          <button type="button" class="touch-target btn-apply-preset" data-action="applySpellPreset" data-preset-id="{{preset.id}}" title="Load {{preset.name}}">
+            <i class="fas fa-check"></i> Load
+          </button>
+          <button type="button" class="touch-target btn-delete-preset" data-action="deleteSpellPreset" data-preset-id="{{preset.id}}" title="Delete Preset">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+        {{/each}}
+      </div>
+      {{else}}
+      <p class="presets-empty-hint">No saved presets yet. Prepare your spells and tap "Save Current" to create one.</p>
       {{/if}}
     </div>
 
-    <div class="spell-list">
-      {{#each group.spells as |spell|}}
-      <div class="action-card spell-card" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}">
-        <div class="action-card-header">
-          <div class="spell-title-info">
-            <span class="action-name"><strong>{{spell.name}}</strong></span>
-            {{#if spell.actionCost}}
-            <span class="action-cost">({{spell.actionCost}})</span>
+    <!-- Prepared Entries Slot Management -->
+    {{#each preparedEntries as |entry|}}
+    <div class="prepared-entry-section" data-entry-id="{{entry.id}}">
+      <h3 class="entry-section-title"><i class="fas fa-book"></i> {{entry.name}}</h3>
+
+      {{#each entry.ranks as |rankData|}}
+      <div class="prep-rank-card" data-rank="{{rankData.rank}}">
+        <div class="prep-rank-header">
+          <span class="prep-rank-label"><strong>{{rankData.label}}</strong></span>
+          <span class="prep-slot-count">{{rankData.preparedCount}} / {{rankData.maxSlots}} Prepared</span>
+        </div>
+
+        <div class="prep-slots-list">
+          {{#each rankData.slots as |slot|}}
+          <div class="slot-row {{#if slot.isEmpty}}slot-empty{{else}}slot-filled{{/if}} {{#if slot.isExpended}}slot-expended{{/if}}">
+            <span class="slot-num-badge">{{slot.slotNumber}}</span>
+
+            {{#if slot.isEmpty}}
+            <div class="slot-empty-content">
+              <span class="slot-placeholder">Empty Slot</span>
+              <button type="button" class="touch-target btn-prepare-slot" data-action="openSpellPrepPicker" data-entry-id="{{entry.id}}" data-rank="{{rankData.rank}}" data-slot-index="{{slot.slotIndex}}">
+                <i class="fas fa-plus"></i> Prepare Spell
+              </button>
+            </div>
+            {{else}}
+            <div class="slot-filled-content">
+              <img class="slot-spell-img" src="{{slot.spell.img}}" alt="{{slot.spell.name}}" />
+              <div class="slot-spell-info">
+                <span class="slot-spell-name"><strong>{{slot.spell.name}}</strong></span>
+                {{#if slot.spell.glyph}}
+                <span class="action-cost-glyph">{{slot.spell.glyph}}</span>
+                {{/if}}
+                {{#if slot.isExpended}}
+                <span class="spell-expended-badge">Expended</span>
+                {{/if}}
+              </div>
+              <div class="slot-actions">
+                <button type="button" class="touch-target btn-change-slot" data-action="openSpellPrepPicker" data-entry-id="{{entry.id}}" data-rank="{{rankData.rank}}" data-slot-index="{{slot.slotIndex}}" title="Change Spell">
+                  <i class="fas fa-arrow-right-arrow-left"></i>
+                </button>
+                <button type="button" class="touch-target btn-unprepare-slot" data-action="unprepareSlot" data-entry-id="{{entry.id}}" data-rank="{{rankData.rank}}" data-slot-index="{{slot.slotIndex}}" title="Clear Slot">
+                  <i class="fas fa-xmark"></i>
+                </button>
+              </div>
+            </div>
             {{/if}}
           </div>
-          <button type="button" class="touch-target btn-cast" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}">
-            Cast
-          </button>
-        </div>
-        <div class="spell-details">
-          {{#if spell.range}}<span class="detail-tag">Range: {{spell.range}}</span>{{/if}}
-          {{#if spell.target}}<span class="detail-tag">Target: {{spell.target}}</span>{{/if}}
-          {{#if spell.save}}<span class="detail-tag">Save: {{spell.save}}</span>{{/if}}
+          {{/each}}
         </div>
       </div>
-      {{else}}
-      <p class="empty-hint">No spells prepared or known for this rank.</p>
       {{/each}}
     </div>
-  </section>
-  {{else}}
-  <p class="empty-hint">No spellcasting entries found on this character.</p>
-  {{/each}}
+    {{/each}}
+  </div>
+  {{/if}}
 </div>
-
