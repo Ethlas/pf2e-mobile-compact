@@ -794,16 +794,28 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   overflow: hidden !important;
 }
 
-.mobile-chat-mount #chat-log,
-.mobile-chat-mount .chat-log {
+.mobile-chat-mount .chat-scroll {
   flex: 1 1 100% !important;
   height: 100% !important;
+  min-height: 0 !important;
   max-height: 100% !important;
   width: 100% !important;
-  max-width: 100% !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
   -webkit-overflow-scrolling: touch !important;
+  position: relative !important;
+  scroll-behavior: auto !important;
+}
+
+.mobile-chat-mount #chat-log,
+.mobile-chat-mount .chat-log {
+  flex: 1 1 auto !important;
+  height: auto !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
   padding: 8px 8px 16px 8px !important;
   margin: 0 !important;
   list-style: none !important;
@@ -853,6 +865,46 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   border: none !important;
   overflow: hidden !important;
   pointer-events: none !important;
+}
+
+/* Floating "Latest" / Scroll-to-Bottom Button */
+.btn-scroll-bottom {
+  position: absolute !important;
+  bottom: 16px !important;
+  right: 16px !important;
+  z-index: 50 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 8px 16px !important;
+  min-height: 40px !important;
+  height: 40px !important;
+  background: var(--pf2e-mobile-primary, #5e0000) !important;
+  color: #ffffff !important;
+  font-family: var(--pf2e-mobile-font-family) !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+  cursor: pointer !important;
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.15s ease !important;
+  user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  pointer-events: auto !important;
+}
+
+.btn-scroll-bottom:hover,
+.btn-scroll-bottom:active {
+  background: #7a0000 !important;
+  transform: scale(1.04) !important;
+}
+
+.btn-scroll-bottom.is-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(12px) !important;
 }
 
 /* Mobile-Optimized PF2e Damage Application Buttons */

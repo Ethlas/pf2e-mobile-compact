@@ -4,6 +4,25 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.8] - 2026-09-14
+
+### Milestone 7: Chat Auto-Scroll & Floating Latest Jump Button
+
+#### Added
+- **Floating "Latest" Jump Button**:
+  - Added a touch-friendly 40px floating pill button (`.btn-scroll-bottom`) positioned in the bottom-right of the Chat tab.
+  - Automatically fades in when scrolling away from the bottom (> 80px) and smoothly disappears when reading the latest messages.
+  - Tapping the button or tapping the "Chat" bottom navigation icon while already on the Chat tab instantly jumps down to the newest rolls.
+
+#### Fixed
+- **Foundry v14 Chat Scroll Hierarchy Conflict**:
+  - Resolved issue where switching to the Chat tab required manual scrolling to view recent rolls.
+  - Corrected nested scroll container conflict where `#disableChatInputs` forced `height: 100%` and `overflow-y: auto` onto `#chat-log` inside `.chat-scroll`.
+  - Configured `.chat-scroll` as the dedicated scroll container and restored natural height expansion to `#chat-log`.
+  - Implemented resilient multi-frame auto-scrolling on tab switch, sheet render, and new chat message arrival.
+
+---
+
 ## [1.0.7] - 2026-09-13
 
 ### Physical Damage Dice Roll Resolution & Native PF2e Evaluation Fix

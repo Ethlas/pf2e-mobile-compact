@@ -17,6 +17,7 @@ yarn-error.log*
 *.log
 
 # Build & temporary files
-dist/
-*.tmp
+# Deploy scripts
+deploy.ps1
+*.local.*
 

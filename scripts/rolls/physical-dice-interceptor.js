@@ -438,3 +438,4 @@ export function setupPhysicalDiceInterceptor() {
 
   console.log("PF2e Mobile Compact | Physical dice roll interceptor active.");
 }
+

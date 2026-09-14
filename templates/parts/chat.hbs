@@ -1,4 +1,16 @@
 <div class="mobile-chat-container" data-tab="chat">
   <!-- Foundry ui.chat.element will be docked here dynamically -->
   <div class="mobile-chat-mount"></div>
+
+  <!-- Floating button to jump down to the latest message -->
+  <button
+    type="button"
+    class="btn-scroll-bottom touch-target is-hidden"
+    data-action="scrollChatToBottom"
+    title="Scroll to Latest Message"
+    aria-label="Scroll to Latest Message"
+  >
+    <i class="fas fa-arrow-down"></i>
+    <span>Latest</span>
+  </button>
 </div>

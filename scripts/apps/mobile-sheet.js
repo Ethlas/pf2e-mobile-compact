@@ -393,6 +393,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       selectTarget: PF2eMobileSheet.#onSelectTarget,
       toggleRollMode: PF2eMobileSheet.#onToggleRollMode,
       switchTab: PF2eMobileSheet.#onSwitchTab,
+      scrollChatToBottom: PF2eMobileSheet.#onScrollChatToBottom,
       openCompendiumPicker: PF2eMobileSheet.#onOpenCompendiumPicker,
       adjustSlot: PF2eMobileSheet.#onAdjustSlot,
       adjustFocus: PF2eMobileSheet.#onAdjustFocus,
@@ -503,11 +504,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     if (this.#activeTab === "chat") {
       this.#unreadChatCount = 0;
       this.#updateChatBadge();
-      setTimeout(() => {
-        try {
-          ui.chat?.scrollBottom?.();
-        } catch {}
-      }, 50);
+      this.#scrollChatToBottom(false);
+      this.#setupScrollBottomListener();
     }
 
     // Synchronize fullscreen toggle button icon and mode
@@ -633,18 +631,44 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       }
     }
 
+    const chatScroll = root.querySelector(".chat-scroll");
+    if (chatScroll) {
+      chatScroll.style.setProperty("flex", "1 1 100%", "important");
+      chatScroll.style.setProperty("height", "100%", "important");
+      chatScroll.style.setProperty("min-height", "0", "important");
+      chatScroll.style.setProperty("max-height", "100%", "important");
+      chatScroll.style.setProperty("width", "100%", "important");
+      chatScroll.style.setProperty("overflow-y", "auto", "important");
+      chatScroll.style.setProperty("overflow-x", "hidden", "important");
+      chatScroll.style.setProperty("-webkit-overflow-scrolling", "touch", "important");
+      chatScroll.style.setProperty("position", "relative", "important");
+    }
+
     const chatLog = root.querySelector("#chat-log, .chat-log");
     if (chatLog) {
       chatLog.style.setProperty("display", "flex", "important");
       chatLog.style.setProperty("flex-direction", "column", "important");
       chatLog.style.setProperty("flex-wrap", "nowrap", "important");
-      chatLog.style.setProperty("flex", "1 1 100%", "important");
       chatLog.style.setProperty("width", "100%", "important");
       chatLog.style.setProperty("max-width", "100%", "important");
-      chatLog.style.setProperty("height", "100%", "important");
-      chatLog.style.setProperty("max-height", "100%", "important");
-      chatLog.style.setProperty("overflow-y", "auto", "important");
-      chatLog.style.setProperty("overflow-x", "hidden", "important");
+
+      if (chatScroll) {
+        // Foundry v13/v14: .chat-scroll is the dedicated scroll container.
+        // chatLog expands naturally inside it with visible overflow.
+        chatLog.style.setProperty("flex", "1 1 auto", "important");
+        chatLog.style.setProperty("height", "auto", "important");
+        chatLog.style.setProperty("min-height", "100%", "important");
+        chatLog.style.removeProperty("max-height");
+        chatLog.style.setProperty("overflow-y", "visible", "important");
+        chatLog.style.setProperty("overflow-x", "hidden", "important");
+      } else {
+        // Fallback for older Foundry versions
+        chatLog.style.setProperty("flex", "1 1 100%", "important");
+        chatLog.style.setProperty("height", "100%", "important");
+        chatLog.style.setProperty("max-height", "100%", "important");
+        chatLog.style.setProperty("overflow-y", "auto", "important");
+        chatLog.style.setProperty("overflow-x", "hidden", "important");
+      }
 
       for (const msg of chatLog.children) {
         msg.style.setProperty("display", "flex", "important");
@@ -726,6 +750,11 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         chatEl._pf2eMobileInputObserver.disconnect();
         chatEl._pf2eMobileInputObserver = null;
       }
+      const scrollEl = chatEl.querySelector(".chat-scroll") ?? chatEl.querySelector("#chat-log, .chat-log");
+      if (scrollEl?._pf2eScrollBottomHandler) {
+        scrollEl.removeEventListener("scroll", scrollEl._pf2eScrollBottomHandler);
+        scrollEl._pf2eScrollBottomHandler = null;
+      }
       if (this.#chatOriginalParent && this.#chatOriginalParent.isConnected) {
         if (this.#chatOriginalNextSibling && this.#chatOriginalParent.contains(this.#chatOriginalNextSibling)) {
           this.#chatOriginalParent.insertBefore(chatEl, this.#chatOriginalNextSibling);
@@ -736,6 +765,97 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     } catch (err) {
       console.warn("pf2e-mobile-compact | Error restoring chat element:", err);
     }
+  }
+
+  /**
+   * Scrolls the mobile chat container to the newest/latest message.
+   * Employs multiple fallback techniques (scrollTo, scrollIntoView, ui.chat.scrollBottom)
+   * across multiple animation frames to ensure dynamic content and image layouts settle.
+   * @param {boolean} [smooth=false]
+   */
+  #scrollChatToBottom(smooth = false) {
+    const doScroll = (isSmooth) => {
+      const mount = this.element?.querySelector(".mobile-chat-mount");
+      if (!mount) return;
+
+      const chatScroll = mount.querySelector(".chat-scroll");
+      const chatLog = mount.querySelector("#chat-log, .chat-log");
+      const lastMsg = chatLog?.lastElementChild;
+      const behavior = isSmooth ? "smooth" : "instant";
+
+      if (chatScroll) {
+        chatScroll.scrollTo({
+          top: chatScroll.scrollHeight + 10000,
+          behavior
+        });
+      }
+
+      if (chatLog && chatLog !== chatScroll) {
+        chatLog.scrollTo({
+          top: chatLog.scrollHeight + 10000,
+          behavior
+        });
+      }
+
+      if (lastMsg && typeof lastMsg.scrollIntoView === "function") {
+        try {
+          lastMsg.scrollIntoView({ block: "end", inline: "nearest", behavior });
+        } catch {
+          try {
+            lastMsg.scrollIntoView(false);
+          } catch {}
+        }
+      }
+
+      try {
+        ui.chat?.scrollBottom?.({ popout: false });
+      } catch {}
+    };
+
+    doScroll(smooth);
+    requestAnimationFrame(() => {
+      doScroll(smooth);
+      setTimeout(() => doScroll(false), 60);
+      setTimeout(() => doScroll(false), 160);
+    });
+  }
+
+  /**
+   * Sets up a passive scroll listener on the chat container to toggle visibility
+   * of the floating "Latest" jump button when scrolled away from bottom.
+   */
+  #setupScrollBottomListener() {
+    const mount = this.element?.querySelector(".mobile-chat-mount");
+    const scrollEl = mount?.querySelector(".chat-scroll") ?? mount?.querySelector("#chat-log, .chat-log");
+    const btn = this.element?.querySelector(".btn-scroll-bottom");
+    if (!scrollEl || !btn) return;
+
+    const updateBtnVisibility = () => {
+      const distanceFromBottom = scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight;
+      if (distanceFromBottom > 80) {
+        btn.classList.remove("is-hidden");
+      } else {
+        btn.classList.add("is-hidden");
+      }
+    };
+
+    if (scrollEl._pf2eScrollBottomHandler) {
+      scrollEl.removeEventListener("scroll", scrollEl._pf2eScrollBottomHandler);
+    }
+    scrollEl._pf2eScrollBottomHandler = updateBtnVisibility;
+    scrollEl.addEventListener("scroll", updateBtnVisibility, { passive: true });
+
+    if (!btn._pf2eScrollClickBound) {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.#scrollChatToBottom(true);
+      });
+      btn._pf2eScrollClickBound = true;
+    }
+
+    // Initial check
+    updateBtnVisibility();
   }
 
   /**
@@ -759,14 +879,18 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   /**
-   * Listens for new chat messages to update unread badge when sheet is on another tab.
+   * Listens for new chat messages to update unread badge or auto-scroll to bottom.
    */
   #registerChatListener() {
     if (this.#chatHookId !== null) return;
     this.#chatHookId = Hooks.on("createChatMessage", () => {
-      if (this.rendered && this.#activeTab !== "chat") {
-        this.#unreadChatCount++;
-        this.#updateChatBadge();
+      if (this.rendered) {
+        if (this.#activeTab !== "chat") {
+          this.#unreadChatCount++;
+          this.#updateChatBadge();
+        } else {
+          this.#scrollChatToBottom(false);
+        }
       }
     });
   }
@@ -1559,10 +1683,21 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   /**
+   * Action handler: scroll chat to the latest message.
+   */
+  static async #onScrollChatToBottom(event, target) {
+    this.#scrollChatToBottom(true);
+  }
+
+  /**
    * Action handler: switch active tab.
    */
   static async #onSwitchTab(event, target) {
     const newTab = target.dataset.tab;
+    if (newTab === "chat" && this.#activeTab === "chat") {
+      this.#scrollChatToBottom(true);
+      return;
+    }
     if (newTab && newTab !== this.#activeTab) {
       this.#activeTab = newTab;
       if (newTab === "chat") {
