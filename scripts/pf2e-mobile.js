@@ -451,6 +451,7 @@ Hooks.once("init", async () => {
       proto = Object.getPrototypeOf(proto);
     }
     if (sheetDescriptor?.get) {
+      const origSheetGetter = sheetDescriptor.get;
       Object.defineProperty(ActorClass.prototype, "sheet", {
         get() {
           if (shouldActivateMobile() && this.type === "character") {

@@ -4,6 +4,15 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.10] - 2026-09-18
+
+### Hotfix: Sheet Getter Reference Resolution
+
+#### Fixed
+- **Actor Sheet Getter ReferenceError**: Fixed `ReferenceError: origSheetGetter is not defined` when resolving `actor.sheet` property on mobile and desktop clients by correctly defining `origSheetGetter` from the prototype chain descriptor.
+
+---
+
 ## [1.0.9] - 2026-09-14
 
 ### Milestone 8: Spells Tab Modernization, Expandable Cards & Tap-to-Prepare Overhaul
