@@ -71,21 +71,21 @@ body.pf2e-fullscreen #notifications {
   top: 10px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
-  width: calc(100vw - 24px) !important;
-  max-width: 480px !important;
+  width: calc(100vw - 24px);
+  max-width: 480px;
   z-index: 1000 !important;
-  pointer-events: none !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 6px !important;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 body.pf2e-mobile-active #notifications .notification,
 body.pf2e-fullscreen #notifications .notification {
-  pointer-events: auto !important;
-  border-radius: 6px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-  font-size: 0.9rem !important;
+  pointer-events: auto;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  font-size: 0.9rem;
 }
 
 body.pf2e-mobile-active #screen-warning,
@@ -98,36 +98,24 @@ body.pf2e-fullscreen #resolution-warning {
 /* Full-bleed viewport layout on mobile devices or fullscreen mode */
 body.pf2e-mobile-active .pf2e-mobile-sheet,
 body.pf2e-mobile-active.pf2e-mobile-sheet,
-body.pf2e-mobile-active [data-application-part="sheet"],
 body.pf2e-fullscreen .pf2e-mobile-sheet,
 .pf2e-mobile-sheet.fullscreen-mode,
 :fullscreen .pf2e-mobile-sheet,
 :-webkit-full-screen .pf2e-mobile-sheet {
   position: fixed !important;
   inset: 0 !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100vw !important;
   width: 100% !important;
-  height: 100vh !important;
   height: 100dvh !important;
-  max-width: 100vw !important;
   max-width: 100% !important;
-  max-height: 100vh !important;
   max-height: 100dvh !important;
-  min-width: 100% !important;
-  min-height: 100% !important;
-  min-height: 100dvh !important;
   margin: 0 !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-  border: none !important;
-  box-shadow: none !important;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
   transform: none !important;
-  z-index: 100 !important;
-  background: var(--pf2e-theme-bg, #1a1a1a) !important;
+  z-index: 100;
+  background: var(--pf2e-theme-bg, #1a1a1a);
 }
 
 /* Ensure full bleed on narrow mobile viewports even if body class is delayed */
@@ -135,25 +123,17 @@ body.pf2e-fullscreen .pf2e-mobile-sheet,
   .pf2e-mobile-sheet {
     position: fixed !important;
     inset: 0 !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100vw !important;
     width: 100% !important;
-    height: 100vh !important;
     height: 100dvh !important;
-    max-width: 100vw !important;
     max-width: 100% !important;
-    max-height: 100vh !important;
     max-height: 100dvh !important;
     margin: 0 !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
+    padding: 0;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
     transform: none !important;
-    z-index: 100 !important;
+    z-index: 100;
   }
 }
 
@@ -174,16 +154,42 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 
 .pf2e-mobile-sheet .window-content {
   padding: 0 !important;
-  margin: 0 !important;
-  height: 100% !important;
-  width: 100% !important;
-  max-height: 100% !important;
-  overflow: hidden !important;
-  display: flex !important;
-  flex-direction: column !important;
-  background: var(--pf2e-theme-bg, #1a1a1a) !important;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--pf2e-theme-bg, #1a1a1a);
 }
 
+/* ----------------------------------------- */
+/* ApplicationV2 Parts Flex Structure        */
+/* ----------------------------------------- */
+.pf2e-mobile-sheet .window-content > [data-application-part="header"],
+.pf2e-mobile-sheet .mobile-header-dashboard {
+  flex: 0 0 auto !important;
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+  z-index: 10;
+}
+
+.pf2e-mobile-sheet .window-content > [data-application-part="sheet"],
+.pf2e-mobile-sheet .mobile-sheet-body {
+  flex: 1 1 0% !important;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
 
 /* ----------------------------------------- */
 /* Root Sheet Layout                         */
@@ -204,16 +210,6 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 
 .pf2e-mobile-sheet * {
   box-sizing: border-box;
-}
-
-.mobile-sheet-body {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  height: 100%;
-  overflow: hidden;
-  position: relative;
 }
 
 /* ----------------------------------------- */
@@ -241,20 +237,20 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 }
 
 /* Buttons with distinct roles */
-.btn-primary {
-  background: #1976d2 !important;
-  color: #fff !important;
-  border: 1px solid #1565c0 !important;
+.pf2e-mobile-sheet .btn-primary {
+  background: #1976d2;
+  color: #fff;
+  border: 1px solid #1565c0;
   font-weight: bold;
   padding: 8px 12px;
 }
 
-.btn-cast,
-.btn-consume,
-.btn-import {
-  background: #388e3c !important;
-  color: #fff !important;
-  border: 1px solid #2e7d32 !important;
+.pf2e-mobile-sheet .btn-cast,
+.pf2e-mobile-sheet .btn-consume,
+.pf2e-mobile-sheet .btn-import {
+  background: #388e3c;
+  color: #fff;
+  border: 1px solid #2e7d32;
   font-weight: bold;
   padding: 6px 12px;
 }
@@ -293,9 +289,9 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   width: 100%;
   font-weight: bold;
   font-size: 1.05rem;
-  background: #222 !important;
-  color: #fff !important;
-  border: 1px solid #444 !important;
+  background: #222;
+  color: #fff;
+  border: 1px solid #444;
   border-radius: 4px;
   padding: 4px 8px;
   white-space: nowrap;
@@ -349,50 +345,50 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   color: #90caf9;
 }
 
-.defense-btn {
+.mobile-header-dashboard .defense-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 3px;
-  min-height: 38px !important;
+  min-height: 38px;
   height: 38px;
-  padding: 4px 7px !important;
-  min-width: auto !important;
-  font-size: 0.85rem !important;
+  padding: 4px 7px;
+  min-width: auto;
+  font-size: 0.85rem;
   font-weight: 600;
-  border-radius: 4px !important;
-  border: 1px solid #444 !important;
-  background: #242424 !important;
-  color: #e0e0e0 !important;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background: #242424;
+  color: #e0e0e0;
   white-space: nowrap;
   touch-action: manipulation;
   cursor: pointer;
 }
 
-.defense-btn strong {
+.mobile-header-dashboard .defense-btn strong {
   color: #81c784;
 }
 
-.defense-btn:active {
-  background: #383838 !important;
+.mobile-header-dashboard .defense-btn:active {
+  background: #383838;
 }
 
-.defense-btn.initiative-btn strong {
+.mobile-header-dashboard .defense-btn.initiative-btn strong {
   color: #ffb74d;
 }
 
-.defense-btn.initiative-btn.combat-active {
-  border-color: #ff9800 !important;
-  background: #332010 !important;
-  color: #ffe0b2 !important;
+.mobile-header-dashboard .defense-btn.initiative-btn.combat-active {
+  border-color: #ff9800;
+  background: #332010;
+  color: #ffe0b2;
   box-shadow: 0 0 6px rgba(255, 152, 0, 0.4);
   animation: combat-pulse 1.8s infinite ease-in-out;
 }
 
-.defense-btn.initiative-btn.combat-rolled {
-  border-color: #4caf50 !important;
-  background: #1b3320 !important;
-  color: #c8e6c9 !important;
+.mobile-header-dashboard .defense-btn.initiative-btn.combat-rolled {
+  border-color: #4caf50;
+  background: #1b3320;
+  color: #c8e6c9;
 }
 
 @keyframes combat-pulse {
@@ -412,10 +408,10 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   border: 1px solid #333;
 }
 
-.btn-damage {
-  background: #c62828 !important;
-  border: 1px solid #b71c1c !important;
-  color: #fff !important;
+.mobile-header-dashboard .btn-damage {
+  background: #c62828;
+  border: 1px solid #b71c1c;
+  color: #fff;
   min-width: 48px;
   min-height: 48px;
   width: 48px;
@@ -429,14 +425,14 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   padding: 0;
 }
 
-.btn-damage:active {
-  background: #e53935 !important;
+.mobile-header-dashboard .btn-damage:active {
+  background: #e53935;
 }
 
-.btn-heal {
-  background: #2e7d32 !important;
-  border: 1px solid #1b5e20 !important;
-  color: #fff !important;
+.mobile-header-dashboard .btn-heal {
+  background: #2e7d32;
+  border: 1px solid #1b5e20;
+  color: #fff;
   min-width: 48px;
   min-height: 48px;
   width: 48px;
@@ -450,8 +446,8 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   padding: 0;
 }
 
-.btn-heal:active {
-  background: #43a047 !important;
+.mobile-header-dashboard .btn-heal:active {
+  background: #43a047;
 }
 
 .hp-center-controls {
@@ -481,16 +477,16 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   white-space: nowrap;
 }
 
-.hp-delta-input {
+.mobile-header-dashboard .hp-delta-input {
   width: 65px;
-  min-height: 40px !important;
+  min-height: 40px;
   height: 40px;
   text-align: center;
   font-size: 1.1rem;
   font-weight: bold;
-  background: #222 !important;
-  border: 1px solid #444 !important;
-  color: #fff !important;
+  background: #222;
+  border: 1px solid #444;
+  color: #fff;
   border-radius: 4px;
   padding: 0 4px;
 }
@@ -522,32 +518,32 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   gap: 2px;
 }
 
-.btn-temp-step {
-  min-width: 32px !important;
-  min-height: 32px !important;
+.mobile-header-dashboard .btn-temp-step {
+  min-width: 32px;
+  min-height: 32px;
   width: 32px;
   height: 32px;
-  padding: 0 !important;
+  padding: 0;
   font-size: 0.9rem;
   font-weight: bold;
-  background: #2a2a2a !important;
-  border: 1px solid #444 !important;
-  color: #fff !important;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.temp-hp-input {
+.mobile-header-dashboard .temp-hp-input {
   width: 44px;
-  min-height: 32px !important;
+  min-height: 32px;
   height: 32px;
   text-align: center;
   font-size: 0.95rem;
   font-weight: bold;
-  background: #1e1e1e !important;
-  border: 1px solid #444 !important;
-  color: #4fc3f7 !important;
+  background: #1e1e1e;
+  border: 1px solid #444;
+  color: #4fc3f7;
   border-radius: 4px;
   padding: 0;
 }
@@ -565,12 +561,12 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 
 .header-saves-row .save-item {
   flex: 1;
-  min-height: 40px !important;
+  min-height: 40px;
   height: 40px;
   font-size: 0.85rem;
   color: #ddd;
-  background: #222 !important;
-  border: 1px solid #333 !important;
+  background: #222;
+  border: 1px solid #333;
   padding: 4px 6px;
   border-radius: 4px;
   display: flex;
@@ -580,9 +576,9 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 }
 
 .header-saves-row .save-item:active {
-  background: #383838 !important;
-  border-color: #ffb74d !important;
-  color: #ffb74d !important;
+  background: #383838;
+  border-color: #ffb74d;
+  color: #ffb74d;
 }
 
 .header-control-row {
@@ -595,15 +591,15 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   flex: 1;
 }
 
-.btn-fullscreen {
+.mobile-header-dashboard .btn-fullscreen {
   min-width: 42px;
   width: 42px;
-  min-height: 42px !important;
+  min-height: 42px;
   height: 42px;
-  background: #242424 !important;
-  border: 1px solid #444 !important;
+  background: #242424;
+  border: 1px solid #444;
   border-radius: 4px;
-  color: #e0e0e0 !important;
+  color: #e0e0e0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -613,22 +609,25 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   flex-shrink: 0;
 }
 
-.btn-fullscreen:active {
-  background: #383838 !important;
-  border-color: #90caf9 !important;
-  color: #90caf9 !important;
+.mobile-header-dashboard .btn-fullscreen:active {
+  background: #383838;
+  border-color: #90caf9;
+  color: #90caf9;
 }
 
 /* ----------------------------------------- */
 /* Tab Content Container                     */
 /* ----------------------------------------- */
 .mobile-tab-content {
-  flex: 1;
+  flex: 1 1 0%;
   min-height: 0;
+  height: auto;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   padding: 12px;
   padding-bottom: 24px;
+  box-sizing: border-box;
 }
 
 .tab-action-bar {
@@ -659,10 +658,8 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 /* Bottom Navigation Bar                     */
 /* ----------------------------------------- */
 .mobile-bottom-nav {
-  position: sticky;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
+  flex: 0 0 auto;
   width: 100%;
   height: calc(56px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -672,16 +669,15 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   justify-content: space-around;
   align-items: stretch;
   z-index: 20;
-  flex-shrink: 0;
   box-sizing: border-box;
 }
 
-.nav-item {
+.mobile-bottom-nav .nav-item {
   flex: 1;
-  background: transparent !important;
-  color: #888 !important;
-  border: none !important;
-  border-radius: 0 !important;
+  background: transparent;
+  color: #888;
+  border: none;
+  border-radius: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -691,10 +687,10 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   min-height: 48px;
 }
 
-.nav-item.active {
-  color: #ffb74d !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  border-top: 3px solid #ffb74d !important;
+.mobile-bottom-nav .nav-item.active {
+  color: #ffb74d;
+  background: rgba(255, 255, 255, 0.05);
+  border-top: 3px solid #ffb74d;
 }
 
 .nav-item i {
@@ -750,11 +746,11 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 /* Remove outer tab-content padding and nested scroll when viewing chat */
 .mobile-tab-content:has(.mobile-chat-pane:not(.is-hidden)),
 .mobile-sheet-body:has(.mobile-chat-pane:not(.is-hidden)) .mobile-tab-content {
-  padding: 0 !important;
-  overflow: hidden !important;
-  display: flex !important;
-  flex-direction: column !important;
-  height: 100% !important;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .mobile-chat-container {
@@ -777,52 +773,52 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 }
 
 .mobile-chat-mount #chat {
-  display: flex !important;
-  flex-direction: column !important;
-  flex-wrap: nowrap !important;
-  flex: 1 1 100% !important;
-  height: 100% !important;
-  max-height: 100% !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  border: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  position: relative !important;
-  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  flex: 1 1 100%;
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+  max-width: 100%;
+  border: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  position: relative;
+  overflow: hidden;
 }
 
 .mobile-chat-mount .chat-scroll {
-  flex: 1 1 100% !important;
-  height: 100% !important;
-  min-height: 0 !important;
-  max-height: 100% !important;
-  width: 100% !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  -webkit-overflow-scrolling: touch !important;
-  position: relative !important;
-  scroll-behavior: auto !important;
+  flex: 1 1 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  scroll-behavior: auto;
 }
 
 .mobile-chat-mount #chat-log,
 .mobile-chat-mount .chat-log {
-  flex: 1 1 auto !important;
-  height: auto !important;
-  min-height: 100% !important;
-  max-height: none !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow: visible !important;
-  padding: 8px 8px 16px 8px !important;
-  margin: 0 !important;
-  list-style: none !important;
-  display: flex !important;
-  flex-direction: column !important;
-  flex-wrap: nowrap !important;
-  gap: 8px !important;
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 100%;
+  max-height: none;
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+  padding: 8px 8px 16px 8px;
+  margin: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 8px;
 }
 
 /* Individual message boxes: strictly vertical column stack with 100% width scrolling up to down */
@@ -831,14 +827,14 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 .mobile-chat-mount .chat-log > li,
 .mobile-chat-mount .chat-log .chat-message,
 .mobile-chat-mount .message {
-  display: flex !important;
-  flex-direction: column !important;
-  width: 100% !important;
-  min-width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-  margin: 0 0 8px 0 !important;
-  flex-shrink: 0 !important;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 8px 0;
+  flex-shrink: 0;
 }
 
 /* Chat input and controls removed: chat tab is dedicated to quick damage calculation and roll reviews */
@@ -868,111 +864,118 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 }
 
 /* Floating "Latest" / Scroll-to-Bottom Button */
-.btn-scroll-bottom {
-  position: absolute !important;
-  bottom: 16px !important;
-  right: 16px !important;
-  z-index: 50 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 6px !important;
-  padding: 8px 16px !important;
-  min-height: 40px !important;
-  height: 40px !important;
-  background: var(--pf2e-mobile-primary, #5e0000) !important;
-  color: #ffffff !important;
-  font-family: var(--pf2e-mobile-font-family) !important;
-  font-size: 0.85rem !important;
-  font-weight: 600 !important;
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  border-radius: 20px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-  cursor: pointer !important;
-  transition: opacity 0.2s ease, transform 0.2s ease, background 0.15s ease !important;
-  user-select: none !important;
-  -webkit-tap-highlight-color: transparent !important;
-  pointer-events: auto !important;
+.pf2e-mobile-sheet .btn-scroll-bottom {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  min-height: 40px;
+  height: 40px;
+  background: var(--pf2e-mobile-primary, #5e0000);
+  color: #ffffff;
+  font-family: var(--pf2e-mobile-font-family);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: auto;
 }
 
-.btn-scroll-bottom:hover,
-.btn-scroll-bottom:active {
-  background: #7a0000 !important;
-  transform: scale(1.04) !important;
+.pf2e-mobile-sheet .btn-scroll-bottom:hover,
+.pf2e-mobile-sheet .btn-scroll-bottom:active {
+  background: #7a0000;
+  transform: scale(1.04);
 }
 
-.btn-scroll-bottom.is-hidden {
-  opacity: 0 !important;
-  pointer-events: none !important;
-  transform: translateY(12px) !important;
+.pf2e-mobile-sheet .btn-scroll-bottom.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
 }
 
 /* Mobile-Optimized PF2e Damage Application Buttons */
 .mobile-chat-mount .damage-application,
 .pf2e-mobile-sheet .damage-application {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 5px !important;
-  margin-top: 6px !important;
-  justify-content: stretch !important;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+  justify-content: stretch;
 }
 
 .mobile-chat-mount .damage-application button,
 .pf2e-mobile-sheet .damage-application button {
-  flex: 1 1 calc(33.333% - 5px) !important;
-  min-height: 38px !important;
-  height: 38px !important;
-  min-width: 0 !important;
-  padding: 2px 4px !important;
-  font-size: 0.8rem !important;
-  font-weight: 600 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 4px !important;
-  touch-action: manipulation !important;
-  white-space: nowrap !important;
+  flex: 1 1 calc(33.333% - 5px);
+  min-height: 38px;
+  height: 38px;
+  min-width: 0;
+  padding: 2px 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  touch-action: manipulation;
+  white-space: nowrap;
 }
 
-.mobile-chat-mount .damage-application button[data-action="apply-damage"] {
-  background: #b71c1c !important;
-  color: #fff !important;
-  border: 1px solid #d32f2f !important;
+.mobile-chat-mount .damage-application button[data-action="apply-damage"],
+.pf2e-mobile-sheet .damage-application button[data-action="apply-damage"] {
+  background: #b71c1c;
+  color: #fff;
+  border: 1px solid #d32f2f;
 }
 
-.mobile-chat-mount .damage-application button[data-action="half-damage"] {
-  background: #e65100 !important;
-  color: #fff !important;
-  border: 1px solid #f57c00 !important;
+.mobile-chat-mount .damage-application button[data-action="half-damage"],
+.pf2e-mobile-sheet .damage-application button[data-action="half-damage"] {
+  background: #e65100;
+  color: #fff;
+  border: 1px solid #f57c00;
 }
 
-.mobile-chat-mount .damage-application button[data-action="double-damage"] {
-  background: #880e4f !important;
-  color: #fff !important;
-  border: 1px solid #ad1457 !important;
+.mobile-chat-mount .damage-application button[data-action="double-damage"],
+.pf2e-mobile-sheet .damage-application button[data-action="double-damage"] {
+  background: #880e4f;
+  color: #fff;
+  border: 1px solid #ad1457;
 }
 
-.mobile-chat-mount .damage-application button[data-action="shield-block"] {
-  background: #0277bd !important;
-  color: #fff !important;
-  border: 1px solid #0288d1 !important;
+.mobile-chat-mount .damage-application button[data-action="shield-block"],
+.pf2e-mobile-sheet .damage-application button[data-action="shield-block"] {
+  background: #0277bd;
+  color: #fff;
+  border: 1px solid #0288d1;
 }
 
-.mobile-chat-mount .damage-application button[data-action="shield-block"].shield-activated {
-  background: #2e7d32 !important;
-  border-color: #4caf50 !important;
-  box-shadow: 0 0 6px rgba(76, 175, 80, 0.8) !important;
+.mobile-chat-mount .damage-application button[data-action="shield-block"].shield-activated,
+.pf2e-mobile-sheet .damage-application button[data-action="shield-block"].shield-activated {
+  background: #2e7d32;
+  border-color: #4caf50;
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.8);
 }
 
-.mobile-chat-mount .damage-application button[data-action="apply-healing"] {
-  background: #1b5e20 !important;
-  color: #fff !important;
-  border: 1px solid #2e7d32 !important;
+.mobile-chat-mount .damage-application button[data-action="apply-healing"],
+.pf2e-mobile-sheet .damage-application button[data-action="apply-healing"] {
+  background: #1b5e20;
+  color: #fff;
+  border: 1px solid #2e7d32;
 }
 
-.mobile-chat-mount .damage-application button:active {
-  filter: brightness(1.2) !important;
-  transform: scale(0.98) !important;
+.mobile-chat-mount .damage-application button:active,
+.pf2e-mobile-sheet .damage-application button:active {
+  filter: brightness(1.2);
+  transform: scale(0.98);
 }
 
 /* ----------------------------------------- */
@@ -994,16 +997,16 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   border: 1px solid #333;
 }
 
-.action-subtabs .subtab-btn {
+.pf2e-mobile-sheet .action-subtabs .subtab-btn {
   flex: 1;
-  min-height: 40px !important;
+  min-height: 40px;
   height: 40px;
   font-size: 0.85rem;
   font-weight: 600;
-  background: transparent !important;
-  border: 1px solid transparent !important;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 4px;
-  color: #aaa !important;
+  color: #aaa;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1013,10 +1016,10 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   touch-action: manipulation;
 }
 
-.action-subtabs .subtab-btn.active {
-  background: #333 !important;
-  color: #fff !important;
-  border: 1px solid #555 !important;
+.pf2e-mobile-sheet .action-subtabs .subtab-btn.active {
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
@@ -1089,15 +1092,15 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   width: 100%;
 }
 
-.map-button {
+.strike-card .map-button {
   flex: 1;
-  min-height: 44px !important;
+  min-height: 44px;
   height: 44px;
   font-size: 1.05rem;
   font-weight: bold;
-  background: #203348 !important;
-  border: 1px solid #3b5a7d !important;
-  color: #90caf9 !important;
+  background: #203348;
+  border: 1px solid #3b5a7d;
+  color: #90caf9;
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -1105,9 +1108,9 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   touch-action: manipulation;
 }
 
-.map-button:active {
-  background: #1976d2 !important;
-  color: #fff !important;
+.strike-card .map-button:active {
+  background: #1976d2;
+  color: #fff;
 }
 
 /* Damage Row */
@@ -1120,21 +1123,21 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 .strike-damage-row .damage-button,
 .strike-damage-row .critical-button {
   flex: 1;
-  min-height: 40px !important;
+  min-height: 40px;
   height: 40px;
   font-size: 0.9rem;
 }
 
-.damage-button {
-  background: #8e1b1b !important;
-  border: 1px solid #b71c1c !important;
-  color: #fff !important;
+.strike-card .damage-button {
+  background: #8e1b1b;
+  border: 1px solid #b71c1c;
+  color: #fff;
 }
 
-.critical-button {
-  background: #7b1241 !important;
-  border: 1px solid #ad1457 !important;
-  color: #fff !important;
+.strike-card .critical-button {
+  background: #7b1241;
+  border: 1px solid #ad1457;
+  color: #fff;
   font-weight: bold;
 }
 
@@ -1147,26 +1150,26 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   border-top: 1px solid #2e2e2e;
 }
 
-.aux-action-btn {
+.strike-card .aux-action-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  min-height: 36px !important;
-  height: 36px;
-  padding: 4px 8px !important;
-  background: #252525 !important;
-  border: 1px solid #444 !important;
+  min-height: 38px;
+  height: 38px;
+  padding: 4px 8px;
+  background: #252525;
+  border: 1px solid #444;
   border-radius: 4px;
-  color: #ccc !important;
+  color: #ccc;
   font-size: 0.8rem;
   cursor: pointer;
   touch-action: manipulation;
 }
 
-.aux-action-btn:active {
-  background: #3e3e3e !important;
-  border-color: #ffb74d !important;
-  color: #fff !important;
+.strike-card .aux-action-btn:active {
+  background: #3e3e3e;
+  border-color: #ffb74d;
+  color: #fff;
 }
 
 .aux-glyph {
@@ -1201,6 +1204,10 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 
 .action-name {
   font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .action-type-badge {
@@ -1235,6 +1242,7 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  overflow: hidden;
 }
 
 .action-expand-icon {
@@ -1281,63 +1289,65 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
-.btn-action-chat,
-.btn-action-use,
-.btn-action-roll {
-  min-height: 38px !important;
+.pf2e-mobile-sheet .btn-action-chat,
+.pf2e-mobile-sheet .btn-action-use,
+.pf2e-mobile-sheet .btn-action-roll,
+.pf2e-mobile-sheet .btn-action-attack {
+  min-height: 38px;
   height: 38px;
-  padding: 4px 10px !important;
-  border-radius: 4px !important;
-  font-size: 0.85rem !important;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
-.btn-action-chat {
-  background: #2b2b2b !important;
-  border: 1px solid #444 !important;
-  color: #e0e0e0 !important;
-  min-width: 38px !important;
+.pf2e-mobile-sheet .btn-action-chat {
+  background: #2b2b2b;
+  border: 1px solid #444;
+  color: #e0e0e0;
+  min-width: 38px;
 }
 
-.btn-action-use {
-  background: #1565c0 !important;
-  border: 1px solid #0d47a1 !important;
-  color: #fff !important;
+.pf2e-mobile-sheet .btn-action-use {
+  background: #1565c0;
+  border: 1px solid #0d47a1;
+  color: #fff;
   font-weight: 600;
 }
 
-.btn-action-use.active {
-  background: #2e7d32 !important;
-  border: 1px solid #4caf50 !important;
-  color: #fff !important;
+.pf2e-mobile-sheet .btn-action-use.active {
+  background: #2e7d32;
+  border: 1px solid #4caf50;
+  color: #fff;
   font-weight: bold;
 }
 
-.btn-action-roll {
-  background: #3949ab !important;
-  border: 1px solid #283593 !important;
-  color: #fff !important;
+.pf2e-mobile-sheet .btn-action-roll {
+  background: #3949ab;
+  border: 1px solid #283593;
+  color: #fff;
   font-weight: 600;
 }
 
-.btn-action-roll:hover,
-.btn-action-roll:active {
-  background: #5c6bc0 !important;
+.pf2e-mobile-sheet .btn-action-roll:hover,
+.pf2e-mobile-sheet .btn-action-roll:active {
+  background: #5c6bc0;
 }
 
-.btn-action-attack {
-  background: #c62828 !important;
-  border: 1px solid #b71c1c !important;
-  color: #fff !important;
+.pf2e-mobile-sheet .btn-action-attack {
+  background: #c62828;
+  border: 1px solid #b71c1c;
+  color: #fff;
 }
 
-.btn-action-attack:hover,
-.btn-action-attack:active {
-  background: #e53935 !important;
+.pf2e-mobile-sheet .btn-action-attack:hover,
+.pf2e-mobile-sheet .btn-action-attack:active {
+  background: #e53935;
 }
 
 .action-traits {
@@ -1531,50 +1541,25 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 /* Compendium Picker Drawer / Modal          */
 /* ----------------------------------------- */
 body.pf2e-mobile-active .pf2e-mobile-compendium-picker,
-body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
+body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
+.pf2e-mobile-compendium-picker {
   position: fixed !important;
   inset: auto 0 0 0 !important;
   top: auto !important;
   bottom: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  width: 100vw !important;
   width: 100% !important;
   max-width: 100% !important;
-  height: 85vh !important;
   height: 85dvh !important;
   max-height: 85dvh !important;
-  margin: 0 !important;
-  border-radius: 16px 16px 0 0 !important;
-  border: 1px solid #444 !important;
-  border-bottom: none !important;
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.8) !important;
-  z-index: 150 !important;
+  margin: 0;
+  border-radius: 16px 16px 0 0;
+  border: 1px solid #444;
+  border-bottom: none;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.8);
+  z-index: 150;
   transform: none !important;
-}
-
-@media (max-width: 768px) {
-  .pf2e-mobile-compendium-picker {
-    position: fixed !important;
-    inset: auto 0 0 0 !important;
-    top: auto !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100vw !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    height: 85vh !important;
-    height: 85dvh !important;
-    max-height: 85dvh !important;
-    margin: 0 !important;
-    border-radius: 16px 16px 0 0 !important;
-    border: 1px solid #444 !important;
-    border-bottom: none !important;
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.8) !important;
-    z-index: 150 !important;
-    transform: none !important;
-  }
 }
 
 .compendium-picker {
@@ -1689,23 +1674,23 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   margin: 12px auto;
 }
 
-.physical-die-input {
+.physical-dice-dialog-content .physical-die-input {
   display: block;
   margin: 0 auto;
-  font-size: 2rem !important;
+  font-size: 2rem;
   font-weight: bold;
   text-align: center;
   width: 140px;
-  min-height: 54px !important;
-  background: #141414 !important;
-  border: 2px solid #ffb74d !important;
+  min-height: 54px;
+  background: #141414;
+  border: 2px solid #ffb74d;
   border-radius: 8px;
-  color: #fff !important;
+  color: #fff;
 }
 
-.physical-die-input:focus {
+.physical-dice-dialog-content .physical-die-input:focus {
   outline: none;
-  border-color: #ffa726 !important;
+  border-color: #ffa726;
   box-shadow: 0 0 8px rgba(255, 183, 77, 0.5);
 }
 
@@ -1833,21 +1818,21 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   min-width: 80px;
 }
 
-.physical-damage-input {
+.physical-dice-dialog-content .physical-damage-input {
   flex: 1;
-  min-height: 48px !important;
-  font-size: 1.3rem !important;
+  min-height: 48px;
+  font-size: 1.3rem;
   font-weight: bold;
   text-align: center;
-  background: #161616 !important;
-  border: 1px solid #555 !important;
+  background: #161616;
+  border: 1px solid #555;
   border-radius: 6px;
-  color: #fff !important;
+  color: #fff;
 }
 
-.physical-damage-input:focus {
+.physical-dice-dialog-content .physical-damage-input:focus {
   outline: none;
-  border-color: #90caf9 !important;
+  border-color: #90caf9;
   box-shadow: 0 0 6px rgba(144, 202, 249, 0.4);
 }
 
@@ -1859,25 +1844,25 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
 }
 
 /* Footer & Actions */
-.physical-dialog-footer {
+.physical-dice-dialog-content .physical-dialog-footer {
   display: flex;
   gap: 10px;
   margin-top: 14px;
 }
 
-.physical-dialog-footer .btn-cancel {
+.physical-dice-dialog-content .physical-dialog-footer .btn-cancel {
   flex: 1;
-  background: #333 !important;
-  color: #ddd !important;
-  border: 1px solid #444 !important;
+  background: #333;
+  color: #ddd;
+  border: 1px solid #444;
   font-weight: 500;
 }
 
-.physical-dialog-footer .btn-submit {
+.physical-dice-dialog-content .physical-dialog-footer .btn-submit {
   flex: 1.5;
-  background: #1976d2 !important;
-  color: #fff !important;
-  border: 1px solid #1565c0 !important;
+  background: #1976d2;
+  color: #fff;
+  border: 1px solid #1565c0;
   font-weight: bold;
 }
 
@@ -1915,16 +1900,16 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   border: 1px solid #333;
 }
 
-.spell-subtabs .subtab-btn {
+.pf2e-mobile-sheet .spell-subtabs .subtab-btn {
   flex: 1;
-  min-height: 40px !important;
+  min-height: 40px;
   height: 40px;
   font-size: 0.85rem;
   font-weight: 600;
-  background: transparent !important;
-  border: 1px solid transparent !important;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 4px;
-  color: #aaa !important;
+  color: #aaa;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1934,20 +1919,20 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   touch-action: manipulation;
 }
 
-.spell-subtabs .subtab-btn.active {
-  background: #333 !important;
-  color: #fff !important;
-  border: 1px solid #555 !important;
+.pf2e-mobile-sheet .spell-subtabs .subtab-btn.active {
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-.btn-daily-reset {
-  min-height: 38px !important;
+.pf2e-mobile-sheet .btn-daily-reset {
+  min-height: 38px;
   height: 38px;
-  padding: 4px 10px !important;
-  background: #1f2937 !important;
-  border: 1px solid #374151 !important;
-  color: #93c5fd !important;
+  padding: 4px 10px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  color: #93c5fd;
   border-radius: 6px;
   font-size: 0.82rem;
   font-weight: 600;
@@ -1958,9 +1943,9 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   touch-action: manipulation;
 }
 
-.btn-daily-reset:active {
-  background: #374151 !important;
-  color: #fff !important;
+.pf2e-mobile-sheet .btn-daily-reset:active {
+  background: #374151;
+  color: #fff;
 }
 
 /* Collapsible Rank Groups */
@@ -2029,29 +2014,29 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   color: #bbb;
 }
 
-.btn-slot-adjust {
-  min-width: 32px !important;
-  min-height: 32px !important;
-  width: 32px;
-  height: 32px;
-  padding: 0 !important;
+.pf2e-mobile-sheet .btn-slot-adjust {
+  min-width: 36px;
+  min-height: 36px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #2a2a2a !important;
-  border: 1px solid #444 !important;
+  background: #2a2a2a;
+  border: 1px solid #444;
   border-radius: 4px;
-  color: #fff !important;
+  color: #fff;
   font-size: 0.95rem;
   font-weight: bold;
   cursor: pointer;
   touch-action: manipulation;
 }
 
-.btn-slot-adjust:active {
-  background: #3a3a3a !important;
-  border-color: #ffb74d !important;
-  color: #ffb74d !important;
+.pf2e-mobile-sheet .btn-slot-adjust:active {
+  background: #3a3a3a;
+  border-color: #ffb74d;
+  color: #ffb74d;
 }
 
 .spell-list {
@@ -2117,6 +2102,23 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   border: 1px solid #ea580c;
 }
 
+.spell-source-badge.badge-signature {
+  background: #451a03;
+  color: #fef08a;
+  border: 1px solid #d97706;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 5px;
+  font-size: 0.72rem;
+}
+
+.spell-source-badge.badge-heightened {
+  background: #182234;
+  color: #7dd3fc;
+  border: 1px solid #0284c7;
+}
+
 .spell-expended-badge {
   font-size: 0.68rem;
   font-weight: 700;
@@ -2130,15 +2132,15 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   white-space: nowrap;
 }
 
-.btn-restore-slot {
-  min-height: 38px !important;
+.pf2e-mobile-sheet .btn-restore-slot {
+  min-height: 38px;
   height: 38px;
-  padding: 4px 10px !important;
-  background: #1e3a2f !important;
-  border: 1px solid #059669 !important;
-  color: #6ee7b7 !important;
-  border-radius: 4px !important;
-  font-size: 0.82rem !important;
+  padding: 4px 10px;
+  background: #1e3a2f;
+  border: 1px solid #059669;
+  color: #6ee7b7;
+  border-radius: 4px;
+  font-size: 0.82rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -2147,20 +2149,20 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   touch-action: manipulation;
 }
 
-.btn-restore-slot:active {
-  background: #059669 !important;
-  color: #fff !important;
+.pf2e-mobile-sheet .btn-restore-slot:active {
+  background: #059669;
+  color: #fff;
 }
 
-.btn-cast {
-  min-height: 38px !important;
+.pf2e-mobile-sheet .btn-cast {
+  min-height: 38px;
   height: 38px;
-  padding: 4px 12px !important;
-  background: #1565c0 !important;
-  border: 1px solid #1976d2 !important;
-  color: #fff !important;
-  border-radius: 4px !important;
-  font-size: 0.85rem !important;
+  padding: 4px 12px;
+  background: #1565c0;
+  border: 1px solid #1976d2;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.85rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -2169,17 +2171,17 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   touch-action: manipulation;
 }
 
-.btn-cast:active {
-  background: #1976d2 !important;
+.pf2e-mobile-sheet .btn-cast:active {
+  background: #1976d2;
 }
 
-.btn-cast.btn-cast-attack {
-  background: #b71c1c !important;
-  border-color: #d32f2f !important;
+.pf2e-mobile-sheet .btn-cast.btn-cast-attack {
+  background: #b71c1c;
+  border-color: #d32f2f;
 }
 
-.btn-cast.btn-cast-attack:active {
-  background: #d32f2f !important;
+.pf2e-mobile-sheet .btn-cast.btn-cast-attack:active {
+  background: #d32f2f;
 }
 
 .spell-details {
@@ -2199,6 +2201,83 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+/* Heightened Notice in Expanded Drawer */
+.spell-heightened-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #082f49;
+  border: 1px solid #0284c7;
+  color: #7dd3fc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.84rem;
+  margin-bottom: 10px;
+}
+
+.spell-heightened-notice i {
+  color: #38bdf8;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.spell-heightened-notice strong {
+  color: #bae6fd;
+}
+
+/* Spell Drawer Management Footer */
+.spell-drawer-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #2e2e34;
+  flex-wrap: wrap;
+}
+
+.spell-drawer-footer .btn-spell-action {
+  min-height: 44px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  touch-action: manipulation;
+  flex: 1;
+}
+
+.spell-drawer-footer .btn-toggle-signature {
+  background: #1c1917;
+  border: 1px solid #78350f;
+  color: #fde68a;
+}
+
+.spell-drawer-footer .btn-toggle-signature.active {
+  background: #451a03;
+  border-color: #d97706;
+  color: #fef08a;
+}
+
+.spell-drawer-footer .btn-toggle-signature:active {
+  background: #78350f;
+}
+
+.spell-drawer-footer .btn-remove-spell {
+  background: #271414;
+  border: 1px solid #7f1d1d;
+  color: #fca5a5;
+}
+
+.spell-drawer-footer .btn-remove-spell:active {
+  background: #991b1b;
+  color: #fff;
 }
 
 /* ----------------------------------------- */
@@ -2232,14 +2311,14 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   gap: 6px;
 }
 
-.btn-save-preset {
-  min-height: 34px !important;
+.spells-preparation-view .btn-save-preset {
+  min-height: 34px;
   height: 34px;
-  padding: 3px 10px !important;
-  font-size: 0.8rem !important;
-  background: #1c3222 !important;
-  border: 1px solid #15803d !important;
-  color: #86efac !important;
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  background: #1c3222;
+  border: 1px solid #15803d;
+  color: #86efac;
   border-radius: 4px;
   cursor: pointer;
   display: inline-flex;
@@ -2247,9 +2326,9 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   gap: 4px;
 }
 
-.btn-save-preset:active {
-  background: #15803d !important;
-  color: #fff !important;
+.spells-preparation-view .btn-save-preset:active {
+  background: #15803d;
+  color: #fff;
 }
 
 .presets-list {
@@ -2274,14 +2353,14 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   color: #e5e5e5;
 }
 
-.btn-apply-preset {
-  min-height: 28px !important;
+.spells-preparation-view .btn-apply-preset {
+  min-height: 28px;
   height: 28px;
-  padding: 2px 8px !important;
-  font-size: 0.75rem !important;
-  background: #1e3a5f !important;
-  border: 1px solid #2563eb !important;
-  color: #93c5fd !important;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  background: #1e3a5f;
+  border: 1px solid #2563eb;
+  color: #93c5fd;
   border-radius: 3px;
   cursor: pointer;
   display: inline-flex;
@@ -2289,26 +2368,26 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   gap: 3px;
 }
 
-.btn-apply-preset:active {
-  background: #2563eb !important;
-  color: #fff !important;
+.spells-preparation-view .btn-apply-preset:active {
+  background: #2563eb;
+  color: #fff;
 }
 
-.btn-delete-preset {
-  min-height: 28px !important;
+.spells-preparation-view .btn-delete-preset {
+  min-height: 28px;
   height: 28px;
-  padding: 2px 6px !important;
-  font-size: 0.75rem !important;
-  background: transparent !important;
-  border: 1px solid #552222 !important;
-  color: #f87171 !important;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  background: transparent;
+  border: 1px solid #552222;
+  color: #f87171;
   border-radius: 3px;
   cursor: pointer;
 }
 
-.btn-delete-preset:active {
-  background: #7f1d1d !important;
-  color: #fff !important;
+.spells-preparation-view .btn-delete-preset:active {
+  background: #7f1d1d;
+  color: #fff;
 }
 
 .presets-empty-hint {
@@ -2411,14 +2490,14 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   font-style: italic;
 }
 
-.btn-prepare-slot {
-  min-height: 36px !important;
+.spells-preparation-view .btn-prepare-slot {
+  min-height: 36px;
   height: 36px;
-  padding: 4px 10px !important;
-  font-size: 0.82rem !important;
-  background: #1e3a5f !important;
-  border: 1px solid #2563eb !important;
-  color: #bfdbfe !important;
+  padding: 4px 10px;
+  font-size: 0.82rem;
+  background: #1e3a5f;
+  border: 1px solid #2563eb;
+  color: #bfdbfe;
   border-radius: 4px;
   display: inline-flex;
   align-items: center;
@@ -2427,9 +2506,9 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   touch-action: manipulation;
 }
 
-.btn-prepare-slot:active {
-  background: #2563eb !important;
-  color: #fff !important;
+.spells-preparation-view .btn-prepare-slot:active {
+  background: #2563eb;
+  color: #fff;
 }
 
 .slot-filled-content {
@@ -2471,48 +2550,48 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   flex-shrink: 0;
 }
 
-.btn-change-slot {
-  min-width: 36px !important;
-  min-height: 36px !important;
+.slot-actions .btn-change-slot {
+  min-width: 36px;
+  min-height: 36px;
   width: 36px;
   height: 36px;
-  padding: 0 !important;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #2b2b2b !important;
-  border: 1px solid #444 !important;
-  color: #90caf9 !important;
+  background: #2b2b2b;
+  border: 1px solid #444;
+  color: #90caf9;
   border-radius: 4px;
   cursor: pointer;
   touch-action: manipulation;
 }
 
-.btn-change-slot:active {
-  background: #3b3b3b !important;
-  color: #fff !important;
+.slot-actions .btn-change-slot:active {
+  background: #3b3b3b;
+  color: #fff;
 }
 
-.btn-unprepare-slot {
-  min-width: 36px !important;
-  min-height: 36px !important;
+.slot-actions .btn-unprepare-slot {
+  min-width: 36px;
+  min-height: 36px;
   width: 36px;
   height: 36px;
-  padding: 0 !important;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #2b2b2b !important;
-  border: 1px solid #552222 !important;
-  color: #f87171 !important;
+  background: #2b2b2b;
+  border: 1px solid #552222;
+  color: #f87171;
   border-radius: 4px;
   cursor: pointer;
   touch-action: manipulation;
 }
 
-.btn-unprepare-slot:active {
-  background: #7f1d1d !important;
-  color: #fff !important;
+.slot-actions .btn-unprepare-slot:active {
+  background: #7f1d1d;
+  color: #fff;
 }
 
 /* ----------------------------------------- */
@@ -2554,22 +2633,22 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   font-size: 0.85rem;
 }
 
-.spell-picker-input {
+.spell-picker-dialog .spell-picker-input {
   width: 100%;
-  min-height: 40px !important;
+  min-height: 40px;
   height: 40px;
   padding-left: 32px;
   padding-right: 10px;
-  background: #141414 !important;
-  border: 1px solid #444 !important;
+  background: #141414;
+  border: 1px solid #444;
   border-radius: 4px;
-  color: #fff !important;
+  color: #fff;
   font-size: 0.9rem;
 }
 
-.spell-picker-input:focus {
+.spell-picker-dialog .spell-picker-input:focus {
   outline: none;
-  border-color: #ffb74d !important;
+  border-color: #ffb74d;
   box-shadow: 0 0 6px rgba(255, 183, 77, 0.4);
 }
 
@@ -2647,13 +2726,13 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   color: #aaa;
 }
 
-.btn-select-spell {
-  min-height: 36px !important;
-  height: 36px;
-  padding: 4px 10px !important;
-  background: #1e3a5f !important;
-  border: 1px solid #2563eb !important;
-  color: #bfdbfe !important;
+.spell-picker-dialog .btn-select-spell {
+  min-height: 38px;
+  height: 38px;
+  padding: 4px 10px;
+  background: #1e3a5f;
+  border: 1px solid #2563eb;
+  color: #bfdbfe;
   border-radius: 4px;
   font-weight: 600;
   font-size: 0.8rem;
@@ -2664,7 +2743,415 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker {
   cursor: pointer;
 }
 
-.btn-select-spell:active {
-  background: #2563eb !important;
-  color: #fff !important;
+.spell-picker-dialog .btn-select-spell:active {
+  background: #2563eb;
+  color: #fff;
 }
+
+/* ======================================================== */
+/* COMPENDIUM PICKER (MOBILE DRAWER & SPELL STAGING)        */
+/* ======================================================== */
+.pf2e-mobile-compendium-picker .window-content {
+  padding: 0 !important;
+  background: #141416;
+  color: #e0e0e0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.compendium-picker {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Search Bar */
+.compendium-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #1c1c20;
+  border-bottom: 1px solid #2e2e34;
+  position: relative;
+}
+
+.compendium-search-bar .search-icon {
+  position: absolute;
+  left: 22px;
+  color: #71717a;
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+
+.compendium-picker .compendium-search-input {
+  flex: 1;
+  height: 44px;
+  background: #121214;
+  border: 1px solid #3f3f46;
+  border-radius: 6px;
+  padding: 0 12px 0 38px;
+  color: #fff;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+.compendium-picker .compendium-search-input:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+/* Filters */
+.compendium-filters {
+  display: flex;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #18181b;
+  border-bottom: 1px solid #27272a;
+}
+
+.filter-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.filter-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: #a1a1aa;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filter-select {
+  width: 100%;
+  height: 44px;
+  background: #27272a;
+  color: #f4f4f5;
+  border: 1px solid #3f3f46;
+  border-radius: 6px;
+  padding: 0 8px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.filter-select:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+/* Compendium Results List */
+.compendium-results-list {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0;
+  padding: 8px 12px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.compendium-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  background: #1f1f23;
+  border: 1px solid #2e2e34;
+  border-radius: 6px;
+  min-height: 52px;
+}
+
+.compendium-item-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.compendium-item-img {
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid #3f3f46;
+  background: #09090b;
+  flex-shrink: 0;
+}
+
+.compendium-item-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.compendium-item-name {
+  font-size: 0.92rem;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compendium-item-sub {
+  font-size: 0.78rem;
+  color: #a1a1aa;
+}
+
+.compendium-item-row .btn-import {
+  min-width: 70px;
+  height: 40px;
+  padding: 0 12px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  touch-action: manipulation;
+}
+
+.compendium-item-row .btn-import:active {
+  background: #1d4ed8;
+}
+
+.compendium-results-list .empty-hint {
+  padding: 24px 12px;
+  text-align: center;
+  color: #71717a;
+  font-size: 0.9rem;
+}
+
+/* Spell Config Overlay */
+.spell-config-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.spell-config-card {
+  background: #18181b;
+  border: 1px solid #3f3f46;
+  border-radius: 10px;
+  padding: 18px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.staged-item-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #27272a;
+  padding-bottom: 14px;
+}
+
+.staged-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  border: 1px solid #3f3f46;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #09090b;
+}
+
+.staged-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.staged-name {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.staged-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.78rem;
+}
+
+.staged-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.badge-cantrip {
+  background: #1e3a5f;
+  color: #bfdbfe;
+  border: 1px solid #2563eb;
+}
+
+.badge-rank {
+  background: #372804;
+  color: #fde047;
+  border: 1px solid #ca8a04;
+}
+
+.staged-traditions {
+  color: #a1a1aa;
+}
+
+.spell-config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.spell-config-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.spell-config-form label {
+  font-size: 0.85rem;
+  color: #d4d4d8;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.config-select {
+  width: 100%;
+  height: 46px;
+  background: #27272a;
+  color: #f4f4f5;
+  border: 1px solid #3f3f46;
+  border-radius: 6px;
+  padding: 0 10px;
+  font-size: 0.95rem;
+  touch-action: manipulation;
+}
+
+.config-select:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+.tradition-warning-banner {
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px solid #ca8a04;
+  color: #fef08a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tradition-warning-banner i {
+  color: #eab308;
+  flex-shrink: 0;
+}
+
+.no-entries-warning {
+  text-align: center;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #f87171;
+}
+
+.no-entries-warning i {
+  font-size: 2rem;
+  margin-bottom: 4px;
+}
+
+.no-entries-warning .sub-text {
+  font-size: 0.82rem;
+  color: #a1a1aa;
+  margin: 0;
+}
+
+.config-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.config-actions button {
+  flex: 1;
+  height: 46px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.config-actions .btn-cancel {
+  background: #27272a;
+  border: 1px solid #3f3f46;
+  color: #e4e4e7;
+}
+
+.config-actions .btn-cancel:active {
+  background: #3f3f46;
+}
+
+.config-actions .btn-confirm-add {
+  background: #16a34a;
+  border: none;
+  color: #fff;
+}
+
+.config-actions .btn-confirm-add:active {
+  background: #15803d;
+}
+

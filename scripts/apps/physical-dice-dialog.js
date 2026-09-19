@@ -19,8 +19,8 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
       height: "auto"
     },
     actions: {
-      cancel: PhysicalDiceDialog.#onCancel,
-      submit: PhysicalDiceDialog.#onSubmit
+      cancel: PhysicalDiceDialog._onCancel,
+      submit: PhysicalDiceDialog._onSubmit
     }
   };
 
@@ -31,23 +31,23 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
   };
 
   /** @type {"check" | "damage"} */
-  #mode = "check";
+  _mode = "check";
   /** @type {string} */
-  #title = "";
+  _title = "";
   /** @type {string} */
-  #subtitle = "";
+  _subtitle = "";
   /** @type {object|null} */
-  #target = null;
+  _target = null;
   /** @type {number} */
-  #modifier = 0;
+  _modifier = 0;
   /** @type {Array<object>} */
-  #pools = [];
+  _pools = [];
   /** @type {Function|null} */
-  #resolve = null;
+  _resolve = null;
   /** @type {Function|null} */
-  #reject = null;
+  _reject = null;
   /** @type {boolean} */
-  #settled = false;
+  _settled = false;
 
   /**
    * @param {object} params
@@ -62,14 +62,14 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
    */
   constructor(params, options = {}) {
     super(options);
-    this.#mode = params.mode;
-    this.#title = params.title;
-    this.#subtitle = params.subtitle ?? "";
-    this.#target = params.target ?? null;
-    this.#modifier = params.modifier ?? 0;
-    this.#pools = params.pools ?? [];
-    this.#resolve = params.resolve;
-    this.#reject = params.reject;
+    this._mode = params.mode;
+    this._title = params.title;
+    this._subtitle = params.subtitle ?? "";
+    this._target = params.target ?? null;
+    this._modifier = params.modifier ?? 0;
+    this._pools = params.pools ?? [];
+    this._resolve = params.resolve;
+    this._reject = params.reject;
   }
 
   /**
@@ -117,12 +117,12 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
   /** @override */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    context.isCheck = this.#mode === "check";
-    context.title = this.#title;
-    context.subtitle = this.#subtitle;
-    context.target = this.#target;
-    context.modifier = this.#modifier;
-    context.pools = this.#pools;
+    context.isCheck = this._mode === "check";
+    context.title = this._title;
+    context.subtitle = this._subtitle;
+    context.target = this._target;
+    context.modifier = this._modifier;
+    context.pools = this._pools;
     return context;
   }
 
@@ -147,7 +147,7 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
       form.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
           event.preventDefault();
-          PhysicalDiceDialog.#onSubmit.call(this, event, form);
+          PhysicalDiceDialog._onSubmit.call(this, event, form);
         }
       });
       form._enterListenerBound = true;
@@ -156,9 +156,9 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
 
   /** @override */
   _onClose(options) {
-    if (!this.#settled) {
-      this.#settled = true;
-      this.#reject?.(null);
+    if (!this._settled) {
+      this._settled = true;
+      this._reject?.(null);
     }
     super._onClose(options);
   }
@@ -166,10 +166,10 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
   /**
    * Action handler: user cancels the roll dialog.
    */
-  static #onCancel(event, target) {
-    if (!this.#settled) {
-      this.#settled = true;
-      this.#reject?.(null);
+  static _onCancel(event, target) {
+    if (!this._settled) {
+      this._settled = true;
+      this._reject?.(null);
     }
     this.close();
   }
@@ -177,7 +177,7 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
   /**
    * Action handler: user submits the entered physical roll outcomes.
    */
-  static #onSubmit(event, target) {
+  static _onSubmit(event, target) {
     const errorEl = this.element?.querySelector(".physical-error-msg");
     const showError = (msg) => {
       if (errorEl) {
@@ -188,7 +188,7 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
       }
     };
 
-    if (this.#mode === "check") {
+    if (this._mode === "check") {
       const input = this.element?.querySelector("input[name='d20-val']");
       const rawVal = input?.value?.trim();
       const val = parseInt(rawVal, 10);
@@ -199,15 +199,15 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
         return;
       }
 
-      this.#settled = true;
-      this.#resolve?.(val);
+      this._settled = true;
+      this._resolve?.(val);
       this.close();
       return;
     }
 
     // Damage Mode
     const results = {};
-    for (const pool of this.#pools) {
+    for (const pool of this._pools) {
       const input = this.element?.querySelector(`input[data-pool-id='${pool.id}']`);
       const rawVal = input?.value?.trim();
       const val = parseInt(rawVal, 10);
@@ -221,8 +221,8 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
       results[pool.id] = val;
     }
 
-    this.#settled = true;
-    this.#resolve?.(results);
+    this._settled = true;
+    this._resolve?.(results);
     this.close();
   }
 }

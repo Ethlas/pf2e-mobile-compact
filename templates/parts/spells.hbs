@@ -59,10 +59,10 @@
       <!-- Spells in this Rank -->
       <div class="spell-list {{#if group.isCollapsed}}collapsed{{/if}}">
         {{#each group.spells as |spell|}}
-        <div class="action-card spell-card {{#if spell.isExpanded}}expanded{{/if}} {{#if spell.isExpended}}expended{{/if}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}">
+        <div class="action-card spell-card {{#if spell.isExpanded}}expanded{{/if}} {{#if spell.isExpended}}expended{{/if}}" data-item-id="{{#if spell.cardKey}}{{spell.cardKey}}{{else}}{{spell.id}}{{/if}}" data-entry-id="{{spell.entryId}}">
           <div class="action-card-header">
             <!-- Title & Expand Trigger -->
-            <div class="action-title-group touch-target" data-action="toggleActionSummary" data-item-id="{{spell.id}}" title="Toggle Description">
+            <div class="action-title-group touch-target" data-action="toggleActionSummary" data-item-id="{{#if spell.cardKey}}{{spell.cardKey}}{{else}}{{spell.id}}{{/if}}" title="Toggle Description">
               {{#if spell.glyph}}
               <span class="action-cost-glyph">{{spell.glyph}}</span>
               {{/if}}
@@ -79,6 +79,10 @@
               <span class="spell-source-badge badge-spontaneous">Spontaneous</span>
               {{/if}}
 
+              {{#if spell.isSignature}}
+              <span class="spell-source-badge badge-signature" title="Signature Spell"><i class="fas fa-star"></i></span>
+              {{/if}}
+
               {{#if spell.isExpended}}
               <span class="spell-expended-badge">Expended</span>
               {{/if}}
@@ -88,7 +92,7 @@
 
             <!-- Action Buttons: Chat, Restore, Cast -->
             <div class="action-btn-group">
-              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{spell.id}}" title="Send to Chat">
+              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{spell.id}}" data-rank="{{group.rank}}" title="Send to Chat">
                 <i class="fas fa-message"></i>
               </button>
 
@@ -128,8 +132,42 @@
 
           <!-- Expandable Details Drawer -->
           <div class="action-summary {{#if spell.isExpanded}}expanded{{else}}collapsed{{/if}}">
+            {{#if spell.isHeightened}}
+            <div class="spell-heightened-notice">
+              <i class="fas fa-arrow-up-right-dots"></i>
+              <span>Heightened to <strong>Rank {{group.rank}}</strong> (Base: Rank {{spell.baseRank}})</span>
+            </div>
+            {{/if}}
+
             <div class="action-description-content">
               {{{spell.description}}}
+            </div>
+
+            <!-- Spell Actions Footer (Remove & Signature Toggle) -->
+            <div class="spell-drawer-footer">
+              {{#if spell.canSignature}}
+              <button
+                type="button"
+                class="touch-target btn-spell-action btn-toggle-signature {{#if spell.isSignature}}active{{/if}}"
+                data-action="toggleSignatureSpell"
+                data-item-id="{{spell.id}}"
+                title="{{#if spell.isSignature}}Remove Signature Spell{{else}}Make Signature Spell{{/if}}"
+              >
+                <i class="fas fa-star"></i>
+                <span>{{#if spell.isSignature}}Signature Spell{{else}}Set Signature{{/if}}</span>
+              </button>
+              {{/if}}
+
+              <button
+                type="button"
+                class="touch-target btn-spell-action btn-remove-spell"
+                data-action="removeSpell"
+                data-item-id="{{spell.id}}"
+                title="Remove {{spell.name}} from character"
+              >
+                <i class="fas fa-trash-can"></i>
+                <span>Remove Spell</span>
+              </button>
             </div>
           </div>
         </div>
