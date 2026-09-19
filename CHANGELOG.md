@@ -4,6 +4,18 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.11] - 2026-09-19
+
+### Hotfix: Spell Slot Double-Expenditure on Cast
+
+#### Fixed
+- **Spell Casting Expended Slots Twice** (`#onCastSpell` in `scripts/apps/mobile-sheet.js`):
+  - Root cause: `entry.cast()` was called with `{ slot, level }`, which are not part of PF2e's `CastOptions` (`{ rank, slotId, consume, message, rollMode }`). PF2e ignored them, defaulted `consume: true`, and expended the slot itself; the module then expended it a second time manually.
+  - Spontaneous casters lost two slots per cast; prepared casters with the same spell in multiple slots could have both copies expended; the tapped rank was ignored so heightened casts went out at the spell's base rank.
+  - Fix: pass `{ rank, slotId }` to `entry.cast()` and let PF2e handle all slot, focus point, and innate-use consumption natively. Removed the manual prepared/spontaneous slot decrement block.
+
+---
+
 ## [1.0.10] - 2026-09-18
 
 ### Hotfix: Sheet Getter Reference Resolution

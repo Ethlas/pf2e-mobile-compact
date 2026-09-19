@@ -2868,33 +2868,17 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         target: targetToken,
         actor: this.actor
       }, async () => {
-        await entry.cast(spell, { slot: rank > 0 ? rank : 0, level: rank, target: targetToken || undefined });
+        // PF2e's CastOptions are { rank, slotId, consume, message, rollMode }. With consume (default true)
+        // the system expends the prepared slot / spontaneous slot / focus point / innate use itself,
+        // so no manual slot bookkeeping is done here.
+        await entry.cast(spell, {
+          rank: rank > 0 ? rank : undefined,
+          slotId: Number.isNaN(slotIndex) ? undefined : slotIndex
+        });
       }, this.rollMode === "physical");
     }
 
-    // Mark prepared slot expended if applicable
-    if (!isNaN(slotIndex) && (entry.isPrepared || entry.system?.prepared?.value === "prepared") && rank > 0) {
-      const slotKey = `slot${rank}`;
-      const currentPrepared = foundry.utils.deepClone(entry.system.slots?.[slotKey]?.prepared ?? []);
-      const nextPrepared = Array.isArray(currentPrepared) ? currentPrepared : Object.values(currentPrepared);
-      if (nextPrepared[slotIndex]) {
-        nextPrepared[slotIndex].expended = true;
-        const curVal = entry.system.slots?.[slotKey]?.value ?? 0;
-        await entry.update({
-          [`system.slots.${slotKey}.prepared`]: nextPrepared,
-          [`system.slots.${slotKey}.value`]: Math.max(curVal - 1, 0)
-        });
-      }
-      this.render({ parts: ["sheet"] });
-    } else if ((entry.isSpontaneous || entry.system?.prepared?.value === "spontaneous") && rank > 0) {
-      // Decrement spontaneous slot pool
-      const slotKey = `slot${rank}`;
-      const currentSlot = entry.system.slots?.[slotKey];
-      if (currentSlot && currentSlot.value > 0) {
-        await entry.update({ [`system.slots.${slotKey}.value`]: currentSlot.value - 1 });
-        this.render({ parts: ["sheet"] });
-      }
-    }
+    this.render({ parts: ["sheet"] });
   }
 
   /**
