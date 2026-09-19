@@ -4,6 +4,18 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.11] - 2026-09-19
+
+### Milestone 9: Layout Architecture Restoration & Systematic CSS `!important` Refactoring
+
+#### Fixed
+- **Mobile Sheet Layout & Viewport Scroll Restoration**: Fixed issue where the entire page scrolled and pushed the bottom navigation bar off-screen. Removed detached fixed positioning on the sheet body and configured explicit ApplicationV2 flex child sizing (`flex: 0 0 auto` top dashboard header, `flex: 1 1 0%` sheet body, scrollable `mobile-tab-content`, and permanently pinned `mobile-bottom-nav`).
+- **Eliminated 87% of `!important` Declarations**: Systematically refactored `styles/pf2e-mobile.css` (reducing from 520+ occurrences down to 65). Scoped button and component classes naturally to override base sheet rules without specificity hacks.
+- **Removed Local Foundry Sync Artifacts**: Completely deleted local sync scripts and documentation per workflow requirements.
+- **Touch Target Compliances**: Ensured all buttons, auxiliary strike actions, slot adjustment controls, and dialog actions satisfy the 38px+ touch target standard.
+
+---
+
 ## [1.0.10] - 2026-09-18
 
 ### Hotfix: Sheet Getter Reference Resolution

@@ -8,7 +8,10 @@ description: >-
 
 This skill outlines the procedure for deploying `pf2e-mobile-compact` to the remote Foundry VTT server and verifying server status.
 
-## Deployment Target
+## Deployment Target (Production / Remote Test Server)
+> [!WARNING]
+> Deploy to `foundry@10.0.0.50` only when explicitly authorized by the user.
+
 - **Server**: `foundry@10.0.0.50`
 - **Destination**: `/mnt/exdisk/foundryvtt/foundrydata-v14/Data/modules/pf2e-mobile-compact`
 - **Process Manager**: PM2 (`foundry` service)

@@ -401,43 +401,45 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       height: 750
     },
     actions: {
-      applyHeaderDamage: PF2eMobileSheet.#onApplyDamage,
-      applyHeaderHeal: PF2eMobileSheet.#onApplyHeal,
-      setTempHP: PF2eMobileSheet.#onSetTempHP,
-      adjustTempHP: PF2eMobileSheet.#onAdjustTempHP,
-      rollSave: PF2eMobileSheet.#onRollSave,
-      rollPerception: PF2eMobileSheet.#onRollPerception,
-      rollInitiative: PF2eMobileSheet.#onRollInitiative,
-      selectTarget: PF2eMobileSheet.#onSelectTarget,
-      toggleRollMode: PF2eMobileSheet.#onToggleRollMode,
-      switchTab: PF2eMobileSheet.#onSwitchTab,
-      scrollChatToBottom: PF2eMobileSheet.#onScrollChatToBottom,
-      openCompendiumPicker: PF2eMobileSheet.#onOpenCompendiumPicker,
-      adjustSlot: PF2eMobileSheet.#onAdjustSlot,
-      adjustFocus: PF2eMobileSheet.#onAdjustFocus,
-      executeStrike: PF2eMobileSheet.#onExecuteStrike,
-      executeDamage: PF2eMobileSheet.#onExecuteDamage,
-      executeCritical: PF2eMobileSheet.#onExecuteCritical,
-      executeAuxiliaryAction: PF2eMobileSheet.#onExecuteAuxiliaryAction,
-      itemToChat: PF2eMobileSheet.#onItemToChat,
-      useAction: PF2eMobileSheet.#onUseAction,
-      rollActionCheck: PF2eMobileSheet.#onRollActionCheck,
-      rollSkill: PF2eMobileSheet.#onRollSkill,
-      consumeItem: PF2eMobileSheet.#onConsumeItem,
-      castSpell: PF2eMobileSheet.#onCastSpell,
-      switchActor: PF2eMobileSheet.#onSwitchActor,
-      toggleFullscreen: PF2eMobileSheet.#onToggleFullscreen,
-      switchActionSubTab: PF2eMobileSheet.#onSwitchActionSubTab,
-      toggleActionSummary: PF2eMobileSheet.#onToggleActionSummary,
-      switchSpellSubTab: PF2eMobileSheet.#onSwitchSpellSubTab,
-      toggleRankGroup: PF2eMobileSheet.#onToggleRankGroup,
-      openSpellPrepPicker: PF2eMobileSheet.#onOpenSpellPrepPicker,
-      unprepareSlot: PF2eMobileSheet.#onUnprepareSlot,
-      toggleSlotExpended: PF2eMobileSheet.#onToggleSlotExpended,
-      resetDailySpells: PF2eMobileSheet.#onResetDailySpells,
-      saveSpellPreset: PF2eMobileSheet.#onSaveSpellPreset,
-      applySpellPreset: PF2eMobileSheet.#onApplySpellPreset,
-      deleteSpellPreset: PF2eMobileSheet.#onDeleteSpellPreset
+      applyHeaderDamage: PF2eMobileSheet._onApplyDamage,
+      applyHeaderHeal: PF2eMobileSheet._onApplyHeal,
+      setTempHP: PF2eMobileSheet._onSetTempHP,
+      adjustTempHP: PF2eMobileSheet._onAdjustTempHP,
+      rollSave: PF2eMobileSheet._onRollSave,
+      rollPerception: PF2eMobileSheet._onRollPerception,
+      rollInitiative: PF2eMobileSheet._onRollInitiative,
+      selectTarget: PF2eMobileSheet._onSelectTarget,
+      toggleRollMode: PF2eMobileSheet._onToggleRollMode,
+      switchTab: PF2eMobileSheet._onSwitchTab,
+      scrollChatToBottom: PF2eMobileSheet._onScrollChatToBottom,
+      openCompendiumPicker: PF2eMobileSheet._onOpenCompendiumPicker,
+      adjustSlot: PF2eMobileSheet._onAdjustSlot,
+      adjustFocus: PF2eMobileSheet._onAdjustFocus,
+      executeStrike: PF2eMobileSheet._onExecuteStrike,
+      executeDamage: PF2eMobileSheet._onExecuteDamage,
+      executeCritical: PF2eMobileSheet._onExecuteCritical,
+      executeAuxiliaryAction: PF2eMobileSheet._onExecuteAuxiliaryAction,
+      itemToChat: PF2eMobileSheet._onItemToChat,
+      useAction: PF2eMobileSheet._onUseAction,
+      rollActionCheck: PF2eMobileSheet._onRollActionCheck,
+      rollSkill: PF2eMobileSheet._onRollSkill,
+      consumeItem: PF2eMobileSheet._onConsumeItem,
+      castSpell: PF2eMobileSheet._onCastSpell,
+      switchActor: PF2eMobileSheet._onSwitchActor,
+      toggleFullscreen: PF2eMobileSheet._onToggleFullscreen,
+      switchActionSubTab: PF2eMobileSheet._onSwitchActionSubTab,
+      toggleActionSummary: PF2eMobileSheet._onToggleActionSummary,
+      switchSpellSubTab: PF2eMobileSheet._onSwitchSpellSubTab,
+      toggleRankGroup: PF2eMobileSheet._onToggleRankGroup,
+      openSpellPrepPicker: PF2eMobileSheet._onOpenSpellPrepPicker,
+      unprepareSlot: PF2eMobileSheet._onUnprepareSlot,
+      toggleSlotExpended: PF2eMobileSheet._onToggleSlotExpended,
+      resetDailySpells: PF2eMobileSheet._onResetDailySpells,
+      saveSpellPreset: PF2eMobileSheet._onSaveSpellPreset,
+      applySpellPreset: PF2eMobileSheet._onApplySpellPreset,
+      deleteSpellPreset: PF2eMobileSheet._onDeleteSpellPreset,
+      toggleSignatureSpell: PF2eMobileSheet._onToggleSignatureSpell,
+      removeSpell: PF2eMobileSheet._onRemoveSpell
     }
   };
 
@@ -452,40 +454,40 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   };
 
   /** @type {string} */
-  #activeTab = "actions";
+  _activeTab = "actions";
 
   /** @type {"encounter" | "exploration" | "downtime"} */
-  #actionSubTab = "encounter";
+  _actionSubTab = "encounter";
 
   /** @type {"spells" | "preparation"} */
-  #spellSubTab = "spells";
+  _spellSubTab = "spells";
 
   /** @type {Set<number>} */
-  #collapsedRankGroups = new Set();
+  _collapsedRankGroups = new Set();
 
   /** @type {"digital" | "physical"} */
-  #rollMode = "digital";
+  _rollMode = "digital";
 
   /** @type {Set<string>} */
-  #expandedActionIds = new Set();
+  _expandedActionIds = new Set();
 
   /** @type {Array<{name: string, id: number}>} */
-  #sceneHookIds = [];
+  _sceneHookIds = [];
 
   /** @type {number} */
-  #unreadChatCount = 0;
+  _unreadChatCount = 0;
 
   /** @type {number|null} */
-  #chatHookId = null;
+  _chatHookId = null;
 
   /** @type {DocumentFragment} */
-  #tempChatFragment = document.createDocumentFragment();
+  _tempChatFragment = document.createDocumentFragment();
 
   /** @type {HTMLElement|null} */
-  #chatOriginalParent = null;
+  _chatOriginalParent = null;
 
   /** @type {Node|null} */
-  #chatOriginalNextSibling = null;
+  _chatOriginalNextSibling = null;
 
 
   /**
@@ -493,7 +495,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * @type {string}
    */
   get activeTab() {
-    return this.#activeTab;
+    return this._activeTab;
   }
 
   /**
@@ -501,7 +503,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * @type {"encounter" | "exploration" | "downtime"}
    */
   get actionSubTab() {
-    return this.#actionSubTab;
+    return this._actionSubTab;
   }
 
   /**
@@ -509,7 +511,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * @type {"digital" | "physical"}
    */
   get rollMode() {
-    return this.#rollMode;
+    return this._rollMode;
   }
 
   /** @override */
@@ -525,7 +527,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const chatMount = content.querySelector?.(".mobile-chat-mount");
     const chatEl = (ui.chat?.element instanceof HTMLElement ? ui.chat.element : ui.chat?.element?.[0]) ?? document.getElementById("chat");
     if (chatMount && chatEl && chatMount.contains(chatEl)) {
-      this.#tempChatFragment.appendChild(chatEl);
+      this._tempChatFragment.appendChild(chatEl);
     }
     super._replaceHTML(result, content, options);
     const newChatMount = content.querySelector?.(".mobile-chat-mount");
@@ -537,16 +539,16 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /** @override */
   _onRender(context, options) {
     super._onRender(context, options);
-    this.#registerSceneListeners();
-    this.#registerChatListener();
-    this.#dockChatElement();
-    this.#ensureTokenControlled();
+    this._registerSceneListeners();
+    this._registerChatListener();
+    this._dockChatElement();
+    this._ensureTokenControlled();
 
-    if (this.#activeTab === "chat") {
-      this.#unreadChatCount = 0;
-      this.#updateChatBadge();
-      this.#scrollChatToBottom(false);
-      this.#setupScrollBottomListener();
+    if (this._activeTab === "chat") {
+      this._unreadChatCount = 0;
+      this._updateChatBadge();
+      this._scrollChatToBottom(false);
+      this._setupScrollBottomListener();
     }
 
     // Synchronize fullscreen toggle button icon and mode
@@ -587,9 +589,9 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   /** @override */
   _onClose(options) {
-    this.#unregisterSceneListeners();
-    this.#unregisterChatListener();
-    this.#restoreChatElement();
+    this._unregisterSceneListeners();
+    this._unregisterChatListener();
+    this._restoreChatElement();
     super._onClose(options);
   }
 
@@ -598,7 +600,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * the header target selector perfectly synchronized with the TV map.
    */
   #registerSceneListeners() {
-    if (this.#sceneHookIds.length > 0) return;
+    if (this._sceneHookIds.length > 0) return;
 
     const onTokenChange = () => {
       if (this.rendered) {
@@ -606,7 +608,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       }
     };
 
-    this.#sceneHookIds.push(
+    this._sceneHookIds.push(
       { name: "createToken", id: Hooks.on("createToken", onTokenChange) },
       { name: "deleteToken", id: Hooks.on("deleteToken", onTokenChange) },
       { name: "updateToken", id: Hooks.on("updateToken", onTokenChange) },
@@ -632,10 +634,10 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Unregisters real-time scene hooks when the sheet is closed.
    */
   #unregisterSceneListeners() {
-    for (const hook of this.#sceneHookIds) {
+    for (const hook of this._sceneHookIds) {
       Hooks.off(hook.name, hook.id);
     }
-    this.#sceneHookIds = [];
+    this._sceneHookIds = [];
   }
 
   /**
@@ -733,20 +735,20 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       if (!mount || !chatEl) return;
 
       if (!mount.contains(chatEl)) {
-        if (!this.#chatOriginalParent && chatEl.parentElement) {
-          this.#chatOriginalParent = chatEl.parentElement;
-          this.#chatOriginalNextSibling = chatEl.nextSibling;
+        if (!this._chatOriginalParent && chatEl.parentElement) {
+          this._chatOriginalParent = chatEl.parentElement;
+          this._chatOriginalNextSibling = chatEl.nextSibling;
         }
         mount.appendChild(chatEl);
       }
 
       // Completely remove/hide chat input forms, textareas, and controls
-      this.#disableChatInputs(chatEl);
+      this._disableChatInputs(chatEl);
 
       // Watch for dynamic DOM re-renders inside ChatLog to keep inputs stripped
       if (!chatEl._pf2eMobileInputObserver) {
         const observer = new MutationObserver(() => {
-          this.#disableChatInputs(chatEl);
+          this._disableChatInputs(chatEl);
         });
         observer.observe(chatEl, { childList: true, subtree: true });
         chatEl._pf2eMobileInputObserver = observer;
@@ -769,7 +771,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           if (btn) {
             const action = btn.dataset.action;
             if (["apply-damage", "half-damage", "double-damage", "triple-damage", "apply-healing", "shield-block"].includes(action)) {
-              this.#ensureTokenControlled();
+              this._ensureTokenControlled();
             }
           }
         }, { capture: true });
@@ -796,11 +798,11 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         scrollEl.removeEventListener("scroll", scrollEl._pf2eScrollBottomHandler);
         scrollEl._pf2eScrollBottomHandler = null;
       }
-      if (this.#chatOriginalParent && this.#chatOriginalParent.isConnected) {
-        if (this.#chatOriginalNextSibling && this.#chatOriginalParent.contains(this.#chatOriginalNextSibling)) {
-          this.#chatOriginalParent.insertBefore(chatEl, this.#chatOriginalNextSibling);
+      if (this._chatOriginalParent && this._chatOriginalParent.isConnected) {
+        if (this._chatOriginalNextSibling && this._chatOriginalParent.contains(this._chatOriginalNextSibling)) {
+          this._chatOriginalParent.insertBefore(chatEl, this._chatOriginalNextSibling);
         } else {
-          this.#chatOriginalParent.appendChild(chatEl);
+          this._chatOriginalParent.appendChild(chatEl);
         }
       }
     } catch (err) {
@@ -890,7 +892,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        this.#scrollChatToBottom(true);
+        this._scrollChatToBottom(true);
       });
       btn._pf2eScrollClickBound = true;
     }
@@ -923,14 +925,14 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Listens for new chat messages to update unread badge or auto-scroll to bottom.
    */
   #registerChatListener() {
-    if (this.#chatHookId !== null) return;
-    this.#chatHookId = Hooks.on("createChatMessage", () => {
+    if (this._chatHookId !== null) return;
+    this._chatHookId = Hooks.on("createChatMessage", () => {
       if (this.rendered) {
-        if (this.#activeTab !== "chat") {
-          this.#unreadChatCount++;
-          this.#updateChatBadge();
+        if (this._activeTab !== "chat") {
+          this._unreadChatCount++;
+          this._updateChatBadge();
         } else {
-          this.#scrollChatToBottom(false);
+          this._scrollChatToBottom(false);
         }
       }
     });
@@ -940,9 +942,9 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Unregisters chat message hook.
    */
   #unregisterChatListener() {
-    if (this.#chatHookId !== null) {
-      Hooks.off("createChatMessage", this.#chatHookId);
-      this.#chatHookId = null;
+    if (this._chatHookId !== null) {
+      Hooks.off("createChatMessage", this._chatHookId);
+      this._chatHookId = null;
     }
   }
 
@@ -952,8 +954,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   #updateChatBadge() {
     const badge = this.element?.querySelector(".chat-badge");
     if (!badge) return;
-    if (this.#unreadChatCount > 0) {
-      badge.textContent = this.#unreadChatCount > 99 ? "99+" : String(this.#unreadChatCount);
+    if (this._unreadChatCount > 0) {
+      badge.textContent = this._unreadChatCount > 99 ? "99+" : String(this._unreadChatCount);
       badge.classList.remove("hidden");
     } else {
       badge.textContent = "0";
@@ -968,21 +970,21 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const system = actor.system ?? {};
 
     context.actor = actor;
-    context.activeTab = this.#activeTab;
-    context.actionSubTab = this.#actionSubTab;
+    context.activeTab = this._activeTab;
+    context.actionSubTab = this._actionSubTab;
     try {
       const savedMode = localStorage.getItem("pf2e-mobile-compact.rollMode");
       if (savedMode === "physical" || savedMode === "digital") {
-        this.#rollMode = savedMode;
+        this._rollMode = savedMode;
       } else if (game.settings?.settings?.has?.("pf2e-mobile-compact.rollMode")) {
         const settingMode = game.settings.get("pf2e-mobile-compact", "rollMode");
         if (settingMode === "physical" || settingMode === "digital") {
-          this.#rollMode = settingMode;
+          this._rollMode = settingMode;
         }
       }
     } catch {}
-    context.rollMode = this.#rollMode;
-    context.unreadChatCount = this.#unreadChatCount;
+    context.rollMode = this._rollMode;
+    context.unreadChatCount = this._unreadChatCount;
 
     // Owned Characters Switcher Context
     const owned = game.actors.filter(a => a.type === "character" && a.isOwner);
@@ -1289,7 +1291,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           per: item.system.frequency.per ?? ""
         } : null,
         description: enrichedDescription || rawDescription,
-        isExpanded: this.#expandedActionIds.has(item.id) || this.#expandedActionIds.has(actionSlug)
+        isExpanded: this._expandedActionIds.has(item.id) || this._expandedActionIds.has(actionSlug)
       };
 
       if (isDowntime) {
@@ -1376,7 +1378,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     };
 
     // Spellcasting Context (Cast View & Preparation View)
-    await this.#prepareSpellcastingContext(context);
+    await this._prepareSpellcastingContext(context);
 
     return context;
   }
@@ -1385,19 +1387,19 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Helper to structure spells for both Cast View (unified by rank) and Preparation View (slots & presets).
    * @param {object} context
    */
-  async #prepareSpellcastingContext(context) {
+  async _prepareSpellcastingContext(context) {
     const entries = this.actor.spellcasting?.contents ?? [];
     const hasPreparedEntry = entries.some(e => e.isPrepared || e.system?.prepared?.value === "prepared");
 
     context.hasPreparedEntry = hasPreparedEntry;
-    context.spellSubTab = hasPreparedEntry ? this.#spellSubTab : "spells";
+    context.spellSubTab = hasPreparedEntry ? this._spellSubTab : "spells";
 
     // 1. GATHER ALL SPELLS ACROSS ALL ENTRIES
     // We group by rank: 0 (Cantrips) to 10
     const rankBuckets = Array.from({ length: 11 }, (_, r) => ({
       rank: r,
       label: r === 0 ? "Cantrips" : `Rank ${r}`,
-      isCollapsed: this.#collapsedRankGroups.has(r),
+      isCollapsed: this._collapsedRankGroups.has(r),
       spells: [],
       hasSlots: false,
       slots: { value: 0, max: 0 },
@@ -1437,10 +1439,12 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
             if (prepItem?.id) {
               const spell = entry.spells?.get(prepItem.id) ?? this.actor.items.get(prepItem.id);
               if (spell) {
-                const formatted = await this.#formatSpell(spell, entryId, {
+                const formatted = await this._formatSpell(spell, entryId, {
                   isPrepared: true,
                   isExpended: !!prepItem.expended,
-                  slotIndex: sIdx
+                  slotIndex: sIdx,
+                  castRank: 0,
+                  cardKey: `${spell.id}-0-${sIdx}`
                 });
                 rankBuckets[0].spells.push(formatted);
               }
@@ -1450,7 +1454,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           // If no slot0 prepared data, fallback to known cantrips
           const cantrips = spells.filter(s => s.isCantrip);
           for (const s of cantrips) {
-            const formatted = await this.#formatSpell(s, entryId, { isPrepared: true });
+            const formatted = await this._formatSpell(s, entryId, { isPrepared: true, castRank: 0, cardKey: `${s.id}-0` });
             rankBuckets[0].spells.push(formatted);
           }
         }
@@ -1466,10 +1470,12 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
               if (prepItem?.id) {
                 const spell = entry.spells?.get(prepItem.id) ?? this.actor.items.get(prepItem.id);
                 if (spell) {
-                  const formatted = await this.#formatSpell(spell, entryId, {
+                  const formatted = await this._formatSpell(spell, entryId, {
                     isPrepared: true,
                     isExpended: !!prepItem.expended,
-                    slotIndex: sIdx
+                    slotIndex: sIdx,
+                    castRank: r,
+                    cardKey: `${spell.id}-${r}-${sIdx}`
                   });
                   rankBuckets[r].spells.push(formatted);
                 }
@@ -1478,23 +1484,77 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           } else {
             const rankSpells = spells.filter(s => !s.isCantrip && (s.rank === r || s.system.level?.value === r));
             for (const s of rankSpells) {
-              const formatted = await this.#formatSpell(s, entryId, { isPrepared: true });
+              const formatted = await this._formatSpell(s, entryId, { isPrepared: true, castRank: r, cardKey: `${s.id}-${r}` });
               rankBuckets[r].spells.push(formatted);
             }
           }
         }
       } else {
         // Spontaneous, Focus, Innate, Rituals
+        // Determine entry's highest spell rank for heightening signature spells
+        let maxSpellRank = 0;
+        if (isSpontaneous) {
+          maxSpellRank = typeof entry.highestRank === "number" ? entry.highestRank : 0;
+          for (let r = 10; r >= 1; r--) {
+            if ((systemData.slots?.[`slot${r}`]?.max ?? 0) > 0) {
+              maxSpellRank = Math.max(maxSpellRank, r);
+            }
+          }
+          for (const s of spells) {
+            if (!s.isCantrip) {
+              const sRank = s.rank ?? s.system.level?.value ?? 1;
+              maxSpellRank = Math.max(maxSpellRank, sRank);
+            }
+          }
+          maxSpellRank = Math.min(10, Math.max(1, maxSpellRank));
+        }
+
         for (const spell of spells) {
-          const isCantrip = spell.isCantrip;
-          const targetRank = isCantrip ? 0 : (spell.rank ?? spell.system.level?.value ?? 1);
-          if (targetRank >= 0 && targetRank <= 10) {
-            const formatted = await this.#formatSpell(spell, entryId, {
-              isSpontaneous,
-              isFocus,
-              isInnate
-            });
-            rankBuckets[targetRank].spells.push(formatted);
+          const traits = spell.system?.traits?.value ?? spell.traits?.value ?? [];
+          const traitLabels = Array.isArray(traits) ? traits.map(t => typeof t === "string" ? t.toLowerCase() : String(t?.value ?? t?.label ?? "").toLowerCase()) : [];
+          const isCantrip = spell.isCantrip || traitLabels.includes("cantrip") || spell.system?.level?.value === 0;
+          const isFocusSpell = isFocus || spell.isFocusSpell || traitLabels.includes("focus");
+          const isRitualSpell = spell.isRitual || traitLabels.includes("ritual");
+
+          // Intrinsic minimum rank of the spell (e.g. 1 for Biting Words, 3 for Fireball)
+          const minRank = isCantrip ? 0 : (spell.baseRank ?? spell.system.level?.value ?? spell.rank ?? 1);
+          // Rank at which the spell was learned or assigned in repertoire
+          const assignedRank = isCantrip ? 0 : (spell.system.location?.heightenedLevel ?? spell.rank ?? minRank);
+          const isSignature = isSpontaneous && !isCantrip && !isFocusSpell && !isRitualSpell && !!(spell.system?.location?.signature || spell.isSignature);
+
+          if (isSignature) {
+            // A signature spell can be cast at ANY rank from its intrinsic minimum rank
+            // up to the character's highest accessible spell rank (or assigned rank)
+            const startRank = Math.max(0, minRank);
+            const endRank = Math.min(10, Math.max(assignedRank, maxSpellRank));
+            for (let r = startRank; r <= endRank; r++) {
+              const isHeightened = r > minRank;
+              const formatted = await this._formatSpell(spell, entryId, {
+                isSpontaneous,
+                isFocus: isFocusSpell,
+                isInnate,
+                isHeightened,
+                baseRank: minRank,
+                castRank: r,
+                cardKey: `${spell.id}-${r}`
+              });
+              rankBuckets[r].spells.push(formatted);
+            }
+          } else {
+            const targetRank = assignedRank;
+            if (targetRank >= 0 && targetRank <= 10) {
+              const isHeightened = targetRank > minRank;
+              const formatted = await this._formatSpell(spell, entryId, {
+                isSpontaneous,
+                isFocus: isFocusSpell,
+                isInnate,
+                isHeightened,
+                baseRank: minRank,
+                castRank: targetRank,
+                cardKey: `${spell.id}-${targetRank}`
+              });
+              rankBuckets[targetRank].spells.push(formatted);
+            }
           }
         }
       }
@@ -1534,7 +1594,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
             if (pItem?.id) {
               const sDoc = entry.spells?.get(pItem.id) ?? this.actor.items.get(pItem.id);
               if (sDoc) {
-                spell = await this.#formatSpell(sDoc, entry.id);
+                spell = await this._formatSpell(sDoc, entry.id);
               }
             }
             slots.push({
@@ -1570,7 +1630,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
               if (pItem?.id) {
                 const sDoc = entry.spells?.get(pItem.id) ?? this.actor.items.get(pItem.id);
                 if (sDoc) {
-                  spell = await this.#formatSpell(sDoc, entry.id);
+                  spell = await this._formatSpell(sDoc, entry.id);
                 }
               }
               slots.push({
@@ -1616,7 +1676,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * @param {object} [extra]
    * @returns {Promise<object>}
    */
-  async #formatSpell(spell, entryId, extra = {}) {
+  async _formatSpell(spell, entryId, extra = {}) {
     const TextEditorClass = foundry.applications?.ux?.TextEditor ?? TextEditor;
     let rawDescription = spell.system?.description?.value ?? "";
     let enrichedDescription = rawDescription;
@@ -1645,8 +1705,19 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       defenseStr = `${basic}${statName} DC`;
     }
 
+    const entry = this.actor.spellcasting?.get(entryId);
+    const isSpontaneous = entry?.isSpontaneous || entry?.system?.prepared?.value === "spontaneous";
+    const isCantrip = spell.isCantrip || traits.some(t => t.label.toLowerCase() === "cantrip") || spell.system?.level?.value === 0;
+    const isFocus = spell.isFocusSpell || traits.some(t => t.label.toLowerCase() === "focus");
+    const isRitual = spell.isRitual || traits.some(t => t.label.toLowerCase() === "ritual");
+    const isSignature = !!(spell.system?.location?.signature || spell.isSignature);
+    const canSignature = isSpontaneous && !isCantrip && !isFocus && !isRitual;
+
+    const cardKey = extra.cardKey ?? (extra.castRank !== undefined ? `${spell.id}-${extra.castRank}` : spell.id);
+
     return {
       id: spell.id,
+      cardKey,
       entryId,
       name: spell.name,
       img: spell.img || "systems/pf2e/icons/default-icons/spell.svg",
@@ -1659,8 +1730,10 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       defense: defenseStr,
       traits,
       isAttack,
+      isSignature,
+      canSignature,
       description: enrichedDescription || rawDescription,
-      isExpanded: this.#expandedActionIds.has(spell.id),
+      isExpanded: this._expandedActionIds.has(cardKey) || (!extra.cardKey && this._expandedActionIds.has(spell.id)),
       ...extra
     };
   }
@@ -1672,7 +1745,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: apply damage to HP using PF2e's native system calculation.
    */
-  static async #onApplyDamage(event, target) {
+  static async _onApplyDamage(event, target) {
     const input = this.element.querySelector(".hp-delta-input");
     const amount = parseInt(input?.value, 10) || 1;
     if (amount <= 0) return;
@@ -1712,7 +1785,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: apply healing to HP using PF2e's native system calculation.
    */
-  static async #onApplyHeal(event, target) {
+  static async _onApplyHeal(event, target) {
     const input = this.element.querySelector(".hp-delta-input");
     const amount = parseInt(input?.value, 10) || 1;
     if (amount <= 0) return;
@@ -1738,7 +1811,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: set temporary HP directly from input.
    */
-  static async #onSetTempHP(event, target) {
+  static async _onSetTempHP(event, target) {
     const val = parseInt(target.value, 10);
     if (isNaN(val)) return;
     const newTemp = Math.max(0, val);
@@ -1748,7 +1821,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: adjust temporary HP by delta step (+1 / -1).
    */
-  static async #onAdjustTempHP(event, target) {
+  static async _onAdjustTempHP(event, target) {
     const delta = parseInt(target.dataset.delta, 10);
     if (isNaN(delta)) return;
 
@@ -1760,7 +1833,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: roll saving throw (Fortitude, Reflex, or Will).
    */
-  static async #onRollSave(event, target) {
+  static async _onRollSave(event, target) {
     const saveKey = target.dataset.save;
     if (!saveKey) return;
 
@@ -1782,7 +1855,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: roll Perception check.
    */
-  static async #onRollPerception(event, target) {
+  static async _onRollPerception(event, target) {
     await PhysicalDiceManager.withPhysicalMode({
       title: "Perception Check",
       actor: this.actor
@@ -1798,7 +1871,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: roll Initiative check and add to combat when combat is active.
    */
-  static async #onRollInitiative(event, target) {
+  static async _onRollInitiative(event, target) {
     const combat = game.combat;
     let combatant = combat ? combat.combatants.find(c => c.actor?.id === this.actor.id || c.actor === this.actor) : null;
 
@@ -1849,7 +1922,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: select scene token target from header dropdown.
    */
-  static async #onSelectTarget(event, target) {
+  static async _onSelectTarget(event, target) {
     const tokenId = target.value;
     await setTargetToken(tokenId);
   }
@@ -1857,10 +1930,10 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: toggle digital vs physical roll mode.
    */
-  static async #onToggleRollMode(event, target) {
+  static async _onToggleRollMode(event, target) {
     const newMode = target.value;
     if (newMode === "digital" || newMode === "physical") {
-      this.#rollMode = newMode;
+      this._rollMode = newMode;
       try {
         localStorage.setItem("pf2e-mobile-compact.rollMode", newMode);
       } catch {}
@@ -1876,7 +1949,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: toggle fullscreen mode for mobile app view.
    */
-  static async #onToggleFullscreen(event, target) {
+  static async _onToggleFullscreen(event, target) {
     const sheetEl = target?.closest?.(".pf2e-mobile-sheet");
     const isCurrentlyFs = !!(
       document.fullscreenElement ||
@@ -1930,23 +2003,23 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: scroll chat to the latest message.
    */
-  static async #onScrollChatToBottom(event, target) {
-    this.#scrollChatToBottom(true);
+  static async _onScrollChatToBottom(event, target) {
+    this._scrollChatToBottom(true);
   }
 
   /**
    * Action handler: switch active tab.
    */
-  static async #onSwitchTab(event, target) {
+  static async _onSwitchTab(event, target) {
     const newTab = target.dataset.tab;
-    if (newTab === "chat" && this.#activeTab === "chat") {
-      this.#scrollChatToBottom(true);
+    if (newTab === "chat" && this._activeTab === "chat") {
+      this._scrollChatToBottom(true);
       return;
     }
-    if (newTab && newTab !== this.#activeTab) {
-      this.#activeTab = newTab;
+    if (newTab && newTab !== this._activeTab) {
+      this._activeTab = newTab;
       if (newTab === "chat") {
-        this.#unreadChatCount = 0;
+        this._unreadChatCount = 0;
       }
       this.render({ parts: ["sheet"] });
     }
@@ -1955,10 +2028,10 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: switch active action sub-tab (encounter, exploration, downtime).
    */
-  static async #onSwitchActionSubTab(event, target) {
+  static async _onSwitchActionSubTab(event, target) {
     const newSubTab = target.dataset.subtab;
-    if (newSubTab && newSubTab !== this.#actionSubTab) {
-      this.#actionSubTab = newSubTab;
+    if (newSubTab && newSubTab !== this._actionSubTab) {
+      this._actionSubTab = newSubTab;
       this.render({ parts: ["sheet"] });
     }
   }
@@ -1966,10 +2039,10 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: switch active spell sub-tab (spells, preparation).
    */
-  static async #onSwitchSpellSubTab(event, target) {
+  static async _onSwitchSpellSubTab(event, target) {
     const newSubTab = target.dataset.subtab;
-    if (newSubTab && newSubTab !== this.#spellSubTab) {
-      this.#spellSubTab = newSubTab;
+    if (newSubTab && newSubTab !== this._spellSubTab) {
+      this._spellSubTab = newSubTab;
       this.render({ parts: ["sheet"] });
     }
   }
@@ -1977,7 +2050,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: toggle expandable rank accordion group in Spells tab.
    */
-  static #onToggleRankGroup(event, target) {
+  static _onToggleRankGroup(event, target) {
     event.preventDefault();
     const rank = parseInt(target.dataset.rank, 10);
     const groupEl = target.closest(".spell-rank-group");
@@ -1990,18 +2063,18 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     if (isCollapsed) {
       listEl?.classList?.remove("collapsed");
       iconEl?.classList?.remove("collapsed");
-      this.#collapsedRankGroups.delete(rank);
+      this._collapsedRankGroups.delete(rank);
     } else {
       listEl?.classList?.add("collapsed");
       iconEl?.classList?.add("collapsed");
-      this.#collapsedRankGroups.add(rank);
+      this._collapsedRankGroups.add(rank);
     }
   }
 
   /**
    * Action handler: open touch-friendly spell selection modal to prepare a spell in a slot.
    */
-  static async #onOpenSpellPrepPicker(event, target) {
+  static async _onOpenSpellPrepPicker(event, target) {
     const entryId = target.dataset.entryId;
     const rank = parseInt(target.dataset.rank, 10);
     const slotIndex = parseInt(target.dataset.slotIndex, 10);
@@ -2035,7 +2108,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       if (dialogInstance?.close) {
         await dialogInstance.close();
       }
-      await PF2eMobileSheet.#prepareSlot(this.actor, entryId, rank, slotIndex, spellId);
+      await PF2eMobileSheet._prepareSlot(this.actor, entryId, rank, slotIndex, spellId);
       this.render({ parts: ["sheet"] });
     };
 
@@ -2078,7 +2151,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Helper: assign a spell to a prepared slot.
    */
-  static async #prepareSlot(actor, entryId, rank, slotIndex, spellId) {
+  static async _prepareSlot(actor, entryId, rank, slotIndex, spellId) {
     const entry = actor.spellcasting?.get(entryId);
     const spell = actor.items.get(spellId);
     if (!entry || !spell) return;
@@ -2097,7 +2170,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: unprepare a slot.
    */
-  static async #onUnprepareSlot(event, target) {
+  static async _onUnprepareSlot(event, target) {
     const entryId = target.dataset.entryId;
     const rank = parseInt(target.dataset.rank, 10);
     const slotIndex = parseInt(target.dataset.slotIndex, 10);
@@ -2121,7 +2194,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: toggle expended state of a prepared slot.
    */
-  static async #onToggleSlotExpended(event, target) {
+  static async _onToggleSlotExpended(event, target) {
     event.preventDefault();
     event.stopPropagation();
     const entryId = target.dataset.entryId;
@@ -2153,7 +2226,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: reset all expended slots and restore focus points.
    */
-  static async #onResetDailySpells(event, target) {
+  static async _onResetDailySpells(event, target) {
     const entries = this.actor.spellcasting?.contents ?? [];
     for (const entry of entries) {
       const updates = {};
@@ -2189,7 +2262,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: save current prepared spells as a preset.
    */
-  static async #onSaveSpellPreset(event, target) {
+  static async _onSaveSpellPreset(event, target) {
     const name = await new Promise(resolve => {
       const DialogClass = foundry.applications?.api?.DialogV2 ?? Dialog;
       new DialogClass({
@@ -2257,7 +2330,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: apply saved spell preset.
    */
-  static async #onApplySpellPreset(event, target) {
+  static async _onApplySpellPreset(event, target) {
     const presetId = target.dataset.presetId;
     if (!presetId) return;
     const existingPresets = this.actor.getFlag("pf2e-mobile-compact", "spellPresets") ?? [];
@@ -2301,7 +2374,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: delete saved spell preset.
    */
-  static async #onDeleteSpellPreset(event, target) {
+  static async _onDeleteSpellPreset(event, target) {
     const presetId = target.dataset.presetId;
     if (!presetId) return;
     const existingPresets = this.actor.getFlag("pf2e-mobile-compact", "spellPresets") ?? [];
@@ -2313,7 +2386,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: open compendium browser drawer.
    */
-  static async #onOpenCompendiumPicker(event, target) {
+  static async _onOpenCompendiumPicker(event, target) {
     const type = target.dataset.type ?? "spells";
     new CompendiumPickerApp(this.actor, {}, type).render(true);
   }
@@ -2321,7 +2394,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: adjust spell slots.
    */
-  static async #onAdjustSlot(event, target) {
+  static async _onAdjustSlot(event, target) {
     const rank = parseInt(target.dataset.rank, 10);
     const delta = parseInt(target.dataset.delta, 10);
     const entryId = target.dataset.entryId;
@@ -2343,7 +2416,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: adjust focus points.
    */
-  static async #onAdjustFocus(event, target) {
+  static async _onAdjustFocus(event, target) {
     const delta = parseInt(target.dataset.delta, 10);
     if (isNaN(delta)) return;
 
@@ -2363,19 +2436,19 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * @param {string} actionLabel
    * @returns {Promise<object|null|false>} Resolves to target token adapter, null (no target), or false (cancelled).
    */
-  async #resolveTargetForAction(actionLabel) {
+  async _resolveTargetForAction(actionLabel) {
     const currentTarget = Array.from(game.user?.targets ?? []).find(t => t.id);
     if (currentTarget) {
       const targetToken = getTargetableToken(currentTarget.id) ?? currentTarget;
       if (targetToken) return targetToken;
     }
-    return this.#promptTargetSelection(actionLabel);
+    return this._promptTargetSelection(actionLabel);
   }
 
   /**
    * Action handler: execute strike attack roll with target prompt.
    */
-  static async #onExecuteStrike(event, target) {
+  static async _onExecuteStrike(event, target) {
     const strikeIndex = parseInt(target.dataset.strikeIndex, 10);
     const variantIndex = parseInt(target.dataset.variantIndex, 10);
     const strike = this.actor.system.actions?.[strikeIndex];
@@ -2388,7 +2461,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     getOriginToken(this.actor);
 
     // Resolve target: use pre-selected target or prompt user
-    const targetToken = await this.#resolveTargetForAction(`${strike.label} (${variant.label})`);
+    const targetToken = await this._resolveTargetForAction(`${strike.label} (${variant.label})`);
     if (targetToken === false) return; // User cancelled prompt
 
     // Ensure target is synchronized in Foundry user targets
@@ -2420,7 +2493,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: execute damage roll with target prompt.
    */
-  static async #onExecuteDamage(event, target) {
+  static async _onExecuteDamage(event, target) {
     const strikeIndex = parseInt(target.dataset.strikeIndex, 10);
     const strike = this.actor.system.actions?.[strikeIndex];
     if (!strike) return;
@@ -2429,7 +2502,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const originToken = getOriginToken(this.actor);
 
     // Resolve target: use pre-selected target or prompt user
-    const targetToken = await this.#resolveTargetForAction(`${strike.label} (Damage)`);
+    const targetToken = await this._resolveTargetForAction(`${strike.label} (Damage)`);
     if (targetToken === false) return; // User cancelled prompt
 
     if (targetToken?.id) {
@@ -2454,7 +2527,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: execute critical damage roll with target prompt.
    */
-  static async #onExecuteCritical(event, target) {
+  static async _onExecuteCritical(event, target) {
     const strikeIndex = parseInt(target.dataset.strikeIndex, 10);
     const strike = this.actor.system.actions?.[strikeIndex];
     if (!strike) return;
@@ -2463,7 +2536,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const originToken = getOriginToken(this.actor);
 
     // Resolve target: use pre-selected target or prompt user
-    const targetToken = await this.#resolveTargetForAction(`${strike.label} (Critical)`);
+    const targetToken = await this._resolveTargetForAction(`${strike.label} (Critical)`);
     if (targetToken === false) return; // User cancelled prompt
 
     if (targetToken?.id) {
@@ -2488,7 +2561,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: execute a weapon auxiliary action (draw, sheathe, drop, reload, change grip).
    */
-  static async #onExecuteAuxiliaryAction(event, target) {
+  static async _onExecuteAuxiliaryAction(event, target) {
     const strikeIndex = parseInt(target.dataset.strikeIndex, 10);
     const auxIndex = parseInt(target.dataset.auxIndex, 10);
     const strike = this.actor.system.actions?.[strikeIndex];
@@ -2517,13 +2590,16 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: send item / ability card to chat.
    */
-  static async #onItemToChat(event, target) {
+  static async _onItemToChat(event, target) {
     const itemId = target.dataset.itemId;
     const item = this.actor.items.get(itemId);
     if (!item) return;
 
+    const rank = parseInt(target.dataset.rank, 10);
+    const options = !isNaN(rank) && rank > 0 ? { data: { castRank: rank, castLevel: rank } } : {};
+
     if (typeof item.toMessage === "function") {
-      await item.toMessage(event);
+      await item.toMessage(event, options);
     }
   }
 
@@ -2532,7 +2608,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Handles both self-inflicted actions (selfEffect / self-buffs applied to actor, ignoring targets)
    * and targeted / attack actions (affecting the targeted token).
    */
-  static async #onUseAction(event, target) {
+  static async _onUseAction(event, target) {
     const itemId = target.dataset.itemId;
     const item = this.actor.items.get(itemId);
     if (!item) return;
@@ -2622,7 +2698,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       let targetToken = null;
       if (!isSelfAction) {
         // Targeted action: resolve the selected target or prompt for one
-        targetToken = await this.#resolveTargetForAction(item.name);
+        targetToken = await this._resolveTargetForAction(item.name);
         if (targetToken === false) return; // User cancelled prompt
       }
 
@@ -2643,7 +2719,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
           glyph: v.glyph,
           cost: v.cost
         }));
-        const chosenVariant = await this.#promptVariantSelection(item.name, variantList);
+        const chosenVariant = await this._promptVariantSelection(item.name, variantList);
         if (chosenVariant === false) return; // User cancelled prompt
         if (chosenVariant) {
           useOptions.variant = chosenVariant;
@@ -2652,7 +2728,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
       // Check if action offers multiple statistics (e.g. Recall Knowledge)
       if (Array.isArray(systemAction.statistic) && systemAction.statistic.length > 1) {
-        const chosenStat = await this.#promptStatisticSelection(item.name, systemAction.statistic);
+        const chosenStat = await this._promptStatisticSelection(item.name, systemAction.statistic);
         if (chosenStat === false) return; // User cancelled prompt
         if (chosenStat) {
           useOptions.statistic = chosenStat;
@@ -2691,7 +2767,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Action handler: roll an action check (skill check, attack activity, or rolled action).
    * Resolves target token and executes PF2e's native check workflow or statistic roll.
    */
-  static async #onRollActionCheck(event, target) {
+  static async _onRollActionCheck(event, target) {
     const itemId = target.dataset.itemId;
     const actionSlug = target.dataset.actionSlug;
     const item = this.actor.items.get(itemId);
@@ -2703,7 +2779,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     if (currentTarget) {
       targetToken = getTargetableToken(currentTarget.id) ?? currentTarget;
     } else {
-      targetToken = await this.#resolveTargetForAction(label);
+      targetToken = await this._resolveTargetForAction(label);
       if (targetToken === false) return; // User cancelled prompt
     }
 
@@ -2735,7 +2811,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
             glyph: v.glyph,
             cost: v.cost
           }));
-          const chosenVariant = await this.#promptVariantSelection(label, variantList);
+          const chosenVariant = await this._promptVariantSelection(label, variantList);
           if (chosenVariant === false) return; // User cancelled prompt
           if (chosenVariant) {
             useOptions.variant = chosenVariant;
@@ -2744,7 +2820,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
         // Check if action offers multiple statistics (e.g. Recall Knowledge)
         if (Array.isArray(systemAction.statistic) && systemAction.statistic.length > 1) {
-          const chosenStat = await this.#promptStatisticSelection(label, systemAction.statistic);
+          const chosenStat = await this._promptStatisticSelection(label, systemAction.statistic);
           if (chosenStat === false) return; // User cancelled prompt
           if (chosenStat) {
             useOptions.statistic = chosenStat;
@@ -2785,7 +2861,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const strikes = this.actor.system.actions ?? [];
         let selectedStrike = strikes[0];
         if (strikes.length > 1) {
-          const chosen = await this.#promptStrikeSelection(label, strikes);
+          const chosen = await this._promptStrikeSelection(label, strikes);
           if (chosen === false) return; // User cancelled prompt
           if (chosen) selectedStrike = chosen;
         }
@@ -2809,7 +2885,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: roll skill check.
    */
-  static async #onRollSkill(event, target) {
+  static async _onRollSkill(event, target) {
     const skillSlug = target.dataset.skill;
     if (!skillSlug) return;
 
@@ -2827,7 +2903,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: consume item.
    */
-  static async #onConsumeItem(event, target) {
+  static async _onConsumeItem(event, target) {
     const itemId = target.dataset.itemId;
     const item = this.actor.items.get(itemId);
     if (!item) return;
@@ -2840,7 +2916,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: cast spell.
    */
-  static async #onCastSpell(event, target) {
+  static async _onCastSpell(event, target) {
     const itemId = target.dataset.itemId;
     const entryId = target.dataset.entryId;
     const rank = parseInt(target.dataset.rank, 10);
@@ -2854,7 +2930,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     let targetToken = null;
     const hasAttackTrait = spell.system.traits?.value?.includes("attack") || spell.traits?.has?.("attack");
     if (spell.system.target?.value || spell.system.range?.value || hasAttackTrait) {
-      targetToken = await this.#resolveTargetForAction(`Cast ${spell.name}`);
+      targetToken = await this._resolveTargetForAction(`Cast ${spell.name}`);
       if (targetToken === false) return; // Cancelled
     }
 
@@ -2868,7 +2944,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         target: targetToken,
         actor: this.actor
       }, async () => {
-        await entry.cast(spell, { slot: rank > 0 ? rank : 0, level: rank, target: targetToken || undefined });
+        await entry.cast(spell, { slot: rank > 0 ? rank : 0, level: rank, rank: rank, target: targetToken || undefined });
       }, this.rollMode === "physical");
     }
 
@@ -2900,7 +2976,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: switch active character sheet to another owned character.
    */
-  static async #onSwitchActor(event, target) {
+  static async _onSwitchActor(event, target) {
     const newActorId = target.value;
     if (!newActorId || newActorId === this.actor.id) return;
     const newActor = game.actors.get(newActorId);
@@ -2916,7 +2992,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * @param {string} actionLabel
    * @returns {Promise<object|null|false>} Resolves to target token adapter, null (no target), or false (cancelled).
    */
-  async #promptTargetSelection(actionLabel) {
+  async _promptTargetSelection(actionLabel) {
     const scene = canvas?.scene ?? game.scenes.viewed ?? game.scenes.active;
     const currentTargetId = Array.from(game.user?.targets ?? []).find(t => t.id)?.id ?? "";
 
@@ -2990,7 +3066,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * @param {Array<{slug: string, name: string, glyph?: string, cost?: number}>} variants
    * @returns {Promise<string|false>} Selected variant slug, or false if cancelled.
    */
-  async #promptVariantSelection(actionLabel, variants) {
+  async _promptVariantSelection(actionLabel, variants) {
     if (!variants || variants.length === 0) return null;
     if (variants.length === 1) return variants[0].slug;
 
@@ -3042,7 +3118,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * @param {Array<string>} statistics
    * @returns {Promise<string|false>} Selected statistic slug, or false if cancelled.
    */
-  async #promptStatisticSelection(actionLabel, statistics) {
+  async _promptStatisticSelection(actionLabel, statistics) {
     if (!statistics || statistics.length === 0) return null;
     if (statistics.length === 1) return statistics[0];
 
@@ -3097,7 +3173,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * @param {Array<object>} strikes
    * @returns {Promise<object|false>} Selected strike object, or false if cancelled.
    */
-  async #promptStrikeSelection(actionLabel, strikes) {
+  async _promptStrikeSelection(actionLabel, strikes) {
     if (!strikes || strikes.length === 0) return null;
     if (strikes.length === 1) return strikes[0];
 
@@ -3146,7 +3222,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Action handler: toggle expandable description summary on an action card.
    */
-  static #onToggleActionSummary(event, target) {
+  static _onToggleActionSummary(event, target) {
     event.preventDefault();
     event.stopPropagation();
     const card = target.closest(".action-card");
@@ -3162,13 +3238,98 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       summary.classList.add("collapsed");
       card.classList.remove("expanded");
       icon?.classList?.remove("expanded");
-      if (itemId) this.#expandedActionIds.delete(itemId);
+      if (itemId) this._expandedActionIds.delete(itemId);
     } else {
       summary.classList.remove("collapsed");
       summary.classList.add("expanded");
       card.classList.add("expanded");
       icon?.classList?.add("expanded");
-      if (itemId) this.#expandedActionIds.add(itemId);
+      if (itemId) this._expandedActionIds.add(itemId);
     }
+  }
+
+  /**
+   * Action handler: Toggle signature state on a spontaneous spell.
+   */
+  static async _onToggleSignatureSpell(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+    const itemId = target.dataset.itemId;
+    if (!itemId) return;
+
+    const spell = this.actor.items.get(itemId);
+    if (!spell) return;
+
+    const currentSig = !!(spell.system.location?.signature || spell.isSignature);
+    await spell.update({ "system.location.signature": !currentSig });
+    ui.notifications.info(`${spell.name} ${!currentSig ? "marked as signature spell" : "removed from signature spells"}.`);
+    this.render();
+  }
+
+  /**
+   * Action handler: Remove / delete a spell from character after confirmation.
+   */
+  static async _onRemoveSpell(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+    const itemId = target.dataset.itemId;
+    if (!itemId) return;
+
+    const spell = this.actor.items.get(itemId);
+    if (!spell) return;
+
+    const DialogClass = foundry.applications?.api?.DialogV2 ?? Dialog;
+    let confirmed = false;
+
+    if (DialogClass === foundry.applications?.api?.DialogV2) {
+      confirmed = await DialogClass.confirm({
+        window: { title: "Remove Spell" },
+        content: `<p>Are you sure you want to remove <strong>${spell.name}</strong> from ${this.actor.name}?</p><p style="font-size:0.85rem; color:#a1a1aa;">This will delete the spell from your character's spell list.</p>`,
+        yes: { label: "Remove", icon: "fa-solid fa-trash" },
+        no: { label: "Cancel", icon: "fa-solid fa-xmark" },
+        rejectClose: false
+      });
+    } else {
+      confirmed = await new Promise(resolve => {
+        new Dialog({
+          title: "Remove Spell",
+          content: `<p>Are you sure you want to remove <strong>${spell.name}</strong> from ${this.actor.name}?</p>`,
+          buttons: {
+            yes: { label: "Remove", callback: () => resolve(true) },
+            no: { label: "Cancel", callback: () => resolve(false) }
+          },
+          default: "no",
+          close: () => resolve(false)
+        }).render(true);
+      });
+    }
+
+    if (!confirmed) return;
+
+    // Clear any prepared slots holding this spell
+    const entries = this.actor.spellcasting?.contents ?? [];
+    for (const entry of entries) {
+      if (entry.isPrepared || entry.system?.prepared?.value === "prepared") {
+        for (let r = 0; r <= 10; r++) {
+          const slotKey = `slot${r}`;
+          const prepared = entry.system.slots?.[slotKey]?.prepared;
+          if (prepared) {
+            const arr = Array.isArray(prepared) ? prepared : Object.values(prepared);
+            const needsUpdate = arr.some(p => p?.id === itemId);
+            if (needsUpdate) {
+              const cleaned = arr.map(p => p?.id === itemId ? { id: null, expended: false } : p);
+              await entry.update({ [`system.slots.${slotKey}.prepared`]: cleaned });
+            }
+          }
+        }
+      }
+    }
+
+    // Clean from expanded state set
+    this._expandedActionIds.delete(itemId);
+
+    await spell.delete();
+    ui.notifications.info(`Removed ${spell.name} from ${this.actor.name}`);
+    this.render();
   }
 }

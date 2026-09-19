@@ -18,11 +18,11 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
       height: 640
     },
     actions: {
-      importItem: CompendiumPickerApp.#onImportItem,
-      search: CompendiumPickerApp.#onSearch,
-      stageItem: CompendiumPickerApp.#onStageItem,
-      cancelStage: CompendiumPickerApp.#onCancelStage,
-      selectTargetEntry: CompendiumPickerApp.#onSelectTargetEntry
+      importItem: CompendiumPickerApp._onImportItem,
+      search: CompendiumPickerApp._onSearch,
+      stageItem: CompendiumPickerApp._onStageItem,
+      cancelStage: CompendiumPickerApp._onCancelStage,
+      selectTargetEntry: CompendiumPickerApp._onSelectTargetEntry
     }
   };
 
@@ -33,27 +33,29 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
   };
 
   /** @type {ActorPF2e} */
-  #actor;
+  _actor;
   /** @type {string} */
-  #type;
+  _type;
   /** @type {Array<object>} */
-  #indexEntries = [];
+  _indexEntries = [];
   /** @type {string} */
-  #query = "";
+  _query = "";
 
   // Filter states
-  #rankFilter = "all";
-  #traditionFilter = "all"; // Default to all spells
+  _rankFilter = "all";
+  _traditionFilter = "all"; // Default to all spells
 
   // Staging state
-  #stagedItem = null;
-  #selectedEntryId = null;
-  #selectedRank = null;
+  _stagedItem = null;
+  _selectedEntryId = null;
+  _selectedRank = null;
+  _debouncedRender;
 
   constructor(actor, options = {}, type = "spells") {
     super(options);
-    this.#actor = actor;
-    this.#type = type;
+    this._actor = actor;
+    this._type = type;
+    this._debouncedRender = foundry.utils?.debounce?.(() => this.render(), 250);
   }
 
   /**
@@ -61,7 +63,7 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
    * @param {object} itemData
    * @returns {string[]}
    */
-  static #extractTraditions(itemData) {
+  static _extractTraditions(itemData) {
     const rawTraditions = itemData.system?.traits?.traditions;
     const tradArr = Array.isArray(rawTraditions)
       ? rawTraditions
@@ -76,14 +78,14 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    context.type = this.#type;
-    context.query = this.#query;
-    context.isSpells = this.#type === "spells";
-    context.rankFilter = this.#rankFilter;
-    context.traditionFilter = this.#traditionFilter;
+    context.type = this._type;
+    context.query = this._query;
+    context.isSpells = this._type === "spells";
+    context.rankFilter = this._rankFilter;
+    context.traditionFilter = this._traditionFilter;
 
     // Collect actor spellcasting entries and traditions
-    const entries = this.#actor.spellcasting?.contents ?? [];
+    const entries = this._actor.spellcasting?.contents ?? [];
     const actorTraditions = new Set();
     const spellcastingEntries = [];
 
@@ -119,15 +121,15 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
       : "";
 
     // Staging context for the Add confirmation overlay
-    if (this.#stagedItem) {
-      const activeEntryId = this.#selectedEntryId || (spellcastingEntries[0]?.id ?? null);
+    if (this._stagedItem) {
+      const activeEntryId = this._selectedEntryId || (spellcastingEntries[0]?.id ?? null);
       const activeEntry = spellcastingEntries.find(e => e.id === activeEntryId);
 
-      const baseRank = this.#stagedItem.isCantrip ? 0 : (this.#stagedItem.baseRank || 1);
+      const baseRank = this._stagedItem.isCantrip ? 0 : (this._stagedItem.baseRank || 1);
       const maxRank = activeEntry ? activeEntry.highestRank : 10;
 
       const availableRanks = [];
-      if (this.#stagedItem.isCantrip) {
+      if (this._stagedItem.isCantrip) {
         availableRanks.push({ rank: 0, label: "Cantrip" });
       } else {
         for (let r = baseRank; r <= Math.max(maxRank, baseRank); r++) {
@@ -135,17 +137,17 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
         }
       }
 
-      const activeRank = this.#selectedRank !== null
-        ? this.#selectedRank
+      const activeRank = this._selectedRank !== null
+        ? this._selectedRank
         : baseRank;
 
       context.staged = {
-        ...this.#stagedItem,
+        ...this._stagedItem,
         selectedEntryId: activeEntryId,
         selectedRank: activeRank,
         availableRanks,
-        entryMatchesTradition: activeEntry && this.#stagedItem.traditions.length
-          ? this.#stagedItem.traditions.includes(activeEntry.tradition.toLowerCase())
+        entryMatchesTradition: activeEntry && this._stagedItem.traditions.length
+          ? this._stagedItem.traditions.includes(activeEntry.tradition.toLowerCase())
           : true
       };
     } else {
@@ -153,48 +155,48 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
     }
 
     // Query compendium pack
-    const packName = this.#type === "spells" ? "pf2e.spells-srd" : "pf2e.equipment-srd";
+    const packName = this._type === "spells" ? "pf2e.spells-srd" : "pf2e.equipment-srd";
     const pack = game.packs.get(packName);
 
     if (pack) {
-      if (this.#indexEntries.length === 0) {
-        const fields = this.#type === "spells"
+      if (this._indexEntries.length === 0) {
+        const fields = this._type === "spells"
           ? ["img", "system.level", "system.traits", "system.category"]
           : ["img", "system.level", "system.price"];
         const index = await pack.getIndex({ fields });
-        this.#indexEntries = Array.from(index);
+        this._indexEntries = Array.from(index);
       }
 
-      const queryLower = this.#query.trim().toLowerCase();
+      const queryLower = this._query.trim().toLowerCase();
 
-      context.entries = this.#indexEntries
+      context.entries = this._indexEntries
         .filter(entry => {
           // Search query
           if (queryLower && !entry.name.toLowerCase().includes(queryLower)) return false;
 
           // Spell filters
-          if (this.#type === "spells") {
+          if (this._type === "spells") {
             const rawLevel = entry.system?.level?.value ?? 0;
             const traits = entry.system?.traits?.value ?? [];
             const isCantrip = rawLevel === 0 || traits.includes("cantrip");
-            const traditions = CompendiumPickerApp.#extractTraditions(entry);
+            const traditions = CompendiumPickerApp._extractTraditions(entry);
 
             // Rank filter
-            if (this.#rankFilter === "cantrip") {
+            if (this._rankFilter === "cantrip") {
               if (!isCantrip) return false;
-            } else if (this.#rankFilter !== "all") {
-              const filterRankNum = parseInt(this.#rankFilter, 10);
+            } else if (this._rankFilter !== "all") {
+              const filterRankNum = parseInt(this._rankFilter, 10);
               if (isCantrip || rawLevel !== filterRankNum) return false;
             }
 
             // Tradition filter
-            if (this.#traditionFilter === "character") {
+            if (this._traditionFilter === "character") {
               if (context.actorTraditions.length > 0) {
                 const matchesAny = traditions.some(t => context.actorTraditions.includes(t));
                 if (!matchesAny) return false;
               }
-            } else if (this.#traditionFilter !== "all") {
-              if (!traditions.includes(this.#traditionFilter)) return false;
+            } else if (this._traditionFilter !== "all") {
+              if (!traditions.includes(this._traditionFilter)) return false;
             }
           }
 
@@ -211,12 +213,25 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
   _attachPartListeners(partId, htmlElement, options) {
     super._attachPartListeners(partId, htmlElement, options);
 
+    // Real-time search input listener
+    const searchInput = htmlElement.querySelector(".compendium-search-input");
+    if (searchInput) {
+      searchInput.addEventListener("input", (event) => {
+        this._query = event.target.value ?? "";
+        if (typeof this._debouncedRender === "function") {
+          this._debouncedRender();
+        } else {
+          this.render();
+        }
+      });
+    }
+
     // Rank filter select listener (Native touch-safe)
     const rankSelect = htmlElement.querySelector("[data-change-action='updateRankFilter']");
     if (rankSelect) {
       rankSelect.addEventListener("change", (event) => {
         event.stopPropagation();
-        this.#rankFilter = event.target.value;
+        this._rankFilter = event.target.value;
         this.render();
       });
     }
@@ -226,7 +241,7 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
     if (tradSelect) {
       tradSelect.addEventListener("change", (event) => {
         event.stopPropagation();
-        this.#traditionFilter = event.target.value;
+        this._traditionFilter = event.target.value;
         this.render();
       });
     }
@@ -236,8 +251,8 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
     if (entrySelect) {
       entrySelect.addEventListener("change", (event) => {
         event.stopPropagation();
-        this.#selectedEntryId = event.target.value;
-        this.#selectedRank = null; // Reset rank to default for new entry
+        this._selectedEntryId = event.target.value;
+        this._selectedRank = null; // Reset rank to default for new entry
         this.render();
       });
     }
@@ -247,7 +262,7 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
     if (rankChoiceSelect) {
       rankChoiceSelect.addEventListener("change", (event) => {
         event.stopPropagation();
-        this.#selectedRank = parseInt(event.target.value, 10);
+        this._selectedRank = parseInt(event.target.value, 10);
       });
     }
   }
@@ -255,17 +270,17 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
   /**
    * Search input handler.
    */
-  static async #onSearch(event, target) {
-    this.#query = target.value ?? "";
+  static async _onSearch(event, target) {
+    this._query = target.value ?? "";
     this.render();
   }
 
   /**
    * Action handler: Stage an item before importing.
    */
-  static async #onStageItem(event, target) {
+  static async _onStageItem(event, target) {
     const entryId = target.dataset.entryId;
-    const packName = this.#type === "spells" ? "pf2e.spells-srd" : "pf2e.equipment-srd";
+    const packName = this._type === "spells" ? "pf2e.spells-srd" : "pf2e.equipment-srd";
     const pack = game.packs.get(packName);
 
     if (!pack || !entryId) return;
@@ -274,9 +289,9 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
     if (!item) return;
 
     // If equipment, directly import to actor
-    if (this.#type !== "spells") {
-      await this.#actor.createEmbeddedDocuments("Item", [item.toObject()]);
-      ui.notifications.info(`Added ${item.name} to ${this.#actor.name}`);
+    if (this._type !== "spells") {
+      await this._actor.createEmbeddedDocuments("Item", [item.toObject()]);
+      ui.notifications.info(`Added ${item.name} to ${this._actor.name}`);
       this.close();
       return;
     }
@@ -284,9 +299,9 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
     // Stage spell for mobile configuration overlay
     const traits = item.system?.traits?.value ?? [];
     const isCantrip = item.isCantrip || traits.includes("cantrip") || item.system?.level?.value === 0;
-    const traditions = CompendiumPickerApp.#extractTraditions(item);
+    const traditions = CompendiumPickerApp._extractTraditions(item);
 
-    this.#stagedItem = {
+    this._stagedItem = {
       id: item.id,
       name: item.name,
       img: item.img,
@@ -299,14 +314,14 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
     };
 
     // Auto-select best matching entry
-    const entries = this.#actor.spellcasting?.contents ?? [];
+    const entries = this._actor.spellcasting?.contents ?? [];
     const matchingEntry = entries.find(e => {
       const trad = (e.tradition ?? e.system?.tradition?.value ?? "").toLowerCase();
       return trad && traditions.includes(trad);
     });
 
-    this.#selectedEntryId = matchingEntry ? matchingEntry.id : (entries[0]?.id ?? null);
-    this.#selectedRank = isCantrip ? 0 : this.#stagedItem.baseRank;
+    this._selectedEntryId = matchingEntry ? matchingEntry.id : (entries[0]?.id ?? null);
+    this._selectedRank = isCantrip ? 0 : this._stagedItem.baseRank;
 
     this.render();
   }
@@ -314,34 +329,34 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
   /**
    * Action handler: Cancel staging.
    */
-  static async #onCancelStage(event, target) {
-    this.#stagedItem = null;
-    this.#selectedEntryId = null;
-    this.#selectedRank = null;
+  static async _onCancelStage(event, target) {
+    this._stagedItem = null;
+    this._selectedEntryId = null;
+    this._selectedRank = null;
     this.render();
   }
 
   /**
    * Action handler: Dummy action for selectTargetEntry (handled via change event).
    */
-  static async #onSelectTargetEntry(event, target) {
+  static async _onSelectTargetEntry(event, target) {
     // Handled in _attachPartListeners
   }
 
   /**
    * Action handler: Confirm and import spell into selected spellcasting entry.
    */
-  static async #onImportItem(event, target) {
-    if (!this.#stagedItem) return;
+  static async _onImportItem(event, target) {
+    if (!this._stagedItem) return;
 
     const form = target.closest(".spell-config-card");
     const entryIdSelect = form?.querySelector("[name='targetEntry']");
     const targetRankSelect = form?.querySelector("[name='targetRank']");
 
-    const entryId = entryIdSelect ? entryIdSelect.value : this.#selectedEntryId;
+    const entryId = entryIdSelect ? entryIdSelect.value : this._selectedEntryId;
     const targetRank = targetRankSelect
       ? parseInt(targetRankSelect.value, 10)
-      : (this.#selectedRank ?? this.#stagedItem.baseRank);
+      : (this._selectedRank ?? this._stagedItem.baseRank);
 
     if (!entryId) {
       ui.notifications.warn("Please select a spellcasting entry to add this spell to.");
@@ -351,14 +366,23 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
     const pack = game.packs.get("pf2e.spells-srd");
     if (!pack) return;
 
-    const item = await pack.getDocument(this.#stagedItem.id);
+    const item = await pack.getDocument(this._stagedItem.id);
     if (!item) return;
 
-    const entry = this.#actor.spellcasting?.get(entryId);
+    const entry = this._actor.spellcasting?.get(entryId);
     if (!entry) {
       ui.notifications.warn("Selected spellcasting entry was not found on character.");
       return;
     }
+
+    // Save actor and state references, then close the compendium window
+    // so any confirmation dialog displays cleanly in the foreground without being occluded.
+    const actor = this._actor;
+    const type = this._type;
+    this._stagedItem = null;
+    this._selectedEntryId = null;
+    this._selectedRank = null;
+    await this.close();
 
     // Soft PF2e rule validation: Spontaneous repertoire limits
     const isSpontaneous = entry.isSpontaneous || entry.system?.prepared?.value === "spontaneous";
@@ -396,32 +420,34 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
           });
         }
 
-        if (!confirmed) return;
+        if (!confirmed) {
+          // Re-open compendium picker if the user cancelled
+          new CompendiumPickerApp(actor, {}, type).render(true);
+          return;
+        }
       }
     }
 
-    // Delegate spell addition to PF2e's native system methods
+    // Delegate spell addition to PF2e's native system methods with reliable fallback
     try {
+      let added = null;
       if (typeof entry.addSpell === "function") {
-        await entry.addSpell(item, { groupId: targetRank });
+        added = await entry.addSpell(item, { groupId: targetRank });
       } else if (typeof entry.spells?.addSpell === "function") {
-        await entry.spells.addSpell(item, { groupId: targetRank });
-      } else {
+        added = await entry.spells.addSpell(item, { groupId: targetRank });
+      }
+
+      if (!added) {
         const itemData = item.toObject();
         itemData.system.location = { value: entryId };
         if (isSpontaneous && targetRank > (item.system?.level?.value ?? 1)) {
           itemData.system.location.heightenedLevel = targetRank;
         }
-        await this.#actor.createEmbeddedDocuments("Item", [itemData]);
+        await actor.createEmbeddedDocuments("Item", [itemData]);
       }
 
       const rankDisplay = targetRank === 0 ? "Cantrip" : `Rank ${targetRank}`;
       ui.notifications.info(`Added ${item.name} (${rankDisplay}) to ${entry.name}`);
-
-      this.#stagedItem = null;
-      this.#selectedEntryId = null;
-      this.#selectedRank = null;
-      this.close();
     } catch (err) {
       console.error("PF2e Mobile | Error adding spell to entry:", err);
       ui.notifications.error(`Failed to add spell: ${err.message}`);

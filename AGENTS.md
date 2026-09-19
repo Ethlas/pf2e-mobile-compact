@@ -43,11 +43,12 @@ Welcome to the **PF2e Mobile Sheet (Compact)** repository (`pf2e-mobile-compact`
 ## 3. Workflow & Deployment Rules
 
 1. **Syntax & Quality Checks**:
-   - Verify JavaScript syntax and Handlebars templates before pushing changes or deploying.
+   - Run `node scripts/verify.mjs` before pushing changes or deploying to verify JavaScript syntax, template rules, and touch targets.
 2. **Deployment**:
-   - Run `.\deploy.ps1` to sync the repository to the test server (`foundry@10.0.0.50`) and automatically restart the Foundry PM2 service.
-   - Monitor remote logs if errors occur using `plink.exe -batch @PwArgs foundry@10.0.0.50 "pm2 logs foundry --lines 30 --nostream"` (using `$env:FOUNDRY_DEPLOY_PASSWORD` or SSH keys).
-3. **Documentation & Security Integrity**:
+   - Run `.\deploy.ps1` to sync to `foundry@10.0.0.50` only when explicitly authorized by the user for deployment.
+3. **Approval & Documentation Integrity**:
+   - **NEVER commit or push to Git/GitHub without explicit user approval.**
+   - **NEVER deploy without explicit user approval.**
    - Never commit or store plaintext passwords in repository files or skill runbooks.
    - For every feature milestone, bug fix, or breaking change, document the change under the corresponding version in [`CHANGELOG.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/CHANGELOG.md).
    - Bump version in [`module.json`](file:///d:/Dnd/coding/pf2e-mobile-compact/module.json) when releasing new milestone versions.
