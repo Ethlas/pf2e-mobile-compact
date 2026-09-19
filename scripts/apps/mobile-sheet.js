@@ -51,6 +51,33 @@ import {
   onToggleSignatureSpell,
   onRemoveSpell
 } from "./sheet-helpers/spells-handlers.js";
+import {
+  onApplyDeltaHP,
+  onSetDirectHP,
+  onSetDirectTempHP,
+  onRollPerceptionOrInitiative,
+  onApplyDamage,
+  onApplyHeal,
+  onSetTempHP,
+  onAdjustTempHP,
+  onRollSave,
+  onRollPerception,
+  onRollInitiative,
+  onSelectTarget,
+  onToggleRollMode,
+  onToggleFullscreen,
+  onSwitchActor
+} from "./sheet-helpers/header-handlers.js";
+import {
+  disableChatInputs,
+  dockChatElement,
+  restoreChatElement,
+  scrollChatToBottom,
+  setupScrollBottomListener,
+  registerChatListener,
+  unregisterChatListener,
+  updateChatBadge
+} from "./sheet-helpers/chat-handler.js";
 
 /**
  * Mobile-optimized compact character sheet application subclassing Foundry VTT's modern ActorSheetV2.
@@ -75,6 +102,10 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       height: 750
     },
     actions: {
+      applyDeltaHP: PF2eMobileSheet._onApplyDeltaHP,
+      setDirectHP: PF2eMobileSheet._onSetDirectHP,
+      setDirectTempHP: PF2eMobileSheet._onSetDirectTempHP,
+      rollPerceptionOrInitiative: PF2eMobileSheet._onRollPerceptionOrInitiative,
       applyHeaderDamage: PF2eMobileSheet._onApplyDamage,
       applyHeaderHeal: PF2eMobileSheet._onApplyHeal,
       setTempHP: PF2eMobileSheet._onSetTempHP,
@@ -261,6 +292,18 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       });
       this.element._mobileActionChangeBound = true;
     }
+
+    if (!this.element._mobileActionKeydownBound) {
+      this.element.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          const actionEl = event.target?.closest?.("input[data-change-action], input[data-action]");
+          if (actionEl) {
+            actionEl.blur();
+          }
+        }
+      });
+      this.element._mobileActionKeydownBound = true;
+    }
   }
 
   /** @override */
@@ -316,313 +359,40 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     this._sceneHookIds = [];
   }
 
-  /**
-   * Completely removes/hides chat input controls, forms, textareas ("Enter Message"),
-   * and option dropdowns within the mobile chat view, dedicating the tab strictly
-   * to roll card reviews and damage calculation buttons.
-   * @param {HTMLElement} [chatEl]
-   */
   _disableChatInputs(chatEl) {
-    const root = chatEl ?? this.element?.querySelector(".mobile-chat-mount");
-    if (!root) return;
-
-    // Target forms, controls bar, textareas, inputs, and selects outside of messages
-    const targets = root.querySelectorAll(
-      "#chat-controls, #chat-form, form, textarea, select, .chat-controls, .chat-form, .control-tools, header.chat-header, footer"
-    );
-    for (const el of targets) {
-      if (el.closest("#chat-log, .chat-log, .message")) continue;
-
-      el.style.setProperty("display", "none", "important");
-      el.style.setProperty("visibility", "hidden", "important");
-      el.style.setProperty("height", "0px", "important");
-      el.style.setProperty("min-height", "0px", "important");
-      el.style.setProperty("max-height", "0px", "important");
-      el.style.setProperty("margin", "0px", "important");
-      el.style.setProperty("padding", "0px", "important");
-      el.style.setProperty("border", "none", "important");
-      el.style.setProperty("overflow", "hidden", "important");
-      el.style.setProperty("pointer-events", "none", "important");
-      if (el.tagName === "TEXTAREA" || el.tagName === "INPUT" || el.tagName === "SELECT") {
-        el.disabled = true;
-        el.tabIndex = -1;
-      }
-    }
-
-    const chatScroll = root.querySelector(".chat-scroll");
-    if (chatScroll) {
-      chatScroll.style.setProperty("flex", "1 1 100%", "important");
-      chatScroll.style.setProperty("height", "100%", "important");
-      chatScroll.style.setProperty("min-height", "0", "important");
-      chatScroll.style.setProperty("max-height", "100%", "important");
-      chatScroll.style.setProperty("width", "100%", "important");
-      chatScroll.style.setProperty("overflow-y", "auto", "important");
-      chatScroll.style.setProperty("overflow-x", "hidden", "important");
-      chatScroll.style.setProperty("-webkit-overflow-scrolling", "touch", "important");
-      chatScroll.style.setProperty("position", "relative", "important");
-    }
-
-    const chatLog = root.querySelector("#chat-log, .chat-log");
-    if (chatLog) {
-      chatLog.style.setProperty("display", "flex", "important");
-      chatLog.style.setProperty("flex-direction", "column", "important");
-      chatLog.style.setProperty("flex-wrap", "nowrap", "important");
-      chatLog.style.setProperty("width", "100%", "important");
-      chatLog.style.setProperty("max-width", "100%", "important");
-
-      if (chatScroll) {
-        chatLog.style.setProperty("flex", "1 1 auto", "important");
-        chatLog.style.setProperty("height", "auto", "important");
-        chatLog.style.setProperty("min-height", "100%", "important");
-        chatLog.style.removeProperty("max-height");
-        chatLog.style.setProperty("overflow-y", "visible", "important");
-        chatLog.style.setProperty("overflow-x", "hidden", "important");
-      } else {
-        chatLog.style.setProperty("flex", "1 1 100%", "important");
-        chatLog.style.setProperty("height", "100%", "important");
-        chatLog.style.setProperty("max-height", "100%", "important");
-        chatLog.style.setProperty("overflow-y", "auto", "important");
-        chatLog.style.setProperty("overflow-x", "hidden", "important");
-      }
-
-      for (const msg of chatLog.children) {
-        msg.style.setProperty("display", "flex", "important");
-        msg.style.setProperty("flex-direction", "column", "important");
-        msg.style.setProperty("width", "100%", "important");
-        msg.style.setProperty("min-width", "100%", "important");
-        msg.style.setProperty("max-width", "100%", "important");
-        msg.style.setProperty("box-sizing", "border-box", "important");
-        msg.style.setProperty("flex-shrink", "0", "important");
-      }
-    }
+    disableChatInputs(chatEl, this);
   }
 
-  /**
-   * Docks Foundry's ui.chat.element into the mobile sheet's chat mount point.
-   */
   _dockChatElement() {
-    try {
-      const mount = this.element?.querySelector(".mobile-chat-mount");
-      const chatEl = (ui.chat?.element instanceof HTMLElement ? ui.chat.element : ui.chat?.element?.[0]) ?? document.getElementById("chat");
-      if (!mount || !chatEl) return;
-
-      if (!mount.contains(chatEl)) {
-        if (!this._chatOriginalParent && chatEl.parentElement) {
-          this._chatOriginalParent = chatEl.parentElement;
-          this._chatOriginalNextSibling = chatEl.nextSibling;
-        }
-        mount.appendChild(chatEl);
-      }
-
-      this._disableChatInputs(chatEl);
-
-      if (!chatEl._pf2eMobileInputObserver) {
-        const observer = new MutationObserver(() => {
-          this._disableChatInputs(chatEl);
-        });
-        observer.observe(chatEl, { childList: true, subtree: true });
-        chatEl._pf2eMobileInputObserver = observer;
-      }
-
-      if (!mount._pf2eChatEventShield) {
-        mount.addEventListener("click", (event) => {
-          event.stopPropagation();
-        });
-        mount._pf2eChatEventShield = true;
-      }
-
-      if (!chatEl._pf2eMobileDamageCapture) {
-        chatEl.addEventListener("click", (event) => {
-          const btn = event.target?.closest?.("button[data-action]");
-          if (btn) {
-            const action = btn.dataset.action;
-            if (["apply-damage", "half-damage", "double-damage", "triple-damage", "apply-healing", "shield-block"].includes(action)) {
-              this._ensureTokenControlled();
-            }
-          }
-        }, { capture: true });
-        chatEl._pf2eMobileDamageCapture = true;
-      }
-    } catch (err) {
-      console.warn("pf2e-mobile-compact | Error docking chat element:", err);
-    }
+    dockChatElement(this);
   }
 
-  /**
-   * Restores ui.chat.element back to its original parent upon sheet closure.
-   */
   _restoreChatElement() {
-    try {
-      const chatEl = (ui.chat?.element instanceof HTMLElement ? ui.chat.element : ui.chat?.element?.[0]) ?? document.getElementById("chat");
-      if (!chatEl) return;
-      if (chatEl._pf2eMobileInputObserver) {
-        chatEl._pf2eMobileInputObserver.disconnect();
-        chatEl._pf2eMobileInputObserver = null;
-      }
-      const scrollEl = chatEl.querySelector(".chat-scroll") ?? chatEl.querySelector("#chat-log, .chat-log");
-      if (scrollEl?._pf2eScrollBottomHandler) {
-        scrollEl.removeEventListener("scroll", scrollEl._pf2eScrollBottomHandler);
-        scrollEl._pf2eScrollBottomHandler = null;
-      }
-      if (this._chatOriginalParent && this._chatOriginalParent.isConnected) {
-        if (this._chatOriginalNextSibling && this._chatOriginalParent.contains(this._chatOriginalNextSibling)) {
-          this._chatOriginalParent.insertBefore(chatEl, this._chatOriginalNextSibling);
-        } else {
-          this._chatOriginalParent.appendChild(chatEl);
-        }
-      }
-    } catch (err) {
-      console.warn("pf2e-mobile-compact | Error restoring chat element:", err);
-    }
+    restoreChatElement(this);
   }
 
-  /**
-   * Scrolls the mobile chat container to the newest/latest message.
-   * @param {boolean} [smooth=false]
-   */
   _scrollChatToBottom(smooth = false) {
-    const doScroll = (isSmooth) => {
-      const mount = this.element?.querySelector(".mobile-chat-mount");
-      if (!mount) return;
-
-      const chatScroll = mount.querySelector(".chat-scroll");
-      const chatLog = mount.querySelector("#chat-log, .chat-log");
-      const lastMsg = chatLog?.lastElementChild;
-      const behavior = isSmooth ? "smooth" : "instant";
-
-      if (chatScroll) {
-        chatScroll.scrollTo({
-          top: chatScroll.scrollHeight + 10000,
-          behavior
-        });
-      }
-
-      if (chatLog && chatLog !== chatScroll) {
-        chatLog.scrollTo({
-          top: chatLog.scrollHeight + 10000,
-          behavior
-        });
-      }
-
-      if (lastMsg && typeof lastMsg.scrollIntoView === "function") {
-        try {
-          lastMsg.scrollIntoView({ block: "end", inline: "nearest", behavior });
-        } catch {
-          try {
-            lastMsg.scrollIntoView(false);
-          } catch {}
-        }
-      }
-
-      try {
-        ui.chat?.scrollBottom?.({ popout: false });
-      } catch {}
-    };
-
-    doScroll(smooth);
-    requestAnimationFrame(() => {
-      doScroll(smooth);
-      setTimeout(() => doScroll(false), 60);
-      setTimeout(() => doScroll(false), 160);
-    });
+    scrollChatToBottom(this, smooth);
   }
 
-  /**
-   * Sets up a passive scroll listener on the chat container to toggle visibility
-   * of the floating "Latest" jump button when scrolled away from bottom.
-   */
   _setupScrollBottomListener() {
-    const mount = this.element?.querySelector(".mobile-chat-mount");
-    const btn = this.element?.querySelector(".btn-scroll-bottom");
-    if (!mount || !btn) return;
-
-    const targets = Array.from(new Set([
-      mount.querySelector(".chat-scroll"),
-      mount.querySelector("#chat-log, .chat-log"),
-      mount.querySelector("#chat")
-    ].filter(Boolean)));
-
-    if (targets.length === 0) return;
-
-    const updateBtnVisibility = () => {
-      const scrollable = targets.find(el => el.scrollHeight > el.clientHeight) ?? targets[0];
-      const distanceFromBottom = scrollable.scrollHeight - scrollable.scrollTop - scrollable.clientHeight;
-      if (distanceFromBottom > 80) {
-        btn.classList.remove("is-hidden");
-      } else {
-        btn.classList.add("is-hidden");
-      }
-    };
-
-    for (const target of targets) {
-      if (target._pf2eScrollBottomHandler) {
-        target.removeEventListener("scroll", target._pf2eScrollBottomHandler);
-      }
-      target._pf2eScrollBottomHandler = updateBtnVisibility;
-      target.addEventListener("scroll", updateBtnVisibility, { passive: true });
-    }
-
-    if (!btn._pf2eScrollClickBound) {
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this._scrollChatToBottom(true);
-      });
-      btn._pf2eScrollClickBound = true;
-    }
-
-    updateBtnVisibility();
-    setTimeout(updateBtnVisibility, 100);
-    setTimeout(updateBtnVisibility, 300);
+    setupScrollBottomListener(this);
   }
 
-  /**
-   * Ensures the current sheet actor's token placeable is selected and controlled on canvas.
-   */
   _ensureTokenControlled() {
     ensureTokenControlled(this.actor);
   }
 
-  /**
-   * Listens for new chat messages to update unread badge or auto-scroll to bottom.
-   */
   _registerChatListener() {
-    if (this._chatHookId !== null) return;
-    this._chatHookId = Hooks.on("createChatMessage", () => {
-      if (this.rendered) {
-        if (this._activeTab !== "chat") {
-          this._unreadChatCount++;
-          this._updateChatBadge();
-        } else {
-          this._scrollChatToBottom(false);
-        }
-      }
-    });
+    registerChatListener(this);
   }
 
-  /**
-   * Unregisters chat message hook.
-   */
   _unregisterChatListener() {
-    if (this._chatHookId !== null) {
-      Hooks.off("createChatMessage", this._chatHookId);
-      this._chatHookId = null;
-    }
+    unregisterChatListener(this);
   }
 
-  /**
-   * Synchronizes unread badge DOM in bottom navigation bar.
-   */
   _updateChatBadge() {
-    const badge = this.element?.querySelector(".chat-badge");
-    if (!badge) return;
-    if (this._unreadChatCount > 0) {
-      badge.textContent = this._unreadChatCount > 99 ? "99+" : String(this._unreadChatCount);
-      badge.classList.remove("hidden");
-    } else {
-      badge.textContent = "0";
-      badge.classList.add("hidden");
-    }
+    updateChatBadge(this);
   }
 
   /** @override */
@@ -657,255 +427,60 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   // --- Header Action Handlers ---
 
-  /**
-   * Action handler: apply damage to HP using PF2e's native system calculation.
-   */
+  static async _onApplyDeltaHP(event, target) {
+    return onApplyDeltaHP(this, event, target);
+  }
+
+  static async _onSetDirectHP(event, target) {
+    return onSetDirectHP(this, event, target);
+  }
+
+  static async _onSetDirectTempHP(event, target) {
+    return onSetDirectTempHP(this, event, target);
+  }
+
+  static async _onRollPerceptionOrInitiative(event, target) {
+    return onRollPerceptionOrInitiative(this, event, target);
+  }
+
   static async _onApplyDamage(event, target) {
-    const input = this.element.querySelector(".hp-delta-input");
-    const amount = parseInt(input?.value, 10) || 1;
-    if (amount <= 0) return;
-
-    const tokenDoc = this.token ?? this.actor.getActiveTokens(true, true)[0] ?? this.actor.getActiveTokens()[0]?.document ?? null;
-
-    if (typeof this.actor.applyDamage === "function") {
-      await this.actor.applyDamage({ damage: amount, token: tokenDoc, final: true });
-    } else {
-      const hp = this.actor.system.attributes.hp;
-      const temp = hp.temp ?? 0;
-      const current = hp.value ?? 0;
-
-      let remainingDamage = amount;
-      let newTemp = temp;
-      if (temp > 0) {
-        if (temp >= remainingDamage) {
-          newTemp = temp - remainingDamage;
-          remainingDamage = 0;
-        } else {
-          remainingDamage -= temp;
-          newTemp = 0;
-        }
-      }
-
-      const newHP = clamp(current - remainingDamage, 0, hp.max ?? current);
-      const updateData = { "system.attributes.hp.value": newHP };
-      if (newTemp !== temp) updateData["system.attributes.hp.temp"] = newTemp;
-      await this.actor.update(updateData);
-    }
-
-    if (input) input.value = "";
+    return onApplyDamage(this, event, target);
   }
 
-  /**
-   * Action handler: apply healing to HP using PF2e's native system calculation.
-   */
   static async _onApplyHeal(event, target) {
-    const input = this.element.querySelector(".hp-delta-input");
-    const amount = parseInt(input?.value, 10) || 1;
-    if (amount <= 0) return;
-
-    const tokenDoc = this.token ?? this.actor.getActiveTokens(true, true)[0] ?? this.actor.getActiveTokens()[0]?.document ?? null;
-
-    if (typeof this.actor.applyDamage === "function") {
-      await this.actor.applyDamage({ damage: -amount, token: tokenDoc, final: true });
-    } else {
-      const hp = this.actor.system.attributes.hp;
-      const current = hp.value ?? 0;
-      const max = hp.max ?? 0;
-      const newHP = clamp(current + amount, 0, max);
-      await this.actor.update({ "system.attributes.hp.value": newHP });
-    }
-
-    if (input) input.value = "";
+    return onApplyHeal(this, event, target);
   }
 
-  /**
-   * Action handler: set temporary HP directly from input.
-   */
   static async _onSetTempHP(event, target) {
-    const val = parseInt(target.value, 10);
-    if (isNaN(val)) return;
-    const newTemp = Math.max(0, val);
-    await this.actor.update({ "system.attributes.hp.temp": newTemp });
+    return onSetTempHP(this, event, target);
   }
 
-  /**
-   * Action handler: adjust temporary HP by delta step (+1 / -1).
-   */
   static async _onAdjustTempHP(event, target) {
-    const delta = parseInt(target.dataset.delta, 10);
-    if (isNaN(delta)) return;
-
-    const currentTemp = this.actor.system.attributes.hp?.temp ?? 0;
-    const newTemp = Math.max(0, currentTemp + delta);
-    await this.actor.update({ "system.attributes.hp.temp": newTemp });
+    return onAdjustTempHP(this, event, target);
   }
 
-  /**
-   * Action handler: roll saving throw (Fortitude, Reflex, or Will).
-   */
   static async _onRollSave(event, target) {
-    const saveKey = target.dataset.save;
-    if (!saveKey) return;
-
-    const saveStat = this.actor.saves?.[saveKey];
-    const saveLabel = saveKey.charAt(0).toUpperCase() + saveKey.slice(1);
-
-    await PhysicalDiceManager.withPhysicalMode({
-      title: `${saveLabel} Save`,
-      actor: this.actor
-    }, async () => {
-      if (typeof saveStat?.roll === "function") {
-        await saveStat.roll({ event });
-      } else if (typeof this.actor.rollSave === "function") {
-        await this.actor.rollSave(event, saveKey);
-      }
-    }, this.rollMode === "physical");
+    return onRollSave(this, event, target);
   }
 
-  /**
-   * Action handler: roll Perception check.
-   */
   static async _onRollPerception(event, target) {
-    await PhysicalDiceManager.withPhysicalMode({
-      title: "Perception Check",
-      actor: this.actor
-    }, async () => {
-      if (typeof this.actor.perception?.roll === "function") {
-        await this.actor.perception.roll({ event });
-      } else if (typeof this.actor.rollPerception === "function") {
-        await this.actor.rollPerception({ event });
-      }
-    }, this.rollMode === "physical");
+    return onRollPerception(this, event, target);
   }
 
-  /**
-   * Action handler: roll Initiative check and add to combat when combat is active.
-   */
   static async _onRollInitiative(event, target) {
-    const combat = game.combat;
-    let combatant = combat ? combat.combatants.find(c => c.actor?.id === this.actor.id || c.actor === this.actor) : null;
-
-    if (combat && !combatant) {
-      const scene = combat.scene ?? canvas?.scene ?? game.scenes.viewed ?? game.scenes.active;
-      const tokenDoc = this.token ?? this.actor.getActiveTokens(true, true)[0] ?? this.actor.getActiveTokens()[0]?.document ?? scene?.tokens?.find(t => t.actorId === this.actor.id) ?? null;
-
-      if (tokenDoc) {
-        const created = await combat.createEmbeddedDocuments("Combatant", [{
-          tokenId: tokenDoc.id,
-          actorId: this.actor.id,
-          sceneId: scene?.id ?? tokenDoc.scene?.id,
-          hidden: tokenDoc.hidden ?? false
-        }]);
-        combatant = created[0] ?? null;
-      } else {
-        try {
-          const created = await combat.createEmbeddedDocuments("Combatant", [{
-            actorId: this.actor.id,
-            sceneId: scene?.id,
-            hidden: false
-          }]);
-          combatant = created[0] ?? null;
-        } catch {
-          ui.notifications?.warn?.(`No token found on scene for ${this.actor.name}.`);
-        }
-      }
-    }
-
-    await PhysicalDiceManager.withPhysicalMode({
-      title: "Initiative Check",
-      actor: this.actor
-    }, async () => {
-      if (typeof this.actor.initiative?.roll === "function" && combat) {
-        await this.actor.initiative.roll({ event, combatant: combatant || undefined });
-      } else if (typeof this.actor.initiative?.statistic?.roll === "function") {
-        await this.actor.initiative.statistic.roll({ event });
-      } else if (typeof this.actor.rollInitiative === "function") {
-        await this.actor.rollInitiative({ createCombatants: true, initiativeOptions: { event } });
-      } else if (typeof this.actor.perception?.roll === "function") {
-        await this.actor.perception.roll({ event });
-      }
-    }, this.rollMode === "physical");
+    return onRollInitiative(this, event, target);
   }
 
-  /**
-   * Action handler: select scene token target from header dropdown.
-   */
   static async _onSelectTarget(event, target) {
-    const tokenId = target.value;
-    await setTargetToken(tokenId);
+    return onSelectTarget(this, event, target);
   }
 
-  /**
-   * Action handler: toggle digital vs physical roll mode.
-   */
   static async _onToggleRollMode(event, target) {
-    const newMode = target.value;
-    if (newMode === "digital" || newMode === "physical") {
-      this._rollMode = newMode;
-      try {
-        localStorage.setItem("pf2e-mobile-compact.rollMode", newMode);
-      } catch {}
-      try {
-        if (game.settings?.settings?.has?.("pf2e-mobile-compact.rollMode")) {
-          await game.settings.set("pf2e-mobile-compact", "rollMode", newMode);
-        }
-      } catch {}
-      this.render({ parts: ["header"] });
-    }
+    return onToggleRollMode(this, event, target);
   }
 
-  /**
-   * Action handler: toggle fullscreen mode for mobile app view.
-   */
   static async _onToggleFullscreen(event, target) {
-    const sheetEl = target?.closest?.(".pf2e-mobile-sheet");
-    const isCurrentlyFs = !!(
-      document.fullscreenElement ||
-      document.webkitFullscreenElement ||
-      document.body.classList.contains("pf2e-fullscreen") ||
-      sheetEl?.classList.contains("fullscreen-mode")
-    );
-
-    if (!isCurrentlyFs) {
-      if (document.documentElement.requestFullscreen) {
-        try {
-          await document.documentElement.requestFullscreen();
-        } catch (err) {
-          console.warn("PF2e Mobile Compact | Fullscreen request failed, using CSS fullscreen fallback:", err);
-        }
-      } else if (document.documentElement.webkitRequestFullscreen) {
-        try {
-          await document.documentElement.webkitRequestFullscreen();
-        } catch (err) {
-          console.warn("PF2e Mobile Compact | WebKit fullscreen request failed, using CSS fullscreen fallback:", err);
-        }
-      }
-      document.body.classList.add("pf2e-fullscreen");
-      sheetEl?.classList.add("fullscreen-mode");
-    } else {
-      if (document.fullscreenElement && document.exitFullscreen) {
-        try {
-          await document.exitFullscreen();
-        } catch (err) {
-          console.warn("PF2e Mobile Compact | Exit fullscreen failed:", err);
-        }
-      } else if (document.webkitFullscreenElement && document.webkitExitFullscreen) {
-        try {
-          await document.webkitExitFullscreen();
-        } catch (err) {
-          console.warn("PF2e Mobile Compact | WebKit exit fullscreen failed:", err);
-        }
-      }
-      document.body.classList.remove("pf2e-fullscreen");
-      sheetEl?.classList.remove("fullscreen-mode");
-      document.querySelectorAll(".pf2e-mobile-sheet").forEach(s => s.classList.remove("fullscreen-mode"));
-    }
-
-    const isNowFs = !isCurrentlyFs;
-    const icons = document.querySelectorAll(".btn-fullscreen i");
-    for (const icon of icons) {
-      icon.className = isNowFs ? "fas fa-compress" : "fas fa-expand";
-    }
+    return onToggleFullscreen(this, event, target);
   }
 
   /**
@@ -948,14 +523,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Action handler: switch active character sheet to another owned character.
    */
   static async _onSwitchActor(event, target) {
-    const newActorId = target.value;
-    if (!newActorId || newActorId === this.actor.id) return;
-    const newActor = game.actors.get(newActorId);
-    if (!newActor) return;
-
-    console.log(`PF2e Mobile Compact | Switching character to ${newActor.name}`);
-    await this.close();
-    newActor.sheet.render(true);
+    return onSwitchActor(this, event, target);
   }
 
   // --- Target & Selection Prompts ---
