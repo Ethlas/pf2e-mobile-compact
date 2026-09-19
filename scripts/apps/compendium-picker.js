@@ -43,7 +43,7 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
 
   // Filter states
   #rankFilter = "all";
-  #traditionFilter = "my"; // Default to actor's own traditions if any
+  #traditionFilter = "all"; // Default to all spells
 
   // Staging state
   #stagedItem = null;
@@ -114,15 +114,9 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
     context.spellcastingEntries = spellcastingEntries;
     context.hasEntries = spellcastingEntries.length > 0;
     context.actorTraditions = Array.from(actorTraditions);
-    context.myTraditionsLabel = context.actorTraditions.length
+    context.actorTraditionsLabel = context.actorTraditions.length
       ? context.actorTraditions.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(", ")
-      : "None";
-
-    // If character has no traditions and filter is set to "my", fall back to "all"
-    if (context.actorTraditions.length === 0 && this.#traditionFilter === "my") {
-      this.#traditionFilter = "all";
-      context.traditionFilter = "all";
-    }
+      : "";
 
     // Staging context for the Add confirmation overlay
     if (this.#stagedItem) {
@@ -194,7 +188,7 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
             }
 
             // Tradition filter
-            if (this.#traditionFilter === "my") {
+            if (this.#traditionFilter === "character") {
               if (context.actorTraditions.length > 0) {
                 const matchesAny = traditions.some(t => context.actorTraditions.includes(t));
                 if (!matchesAny) return false;

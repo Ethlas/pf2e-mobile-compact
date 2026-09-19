@@ -139,10 +139,10 @@
         data-change-action="updateTraditionFilter"
         onclick="event.stopPropagation()"
       >
-        {{#if actorTraditions.length}}
-        <option value="my" {{#if (eq traditionFilter "my")}}selected{{/if}}>My Traditions ({{myTraditionsLabel}})</option>
-        {{/if}}
         <option value="all" {{#if (eq traditionFilter "all")}}selected{{/if}}>All Traditions</option>
+        {{#if actorTraditions.length}}
+        <option value="character" {{#if (eq traditionFilter "character")}}selected{{/if}}>Character Traditions ({{actorTraditionsLabel}})</option>
+        {{/if}}
         <option value="arcane" {{#if (eq traditionFilter "arcane")}}selected{{/if}}>Arcane</option>
         <option value="divine" {{#if (eq traditionFilter "divine")}}selected{{/if}}>Divine</option>
         <option value="occult" {{#if (eq traditionFilter "occult")}}selected{{/if}}>Occult</option>
