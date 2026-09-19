@@ -16,11 +16,9 @@
     <button type="button" class="touch-target btn-primary" data-action="openCompendiumPicker" data-type="spells">
       <i class="fas fa-plus"></i> Add Spell
     </button>
-    {{#if hasPreparedEntry}}
-    <button type="button" class="touch-target btn-daily-reset" data-action="resetDailySpells" title="Restore all expended prepared slots">
+    <button type="button" class="touch-target btn-daily-reset" data-action="resetDailySpells" title="Restore all expended spell slots and focus points">
       <i class="fas fa-bed"></i> Daily Rest
     </button>
-    {{/if}}
     {{#if focus.max}}
     <div class="focus-pool-tracker">
       <span>Focus: <strong>{{focus.value}} / {{focus.max}}</strong></span>
@@ -48,7 +46,7 @@
         </div>
 
         {{#if group.hasSlots}}
-        <div class="slot-counter" onclick="event.stopPropagation()">
+        <div class="slot-counter">
           <span>Slots: <strong>{{group.slots.value}} / {{group.slots.max}}</strong></span>
           <button type="button" class="touch-target btn-slot-adjust" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="-1" title="Decrease Slot">-</button>
           <button type="button" class="touch-target btn-slot-adjust" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="1" title="Increase Slot">+</button>

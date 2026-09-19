@@ -170,11 +170,12 @@ export function sweepResolutionNotifications() {
  */
 export function suppressResolutionWarnings() {
   // 1. Monkey-patch Game.prototype resolution methods
-  if (typeof Game !== "undefined" && Game.prototype) {
-    for (const key of Object.getOwnPropertyNames(Game.prototype)) {
+  const GameClass = foundry.Game ?? (typeof globalThis.Game !== "undefined" ? globalThis.Game : null);
+  if (GameClass?.prototype) {
+    for (const key of Object.getOwnPropertyNames(GameClass.prototype)) {
       if (/resolution/i.test(key)) {
-        const original = Game.prototype[key];
-        Game.prototype[key] = function (...args) {
+        const original = GameClass.prototype[key];
+        GameClass.prototype[key] = function (...args) {
           if (shouldActivateMobile()) return;
           return original?.apply(this, args);
         };
@@ -386,30 +387,33 @@ export function patchUserActiveTokens() {
   if (UserClass?.prototype && !UserClass.prototype._pf2eMobileActiveTokensPatched) {
     const origGetActiveTokens = UserClass.prototype.getActiveTokens;
     UserClass.prototype.getActiveTokens = function (...args) {
-      const tokens = origGetActiveTokens.apply(this, args);
-      if (tokens && tokens.length > 0) return tokens;
+      // 1. If this user is operating an active mobile sheet, prioritize strictly that character's token
+      if (this.id === game.user?.id) {
+        try {
+          const mobileSheet = (typeof foundry !== "undefined" && foundry.applications?.instances?.values
+              ? Array.from(foundry.applications.instances.values()).find(a => a instanceof PF2eMobileSheet && a.rendered)
+              : null)
+            ?? Object.values(ui.windows ?? {}).find(w => w instanceof PF2eMobileSheet && w.rendered);
 
-      // Fallback: Resolve active token document from currently open mobile sheet
-      try {
-        const mobileSheet = Object.values(ui.windows ?? {}).find(w => w instanceof PF2eMobileSheet && w.rendered)
-          ?? (typeof foundry !== "undefined" && foundry.applications?.instances?.values
-            ? Array.from(foundry.applications.instances.values()).find(a => a instanceof PF2eMobileSheet && a.rendered)
-            : null);
+          const actor = mobileSheet?.actor;
+          if (actor) {
+            const activeTokens = typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(true, true) : [];
+            if (activeTokens?.length) return [activeTokens[0]];
 
-        const actor = mobileSheet?.actor;
-        if (actor) {
-          const activeTokens = typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(true, true) : [];
-          if (activeTokens?.length) return activeTokens;
+            const scene = canvas?.scene ?? game.scenes.viewed ?? game.scenes.active;
+            const tokenDoc = scene?.tokens?.find(t => t.actorId === actor.id);
+            if (tokenDoc) return [tokenDoc];
 
-          const scene = canvas?.scene ?? game.scenes.viewed ?? game.scenes.active;
-          const tokenDoc = scene?.tokens?.find(t => t.actorId === actor.id);
-          if (tokenDoc) return [tokenDoc];
+            const fallback = typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(false, true)[0] : null;
+            if (fallback) return [fallback];
+          }
+        } catch (err) {
+          console.warn("PF2e Mobile Compact | Error resolving fallback active token:", err);
         }
-      } catch (err) {
-        console.warn("PF2e Mobile Compact | Error resolving fallback active token:", err);
       }
 
-      return tokens;
+      // 2. Fallback to native PF2e / Foundry getActiveTokens
+      return origGetActiveTokens.apply(this, args);
     };
     UserClass.prototype._pf2eMobileActiveTokensPatched = true;
   }
