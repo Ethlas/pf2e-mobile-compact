@@ -4,6 +4,19 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.13] - 2026-09-19
+
+### Polish & Cache Busting (Issue #5)
+
+#### Fixed
+- **Stylesheet Cache Synchronization** (`scripts/pf2e-mobile.js`):
+  - Added proactive `link[href*="pf2e-mobile.css"]` version synchronization on module `init` to prevent mobile browsers from locking onto stale cached CSS.
+- **Harmonized HP Row Pill Design** (`styles/pf2e-mobile.css`):
+  - Removed nested inner input box borders and backgrounds in the HP and Temp HP groups.
+  - Implemented seamless matching 38px pill cards with borderless, dashed-underline editable numbers and balanced proportions across the row.
+
+---
+
 ## [1.0.12] - 2026-09-19
 
 ### Compact Header & Defense/Saves Integration (Issue #5)
