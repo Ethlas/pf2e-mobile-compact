@@ -578,7 +578,10 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const actionEl = event.target?.closest?.("select[data-change-action], select[data-action], input[data-change-action], input[data-action]");
         if (!actionEl) return;
         const actionName = actionEl.dataset.changeAction || actionEl.dataset.action;
-        const handler = this.options.actions?.[actionName];
+        let handler = this.options.actions?.[actionName] ?? this.constructor.DEFAULT_OPTIONS?.actions?.[actionName];
+        if (typeof handler === "object" && handler !== null) {
+          handler = handler.handler;
+        }
         if (typeof handler === "function") {
           handler.call(this, event, actionEl);
         }
@@ -599,7 +602,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Registers real-time scene token and targeting listeners to keep
    * the header target selector perfectly synchronized with the TV map.
    */
-  #registerSceneListeners() {
+  _registerSceneListeners() {
     if (this._sceneHookIds.length > 0) return;
 
     const onTokenChange = () => {
@@ -633,7 +636,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Unregisters real-time scene hooks when the sheet is closed.
    */
-  #unregisterSceneListeners() {
+  _unregisterSceneListeners() {
     for (const hook of this._sceneHookIds) {
       Hooks.off(hook.name, hook.id);
     }
@@ -646,7 +649,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * to roll card reviews and damage calculation buttons.
    * @param {HTMLElement} [chatEl]
    */
-  #disableChatInputs(chatEl) {
+  _disableChatInputs(chatEl) {
     const root = chatEl ?? this.element?.querySelector(".mobile-chat-mount");
     if (!root) return;
 
@@ -728,7 +731,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Docks Foundry's ui.chat.element into the mobile sheet's chat mount point.
    */
-  #dockChatElement() {
+  _dockChatElement() {
     try {
       const mount = this.element?.querySelector(".mobile-chat-mount");
       const chatEl = (ui.chat?.element instanceof HTMLElement ? ui.chat.element : ui.chat?.element?.[0]) ?? document.getElementById("chat");
@@ -785,7 +788,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Restores ui.chat.element back to its original parent upon sheet closure.
    */
-  #restoreChatElement() {
+  _restoreChatElement() {
     try {
       const chatEl = (ui.chat?.element instanceof HTMLElement ? ui.chat.element : ui.chat?.element?.[0]) ?? document.getElementById("chat");
       if (!chatEl) return;
@@ -816,7 +819,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * across multiple animation frames to ensure dynamic content and image layouts settle.
    * @param {boolean} [smooth=false]
    */
-  #scrollChatToBottom(smooth = false) {
+  _scrollChatToBottom(smooth = false) {
     const doScroll = (isSmooth) => {
       const mount = this.element?.querySelector(".mobile-chat-mount");
       if (!mount) return;
@@ -867,14 +870,22 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Sets up a passive scroll listener on the chat container to toggle visibility
    * of the floating "Latest" jump button when scrolled away from bottom.
    */
-  #setupScrollBottomListener() {
+  _setupScrollBottomListener() {
     const mount = this.element?.querySelector(".mobile-chat-mount");
-    const scrollEl = mount?.querySelector(".chat-scroll") ?? mount?.querySelector("#chat-log, .chat-log");
     const btn = this.element?.querySelector(".btn-scroll-bottom");
-    if (!scrollEl || !btn) return;
+    if (!mount || !btn) return;
+
+    const targets = Array.from(new Set([
+      mount.querySelector(".chat-scroll"),
+      mount.querySelector("#chat-log, .chat-log"),
+      mount.querySelector("#chat")
+    ].filter(Boolean)));
+
+    if (targets.length === 0) return;
 
     const updateBtnVisibility = () => {
-      const distanceFromBottom = scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight;
+      const scrollable = targets.find(el => el.scrollHeight > el.clientHeight) ?? targets[0];
+      const distanceFromBottom = scrollable.scrollHeight - scrollable.scrollTop - scrollable.clientHeight;
       if (distanceFromBottom > 80) {
         btn.classList.remove("is-hidden");
       } else {
@@ -882,11 +893,13 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       }
     };
 
-    if (scrollEl._pf2eScrollBottomHandler) {
-      scrollEl.removeEventListener("scroll", scrollEl._pf2eScrollBottomHandler);
+    for (const target of targets) {
+      if (target._pf2eScrollBottomHandler) {
+        target.removeEventListener("scroll", target._pf2eScrollBottomHandler);
+      }
+      target._pf2eScrollBottomHandler = updateBtnVisibility;
+      target.addEventListener("scroll", updateBtnVisibility, { passive: true });
     }
-    scrollEl._pf2eScrollBottomHandler = updateBtnVisibility;
-    scrollEl.addEventListener("scroll", updateBtnVisibility, { passive: true });
 
     if (!btn._pf2eScrollClickBound) {
       btn.addEventListener("click", (e) => {
@@ -897,34 +910,42 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       btn._pf2eScrollClickBound = true;
     }
 
-    // Initial check
+    // Initial check and deferred checks for async message rendering
     updateBtnVisibility();
+    setTimeout(updateBtnVisibility, 100);
+    setTimeout(updateBtnVisibility, 300);
   }
 
   /**
    * Ensures the current sheet actor's token placeable is selected and controlled on canvas.
    */
-  #ensureTokenControlled() {
+  _ensureTokenControlled() {
     const actor = this.actor;
     if (!actor) return;
     const scene = canvas?.scene ?? game.scenes.viewed ?? game.scenes.active;
     if (!scene) return;
 
-    const activePlaceables = typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(true, false) : [];
-    const token = activePlaceables?.[0]
-      ?? (canvas?.tokens?.placeables ? canvas.tokens.placeables.find(t => t.actor?.id === actor.id) : null);
+    if (canvas?.tokens?.placeables) {
+      const activePlaceables = typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(true, false) : [];
+      const token = activePlaceables?.[0]
+        ?? canvas.tokens.placeables.find(t => t.actor?.id === actor.id);
 
-    if (token && typeof token.control === "function" && !token.controlled) {
-      try {
-        token.control({ releaseOthers: true });
-      } catch {}
+      if (token && typeof token.control === "function") {
+        try {
+          token.control({ releaseOthers: true });
+        } catch {}
+      } else if (canvas.tokens.controlled?.length > 0) {
+        try {
+          canvas.tokens.releaseAll();
+        } catch {}
+      }
     }
   }
 
   /**
    * Listens for new chat messages to update unread badge or auto-scroll to bottom.
    */
-  #registerChatListener() {
+  _registerChatListener() {
     if (this._chatHookId !== null) return;
     this._chatHookId = Hooks.on("createChatMessage", () => {
       if (this.rendered) {
@@ -941,7 +962,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Unregisters chat message hook.
    */
-  #unregisterChatListener() {
+  _unregisterChatListener() {
     if (this._chatHookId !== null) {
       Hooks.off("createChatMessage", this._chatHookId);
       this._chatHookId = null;
@@ -951,7 +972,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /**
    * Synchronizes unread badge DOM in bottom navigation bar.
    */
-  #updateChatBadge() {
+  _updateChatBadge() {
     const badge = this.element?.querySelector(".chat-badge");
     if (!badge) return;
     if (this._unreadChatCount > 0) {
@@ -2051,6 +2072,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Action handler: toggle expandable rank accordion group in Spells tab.
    */
   static _onToggleRankGroup(event, target) {
+    if (event.target?.closest?.(".slot-counter")) return;
     event.preventDefault();
     const rank = parseInt(target.dataset.rank, 10);
     const groupEl = target.closest(".spell-rank-group");
@@ -2227,6 +2249,33 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Action handler: reset all expended slots and restore focus points.
    */
   static async _onResetDailySpells(event, target) {
+    let confirmed = false;
+    if (foundry.applications?.api?.DialogV2?.confirm) {
+      confirmed = await foundry.applications.api.DialogV2.confirm({
+        window: { title: "Daily Rest" },
+        content: `<p>Take a daily rest for <strong>${this.actor.name}</strong>? This will restore all spell slots, focus points, and daily preparations.</p>`,
+        rejectClose: false,
+        modal: true
+      }).catch(() => false);
+    } else if (typeof Dialog?.confirm === "function") {
+      confirmed = await Dialog.confirm({
+        title: "Daily Rest",
+        content: `<p>Take a daily rest for <strong>${this.actor.name}</strong>? This will restore all spell slots, focus points, and daily preparations.</p>`
+      });
+    } else {
+      confirmed = window.confirm(`Take a daily rest for ${this.actor.name}? This will restore all spell slots, focus points, and daily preparations.`);
+    }
+    if (!confirmed) return;
+
+    // Trigger PF2e's native restForTheNight if available for full rest benefits (HP, conditions, etc.)
+    if (typeof game.pf2e?.actions?.restForTheNight === "function") {
+      try {
+        await game.pf2e.actions.restForTheNight({ actors: [this.actor] });
+      } catch (err) {
+        console.warn("PF2e Mobile Compact | PF2e native restForTheNight encountered error:", err);
+      }
+    }
+
     const entries = this.actor.spellcasting?.contents ?? [];
     for (const entry of entries) {
       const updates = {};
@@ -2255,7 +2304,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       await this.actor.update({ "system.resources.focus.value": focus.max });
     }
 
-    ui.notifications?.info?.("Daily preparation complete: All spell slots and focus points restored.");
+    ui.notifications?.info?.("Daily rest complete: All spell slots and focus points restored.");
     this.render({ parts: ["sheet"] });
   }
 
@@ -2410,6 +2459,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const max = currentSlot.max ?? 0;
       const nextVal = clamp(current + delta, 0, max);
       await entry.update({ [`system.slots.${rankKey}.value`]: nextVal });
+      this.render({ parts: ["sheet"] });
     }
   }
 
@@ -2944,33 +2994,17 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         target: targetToken,
         actor: this.actor
       }, async () => {
-        await entry.cast(spell, { slot: rank > 0 ? rank : 0, level: rank, rank: rank, target: targetToken || undefined });
+        // PF2e's CastOptions are { rank, slotId, consume, message, rollMode }. With consume (default true)
+        // the system expends the prepared slot / spontaneous slot / focus point / innate use itself,
+        // so no manual slot bookkeeping is done here.
+        await entry.cast(spell, {
+          rank: rank > 0 ? rank : undefined,
+          slotId: Number.isNaN(slotIndex) ? undefined : slotIndex
+        });
       }, this.rollMode === "physical");
     }
 
-    // Mark prepared slot expended if applicable
-    if (!isNaN(slotIndex) && (entry.isPrepared || entry.system?.prepared?.value === "prepared") && rank > 0) {
-      const slotKey = `slot${rank}`;
-      const currentPrepared = foundry.utils.deepClone(entry.system.slots?.[slotKey]?.prepared ?? []);
-      const nextPrepared = Array.isArray(currentPrepared) ? currentPrepared : Object.values(currentPrepared);
-      if (nextPrepared[slotIndex]) {
-        nextPrepared[slotIndex].expended = true;
-        const curVal = entry.system.slots?.[slotKey]?.value ?? 0;
-        await entry.update({
-          [`system.slots.${slotKey}.prepared`]: nextPrepared,
-          [`system.slots.${slotKey}.value`]: Math.max(curVal - 1, 0)
-        });
-      }
-      this.render({ parts: ["sheet"] });
-    } else if ((entry.isSpontaneous || entry.system?.prepared?.value === "spontaneous") && rank > 0) {
-      // Decrement spontaneous slot pool
-      const slotKey = `slot${rank}`;
-      const currentSlot = entry.system.slots?.[slotKey];
-      if (currentSlot && currentSlot.value > 0) {
-        await entry.update({ [`system.slots.${slotKey}.value`]: currentSlot.value - 1 });
-        this.render({ parts: ["sheet"] });
-      }
-    }
+    this.render({ parts: ["sheet"] });
   }
 
   /**

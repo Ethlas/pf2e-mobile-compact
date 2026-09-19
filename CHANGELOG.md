@@ -6,13 +6,28 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [1.0.11] - 2026-09-19
 
-### Milestone 9: Layout Architecture Restoration & Systematic CSS `!important` Refactoring
+### Milestone 9: Layout Architecture Restoration, CSS Refactoring & Spell Slot Expenditure Fix
 
 #### Fixed
+- **Spell Casting Expended Slots Twice** (`_onCastSpell` in `scripts/apps/mobile-sheet.js`):
+  - Root cause: `entry.cast()` was called with `{ slot, level }`, which are not part of PF2e's `CastOptions` (`{ rank, slotId, consume, message, rollMode }`). PF2e ignored them, defaulted `consume: true`, and expended the slot itself; the module then expended it a second time manually.
+  - Spontaneous casters lost two slots per cast; prepared casters with the same spell in multiple slots could have both copies expended; the tapped rank was ignored so heightened casts went out at the spell's base rank.
+  - Fix: pass `{ rank, slotId }` to `entry.cast()` and let PF2e handle all slot, focus point, and innate-use consumption natively. Removed the manual prepared/spontaneous slot decrement block.
 - **Mobile Sheet Layout & Viewport Scroll Restoration**: Fixed issue where the entire page scrolled and pushed the bottom navigation bar off-screen. Removed detached fixed positioning on the sheet body and configured explicit ApplicationV2 flex child sizing (`flex: 0 0 auto` top dashboard header, `flex: 1 1 0%` sheet body, scrollable `mobile-tab-content`, and permanently pinned `mobile-bottom-nav`).
 - **Eliminated 87% of `!important` Declarations**: Systematically refactored `styles/pf2e-mobile.css` (reducing from 520+ occurrences down to 65). Scoped button and component classes naturally to override base sheet rules without specificity hacks.
 - **Removed Local Foundry Sync Artifacts**: Completely deleted local sync scripts and documentation per workflow requirements.
-- **Touch Target Compliances**: Ensured all buttons, auxiliary strike actions, slot adjustment controls, and dialog actions satisfy the 38px+ touch target standard.
+- **Universal Daily Rest Button & Confirmation Prompt** (`templates/parts/spells.hbs`, `scripts/apps/mobile-sheet.js`):
+  - Made the "Daily Rest" button permanently visible on the Spells action bar for all casters (not just prepared entries).
+  - Added a touch-friendly confirmation dialog (`DialogV2.confirm`) to prevent accidental resets on mobile screens.
+  - Linked daily rest to PF2e's native `restForTheNight` action while guaranteeing all spell slots and focus points are fully restored.
+- **Spell Slot Adjustment (+/-) Event Delegation** (`templates/parts/spells.hbs`, `scripts/apps/mobile-sheet.js`):
+  - Removed inline `onclick="event.stopPropagation()"` on `.slot-counter` that was suppressing click events before reaching ApplicationV2's delegated action listeners.
+  - Added a target check in `_onToggleRankGroup` to ignore clicks originating from `.slot-counter`, and added an immediate sheet re-render in `_onAdjustSlot`.
+- **Foundry v14 Global `Game` Deprecation Fix** (`scripts/pf2e-mobile.js`):
+  - Replaced bare `Game.prototype` access with `foundry.Game?.prototype ?? globalThis.Game?.prototype`, eliminating the Foundry v14 compatibility deprecation warning.
+- **Chat Damage Scoping to Active Mobile Sheet** (`scripts/pf2e-mobile.js`, `scripts/apps/mobile-sheet.js`):
+  - Updated `patchUserActiveTokens()` so `game.user.getActiveTokens()` prioritizes the open `PF2eMobileSheet` actor, ensuring chat card damage buttons strictly apply to the viewed character rather than all owned/controlled tokens on canvas.
+  - Updated `_ensureTokenControlled()` to release all other tokens cleanly when controlling the active character.
 
 ---
 
