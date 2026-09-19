@@ -4,6 +4,80 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.15] - 2026-09-19
+
+### Collapsible Inventory, Scroll Preservation, Item Investiture & Rune Management
+
+#### Added
+- **Collapsible Inventory Sections** (`scripts/apps/sheet-helpers/inventory-handlers.js`, `templates/parts/inventory.hbs`, `styles/pf2e-mobile.css`):
+  - Section headers for Consumables, Weapons, Armor & Shields, and Other Gear are now interactive touch toggles with animated chevron indicators.
+  - Collapsed states are remembered per session in `_collapsedInventorySections`.
+- **Global Scroll Position Preservation** (`scripts/apps/mobile-sheet.js`):
+  - Fixed annoying scroll jumping to the top of the sheet upon re-renders in Spells and Gear lists.
+  - Automatically captures and restores exact `scrollTop` across renders and tab switches (`_tabScrollPositions`).
+- **Item Investiture & Equip/Wear Controls** (`scripts/apps/sheet-helpers/inventory-handlers.js`, `templates/parts/inventory.hbs`):
+  - Added dedicated "Invest" button for all investable weapons, armor, shields, and equipment, delegating to PF2e's native `actor.toggleInvested()`.
+  - Added 1-tap "Wear/Equip" button for armor (donning/removing inSlot), shields (raising/lowering handsHeld), and wearable gear via `actor.changeCarryType()`.
+- **Strict Gear-Only Rune Configuration** (`scripts/apps/sheet-helpers/rune-handlers.js`, `templates/parts/inventory.hbs`, `styles/pf2e-mobile.css`):
+  - Added dedicated domain handler `rune-handlers.js` with `scanInventoryRunes()` that strictly inspects the actor's carried gear in memory (`actor.items`) for owned Runestones and standalone rune items.
+    - Selections are strictly restricted to runes actually owned in the character's gear (or already etched on the weapon/armor/shield), preventing selection of unowned runes.
+    - Added comprehensive official rules list matching (`scripts/apps/sheet-helpers/rune-data.js`) recognizing standalone property runes (e.g., Flaming, Greater Flaming, Ghost Touch, Slick) with usage `etched-onto-a-weapon`, `etched-onto-armor`, or rune traits.
+    - Dynamically limits property rune slots based strictly on weapon/armor potency (+1 = 1 slot, +2 = 2 slots, +3 = 3 slots, 0 = 0 slots with clear requirement guidance).
+    - Added live `#rune-potency-select` change listener in `DialogV2` to resize property slot lines in real-time while preserving selected runes.
+    - Updated weapon and armor rune badges in `context-inventory.js` to format property rune names using official dictionaries instead of raw slugs.
+    - Automatically consumes/decrements the source rune item from inventory upon etching.
+    - Fixed parenthesis syntax error in `rune-handlers.js` that blocked character sheet ES module evaluation.
+    - Hardened all section context builders in `mobile-sheet.js` (`prepareHeaderContext`, `prepareActionsContext`, `prepareSpellsContext`, `prepareSkillsContext`) with defensive try/catch fallbacks to guarantee resilient sheet rendering.
+    - Fixed syntax error in `sheet-prompts.js` export that prevented the character sheet module from loading.
+    - Hardened `prepareInventoryContext` and trait inspection against invalid trait collections or uninitialized system properties.
+- **Compendium Search On-Enter / Search Button** (`scripts/apps/compendium-picker.js`, `templates/compendium-picker.hbs`, `styles/pf2e-mobile.css`):
+  - Removed aggressive per-keystroke re-rendering in the Compendium Browser that interrupted typing and closed mobile soft keyboards.
+  - Search now triggers strictly when the user presses **Enter** on their keyboard or taps the dedicated **Search** button.
+  - Handled native search clear ('x') and removed disruptive `autofocus`.
+- **Actions Display & Defensive Action Context** (`scripts/apps/sheet-helpers/context-actions.js`, `scripts/apps/mobile-sheet.js`):
+  - Fixed actions tab failing to render attacks and character actions by hardening `prepareActionsContext` with safe initial defaults and per-item error isolation.
+  - Corrected context fallback keys in `mobile-sheet.js` (`strikes` and `characterActions`).
+  - Upgraded effect inspection to check `_stats.compendiumSource` and `flags.core.sourceId` avoiding deprecated/removed property crashes in Foundry v14.
+- **Card Expansion Across Actions, Spells & Inventory** (`scripts/apps/sheet-helpers/actions-handlers.js`, `scripts/apps/sheet-helpers/context-inventory.js`, `templates/parts/inventory.hbs`, `styles/pf2e-mobile.css`):
+  - Resolved summary drawer toggle in `onToggleActionSummary` by synchronizing `.expanded`, `.open`, `.collapsed`, parent card `.expanded`, and chevron rotation.
+  - Added expandable description drawers to weapons, armor, consumables, and gear in the inventory tab with HTML enrichment.
+- **Desktop / Non-Mobile Physical Roll Interception Bypass** (`scripts/rolls/physical-dice-interceptor.js`, `scripts/utils/sheet-utils.js`, `scripts/pf2e-mobile.js`):
+  - Guarded `PhysicalDiceManager.isPhysicalModeActive()`, `shouldIntercept()`, and `withPhysicalMode()` with `!isMobileDevice()`. Rolls from non-mobile clients are never intercepted for physical table dice.
+  - Added session cache cleanup in `Hooks.once("ready")` to clear cached `rollMode` on login.
+- **Rune Return to Inventory on Removal** (`scripts/apps/sheet-helpers/rune-handlers.js`, `scripts/apps/sheet-helpers/rune-data.js`):
+  - When removing fundamental runes (Potency, Striking, Resilient, Reinforcing) or property runes (e.g., Flaming, Ghost Touch) from a weapon, armor, or shield, the removed runes are automatically returned to the character sheet's inventory.
+  - If the actor already possesses that rune item in their gear, its quantity is automatically incremented.
+  - If not already owned, fetches the official Paizo item document from `pf2e.equipment-srd` or generates a native PF2e equipment rune document with proper usage and traits.
+  - Automatically handles property runes trimmed when decreasing potency rank (e.g. going from +2 to +1 returns the second property rune to inventory).
+  - Posts a clear Foundry notification detailing which runes were returned to inventory.
+
+---
+
+## [1.0.14] - 2026-09-19
+
+### Gear Section Overhaul: Physical Filtering, Ally Administration & Weapon Poisoning
+
+#### Fixed
+- **Strict Physical Item Filtering in Inventory** (`scripts/apps/sheet-helpers/context-inventory.js`):
+  - Replaced naive negative exclusion list with PF2e's official `item.isOfType("physical")` predicate and `PHYSICAL_ITEM_TYPES` positive set check.
+  - Eliminated bug where non-physical items (`action`, `ancestry`, `background`, `class`, `condition`, `affliction`, `deity`, `heritage`, `lore`, `melee`, `spellcastingEntry`, `campaignFeature`) appeared inside the "Other Gear" section.
+
+#### Added
+- **Consumable Administration to Comrades** (`scripts/apps/sheet-helpers/inventory-handlers.js`, `scripts/apps/sheet-helpers/sheet-prompts.js`):
+  - Tapping "Use" on drinkable/administerable consumables (potions, elixirs, drugs) opens a mobile prompt with options to drink on self or administer to an ally token on the active scene.
+  - Synchronizes user target to the designated comrade token and triggers native PF2e `item.consume()`, allowing 1-click healing/damage card application directly to the friend.
+  - Posts Paizo-styled chat card: `[Actor] administers [Item] to [Comrade] (1 Action - Interact)`.
+- **Weapon Poisoning & Subitem Attachments** (`scripts/apps/sheet-helpers/inventory-handlers.js`, `templates/parts/inventory.hbs`, `styles/pf2e-mobile.css`):
+  - Added "Apply" button on poisons and oils in the Consumables list.
+  - Integrates with PF2e's native subitem attachment engine: `weapon.attach(poisonItem, { quantity: 1 })`.
+  - Weapons with applied poisons display an interactive green badge (`Poisoned: [Poison Name]`) and a "Clean" button executing `subitem.detach()`.
+- **Modular Inventory Domain Architecture** (`scripts/apps/sheet-helpers/inventory-handlers.js`):
+  - Extracted inventory actions (`onUseConsumable`, `onApplyPoison`, `onDetachSubitem`, `onChangeCarryType`) into a dedicated domain handler, keeping `mobile-sheet.js` under 700 lines per repo rules.
+- **Carry Type Quick Toggle** (`templates/parts/inventory.hbs`, `scripts/apps/sheet-helpers/inventory-handlers.js`):
+  - Interactive carry badge on weapons allowing 1-tap toggling between Held (1H / 2H) and Worn states via `actor.changeCarryType()`.
+
+---
+
 ## [1.0.13] - 2026-09-19
 
 ### Polish & Cache Busting (Issue #5)

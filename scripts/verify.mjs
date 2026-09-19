@@ -22,22 +22,37 @@ function logWarn(msg) {
 
 console.log("\n🔍 Running PF2e Mobile Sheet Static Verifications...\n");
 
-// 1. Check JavaScript Syntax via node --check
-console.log("--- 1. JavaScript Syntax Verification ---");
-function checkJsFiles(dir) {
+// 1. Check JavaScript Syntax & Full ESM Evaluation
+console.log("--- 1. JavaScript Syntax & ESM Module Tree Verification ---");
+
+// Mock global Foundry runtime environment so ES modules can be evaluated cleanly
+global.foundry = {
+  applications: {
+    api: { ApplicationV2: class {}, HandlebarsApplicationMixin: (b) => b, DialogV2: class {} },
+    sheets: { ActorSheetV2: class {} }
+  },
+  documents: { collections: { Actors: class {} } },
+  audio: { AudioHelper: class {} }
+};
+global.CONFIG = { PF2E: {}, Actor: {}, User: {} };
+global.Hooks = { once: () => {}, on: () => {}, off: () => {} };
+global.Handlebars = { helpers: {}, registerHelper: () => {} };
+global.game = { settings: { register: () => {}, get: () => "auto" }, user: { id: "test-user" } };
+
+async function checkJsFiles(dir) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      checkJsFiles(fullPath);
+      await checkJsFiles(fullPath);
     } else if (entry.name.endsWith(".js") || entry.name.endsWith(".mjs")) {
       if (entry.name === "verify.mjs") continue;
-      const relPath = path.relative(rootDir, fullPath);
+      const relPath = path.relative(rootDir, fullPath).replace(/\\/g, "/");
       try {
-        execSync(`node --check "${fullPath}"`, { stdio: "pipe" });
-        logPass(`Syntax valid: ${relPath}`);
+        await import(`../${relPath}`);
+        logPass(`Syntax & ESM valid: ${relPath}`);
       } catch (err) {
-        logFail(`Syntax error in ${relPath}:\n${err.stderr?.toString()}`);
+        logFail(`Syntax/ESM error in ${relPath}:\n${err.stack || err.message}`);
       }
 
       // Check for illegal this.# private field accesses that trigger TS1111 in IDEs
@@ -49,7 +64,7 @@ function checkJsFiles(dir) {
     }
   }
 }
-checkJsFiles(path.join(rootDir, "scripts"));
+await checkJsFiles(path.join(rootDir, "scripts"));
 
 // 2. Check Module JSON Integrity
 console.log("\n--- 2. module.json Verification ---");

@@ -80,8 +80,26 @@ const KNOWN_SKILL_ACTION_NAMES = new Set([
  * @param {object} context
  */
 export async function prepareActionsContext(actor, sheet, context) {
+  // Defensive initialization of context fields expected by actions.hbs
+  context.strikes = [];
+  context.characterActions = {
+    actions: [],
+    reactions: [],
+    free: [],
+    skillActions: [],
+    exploration: [],
+    downtime: [],
+    hasEncounter: false,
+    hasSkillActions: false,
+    hasExploration: false,
+    hasDowntime: false
+  };
+
   // Strikes Context (with Weapon Image, Traits, MAP Variants, Damage, and Auxiliary Actions)
-  const strikesList = actor.system.actions ?? [];
+  const strikesList = Array.isArray(actor.system?.actions)
+    ? actor.system.actions
+    : (Array.isArray(actor.actions) ? actor.actions : []);
+
   context.strikes = strikesList.map((action, idx) => {
     const item = action.item;
     const rawTraits = action.traits ?? item?.system?.traits?.value ?? [];
@@ -99,7 +117,7 @@ export async function prepareActionsContext(actor, sheet, context) {
 
     return {
       index: idx,
-      label: action.label ?? action.name,
+      label: action.label ?? action.name ?? "Strike",
       type: action.type ?? "strike",
       glyph: action.glyph ?? (action.actionCost ? String(action.actionCost.value || 1) : "1"),
       img: item?.img || "systems/pf2e/icons/default-icons/melee.svg",
@@ -127,111 +145,116 @@ export async function prepareActionsContext(actor, sheet, context) {
   const downtimeActions = [];
 
   const elementalBlasts = actor.itemTypes?.action?.filter(i => i.slug === "elemental-blast") ?? [];
+  const items = actor.items ?? [];
 
-  for (const item of actor.items) {
-    const isAction = typeof item.isOfType === "function" ? item.isOfType("action") : item.type === "action";
-    const isFeat = typeof item.isOfType === "function" ? item.isOfType("feat") : item.type === "feat";
-    const isFeatWithAction = isFeat && (item.actionCost || item.system?.actionType?.value === "action" || item.system?.actionType?.value === "reaction" || item.system?.actionType?.value === "free");
+  for (const item of items) {
+    try {
+      const isAction = typeof item.isOfType === "function" ? item.isOfType("action") : item.type === "action";
+      const isFeat = typeof item.isOfType === "function" ? item.isOfType("feat") : item.type === "feat";
+      const isFeatWithAction = isFeat && (item.actionCost || item.system?.actionType?.value === "action" || item.system?.actionType?.value === "reaction" || item.system?.actionType?.value === "free");
 
-    if (!isAction && !isFeatWithAction) continue;
-    if (item.suppressed) continue;
-    if (actor.flags?.pf2e?.kineticist && item === elementalBlasts[0]) continue;
+      if (!isAction && !isFeatWithAction) continue;
+      if (item.suppressed) continue;
+      if (actor.flags?.pf2e?.kineticist && item === elementalBlasts[0]) continue;
 
-    const actionCost = item.actionCost;
-    const rawTraits = item.system?.traits?.value ?? [];
-    const traits = Array.isArray(rawTraits) ? rawTraits.map(t => typeof t === "string" ? t.toLowerCase() : String(t?.value ?? "").toLowerCase()) : [];
-    const actionCategory = String(item.system?.actionCategory?.value ?? item.system?.category ?? item.category ?? "").toLowerCase();
+      const actionCost = item.actionCost;
+      const rawTraits = item.system?.traits?.value ?? [];
+      const traits = Array.isArray(rawTraits) ? rawTraits.map(t => typeof t === "string" ? t.toLowerCase() : String(t?.value ?? "").toLowerCase()) : [];
+      const actionCategory = String(item.system?.actionCategory?.value ?? item.system?.category ?? item.category ?? "").toLowerCase();
 
-    // Exploration & Downtime identification
-    const isExploration = traits.includes("exploration") || actionCategory === "exploration";
-    const isDowntime = traits.includes("downtime") || actionCategory === "downtime";
+      // Exploration & Downtime identification
+      const isExploration = traits.includes("exploration") || actionCategory === "exploration";
+      const isDowntime = traits.includes("downtime") || actionCategory === "downtime";
 
-    // Check system action registry if available in PF2e
-    const actionSlug = item.slug ?? item.system?.slug ?? "";
-    const systemAction = game.pf2e?.actions?.get?.(actionSlug);
-    const isSystemSkillAction = systemAction?.section === "skill" || !!systemAction?.statistic;
+      // Check system action registry if available in PF2e
+      const actionSlug = item.slug ?? item.system?.slug ?? "";
+      const systemAction = game.pf2e?.actions?.get?.(actionSlug);
+      const isSystemSkillAction = systemAction?.section === "skill" || !!systemAction?.statistic;
 
-    const itemSlug = String(actionSlug).toLowerCase();
-    const normalizedName = String(item.name ?? "").trim().toLowerCase();
+      const itemSlug = String(actionSlug).toLowerCase();
+      const normalizedName = String(item.name ?? "").trim().toLowerCase();
 
-    // Skill Action identification:
-    const isSkillAction = !isExploration && !isDowntime && (
-      KNOWN_SKILL_ACTION_SLUGS.has(itemSlug) ||
-      KNOWN_SKILL_ACTION_NAMES.has(normalizedName) ||
-      isSystemSkillAction ||
-      traits.some(t => PF2E_SKILL_SLUGS.has(t) || t === "skill") ||
-      actionCategory === "skill" ||
-      item.category === "skill" ||
-      (item.system?.category === "interaction") ||
-      (item.flags?.pf2e?.skillAction)
-    );
+      // Skill Action identification:
+      const isSkillAction = !isExploration && !isDowntime && (
+        KNOWN_SKILL_ACTION_SLUGS.has(itemSlug) ||
+        KNOWN_SKILL_ACTION_NAMES.has(normalizedName) ||
+        isSystemSkillAction ||
+        traits.some(t => PF2E_SKILL_SLUGS.has(t) || t === "skill") ||
+        actionCategory === "skill" ||
+        item.category === "skill" ||
+        (item.system?.category === "interaction") ||
+        (item.flags?.pf2e?.skillAction)
+      );
 
-    const selfEffect = item.system?.selfEffect;
-    const isEffectActive = !!(selfEffect?.uuid && actor.itemTypes?.effect?.some(e =>
-      e.sourceId === selfEffect.uuid ||
-      e.flags?.core?.sourceId === selfEffect.uuid ||
-      (selfEffect.name && e.name?.toLowerCase() === selfEffect.name.toLowerCase()) ||
-      (item.name && e.name?.toLowerCase() === `effect: ${item.name.toLowerCase()}`) ||
-      (actionSlug && (e.system?.slug === actionSlug || e.system?.slug === `effect-${actionSlug}`))
-    ));
+      const selfEffect = item.system?.selfEffect;
+      const isEffectActive = !!(selfEffect?.uuid && actor.itemTypes?.effect?.some(e => {
+        const sourceId = e._stats?.compendiumSource ?? e.flags?.core?.sourceId ?? null;
+        return sourceId === selfEffect.uuid ||
+          (selfEffect.name && e.name?.toLowerCase() === selfEffect.name.toLowerCase()) ||
+          (item.name && e.name?.toLowerCase() === `effect: ${item.name.toLowerCase()}`) ||
+          (actionSlug && (e.system?.slug === actionSlug || e.system?.slug === `effect-${actionSlug}`));
+      }));
 
-    const isUsable = !!selfEffect || !!item.system?.frequency || !!item.crafting;
-    const isAttack = traits.includes("attack") || systemAction?.traits?.includes("attack");
-    const isSkillStatistic = !!systemAction?.statistic || !!item.system?.statistic || KNOWN_SKILL_ACTION_SLUGS.has(itemSlug);
-    const hasRoll = !selfEffect && (!!systemAction || isAttack || isSkillStatistic);
+      const isUsable = !!selfEffect || !!item.system?.frequency || !!item.crafting;
+      const isAttack = traits.includes("attack") || systemAction?.traits?.includes("attack");
+      const isSkillStatistic = !!systemAction?.statistic || !!item.system?.statistic || KNOWN_SKILL_ACTION_SLUGS.has(itemSlug);
+      const hasRoll = !selfEffect && (!!systemAction || isAttack || isSkillStatistic);
 
-    let rawDescription = item.system?.description?.value ?? "";
-    if (!rawDescription && systemAction?.description) {
-      rawDescription = game.i18n.localize(systemAction.description);
-    }
-    const TextEditorClass = foundry.applications?.ux?.TextEditor ?? TextEditor;
-    let enrichedDescription = rawDescription;
-    if (rawDescription && typeof TextEditorClass?.enrichHTML === "function") {
-      try {
-        enrichedDescription = await TextEditorClass.enrichHTML(rawDescription, {
-          secrets: item.isOwner,
-          rollData: actor.getRollData(),
-          async: true
-        });
-      } catch {
-        enrichedDescription = rawDescription;
+      let rawDescription = item.system?.description?.value ?? "";
+      if (!rawDescription && systemAction?.description) {
+        rawDescription = game.i18n.localize(systemAction.description);
       }
-    }
+      const TextEditorClass = foundry.applications?.ux?.TextEditor ?? globalThis.TextEditor;
+      let enrichedDescription = rawDescription;
+      if (rawDescription && typeof TextEditorClass?.enrichHTML === "function") {
+        try {
+          enrichedDescription = await TextEditorClass.enrichHTML(rawDescription, {
+            secrets: item.isOwner ?? false,
+            rollData: actor.getRollData?.() ?? {},
+            async: true
+          });
+        } catch {
+          enrichedDescription = rawDescription;
+        }
+      }
 
-    const actionData = {
-      id: item.id,
-      name: item.name,
-      slug: actionSlug,
-      img: item.img || "systems/pf2e/icons/actions/Empty.webp",
-      glyph: getGlyph(actionCost),
-      actionCostType: actionCost?.type ?? "action",
-      actionCostValue: actionCost?.value ?? 1,
-      usable: isUsable,
-      active: isEffectActive,
-      isAttack,
-      hasRoll,
-      traits: traits.map(t => ({ label: t })),
-      frequency: item.system?.frequency ? {
-        value: item.system.frequency.value ?? 0,
-        max: item.system.frequency.max ?? 0,
-        per: item.system.frequency.per ?? ""
-      } : null,
-      description: enrichedDescription || rawDescription,
-      isExpanded: sheet._expandedActionIds?.has(item.id) || sheet._expandedActionIds?.has(actionSlug)
-    };
+      const actionData = {
+        id: item.id,
+        name: item.name,
+        slug: actionSlug,
+        img: item.img || "systems/pf2e/icons/actions/Empty.webp",
+        glyph: getGlyph(actionCost),
+        actionCostType: actionCost?.type ?? "action",
+        actionCostValue: actionCost?.value ?? 1,
+        usable: isUsable,
+        active: isEffectActive,
+        isAttack,
+        hasRoll,
+        traits: traits.map(t => ({ label: t })),
+        frequency: item.system?.frequency ? {
+          value: item.system.frequency.value ?? 0,
+          max: item.system.frequency.max ?? 0,
+          per: item.system.frequency.per ?? ""
+        } : null,
+        description: enrichedDescription || rawDescription,
+        isExpanded: Boolean(sheet._expandedActionIds?.has(item.id) || sheet._expandedActionIds?.has(actionSlug))
+      };
 
-    if (isDowntime) {
-      downtimeActions.push(actionData);
-    } else if (isExploration) {
-      explorationActions.push(actionData);
-    } else if (isSkillAction) {
-      skillActions.push(actionData);
-    } else if (actionCost?.type === "reaction") {
-      encounterReactions.push(actionData);
-    } else if (actionCost?.type === "free") {
-      encounterFree.push(actionData);
-    } else {
-      encounterActions.push(actionData);
+      if (isDowntime) {
+        downtimeActions.push(actionData);
+      } else if (isExploration) {
+        explorationActions.push(actionData);
+      } else if (isSkillAction) {
+        skillActions.push(actionData);
+      } else if (actionCost?.type === "reaction") {
+        encounterReactions.push(actionData);
+      } else if (actionCost?.type === "free") {
+        encounterFree.push(actionData);
+      } else {
+        encounterActions.push(actionData);
+      }
+    } catch (err) {
+      console.warn(`PF2e Mobile Compact | Failed to prepare action item "${item?.name}":`, err);
     }
   }
 

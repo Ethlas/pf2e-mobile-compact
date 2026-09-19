@@ -28,3 +28,19 @@ export function getGlyph(actionCost) {
   return "";
 }
 
+/**
+ * Check if the client is running in a mobile context via standalone app mode,
+ * mobile user-agent inspection, or touch screen compact viewport.
+ * @returns {boolean}
+ */
+export function isMobileDevice() {
+  if (typeof window === "undefined" || typeof navigator === "undefined") return false;
+  const isStandaloneApp = window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator?.standalone === true;
+  const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || "");
+  const isIPad = (navigator.platform === "MacIntel" || /Macintosh/i.test(navigator.userAgent || "")) && (navigator.maxTouchPoints > 1);
+  const isMobileViewport = window.innerWidth < 768;
+  const isTouchCompact = (navigator.maxTouchPoints > 0 || "ontouchstart" in window) && window.innerWidth < 1024;
+
+  return Boolean(isStandaloneApp || isMobileUA || isIPad || isMobileViewport || isTouchCompact);
+}
+

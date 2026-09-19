@@ -3,21 +3,9 @@
  */
 import { PF2eMobileSheet } from "./apps/mobile-sheet.js";
 import { setupPhysicalDiceInterceptor } from "./rolls/physical-dice-interceptor.js";
+import { isMobileDevice } from "./utils/sheet-utils.js";
 
-/**
- * Check if the client is running in a mobile context via standalone app mode,
- * mobile user-agent inspection, or touch screen compact viewport.
- * @returns {boolean}
- */
-export function isMobileDevice() {
-  const isStandaloneApp = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-  const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  const isIPad = (navigator.platform === "MacIntel" || /Macintosh/i.test(navigator.userAgent)) && (navigator.maxTouchPoints > 1);
-  const isMobileViewport = window.innerWidth < 768;
-  const isTouchCompact = (navigator.maxTouchPoints > 0 || "ontouchstart" in window) && window.innerWidth < 1024;
-
-  return isStandaloneApp || isMobileUA || isIPad || isMobileViewport || isTouchCompact;
-}
+export { isMobileDevice };
 
 /**
  * Evaluates whether mobile mode should activate for the current client session,
@@ -451,6 +439,11 @@ Hooks.once("init", async () => {
 });
 
 Hooks.once("ready", () => {
+  // Clear cached rollMode on login to guarantee a fresh, non-stale session state
+  try {
+    localStorage.removeItem("pf2e-mobile-compact.rollMode");
+  } catch {}
+
   if (shouldActivateMobile()) {
     suppressResolutionWarnings();
     sweepResolutionNotifications();

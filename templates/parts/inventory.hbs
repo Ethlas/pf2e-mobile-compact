@@ -17,84 +17,250 @@
 
   <!-- Consumables Section -->
   <section class="inventory-section">
-    <h3 class="section-title"><i class="fas fa-flask"></i> Consumables</h3>
+    <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="consumables">
+      <span><i class="fas fa-flask"></i> Consumables ({{inventory.consumables.length}})</span>
+      <i class="fas fa-chevron-down section-expand-icon {{#if inventory.isConsumablesCollapsed}}collapsed{{/if}}"></i>
+    </h3>
+    {{#unless inventory.isConsumablesCollapsed}}
     <div class="inventory-list">
       {{#each inventory.consumables as |item|}}
-      <div class="action-card inventory-item-card" data-item-id="{{item.id}}">
+      <div class="action-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
         <div class="action-card-header">
           <div class="item-identity">
             <img class="item-img" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
-            <span class="item-name"><strong>{{item.name}}</strong> (x{{item.quantity}})</span>
+            <div class="item-details">
+              <div class="item-title-row touch-target" data-action="toggleActionSummary" data-item-id="{{item.id}}" title="Toggle Description">
+                <span class="item-name"><strong>{{item.name}}</strong> (x{{item.quantity}})</span>
+                {{#if item.description}}
+                <i class="fas fa-chevron-down action-expand-icon {{#if item.isExpanded}}expanded{{/if}}"></i>
+                {{/if}}
+              </div>
+              <div class="item-badges">
+                <span class="item-badge category-badge">{{item.categoryLabel}}</span>
+                {{#if item.hasUses}}
+                <span class="item-badge uses-badge">{{item.uses.value}}/{{item.uses.max}} uses</span>
+                {{/if}}
+              </div>
+            </div>
           </div>
-          <button type="button" class="touch-target btn-consume" data-action="consumeItem" data-item-id="{{item.id}}">
-            Use
-          </button>
+          <div class="item-actions">
+            {{#if item.canApplyToWeapon}}
+            <button type="button" class="touch-target btn-apply-poison" data-action="applyPoison" data-item-id="{{item.id}}" title="Apply to Weapon">
+              <i class="fas fa-vial"></i> Apply
+            </button>
+            {{else}}
+            <button type="button" class="touch-target btn-consume" data-action="consumeItem" data-item-id="{{item.id}}" title="Use or Administer to Comrade">
+              <i class="fas fa-hand-holding-heart"></i> Use
+            </button>
+            {{/if}}
+          </div>
         </div>
+        {{#if item.description}}
+        <div class="action-summary item-summary {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
+          <div class="action-description-content">
+            {{{item.description}}}
+          </div>
+        </div>
+        {{/if}}
       </div>
       {{else}}
       <p class="empty-hint">No consumable items.</p>
       {{/each}}
     </div>
+    {{/unless}}
   </section>
 
   <!-- Weapons Section -->
   <section class="inventory-section">
-    <h3 class="section-title"><i class="fas fa-sword"></i> Weapons</h3>
+    <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="weapons">
+      <span><i class="fas fa-sword"></i> Weapons ({{inventory.weapons.length}})</span>
+      <i class="fas fa-chevron-down section-expand-icon {{#if inventory.isWeaponsCollapsed}}collapsed{{/if}}"></i>
+    </h3>
+    {{#unless inventory.isWeaponsCollapsed}}
     <div class="inventory-list">
       {{#each inventory.weapons as |item|}}
-      <div class="action-card inventory-item-card" data-item-id="{{item.id}}">
+      <div class="action-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
         <div class="action-card-header">
           <div class="item-identity">
             <img class="item-img" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
-            <span class="item-name"><strong>{{item.name}}</strong></span>
+            <div class="item-details">
+              <div class="item-title-row touch-target" data-action="toggleActionSummary" data-item-id="{{item.id}}" title="Toggle Description">
+                <span class="item-name"><strong>{{item.name}}</strong></span>
+                {{#if item.description}}
+                <i class="fas fa-chevron-down action-expand-icon {{#if item.isExpanded}}expanded{{/if}}"></i>
+                {{/if}}
+              </div>
+              <div class="item-badges">
+                <button type="button" class="touch-target badge-btn carry-badge {{item.carryType}}" data-action="changeCarryType" data-item-id="{{item.id}}" title="Tap to toggle carry state">
+                  {{item.carryLabel}}
+                </button>
+                {{#if item.runesSummary}}
+                <span class="item-badge runes-badge" title="Runes: {{item.runesSummary}}">
+                  <i class="fas fa-gem"></i> {{item.runesSummary}}
+                </span>
+                {{/if}}
+                {{#if item.isInvestable}}
+                <button type="button" class="touch-target badge-btn invest-badge {{#if item.isInvested}}invested{{/if}}" data-action="toggleInvested" data-item-id="{{item.id}}" title="Toggle Investiture">
+                  <i class="fas fa-sparkles"></i> {{#if item.isInvested}}Invested{{else}}Invest{{/if}}
+                </button>
+                {{/if}}
+                {{#if item.isPoisoned}}
+                <span class="item-badge poison-badge" title="Poisoned: {{item.poison.name}}">
+                  <i class="fas fa-skull-crossbones"></i> {{item.poison.name}}
+                </span>
+                {{/if}}
+              </div>
+            </div>
           </div>
-          <span class="item-bulk">Bulk: {{item.bulk}}</span>
+          <div class="item-actions">
+            {{#if item.canHaveRunes}}
+            <button type="button" class="touch-target btn-runes" data-action="configureRunes" data-item-id="{{item.id}}" title="Configure Runes">
+              <i class="fas fa-gem"></i> Runes
+            </button>
+            {{/if}}
+            {{#if item.isPoisoned}}
+            <button type="button" class="touch-target btn-detach-subitem" data-action="detachSubitem" data-weapon-id="{{item.id}}" data-subitem-id="{{item.poison.id}}" title="Clean / Detach Poison">
+              <i class="fas fa-eraser"></i> Clean
+            </button>
+            {{/if}}
+            <span class="item-bulk">Bulk: {{item.bulk}}</span>
+          </div>
         </div>
+        {{#if item.description}}
+        <div class="action-summary item-summary {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
+          <div class="action-description-content">
+            {{{item.description}}}
+          </div>
+        </div>
+        {{/if}}
       </div>
       {{else}}
       <p class="empty-hint">No weapons equipped or carried.</p>
       {{/each}}
     </div>
+    {{/unless}}
   </section>
 
   <!-- Armor Section -->
   <section class="inventory-section">
-    <h3 class="section-title"><i class="fas fa-shield-alt"></i> Armor & Shields</h3>
+    <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="armor">
+      <span><i class="fas fa-shield-alt"></i> Armor &amp; Shields ({{inventory.armor.length}})</span>
+      <i class="fas fa-chevron-down section-expand-icon {{#if inventory.isArmorCollapsed}}collapsed{{/if}}"></i>
+    </h3>
+    {{#unless inventory.isArmorCollapsed}}
     <div class="inventory-list">
       {{#each inventory.armor as |item|}}
-      <div class="action-card inventory-item-card" data-item-id="{{item.id}}">
+      <div class="action-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
         <div class="action-card-header">
           <div class="item-identity">
             <img class="item-img" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
-            <span class="item-name"><strong>{{item.name}}</strong></span>
+            <div class="item-details">
+              <div class="item-title-row touch-target" data-action="toggleActionSummary" data-item-id="{{item.id}}" title="Toggle Description">
+                <span class="item-name"><strong>{{item.name}}</strong></span>
+                {{#if item.description}}
+                <i class="fas fa-chevron-down action-expand-icon {{#if item.isExpanded}}expanded{{/if}}"></i>
+                {{/if}}
+              </div>
+              <div class="item-badges">
+                {{#if item.isShield}}
+                <span class="item-badge shield-badge"><i class="fas fa-shield-halved"></i> {{item.hp}}/{{item.maxHp}} HP</span>
+                {{else}}
+                <span class="item-badge armor-badge">+{{item.acBonus}} AC</span>
+                {{/if}}
+                <button type="button" class="touch-target badge-btn equip-badge {{#if item.isEquipped}}equipped{{/if}}" data-action="toggleEquipped" data-item-id="{{item.id}}" title="Toggle Equipped / Worn">
+                  <i class="fas fa-shirt"></i> {{item.equipLabel}}
+                </button>
+                {{#if item.runesSummary}}
+                <span class="item-badge runes-badge" title="Runes: {{item.runesSummary}}">
+                  <i class="fas fa-gem"></i> {{item.runesSummary}}
+                </span>
+                {{/if}}
+                {{#if item.isInvestable}}
+                <button type="button" class="touch-target badge-btn invest-badge {{#if item.isInvested}}invested{{/if}}" data-action="toggleInvested" data-item-id="{{item.id}}" title="Toggle Investiture">
+                  <i class="fas fa-sparkles"></i> {{#if item.isInvested}}Invested{{else}}Invest{{/if}}
+                </button>
+                {{/if}}
+              </div>
+            </div>
           </div>
-          <span class="item-bulk">Bulk: {{item.bulk}}</span>
+          <div class="item-actions">
+            {{#if item.canHaveRunes}}
+            <button type="button" class="touch-target btn-runes" data-action="configureRunes" data-item-id="{{item.id}}" title="Configure Runes">
+              <i class="fas fa-gem"></i> Runes
+            </button>
+            {{/if}}
+            <span class="item-bulk">Bulk: {{item.bulk}}</span>
+          </div>
         </div>
+        {{#if item.description}}
+        <div class="action-summary item-summary {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
+          <div class="action-description-content">
+            {{{item.description}}}
+          </div>
+        </div>
+        {{/if}}
       </div>
       {{else}}
       <p class="empty-hint">No armor equipped.</p>
       {{/each}}
     </div>
+    {{/unless}}
   </section>
 
   <!-- Other Gear Section -->
   <section class="inventory-section">
-    <h3 class="section-title"><i class="fas fa-backpack"></i> Other Gear</h3>
+    <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="gear">
+      <span><i class="fas fa-backpack"></i> Other Gear ({{inventory.gear.length}})</span>
+      <i class="fas fa-chevron-down section-expand-icon {{#if inventory.isGearCollapsed}}collapsed{{/if}}"></i>
+    </h3>
+    {{#unless inventory.isGearCollapsed}}
     <div class="inventory-list">
       {{#each inventory.gear as |item|}}
-      <div class="action-card inventory-item-card" data-item-id="{{item.id}}">
+      <div class="action-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
         <div class="action-card-header">
           <div class="item-identity">
             <img class="item-img" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
-            <span class="item-name"><strong>{{item.name}}</strong> (x{{item.quantity}})</span>
+            <div class="item-details">
+              <div class="item-title-row touch-target" data-action="toggleActionSummary" data-item-id="{{item.id}}" title="Toggle Description">
+                <span class="item-name"><strong>{{item.name}}</strong> (x{{item.quantity}})</span>
+                {{#if item.description}}
+                <i class="fas fa-chevron-down action-expand-icon {{#if item.isExpanded}}expanded{{/if}}"></i>
+                {{/if}}
+              </div>
+              <div class="item-badges">
+                {{#if item.canBeWorn}}
+                <button type="button" class="touch-target badge-btn equip-badge {{#if item.isEquipped}}equipped{{/if}}" data-action="toggleEquipped" data-item-id="{{item.id}}" title="Toggle Worn / Stowed">
+                  <i class="fas fa-shirt"></i> {{item.equipLabel}}
+                </button>
+                {{/if}}
+                {{#if item.isInvestable}}
+                <button type="button" class="touch-target badge-btn invest-badge {{#if item.isInvested}}invested{{/if}}" data-action="toggleInvested" data-item-id="{{item.id}}" title="Toggle Investiture">
+                  <i class="fas fa-sparkles"></i> {{#if item.isInvested}}Invested{{else}}Invest{{/if}}
+                </button>
+                {{/if}}
+                {{#if item.isContainer}}
+                <span class="item-badge container-badge"><i class="fas fa-box-open"></i> Container ({{item.heldItemsCount}})</span>
+                {{/if}}
+                {{#if item.isStowed}}
+                <span class="item-badge stowed-badge"><i class="fas fa-box"></i> in {{item.containerName}}</span>
+                {{/if}}
+              </div>
+            </div>
           </div>
           <span class="item-bulk">Bulk: {{item.bulk}}</span>
         </div>
+        {{#if item.description}}
+        <div class="action-summary item-summary {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
+          <div class="action-description-content">
+            {{{item.description}}}
+          </div>
+        </div>
+        {{/if}}
       </div>
       {{else}}
       <p class="empty-hint">No other gear carried.</p>
       {{/each}}
     </div>
+    {{/unless}}
   </section>
 </div>
-

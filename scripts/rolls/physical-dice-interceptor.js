@@ -1,4 +1,5 @@
 import { PhysicalDiceDialog } from "../apps/physical-dice-dialog.js";
+import { isMobileDevice } from "../utils/sheet-utils.js";
 
 /**
  * Custom error thrown when a user cancels the physical dice entry dialog.
@@ -63,9 +64,11 @@ export class PhysicalDiceManager {
   /**
    * Checks whether Physical Dice mode is currently active for this client.
    * Scans explicit context override, localStorage, and client game setting.
+   * Only intercepts when executing on a mobile phone / mobile context.
    * @returns {boolean}
    */
   static isPhysicalModeActive() {
+    if (!isMobileDevice()) return false;
     if (this.activeContext?.isPhysical === false) return false;
     if (this.activeContext?.isPhysical === true) return true;
 
@@ -93,6 +96,9 @@ export class PhysicalDiceManager {
    * @returns {Promise<any>}
    */
   static async withPhysicalMode(context, fn, isPhysical = true) {
+    if (!isMobileDevice()) {
+      return fn();
+    }
     const prevContext = this.activeContext;
     try {
       this.activeContext = { ...context, isPhysical: !!isPhysical };
@@ -202,6 +208,7 @@ export class PhysicalDiceManager {
    * @returns {boolean}
    */
   static shouldIntercept(roll) {
+    if (!isMobileDevice()) return false;
     if (!this.isPhysicalModeActive()) return false;
     if (roll._evaluated || roll._isPhysicalIntercepted) return false;
 

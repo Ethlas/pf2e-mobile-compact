@@ -97,11 +97,13 @@
     <input
       type="search"
       class="compendium-search-input touch-target"
-      placeholder="Search {{type}}..."
+      placeholder="Search {{type}} (Press Enter)..."
       value="{{query}}"
       onclick="event.stopPropagation()"
-      autofocus
     />
+    <button type="button" class="touch-target btn-compendium-search" data-action="executeSearch" title="Search">
+      <i class="fas fa-magnifying-glass"></i>
+    </button>
   </div>
 
   {{#if isSpells}}

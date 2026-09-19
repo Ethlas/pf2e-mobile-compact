@@ -6,6 +6,7 @@ import {
   promptStatisticSelection,
   promptStrikeSelection
 } from "./sheet-prompts.js";
+import { onUseConsumable } from "./inventory-handlers.js";
 
 /**
  * Action handler: execute strike attack roll with target prompt.
@@ -487,19 +488,13 @@ export async function onRollSkill(sheet, event, target) {
 }
 
 /**
- * Action handler: consume item.
+ * Action handler: consume item (delegated to inventory handler).
  * @param {object} sheet
  * @param {Event} event
  * @param {HTMLElement} target
  */
 export async function onConsumeItem(sheet, event, target) {
-  const itemId = target.dataset.itemId;
-  const item = sheet.actor.items.get(itemId);
-  if (!item) return;
-
-  if (typeof item.consume === "function") {
-    await item.consume();
-  }
+  return onUseConsumable(sheet, event, target);
 }
 
 /**
@@ -510,19 +505,33 @@ export async function onConsumeItem(sheet, event, target) {
  */
 export function onToggleActionSummary(sheet, event, target) {
   event.preventDefault();
-  const actionEl = target.closest(".action-card, .strike-card, .item-card");
+  const actionEl = target.closest(".action-card, .strike-card, .item-card, .inventory-item-card");
   if (!actionEl) return;
 
   const summaryEl = actionEl.querySelector(".action-summary, .item-summary");
-  const icon = target.querySelector(".action-toggle-icon, .fa-chevron-down");
-  const itemId = actionEl.dataset.itemId;
+  if (!summaryEl) return;
 
-  if (summaryEl?.classList?.contains("open")) {
-    summaryEl.classList.remove("open");
+  const icon = actionEl.querySelector(".action-expand-icon, .action-toggle-icon, .fa-chevron-down");
+  const itemId = target.dataset.itemId || actionEl.dataset.itemId;
+
+  if (!sheet._expandedActionIds) {
+    sheet._expandedActionIds = new Set();
+  }
+
+  const isCurrentlyExpanded = summaryEl.classList.contains("expanded") ||
+                              summaryEl.classList.contains("open") ||
+                              actionEl.classList.contains("expanded");
+
+  if (isCurrentlyExpanded) {
+    summaryEl.classList.remove("open", "expanded");
+    summaryEl.classList.add("collapsed");
+    actionEl.classList.remove("expanded");
     icon?.classList?.remove("expanded");
     if (itemId) sheet._expandedActionIds.delete(itemId);
-  } else if (summaryEl) {
-    summaryEl.classList.add("open");
+  } else {
+    summaryEl.classList.add("open", "expanded");
+    summaryEl.classList.remove("collapsed");
+    actionEl.classList.add("expanded");
     icon?.classList?.add("expanded");
     if (itemId) sheet._expandedActionIds.add(itemId);
   }

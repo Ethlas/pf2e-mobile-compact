@@ -30,9 +30,18 @@ import {
   onUseAction,
   onRollActionCheck,
   onRollSkill,
-  onConsumeItem,
   onToggleActionSummary
 } from "./sheet-helpers/actions-handlers.js";
+import {
+  onUseConsumable,
+  onApplyPoison,
+  onDetachSubitem,
+  onChangeCarryType,
+  onToggleInventorySection,
+  onConfigureRunes,
+  onToggleInvested,
+  onToggleEquipped
+} from "./sheet-helpers/inventory-handlers.js";
 import {
   onSwitchSpellSubTab,
   onToggleRankGroup,
@@ -129,6 +138,13 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       rollActionCheck: PF2eMobileSheet._onRollActionCheck,
       rollSkill: PF2eMobileSheet._onRollSkill,
       consumeItem: PF2eMobileSheet._onConsumeItem,
+      applyPoison: PF2eMobileSheet._onApplyPoison,
+      detachSubitem: PF2eMobileSheet._onDetachSubitem,
+      changeCarryType: PF2eMobileSheet._onChangeCarryType,
+      toggleInventorySection: PF2eMobileSheet._onToggleInventorySection,
+      configureRunes: PF2eMobileSheet._onConfigureRunes,
+      toggleInvested: PF2eMobileSheet._onToggleInvested,
+      toggleEquipped: PF2eMobileSheet._onToggleEquipped,
       castSpell: PF2eMobileSheet._onCastSpell,
       switchActor: PF2eMobileSheet._onSwitchActor,
       toggleFullscreen: PF2eMobileSheet._onToggleFullscreen,
@@ -169,6 +185,12 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   /** @type {Set<number>} */
   _collapsedRankGroups = new Set();
+
+  /** @type {Set<string>} */
+  _collapsedInventorySections = new Set();
+
+  /** @type {Map<string, number>} */
+  _tabScrollPositions = new Map();
 
   /** @type {"digital" | "physical"} */
   _rollMode = "digital";
@@ -228,15 +250,32 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   /** @override */
   _replaceHTML(result, content, options) {
+    try {
+      const scrollEl = this.element?.querySelector?.(".mobile-tab-content") ?? content.querySelector?.(".mobile-tab-content");
+      if (scrollEl) {
+        this._tabScrollPositions.set(this._activeTab, scrollEl.scrollTop);
+      }
+    } catch {}
+
     const chatMount = content.querySelector?.(".mobile-chat-mount");
     const chatEl = (ui.chat?.element instanceof HTMLElement ? ui.chat.element : ui.chat?.element?.[0]) ?? document.getElementById("chat");
     if (chatMount && chatEl && chatMount.contains(chatEl)) {
       this._tempChatFragment.appendChild(chatEl);
     }
+
     super._replaceHTML(result, content, options);
-    const newChatMount = content.querySelector?.(".mobile-chat-mount");
+
+    const newChatMount = (result instanceof HTMLElement ? result.querySelector?.(".mobile-chat-mount") : null)
+      ?? this.element?.querySelector?.(".mobile-chat-mount");
     if (newChatMount && chatEl) {
       newChatMount.appendChild(chatEl);
+    }
+
+    const savedScroll = this._tabScrollPositions.get(this._activeTab);
+    if (typeof savedScroll === "number" && savedScroll > 0) {
+      const newScrollEl = (result instanceof HTMLElement ? result.querySelector?.(".mobile-tab-content") : null)
+        ?? this.element?.querySelector?.(".mobile-tab-content");
+      if (newScrollEl) newScrollEl.scrollTop = savedScroll;
     }
   }
 
@@ -247,6 +286,19 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     this._registerChatListener();
     this._dockChatElement();
     this._ensureTokenControlled();
+
+    const savedScroll = this._tabScrollPositions.get(this._activeTab);
+    if (typeof savedScroll === "number" && savedScroll > 0) {
+      const newScrollEl = this.element?.querySelector?.(".mobile-tab-content");
+      if (newScrollEl) {
+        newScrollEl.scrollTop = savedScroll;
+        requestAnimationFrame(() => {
+          if (newScrollEl && this.rendered) {
+            newScrollEl.scrollTop = savedScroll;
+          }
+        });
+      }
+    }
 
     if (this._activeTab === "chat") {
       this._unreadChatCount = 0;
@@ -416,11 +468,51 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     context.isPhysicalRollMode = this._rollMode === "physical";
     context.unreadChatCount = this._unreadChatCount;
 
-    prepareHeaderContext(actor, this, context);
-    await prepareActionsContext(actor, this, context);
-    await prepareSpellsContext(actor, this, context);
-    prepareSkillsContext(actor, this, context);
-    prepareInventoryContext(actor, this, context);
+    try {
+      prepareHeaderContext(actor, this, context);
+    } catch (err) {
+      console.error("PF2e Mobile Compact | Error preparing header context:", err);
+    }
+
+    try {
+      await prepareActionsContext(actor, this, context);
+    } catch (err) {
+      console.error("PF2e Mobile Compact | Error preparing actions context:", err);
+      context.strikes = context.strikes ?? [];
+      context.characterActions = context.characterActions ?? {
+        actions: [],
+        reactions: [],
+        free: [],
+        skillActions: [],
+        exploration: [],
+        downtime: [],
+        hasEncounter: false,
+        hasSkillActions: false,
+        hasExploration: false,
+        hasDowntime: false
+      };
+    }
+
+    try {
+      await prepareSpellsContext(actor, this, context);
+    } catch (err) {
+      console.error("PF2e Mobile Compact | Error preparing spells context:", err);
+      context.spells = { entries: [], focus: null };
+    }
+
+    try {
+      prepareSkillsContext(actor, this, context);
+    } catch (err) {
+      console.error("PF2e Mobile Compact | Error preparing skills context:", err);
+      context.skills = [];
+    }
+
+    try {
+      await prepareInventoryContext(actor, this, context);
+    } catch (err) {
+      console.error("PF2e Mobile Compact | Error preparing inventory context:", err);
+      context.inventory = { consumables: [], weapons: [], armor: [], gear: [] };
+    }
 
     return context;
   }
@@ -500,6 +592,10 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       return;
     }
     if (newTab && newTab !== this._activeTab) {
+      const scrollEl = this.element?.querySelector?.(".mobile-tab-content");
+      if (scrollEl) {
+        this._tabScrollPositions.set(this._activeTab, scrollEl.scrollTop);
+      }
       this._activeTab = newTab;
       if (newTab === "chat") {
         this._unreadChatCount = 0;
@@ -528,133 +624,48 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   // --- Target & Selection Prompts ---
 
-  async _resolveTargetForAction(actionLabel) {
-    return resolveTargetForAction(this, actionLabel);
-  }
-
-  async _promptTargetSelection(actionLabel) {
-    return promptTargetSelection(this, actionLabel);
-  }
-
-  async _promptVariantSelection(actionLabel, variants) {
-    return promptVariantSelection(this, actionLabel, variants);
-  }
-
-  async _promptStatisticSelection(actionLabel, statistics) {
-    return promptStatisticSelection(this, actionLabel, statistics);
-  }
-
-  async _promptStrikeSelection(actionLabel, strikes) {
-    return promptStrikeSelection(this, actionLabel, strikes);
-  }
+  async _resolveTargetForAction(actionLabel) { return resolveTargetForAction(this, actionLabel); }
+  async _promptTargetSelection(actionLabel) { return promptTargetSelection(this, actionLabel); }
+  async _promptVariantSelection(actionLabel, variants) { return promptVariantSelection(this, actionLabel, variants); }
+  async _promptStatisticSelection(actionLabel, statistics) { return promptStatisticSelection(this, actionLabel, statistics); }
+  async _promptStrikeSelection(actionLabel, strikes) { return promptStrikeSelection(this, actionLabel, strikes); }
 
   // --- Delegated Action & Strike Handlers ---
-
-  static async _onExecuteStrike(event, target) {
-    return onExecuteStrike(this, event, target);
-  }
-
-  static async _onExecuteDamage(event, target) {
-    return onExecuteDamage(this, event, target);
-  }
-
-  static async _onExecuteCritical(event, target) {
-    return onExecuteCritical(this, event, target);
-  }
-
-  static async _onExecuteAuxiliaryAction(event, target) {
-    return onExecuteAuxiliaryAction(this, event, target);
-  }
-
-  static async _onItemToChat(event, target) {
-    return onItemToChat(this, event, target);
-  }
-
-  static async _onUseAction(event, target) {
-    return onUseAction(this, event, target);
-  }
-
-  static async _onRollActionCheck(event, target) {
-    return onRollActionCheck(this, event, target);
-  }
-
-  static async _onRollSkill(event, target) {
-    return onRollSkill(this, event, target);
-  }
-
-  static async _onConsumeItem(event, target) {
-    return onConsumeItem(this, event, target);
-  }
-
-  static _onToggleActionSummary(event, target) {
-    return onToggleActionSummary(this, event, target);
-  }
+  static async _onExecuteStrike(event, target) { return onExecuteStrike(this, event, target); }
+  static async _onExecuteDamage(event, target) { return onExecuteDamage(this, event, target); }
+  static async _onExecuteCritical(event, target) { return onExecuteCritical(this, event, target); }
+  static async _onExecuteAuxiliaryAction(event, target) { return onExecuteAuxiliaryAction(this, event, target); }
+  static async _onItemToChat(event, target) { return onItemToChat(this, event, target); }
+  static async _onUseAction(event, target) { return onUseAction(this, event, target); }
+  static async _onRollActionCheck(event, target) { return onRollActionCheck(this, event, target); }
+  static async _onRollSkill(event, target) { return onRollSkill(this, event, target); }
+  static async _onConsumeItem(event, target) { return onUseConsumable(this, event, target); }
+  static async _onApplyPoison(event, target) { return onApplyPoison(this, event, target); }
+  static async _onDetachSubitem(event, target) { return onDetachSubitem(this, event, target); }
+  static async _onChangeCarryType(event, target) { return onChangeCarryType(this, event, target); }
+  static _onToggleInventorySection(event, target) { return onToggleInventorySection(this, event, target); }
+  static async _onConfigureRunes(event, target) { return onConfigureRunes(this, event, target); }
+  static async _onToggleInvested(event, target) { return onToggleInvested(this, event, target); }
+  static async _onToggleEquipped(event, target) { return onToggleEquipped(this, event, target); }
+  static _onToggleActionSummary(event, target) { return onToggleActionSummary(this, event, target); }
 
   // --- Delegated Spell Handlers ---
-
-  static async _onSwitchSpellSubTab(event, target) {
-    return onSwitchSpellSubTab(this, event, target);
-  }
-
-  static _onToggleRankGroup(event, target) {
-    return onToggleRankGroup(this, event, target);
-  }
-
-  static async _onOpenSpellPrepPicker(event, target) {
-    return onOpenSpellPrepPicker(this, event, target);
-  }
-
-  static async _prepareSlot(actor, entryId, rank, slotIndex, spellId) {
-    return prepareSlot(actor, entryId, rank, slotIndex, spellId);
-  }
-
-  static async _onUnprepareSlot(event, target) {
-    return onUnprepareSlot(this, event, target);
-  }
-
-  static async _onToggleSlotExpended(event, target) {
-    return onToggleSlotExpended(this, event, target);
-  }
-
-  static async _onResetDailySpells(event, target) {
-    return onResetDailySpells(this, event, target);
-  }
-
-  static async _onSaveSpellPreset(event, target) {
-    return onSaveSpellPreset(this, event, target);
-  }
-
-  static async _onApplySpellPreset(event, target) {
-    return onApplySpellPreset(this, event, target);
-  }
-
-  static async _onDeleteSpellPreset(event, target) {
-    return onDeleteSpellPreset(this, event, target);
-  }
-
-  static async _onOpenCompendiumPicker(event, target) {
-    return onOpenCompendiumPicker(this, event, target);
-  }
-
-  static async _onAdjustSlot(event, target) {
-    return onAdjustSlot(this, event, target);
-  }
-
-  static async _onAdjustFocus(event, target) {
-    return onAdjustFocus(this, event, target);
-  }
-
-  static async _onCastSpell(event, target) {
-    return onCastSpell(this, event, target);
-  }
-
-  static async _onToggleSignatureSpell(event, target) {
-    return onToggleSignatureSpell(this, event, target);
-  }
-
-  static async _onRemoveSpell(event, target) {
-    return onRemoveSpell(this, event, target);
-  }
+  static async _onSwitchSpellSubTab(event, target) { return onSwitchSpellSubTab(this, event, target); }
+  static _onToggleRankGroup(event, target) { return onToggleRankGroup(this, event, target); }
+  static async _onOpenSpellPrepPicker(event, target) { return onOpenSpellPrepPicker(this, event, target); }
+  static async _prepareSlot(actor, entryId, rank, slotIndex, spellId) { return prepareSlot(actor, entryId, rank, slotIndex, spellId); }
+  static async _onUnprepareSlot(event, target) { return onUnprepareSlot(this, event, target); }
+  static async _onToggleSlotExpended(event, target) { return onToggleSlotExpended(this, event, target); }
+  static async _onResetDailySpells(event, target) { return onResetDailySpells(this, event, target); }
+  static async _onSaveSpellPreset(event, target) { return onSaveSpellPreset(this, event, target); }
+  static async _onApplySpellPreset(event, target) { return onApplySpellPreset(this, event, target); }
+  static async _onDeleteSpellPreset(event, target) { return onDeleteSpellPreset(this, event, target); }
+  static async _onOpenCompendiumPicker(event, target) { return onOpenCompendiumPicker(this, event, target); }
+  static async _onAdjustSlot(event, target) { return onAdjustSlot(this, event, target); }
+  static async _onAdjustFocus(event, target) { return onAdjustFocus(this, event, target); }
+  static async _onCastSpell(event, target) { return onCastSpell(this, event, target); }
+  static async _onToggleSignatureSpell(event, target) { return onToggleSignatureSpell(this, event, target); }
+  static async _onRemoveSpell(event, target) { return onRemoveSpell(this, event, target); }
 }
 
 // Backwards-compatibility re-exports

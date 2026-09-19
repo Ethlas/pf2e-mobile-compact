@@ -20,6 +20,7 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
     actions: {
       importItem: CompendiumPickerApp._onImportItem,
       search: CompendiumPickerApp._onSearch,
+      executeSearch: CompendiumPickerApp._onExecuteSearch,
       stageItem: CompendiumPickerApp._onStageItem,
       cancelStage: CompendiumPickerApp._onCancelStage,
       selectTargetEntry: CompendiumPickerApp._onSelectTargetEntry
@@ -213,14 +214,22 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
   _attachPartListeners(partId, htmlElement, options) {
     super._attachPartListeners(partId, htmlElement, options);
 
-    // Real-time search input listener
+    // Search input listener: search ONLY when user presses Enter or triggers search
     const searchInput = htmlElement.querySelector(".compendium-search-input");
     if (searchInput) {
-      searchInput.addEventListener("input", (event) => {
-        this._query = event.target.value ?? "";
-        if (typeof this._debouncedRender === "function") {
-          this._debouncedRender();
-        } else {
+      searchInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          event.stopPropagation();
+          this._query = searchInput.value?.trim?.() ?? "";
+          this.render();
+        }
+      });
+
+      // Handle native clear button (clicking the 'x' in input[type="search"])
+      searchInput.addEventListener("search", () => {
+        if (searchInput.value === "" && this._query !== "") {
+          this._query = "";
           this.render();
         }
       });
@@ -231,6 +240,7 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
     if (rankSelect) {
       rankSelect.addEventListener("change", (event) => {
         event.stopPropagation();
+        if (searchInput) this._query = searchInput.value ?? this._query;
         this._rankFilter = event.target.value;
         this.render();
       });
@@ -241,6 +251,7 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
     if (tradSelect) {
       tradSelect.addEventListener("change", (event) => {
         event.stopPropagation();
+        if (searchInput) this._query = searchInput.value ?? this._query;
         this._traditionFilter = event.target.value;
         this.render();
       });
@@ -273,6 +284,17 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
   static async _onSearch(event, target) {
     this._query = target.value ?? "";
     this.render();
+  }
+
+  /**
+   * Explicit search trigger (e.g. tapping the Search button).
+   */
+  static async _onExecuteSearch(event, target) {
+    const searchInput = this.element?.querySelector?.(".compendium-search-input");
+    if (searchInput) {
+      this._query = searchInput.value?.trim?.() ?? "";
+      this.render();
+    }
   }
 
   /**

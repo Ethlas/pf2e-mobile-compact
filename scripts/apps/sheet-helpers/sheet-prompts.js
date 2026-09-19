@@ -252,3 +252,143 @@ export async function promptStrikeSelection(sheet, actionLabel, strikes) {
   });
 }
 
+/**
+ * Prompts user to select whether to consume an item on self or administer it to an ally on the scene.
+ * @param {object} sheet - Application instance
+ * @param {Item} item - Consumable item
+ * @returns {Promise<{mode: "self"|"ally", targetToken?: object, targetId?: string}|false>}
+ */
+export async function promptConsumableUsage(sheet, item) {
+  const scene = canvas?.scene ?? game.scenes.viewed ?? game.scenes.active;
+  const currentTargetId = Array.from(game.user?.targets ?? []).find(t => t.id)?.id ?? "";
+
+  let candidates = [];
+  if (canvas?.tokens?.placeables?.length) {
+    candidates = canvas.tokens.placeables
+      .filter(t => t.actor && t.actor.id !== sheet.actor.id && t.visible && (t.document?.disposition >= 0 || t.actor.hasPlayerOwner))
+      .map(t => ({
+        id: t.id,
+        name: t.name,
+        selected: t.id === currentTargetId,
+        actorName: t.actor?.name ?? t.name
+      }));
+  } else if (scene?.tokens) {
+    candidates = scene.tokens.contents
+      .filter(t => t.actor && t.actorId !== sheet.actor.id && (!t.hidden || game.user.isGM) && (t.disposition >= 0 || t.actor?.hasPlayerOwner))
+      .map(t => ({
+        id: t.id,
+        name: t.name,
+        selected: t.id === currentTargetId,
+        actorName: t.actor?.name ?? t.name
+      }));
+  }
+
+  return new Promise(resolve => {
+    const { DialogV2 } = foundry.applications.api;
+
+    const comradeOptions = candidates.map(c =>
+      `<option value="${c.id}" ${c.selected ? "selected" : ""}>Comrade: ${c.name}</option>`
+    ).join("");
+
+    const content = `
+      <div style="padding: 10px; text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px;">
+          <img src="${item.img}" alt="${item.name}" width="36" height="36" style="border: 1px solid #444; border-radius: 4px;" />
+          <span style="font-size: 1.1rem; font-weight: bold;">${item.name}</span>
+        </div>
+        <p style="margin-bottom: 12px; font-size: 0.9rem; color: #bbb;">Choose who receives this consumable:</p>
+        <label for="consumable-recipient-select" style="display:block; margin-bottom: 6px; font-size: 0.85rem; color: #888;">Recipient:</label>
+        <select id="consumable-recipient-select" style="width: 100%; min-height: 48px; font-size: 1rem; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444;">
+          <option value="self">Self (${sheet.actor.name})</option>
+          ${comradeOptions}
+        </select>
+      </div>
+    `;
+
+    if (DialogV2) {
+      DialogV2.prompt({
+        window: { title: `Use Consumable: ${item.name}` },
+        content,
+        ok: {
+          label: "Use / Administer",
+          callback: (event, button, dialog) => {
+            const select = dialog.element.querySelector("#consumable-recipient-select");
+            const val = select?.value ?? "self";
+            if (val === "self") {
+              resolve({ mode: "self" });
+            } else {
+              const targetToken = getTargetableToken(val) ?? canvas?.tokens?.get(val) ?? null;
+              resolve({ mode: "ally", targetToken, targetId: val });
+            }
+          }
+        },
+        rejectClose: false
+      }).then(res => {
+        if (res === null) resolve(false);
+      });
+    } else {
+      resolve({ mode: "self" });
+    }
+  });
+}
+
+/**
+ * Prompts user to select a weapon to apply a poison or oil onto.
+ * @param {object} sheet - Application instance
+ * @param {Item} consumable - Poison or oil item
+ * @param {Array<Item>} weapons - Available weapons
+ * @returns {Promise<Item|false>} Selected weapon item, or false if cancelled.
+ */
+export async function promptWeaponSelectionForAttachment(sheet, consumable, weapons) {
+  if (!weapons || weapons.length === 0) {
+    ui.notifications?.warn("No weapons available to apply poison to.");
+    return false;
+  }
+
+  return new Promise(resolve => {
+    const { DialogV2 } = foundry.applications.api;
+
+    const weaponOptions = weapons.map(w => {
+      const hasPoison = (w.subitems?.contents ?? []).some(s => s.category === "poison" || s.system?.traits?.value?.includes("injury"));
+      const poisonSuffix = hasPoison ? " (Already Poisoned)" : "";
+      return `<option value="${w.id}">${w.name}${poisonSuffix}</option>`;
+    }).join("");
+
+    const content = `
+      <div style="padding: 10px; text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px;">
+          <img src="${consumable.img}" alt="${consumable.name}" width="36" height="36" style="border: 1px solid #444; border-radius: 4px;" />
+          <span style="font-size: 1.1rem; font-weight: bold;">${consumable.name}</span>
+        </div>
+        <p style="margin-bottom: 12px; font-size: 0.9rem; color: #bbb;">Select weapon to apply this poison or oil to (1 Interact Action):</p>
+        <label for="weapon-attach-select" style="display:block; margin-bottom: 6px; font-size: 0.85rem; color: #888;">Weapon:</label>
+        <select id="weapon-attach-select" style="width: 100%; min-height: 48px; font-size: 1rem; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444;">
+          ${weaponOptions}
+        </select>
+      </div>
+    `;
+
+    if (DialogV2) {
+      DialogV2.prompt({
+        window: { title: `Apply ${consumable.name}` },
+        content,
+        ok: {
+          label: "Apply to Weapon",
+          callback: (event, button, dialog) => {
+            const select = dialog.element.querySelector("#weapon-attach-select");
+            const weaponId = select?.value;
+            const chosen = weapons.find(w => w.id === weaponId) ?? weapons[0];
+            resolve(chosen);
+          }
+        },
+        rejectClose: false
+      }).then(res => {
+        if (res === null) resolve(false);
+      });
+    } else {
+      resolve(weapons[0]);
+    }
+  });
+}
+
+export { promptRuneConfiguration, scanInventoryRunes } from "./rune-handlers.js";
