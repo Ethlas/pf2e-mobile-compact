@@ -6,6 +6,34 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [1.0.11] - 2026-09-19
 
+### Milestone 10: Code Quality, Battery Optimization & Physical Dice Edge Cases (Issue #1)
+
+#### Fixed
+- **Pruned Global Monkey-Patching & Scoped Media Elements** (`scripts/pf2e-mobile.js`):
+  - Scoped `patchMediaElements()` to only execute on mobile environments (`shouldActivateMobile()`), preventing desktop clients from undergoing unnecessary `HTMLMediaElement` and `window.Audio` prototype mutations.
+  - Eliminated brute-force iteration over `GameClass.prototype` and `game` properties.
+  - Removed broad `console.error` and `console.warn` interceptors that could hide legitimate development and runtime errors.
+  - Targeted resolution suppression directly at Foundry v14's `ClientIssues` (`_detectUsabilityIssues`) and `ui.notifications.error` specifically for `ERROR.RESOLUTION` and `reqWidth` parameters.
+- **Physical Dice Edge Cases: Fortune / Misfortune & Dynamic Face Validation** (`scripts/apps/physical-dice-dialog.js`, `scripts/rolls/physical-dice-interceptor.js`, `templates/physical-dice-dialog.hbs`):
+  - Fixed issue where `partitionTotal` was splitting a check roll value across dice for fortune (`2d20kh`) and misfortune (`2d20kl`), breaking keep-highest / keep-lowest semantics.
+  - Added contextual instructions guiding the user to enter the higher result for Fortune rolls or the lower result for Misfortune rolls.
+  - Assigned the entered roll result to all dice in the term so native Foundry `_evaluateModifiers()` keep/drop evaluation preserves the user's selected outcome without partition distortion.
+  - Made die face validation dynamic (`1` to `faces`) rather than hardcoding `1-20`.
+- **Battery Optimization & Polling Removal** (`scripts/pf2e-mobile.js`):
+  - Removed fake 25-second socket status heartbeat (`socket.emit("status")`).
+  - Replaced the 1-second `setInterval` DOM poller for the floating action button (FAB) with reactive ApplicationV2 lifecycle hooks (`renderPF2eMobileSheet`, `closePF2eMobileSheet`) and initial/resize state updates.
+- **Foundry Manifest Compatibility** (`module.json`):
+  - Updated `compatibility.minimum` to `"14"` in `module.json` to reflect Foundry v14 requirement.
+- **Modular Architecture Refactoring (Issue #1, Item #5)** (`scripts/apps/mobile-sheet.js`):
+  - Extracted headless token adapter geometry, distance calculations, and targeting synchronization into [`scripts/tokens/token-adapter.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/tokens/token-adapter.js).
+  - Extracted reusable helper utilities (`clamp`, `getGlyph`) into [`scripts/utils/sheet-utils.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/utils/sheet-utils.js).
+  - Modularized context builders into domain helpers under `scripts/apps/sheet-helpers/` (`context-header.js`, `context-actions.js`, `context-spells.js`, `context-skills.js`, `context-inventory.js`).
+  - Modularized interactive modal prompts (target, variant, statistic, strike selection) into [`scripts/apps/sheet-helpers/sheet-prompts.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/sheet-helpers/sheet-prompts.js).
+  - Modularized domain action handlers (strikes, damage, critical, aux action, item chat, use action, check rolls, skill rolls, consumable consumption) into [`scripts/apps/sheet-helpers/actions-handlers.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/sheet-helpers/actions-handlers.js).
+  - Modularized spell management handlers (casting, prep picker, slot toggles/adjustments, daily rest, presets, signature spells, spell removal) into [`scripts/apps/sheet-helpers/spells-handlers.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/sheet-helpers/spells-handlers.js).
+  - Streamlined [`scripts/apps/mobile-sheet.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/mobile-sheet.js) from 3,370 lines down to ~698 lines (~80% line reduction) while retaining 100% template compatibility, registered ApplicationV2 action delegation, and backward-compatible function re-exports.
+
+
 ### Milestone 9: Layout Architecture Restoration, CSS Refactoring & Spell Slot Expenditure Fix
 
 #### Fixed

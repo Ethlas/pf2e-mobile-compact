@@ -368,6 +368,11 @@ export class PhysicalDiceManager {
     const modTerms = terms.filter(t => typeof t.number === "number" && typeof t.faces !== "number");
     const totalMod = modTerms.reduce((sum, t) => sum + (t.number ?? 0), 0);
 
+    const faces = d20Term.faces ?? 20;
+    const count = d20Term.number ?? 1;
+    const isFortune = d20Term.modifiers?.some(m => m.startsWith("kh")) || !!roll.options?.fortune;
+    const isMisfortune = d20Term.modifiers?.some(m => m.startsWith("kl")) || !!roll.options?.misfortune;
+
     let d20Result;
     try {
       d20Result = await PhysicalDiceDialog.promptCheck({
@@ -375,6 +380,10 @@ export class PhysicalDiceManager {
         subtitle,
         target: targetInfo,
         modifier: totalMod,
+        faces,
+        count,
+        isFortune,
+        isMisfortune,
         term: d20Term
       });
     } catch {
@@ -386,9 +395,10 @@ export class PhysicalDiceManager {
     }
 
     // Populate d20 term results
-    const count = d20Term.number ?? 1;
-    const partitioned = partitionTotal(d20Result, count, d20Term.faces ?? 20);
-    d20Term.results = partitioned.map(r => ({ result: r, active: true }));
+    // If the roll had fortune (kh) or misfortune (kl), user entered the chosen die result directly.
+    // Setting each die result to d20Result ensures native Foundry keep/drop evaluation preserves the user's chosen value.
+    const resultCount = Math.max(1, count);
+    d20Term.results = Array.from({ length: resultCount }, () => ({ result: d20Result, active: true }));
     d20Term._isPhysicalIntercepted = true;
     roll._isPhysicalIntercepted = true;
 

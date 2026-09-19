@@ -10,9 +10,20 @@ This guide provides procedures for developing and extending the PF2e Mobile Shee
 
 ## Key Component Locations
 - **Module Entry & Registration**: [`scripts/pf2e-mobile.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/pf2e-mobile.js)
-- **Sheet ApplicationV2 Class**: [`scripts/apps/mobile-sheet.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/mobile-sheet.js)
+- **Sheet Orchestrator Class**: [`scripts/apps/mobile-sheet.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/mobile-sheet.js) (lean ApplicationV2 coordinator)
+- **Domain Helpers & Context Builders**: [`scripts/apps/sheet-helpers/`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/sheet-helpers/)
+  - `context-header.js` (HP, Shield, Defenses, Initiative, Targets)
+  - `context-actions.js` (Strikes, Traits, MAP Variants, Aux Actions, Action Categories)
+  - `context-spells.js` (Unified Rank Buckets, Slots, Presets, Formatted Spells)
+  - `context-skills.js` (Core & Lore Skill Proficiencies)
+  - `context-inventory.js` (Weapons, Armor, Consumables, Gear, Bulk)
+  - `sheet-prompts.js` (Target, Variant, Stat, Strike Selection Modals)
+  - `actions-handlers.js` (Strikes, Checks, Skill Rolls, Item Usage)
+  - `spells-handlers.js` (Cast, Slot Mgmt, Daily Rest, Presets, Signature Spells)
+- **Headless Token Geometry & Canvas Adapter**: [`scripts/tokens/token-adapter.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/tokens/token-adapter.js)
 - **Physical Dice Engine**: [`scripts/rolls/physical-dice-interceptor.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/rolls/physical-dice-interceptor.js)
 - **Physical Dice Entry Dialog**: [`scripts/apps/physical-dice-dialog.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/physical-dice-dialog.js)
+- **Utilities**: [`scripts/utils/sheet-utils.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/utils/sheet-utils.js)
 - **Templates**:
   - Main Frame: [`templates/mobile-sheet.hbs`](file:///d:/Dnd/coding/pf2e-mobile-compact/templates/mobile-sheet.hbs)
   - Sub-tab Parts: [`templates/parts/`](file:///d:/Dnd/coding/pf2e-mobile-compact/templates/parts/) (`actions.hbs`, `spells.hbs`, `inventory.hbs`, `skills.hbs`, `chat.hbs`, `header.hbs`)
@@ -20,23 +31,33 @@ This guide provides procedures for developing and extending the PF2e Mobile Shee
 
 ## Workflow for Adding or Updating Features
 
-1. **Context Preparation (`_prepareContext`)**:
-   - Collect and structure data from `this.actor.system` without modifying the actor document.
+1. **Maintain Architectural Domain Modeling & File Size Discipline**:
+   - **Do NOT put heavy domain logic in `mobile-sheet.js`**: Keep `mobile-sheet.js` strictly as a coordinator delegating to domain helpers.
+   - **Proactive File Size Checks**: If any file or module begins exceeding 400–600 lines, actively decompose and refactor it into dedicated sub-modules.
+   - Place data preparation in `scripts/apps/sheet-helpers/context-*.js`.
+   - Place user prompts / dialogs in `scripts/apps/sheet-helpers/sheet-prompts.js`.
+   - Place execution handlers in `actions-handlers.js` or `spells-handlers.js`.
+
+2. **Context Preparation (`_prepareContext`)**:
+   - Collect and structure data through domain helper functions without mutating underlying actor documents.
    - For actions with variants, provide options for selection modals rather than executing blindly.
 
-2. **Template Binding**:
+3. **Template Binding**:
    - Place markup in appropriate `templates/parts/*.hbs`.
    - Use `data-action` on clickable buttons (min 38px height).
-   - Use `data-change-action` on `<select>` elements.
+   - Use `data-change-action` on `<select>` elements (never `data-action`).
 
-3. **Event Handling**:
-   - Add action methods in `PF2eMobileSheet` and register them in `#getActionHandlers()` or the ApplicationV2 actions map.
+4. **Event Handling & Action Delegation**:
+   - Keep action names registered in `DEFAULT_OPTIONS.actions` on `PF2eMobileSheet`.
+   - Delegate static action methods directly to the domain handler functions.
    - Wrap roll calls in try/catch and delegate to PF2e's native roll methods.
 
-4. **Styling**:
+5. **Styling**:
    - Add responsive styles in `styles/pf2e-mobile.css`.
    - Test on compact viewport widths (360px - 430px).
 
-5. **Deploy & Validate**:
-   - Run `.\deploy.ps1` to sync and restart the server.
+6. **Static Verification & Validation**:
+   - Run `node scripts/verify.mjs` before committing or deploying.
+   - Run `.\deploy.ps1` only with explicit user authorization.
+
 

@@ -83,15 +83,6 @@ export function setupKeepAlive() {
       }
     }
   });
-
-  // Periodic heartbeat every 25 seconds to prevent mobile browser / proxy socket timeouts
-  setInterval(() => {
-    if (game.socket?.connected) {
-      try {
-        game.socket.emit("status", { status: "active" });
-      } catch {}
-    }
-  }, 25000);
 }
 
 /**
@@ -128,11 +119,7 @@ export function isResolutionMessage(msg, options = {}) {
     lower.includes("requires a screen resolution") ||
     lower.includes("requires usable window dimensions") ||
     lower.includes("requires a usable window dimensions") ||
-    lower.includes("resolution of your browser window is") ||
-    lower.includes("resolution of your browser") ||
-    lower.includes("display resolution") ||
-    lower.includes("resolution of 1366px") ||
-    (lower.includes("resolution") && (lower.includes("screen") || lower.includes("minimum") || lower.includes("recommended") || lower.includes("required") || lower.includes("below") || lower.includes("greater") || lower.includes("display")))
+    lower.includes("resolution of your browser")
   );
 }
 
@@ -165,82 +152,38 @@ export function sweepResolutionNotifications() {
 
 /**
  * Suppresses Foundry's low resolution / minimum window dimensions warnings
- * across Game methods, ClientIssues, Notifications prototype, active ui.notifications,
- * and dev console output.
+ * on mobile via ClientIssues and notification error filtering.
  */
 export function suppressResolutionWarnings() {
-  // 1. Monkey-patch Game.prototype resolution methods
-  const GameClass = foundry.Game ?? (typeof globalThis.Game !== "undefined" ? globalThis.Game : null);
-  if (GameClass?.prototype) {
-    for (const key of Object.getOwnPropertyNames(GameClass.prototype)) {
-      if (/resolution/i.test(key)) {
-        const original = GameClass.prototype[key];
-        GameClass.prototype[key] = function (...args) {
-          if (shouldActivateMobile()) return;
-          return original?.apply(this, args);
-        };
-      }
-    }
-  }
+  if (!shouldActivateMobile()) return;
 
-  // 2. Monkey-patch game.issues (ClientIssues in Foundry v14+)
+  // 1. Monkey-patch game.issues (ClientIssues in Foundry v14+)
   if (game?.issues) {
     const issues = game.issues;
-    const origDetect = issues._detectUsabilityIssues;
-    if (typeof origDetect === "function") {
-      issues._detectUsabilityIssues = function () {
-        if (shouldActivateMobile()) return;
-        return origDetect.call(this);
-      };
-    }
-
     const proto = issues.constructor?.prototype;
     if (proto && !proto._mobileResolutionPatched) {
       const origProtoDetect = proto._detectUsabilityIssues;
       if (typeof origProtoDetect === "function") {
         proto._detectUsabilityIssues = function () {
-          if (shouldActivateMobile()) return;
+          if (shouldActivateMobile()) {
+            if (this.usabilityIssues?.resolutionTooLow) {
+              delete this.usabilityIssues.resolutionTooLow;
+            }
+            return;
+          }
           return origProtoDetect.call(this);
         };
       }
       proto._mobileResolutionPatched = true;
     }
-  }
-
-  // 3. Monkey-patch game instance methods if present
-  if (typeof game !== "undefined") {
-    for (const key of Object.keys(game)) {
-      if (/resolution/i.test(key) && typeof game[key] === "function") {
-        const orig = game[key];
-        game[key] = function (...args) {
-          if (shouldActivateMobile()) return;
-          return orig.apply(this, args);
-        };
-      }
+    if (issues.usabilityIssues?.resolutionTooLow) {
+      delete issues.usabilityIssues.resolutionTooLow;
     }
   }
 
-  // 4. Monkey-patch Notifications prototype
+  // 2. Filter resolution errors on Notifications prototype
   const NotificationsClass = foundry?.applications?.ui?.Notifications ?? (typeof Notifications !== "undefined" ? Notifications : null);
   if (NotificationsClass?.prototype && !NotificationsClass.prototype._mobileResolutionPatched) {
-    const origNotify = NotificationsClass.prototype.notify;
-    if (typeof origNotify === "function") {
-      NotificationsClass.prototype.notify = function (message, type = "info", options = {}) {
-        if (shouldActivateMobile() && isResolutionMessage(message, options)) {
-          return null;
-        }
-        return origNotify.call(this, message, type, options);
-      };
-    }
-    const origWarn = NotificationsClass.prototype.warn;
-    if (typeof origWarn === "function") {
-      NotificationsClass.prototype.warn = function (message, options = {}) {
-        if (shouldActivateMobile() && isResolutionMessage(message, options)) {
-          return null;
-        }
-        return origWarn.call(this, message, options);
-      };
-    }
     const origError = NotificationsClass.prototype.error;
     if (typeof origError === "function") {
       NotificationsClass.prototype.error = function (message, options = {}) {
@@ -253,26 +196,8 @@ export function suppressResolutionWarnings() {
     NotificationsClass.prototype._mobileResolutionPatched = true;
   }
 
-  // 5. Monkey-patch active ui.notifications instance
+  // 3. Filter resolution errors on active ui.notifications instance
   if (ui?.notifications && !ui.notifications._mobileResolutionPatched) {
-    const origInstNotify = ui.notifications.notify;
-    if (typeof origInstNotify === "function") {
-      ui.notifications.notify = function (message, type = "info", options = {}) {
-        if (shouldActivateMobile() && isResolutionMessage(message, options)) {
-          return null;
-        }
-        return origInstNotify.call(this, message, type, options);
-      };
-    }
-    const origInstWarn = ui.notifications.warn;
-    if (typeof origInstWarn === "function") {
-      ui.notifications.warn = function (message, options = {}) {
-        if (shouldActivateMobile() && isResolutionMessage(message, options)) {
-          return null;
-        }
-        return origInstWarn.call(this, message, options);
-      };
-    }
     const origInstError = ui.notifications.error;
     if (typeof origInstError === "function") {
       ui.notifications.error = function (message, options = {}) {
@@ -283,31 +208,6 @@ export function suppressResolutionWarnings() {
       };
     }
     ui.notifications._mobileResolutionPatched = true;
-  }
-
-  // 6. Suppress resolution warning in dev console
-  if (!console._mobileResolutionPatched) {
-    const isSuppressed = (first) => {
-      if (!first) return false;
-      return isResolutionMessage(first);
-    };
-
-    const origConsoleError = console.error;
-    console.error = function (...args) {
-      if (shouldActivateMobile() && isSuppressed(args[0])) {
-        return;
-      }
-      return origConsoleError.apply(console, args);
-    };
-
-    const origConsoleWarn = console.warn;
-    console.warn = function (...args) {
-      if (shouldActivateMobile() && isSuppressed(args[0])) {
-        return;
-      }
-      return origConsoleWarn.apply(console, args);
-    };
-    console._mobileResolutionPatched = true;
   }
 
   sweepResolutionNotifications();
@@ -421,8 +321,10 @@ export function patchUserActiveTokens() {
 
 Hooks.once("init", async () => {
   console.log("PF2e Mobile Compact | Initializing module");
-  suppressResolutionWarnings();
-  patchMediaElements();
+  if (shouldActivateMobile()) {
+    suppressResolutionWarnings();
+    patchMediaElements();
+  }
   patchUserActiveTokens();
 
   // Register the custom mobile character sheet with Actors collection (namespaced in v13+)
@@ -541,8 +443,10 @@ Hooks.once("init", async () => {
 });
 
 Hooks.once("ready", () => {
-  suppressResolutionWarnings();
-  sweepResolutionNotifications();
+  if (shouldActivateMobile()) {
+    suppressResolutionWarnings();
+    sweepResolutionNotifications();
+  }
   patchUserActiveTokens();
   try {
     setupPhysicalDiceInterceptor();
@@ -616,15 +520,7 @@ Hooks.once("ready", () => {
         }
       });
       document.body.appendChild(fab);
-
-      setInterval(() => {
-        if (shouldActivateMobile()) {
-          const isOpen = !!document.querySelector(".pf2e-mobile-sheet");
-          fab.style.display = isOpen ? "none" : "flex";
-        } else {
-          fab.style.display = "none";
-        }
-      }, 1000);
+      updateFabVisibility();
     }
   } else {
     console.log("PF2e Mobile Compact | Desktop environment active. Mobile overrides dormant.");
@@ -647,14 +543,38 @@ Hooks.once("ready", () => {
 
   // Dynamic viewport detection: activate mobile overrides if window is resized or rotated into mobile format
   window.addEventListener("resize", foundry.utils.debounce(() => {
-    if (shouldActivateMobile() && !document.body.classList.contains("pf2e-mobile-active")) {
-      console.log("PF2e Mobile Compact | Viewport entered mobile mode. Activating mobile engine.");
-      document.body.classList.add("pf2e-mobile-active");
-      optimizeCanvasForMobile();
-      suppressResolutionWarnings();
-      sweepResolutionNotifications();
+    if (shouldActivateMobile()) {
+      if (!document.body.classList.contains("pf2e-mobile-active")) {
+        console.log("PF2e Mobile Compact | Viewport entered mobile mode. Activating mobile engine.");
+        document.body.classList.add("pf2e-mobile-active");
+        optimizeCanvasForMobile();
+        suppressResolutionWarnings();
+        patchMediaElements();
+        sweepResolutionNotifications();
+      }
+      updateFabVisibility();
     }
   }, 200));
+});
+
+/**
+ * Updates floating action button (FAB) visibility based on active sheet state.
+ */
+export function updateFabVisibility() {
+  const fab = document.getElementById("pf2e-mobile-fab");
+  if (!fab) return;
+  if (!shouldActivateMobile()) {
+    fab.style.display = "none";
+    return;
+  }
+  const isOpen = !!document.querySelector(".pf2e-mobile-sheet");
+  fab.style.display = isOpen ? "none" : "flex";
+}
+
+// Reactively toggle FAB when mobile character sheet opens or closes
+Hooks.on("renderPF2eMobileSheet", () => updateFabVisibility());
+Hooks.on("closePF2eMobileSheet", () => {
+  setTimeout(updateFabVisibility, 50);
 });
 
 // Continuously drop resolution warnings whenever notifications or dialogs render
