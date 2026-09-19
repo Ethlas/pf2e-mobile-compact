@@ -1,4 +1,42 @@
 <div class="compendium-picker">
+  {{#if stagedItem}}
+  <div class="spell-config-overlay">
+    <div class="spell-config-card">
+      <div class="staged-item-header">
+        <img src="{{stagedItem.img}}" alt="{{stagedItem.name}}" width="48" height="48" />
+        <h3>Add {{stagedItem.name}}</h3>
+      </div>
+      
+      <div class="spell-config-form">
+        <div class="form-group">
+          <label>Spellcasting Entry</label>
+          <select name="targetEntry" class="touch-target" data-change-action="updateTargetEntry" onclick="event.stopPropagation()">
+            {{#each spellcastingEntries}}
+            <option value="{{this.id}}">{{this.name}}</option>
+            {{/each}}
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Spell Rank</label>
+          <select name="targetRank" class="touch-target" data-change-action="updateTargetRank" onclick="event.stopPropagation()">
+            {{#each ranks}}
+            {{#if (gte this ../stagedItem.baseRank)}}
+            <option value="{{this}}">{{#if (eq this 0)}}Cantrip (0){{else}}Rank {{this}}{{/if}}</option>
+            {{/if}}
+            {{/each}}
+          </select>
+        </div>
+        
+        <div class="config-actions">
+          <button type="button" class="touch-target btn-cancel" data-action="cancelStage">Cancel</button>
+          <button type="button" class="touch-target btn-primary" data-action="importItem">Confirm Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{else}}
+  
   <div class="compendium-search-bar">
     <input
       type="search"
@@ -9,6 +47,33 @@
       autofocus
     />
   </div>
+
+  {{#if isSpells}}
+  <div class="compendium-filters">
+    <select name="rankFilter" class="touch-target filter-select" onclick="event.stopPropagation()">
+      <option value="all" {{#if (eq rankFilter "all")}}selected{{/if}}>All Ranks</option>
+      <option value="0" {{#if (eq rankFilter "0")}}selected{{/if}}>Cantrip</option>
+      <option value="1" {{#if (eq rankFilter "1")}}selected{{/if}}>Rank 1</option>
+      <option value="2" {{#if (eq rankFilter "2")}}selected{{/if}}>Rank 2</option>
+      <option value="3" {{#if (eq rankFilter "3")}}selected{{/if}}>Rank 3</option>
+      <option value="4" {{#if (eq rankFilter "4")}}selected{{/if}}>Rank 4</option>
+      <option value="5" {{#if (eq rankFilter "5")}}selected{{/if}}>Rank 5</option>
+      <option value="6" {{#if (eq rankFilter "6")}}selected{{/if}}>Rank 6</option>
+      <option value="7" {{#if (eq rankFilter "7")}}selected{{/if}}>Rank 7</option>
+      <option value="8" {{#if (eq rankFilter "8")}}selected{{/if}}>Rank 8</option>
+      <option value="9" {{#if (eq rankFilter "9")}}selected{{/if}}>Rank 9</option>
+      <option value="10" {{#if (eq rankFilter "10")}}selected{{/if}}>Rank 10</option>
+    </select>
+    
+    <select name="traditionFilter" class="touch-target filter-select" onclick="event.stopPropagation()">
+      <option value="all" {{#if (eq traditionFilter "all")}}selected{{/if}}>All Traditions</option>
+      <option value="arcane" {{#if (eq traditionFilter "arcane")}}selected{{/if}}>Arcane</option>
+      <option value="divine" {{#if (eq traditionFilter "divine")}}selected{{/if}}>Divine</option>
+      <option value="occult" {{#if (eq traditionFilter "occult")}}selected{{/if}}>Occult</option>
+      <option value="primal" {{#if (eq traditionFilter "primal")}}selected{{/if}}>Primal</option>
+    </select>
+  </div>
+  {{/if}}
 
   <ul class="compendium-results-list">
     {{#each entries}}
@@ -27,7 +92,7 @@
       <button
         type="button"
         class="touch-target btn-import"
-        data-action="importItem"
+        data-action="stageItem"
         data-entry-id="{{this._id}}"
         title="Add to Character"
       >
@@ -38,5 +103,5 @@
     <li class="empty-hint">No items found matching your search.</li>
     {{/each}}
   </ul>
+  {{/if}}
 </div>
-
