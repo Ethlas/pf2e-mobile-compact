@@ -306,3 +306,4 @@ export function updateChatBadge(sheet) {
     badge.classList.add("hidden");
   }
 }
+

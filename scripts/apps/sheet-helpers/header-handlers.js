@@ -15,17 +15,7 @@ export async function onApplyDeltaHP(sheet, event, target) {
   const tokenDoc = sheet.token ?? sheet.actor.getActiveTokens(true, true)[0] ?? sheet.actor.getActiveTokens()[0]?.document ?? null;
   let delta = 0;
 
-  if (raw.startsWith("+")) {
-    delta = parseInt(raw.slice(1), 10);
-    if (isNaN(delta) || delta <= 0) { target.value = ""; return; }
-    if (typeof sheet.actor.applyDamage === "function") {
-      await sheet.actor.applyDamage({ damage: -delta, token: tokenDoc, final: true });
-    } else {
-      const hp = sheet.actor.system.attributes.hp;
-      const newHP = clamp((hp.value ?? 0) + delta, 0, hp.max ?? 999);
-      await sheet.actor.update({ "system.attributes.hp.value": newHP });
-    }
-  } else if (raw.startsWith("-")) {
+  if (raw.startsWith("-")) {
     delta = parseInt(raw.slice(1), 10);
     if (isNaN(delta) || delta <= 0) { target.value = ""; return; }
     if (typeof sheet.actor.applyDamage === "function") {
@@ -36,13 +26,15 @@ export async function onApplyDeltaHP(sheet, event, target) {
       await sheet.actor.update({ "system.attributes.hp.value": newHP });
     }
   } else {
-    delta = parseInt(raw, 10);
+    // When no '-' is set (e.g. "5" or "+5"), add health
+    const cleanStr = raw.startsWith("+") ? raw.slice(1) : raw;
+    delta = parseInt(cleanStr, 10);
     if (isNaN(delta) || delta <= 0) { target.value = ""; return; }
     if (typeof sheet.actor.applyDamage === "function") {
-      await sheet.actor.applyDamage({ damage: delta, token: tokenDoc, final: true });
+      await sheet.actor.applyDamage({ damage: -delta, token: tokenDoc, final: true });
     } else {
       const hp = sheet.actor.system.attributes.hp;
-      const newHP = clamp((hp.value ?? 0) - delta, 0, hp.max ?? 999);
+      const newHP = clamp((hp.value ?? 0) + delta, 0, hp.max ?? 999);
       await sheet.actor.update({ "system.attributes.hp.value": newHP });
     }
   }
@@ -439,3 +431,4 @@ export async function onSwitchActor(sheet, event, target) {
   await sheet.close();
   newActor.sheet.render(true);
 }
+
