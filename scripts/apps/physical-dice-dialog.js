@@ -40,6 +40,14 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
   _target = null;
   /** @type {number} */
   _modifier = 0;
+  /** @type {number} */
+  _faces = 20;
+  /** @type {number} */
+  _count = 1;
+  /** @type {boolean} */
+  _isFortune = false;
+  /** @type {boolean} */
+  _isMisfortune = false;
   /** @type {Array<object>} */
   _pools = [];
   /** @type {Function|null} */
@@ -56,6 +64,10 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
    * @param {string} [params.subtitle]
    * @param {object|null} [params.target]
    * @param {number} [params.modifier]
+   * @param {number} [params.faces]
+   * @param {number} [params.count]
+   * @param {boolean} [params.isFortune]
+   * @param {boolean} [params.isMisfortune]
    * @param {Array<object>} [params.pools]
    * @param {Function} params.resolve
    * @param {Function} params.reject
@@ -67,19 +79,27 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
     this._subtitle = params.subtitle ?? "";
     this._target = params.target ?? null;
     this._modifier = params.modifier ?? 0;
+    this._faces = params.faces ?? 20;
+    this._count = params.count ?? 1;
+    this._isFortune = !!params.isFortune;
+    this._isMisfortune = !!params.isMisfortune;
     this._pools = params.pools ?? [];
     this._resolve = params.resolve;
     this._reject = params.reject;
   }
 
   /**
-   * Prompts the player for a physical d20 check outcome.
+   * Prompts the player for a physical check outcome.
    * @param {object} params
    * @param {string} params.title
    * @param {string} [params.subtitle]
    * @param {object|null} [params.target]
    * @param {number} [params.modifier]
-   * @returns {Promise<number>} Entered d20 value
+   * @param {number} [params.faces]
+   * @param {number} [params.count]
+   * @param {boolean} [params.isFortune]
+   * @param {boolean} [params.isMisfortune]
+   * @returns {Promise<number>} Entered die value
    */
   static promptCheck(params) {
     return new Promise((resolve, reject) => {
@@ -123,6 +143,21 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
     context.target = this._target;
     context.modifier = this._modifier;
     context.pools = this._pools;
+    context.faces = this._faces;
+    context.count = this._count;
+    context.isFortune = this._isFortune;
+    context.isMisfortune = this._isMisfortune;
+
+    if (this._isFortune) {
+      context.checkPrompt = `Fortune: Roll 2d${this._faces} and enter the HIGHER result:`;
+    } else if (this._isMisfortune) {
+      context.checkPrompt = `Misfortune: Roll 2d${this._faces} and enter the LOWER result:`;
+    } else if (this._count > 1) {
+      context.checkPrompt = `Roll ${this._count}d${this._faces} physically on the table:`;
+    } else {
+      context.checkPrompt = `Roll 1d${this._faces} physically on the table:`;
+    }
+
     return context;
   }
 
@@ -192,9 +227,10 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
       const input = this.element?.querySelector("input[name='d20-val']");
       const rawVal = input?.value?.trim();
       const val = parseInt(rawVal, 10);
+      const faces = this._faces || 20;
 
-      if (isNaN(val) || val < 1 || val > 20) {
-        showError("Please enter a valid d20 roll between 1 and 20.");
+      if (isNaN(val) || val < 1 || val > faces) {
+        showError(`Please enter a valid roll between 1 and ${faces}.`);
         input?.focus();
         return;
       }

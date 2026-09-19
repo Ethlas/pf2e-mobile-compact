@@ -17,11 +17,15 @@
     <!-- Check / d20 Roll Entry Section -->
     <div class="physical-d20-section">
       <div class="physical-prompt-msg">
-        Roll <strong>1d20</strong> physically on the table:
+        {{#if checkPrompt}}
+          {{checkPrompt}}
+        {{else}}
+          Roll <strong>1d{{faces}}</strong> physically on the table:
+        {{/if}}
       </div>
 
       <div class="physical-input-wrapper">
-        <label for="physical-d20-input" class="visually-hidden">d20 Result</label>
+        <label for="physical-d20-input" class="visually-hidden">d{{faces}} Result</label>
         <input 
           type="number" 
           id="physical-d20-input"
@@ -30,8 +34,8 @@
           inputmode="numeric" 
           pattern="[0-9]*" 
           min="1" 
-          max="20" 
-          placeholder="1 - 20" 
+          max="{{faces}}" 
+          placeholder="1 - {{faces}}" 
           required 
           autofocus 
         />
