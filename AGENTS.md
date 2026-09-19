@@ -9,8 +9,11 @@ Welcome to the **PF2e Mobile Sheet (Compact)** repository (`pf2e-mobile-compact`
 - **Foundry VTT Compatibility**: Foundry v14 (`module.json`).
 - **Target System**: `pf2e` (minimum v6.0.0).
 - **Core Entry Point**: [`scripts/pf2e-mobile.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/pf2e-mobile.js)
-- **Sheet Architecture**: Foundry `ApplicationV2` / `ActorSheetV2` in [`scripts/apps/mobile-sheet.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/mobile-sheet.js)
+- **Sheet Architecture**: Foundry `ApplicationV2` / `ActorSheetV2` in [`scripts/apps/mobile-sheet.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/mobile-sheet.js) (lean orchestrator).
+- **Domain Helpers & Context Builders**: [`scripts/apps/sheet-helpers/`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/sheet-helpers/) (`context-*.js`, `sheet-prompts.js`, `actions-handlers.js`, `spells-handlers.js`).
+- **Headless Token Geometry & Canvas Adapter**: [`scripts/tokens/token-adapter.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/tokens/token-adapter.js).
 - **Physical Dice Engine**: [`scripts/rolls/physical-dice-interceptor.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/rolls/physical-dice-interceptor.js) & [`scripts/apps/physical-dice-dialog.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/physical-dice-dialog.js)
+- **Utilities**: [`scripts/utils/sheet-utils.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/utils/sheet-utils.js).
 - **Templates**: Handlebars templates in [`templates/`](file:///d:/Dnd/coding/pf2e-mobile-compact/templates/) and [`templates/parts/`](file:///d:/Dnd/coding/pf2e-mobile-compact/templates/parts/)
 - **Styles**: Mobile-first CSS in [`styles/pf2e-mobile.css`](file:///d:/Dnd/coding/pf2e-mobile-compact/styles/pf2e-mobile.css)
 - **Deployment**: PowerShell script [`deploy.ps1`](file:///d:/Dnd/coding/pf2e-mobile-compact/deploy.ps1) syncing to remote Foundry server via `pscp.exe` and restarting PM2 via `plink.exe`.
@@ -37,6 +40,21 @@ Welcome to the **PF2e Mobile Sheet (Compact)** repository (`pf2e-mobile-compact`
 ### D. Mobile Chat & Damage Application
 - Keep Foundry's docked chat integrated cleanly in the sheet (`#chat-tab-content`).
 - Maintain token selection fallback: on mobile devices without canvas interaction, ensure damage application buttons on chat cards fall back to the active sheet's token/actor.
+
+### E. Modular Domain Modeling & File Size Discipline (Critical Architecture Rule)
+- **Maintain Lean Orchestrator**: Keep [`scripts/apps/mobile-sheet.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/mobile-sheet.js) strictly as a high-level ApplicationV2 orchestrator (target < 700 lines).
+- **Respect Domain Boundaries**:
+  - **Context Builders** (`scripts/apps/sheet-helpers/context-*.js`): Prepares data for Header, Actions, Spells, Skills, and Inventory templates.
+  - **Interactive Prompts** (`scripts/apps/sheet-helpers/sheet-prompts.js`): User dialogs for targeting, variant picker, statistic selection, and strike selection.
+  - **Action & Strike Handlers** (`scripts/apps/sheet-helpers/actions-handlers.js`): Execution of weapon strikes, damage, auxiliary actions, action checks, skill rolls, and consumable consumption.
+  - **Spell Handlers** (`scripts/apps/sheet-helpers/spells-handlers.js`): Spellcasting, slot preparation, daily rest, presets, signature spells, and compendium browser integration.
+  - **Token Geometry** (`scripts/tokens/token-adapter.js`): Headless canvas token geometry, flanking detection, and targeting synchronization.
+  - **Utilities** (`scripts/utils/sheet-utils.js`): Shared mathematical clamps, glyph formatters, and pure helpers.
+- **Proactive Refactoring on New Features**:
+  - Whenever introducing a new feature, enhancement, or bug fix, **strictly respect this modular modeling**.
+  - **Never dump new domain logic directly into `mobile-sheet.js`**.
+  - Proactively assess file sizes: if any helper or module approaches 400–600 lines or takes on mixed responsibilities, immediately refactor and extract into dedicated domain sub-modules.
+  - Preserve registered action names in `DEFAULT_OPTIONS.actions` on `PF2eMobileSheet` while delegating execution directly to the modular domain handlers.
 
 ---
 

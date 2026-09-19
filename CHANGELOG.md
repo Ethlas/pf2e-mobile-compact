@@ -24,6 +24,15 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
   - Replaced the 1-second `setInterval` DOM poller for the floating action button (FAB) with reactive ApplicationV2 lifecycle hooks (`renderPF2eMobileSheet`, `closePF2eMobileSheet`) and initial/resize state updates.
 - **Foundry Manifest Compatibility** (`module.json`):
   - Updated `compatibility.minimum` to `"14"` in `module.json` to reflect Foundry v14 requirement.
+- **Modular Architecture Refactoring (Issue #1, Item #5)** (`scripts/apps/mobile-sheet.js`):
+  - Extracted headless token adapter geometry, distance calculations, and targeting synchronization into [`scripts/tokens/token-adapter.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/tokens/token-adapter.js).
+  - Extracted reusable helper utilities (`clamp`, `getGlyph`) into [`scripts/utils/sheet-utils.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/utils/sheet-utils.js).
+  - Modularized context builders into domain helpers under `scripts/apps/sheet-helpers/` (`context-header.js`, `context-actions.js`, `context-spells.js`, `context-skills.js`, `context-inventory.js`).
+  - Modularized interactive modal prompts (target, variant, statistic, strike selection) into [`scripts/apps/sheet-helpers/sheet-prompts.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/sheet-helpers/sheet-prompts.js).
+  - Modularized domain action handlers (strikes, damage, critical, aux action, item chat, use action, check rolls, skill rolls, consumable consumption) into [`scripts/apps/sheet-helpers/actions-handlers.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/sheet-helpers/actions-handlers.js).
+  - Modularized spell management handlers (casting, prep picker, slot toggles/adjustments, daily rest, presets, signature spells, spell removal) into [`scripts/apps/sheet-helpers/spells-handlers.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/sheet-helpers/spells-handlers.js).
+  - Streamlined [`scripts/apps/mobile-sheet.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/mobile-sheet.js) from 3,370 lines down to ~698 lines (~80% line reduction) while retaining 100% template compatibility, registered ApplicationV2 action delegation, and backward-compatible function re-exports.
+
 
 ### Milestone 9: Layout Architecture Restoration, CSS Refactoring & Spell Slot Expenditure Fix
 

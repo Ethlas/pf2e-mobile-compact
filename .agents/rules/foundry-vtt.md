@@ -17,3 +17,12 @@ Guidelines for developing within Foundry Virtual Tabletop v13 and v14:
 - When registering global hooks (`Hooks.on` / `Hooks.once`), store registration IDs or ensure hooks don't register duplicates when sheets re-render.
 - Ensure all dialogs and modals close cleanly without dangling event listeners or hanging promises.
 
+## Modular Architecture & File Size Discipline
+- Keep the main `ActorSheetV2` subclass as a lean coordinator/orchestrator (aim for < 700 lines).
+- Factor out context preparation into domain helpers (`scripts/apps/sheet-helpers/context-*.js`).
+- Factor out interactive dialogs and user prompts into dedicated prompt modules (`scripts/apps/sheet-helpers/sheet-prompts.js`).
+- Factor out domain action/strike and spell management handlers into dedicated handler files (`actions-handlers.js`, `spells-handlers.js`).
+- Keep headless canvas geometry and targeting separated in token adapter modules.
+- When implementing new features, always maintain this separation of concerns and actively refactor files if they grow past 400-600 lines.
+
+
