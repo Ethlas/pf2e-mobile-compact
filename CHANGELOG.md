@@ -4,6 +4,42 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.13] - 2026-09-19
+
+### Polish & Cache Busting (Issue #5)
+
+#### Fixed
+- **Stylesheet Cache Synchronization** (`scripts/pf2e-mobile.js`):
+  - Added proactive `link[href*="pf2e-mobile.css"]` version synchronization on module `init` to prevent mobile browsers from locking onto stale cached CSS.
+- **Harmonized HP Row Pill Design** (`styles/pf2e-mobile.css`):
+  - Removed nested inner input box borders and backgrounds in the HP and Temp HP groups.
+  - Implemented seamless matching 38px pill cards with borderless, dashed-underline editable numbers and balanced proportions across the row.
+
+---
+
+## [1.0.12] - 2026-09-19
+
+### Compact Header & Defense/Saves Integration (Issue #5)
+
+#### Added
+- **Streamlined 3-Row Header Layout** (`templates/parts/header.hbs`, `styles/pf2e-mobile.css`):
+  - **Row 1 (Toolbar)**: Character Switcher / Name, scene token Target dropdown, Digital vs. Physical Roll Mode dropdown, and Fullscreen toggle button.
+  - **Row 2 (Consolidated HP Row)**:
+    - Left quick-delta input box (`±Amt`): Allows typing signed (`-5`, `+5`) or unsigned amounts and pressing Enter to apply damage or healing directly via PF2e's native damage engine (`applyDamage`), preserving temp HP absorption order.
+    - Direct Current HP edit (`HP [ val ] / max`): Allows typing absolute numbers to set HP, or signed numbers (`+/-`) to adjust.
+    - Direct Temp HP edit (`TEMP [ val ]`): Allows typing absolute values or signed deltas (`+/-`).
+    - Shield status badge (`🛡️ value/max`) conditionally displayed when a shield is raised or equipped.
+  - **Row 3 (Defenses & Saves Pill Strip)**:
+    - Integrated `AC` badge.
+    - Touch-friendly Fortitude (`Fort`), Reflex (`Ref`), and Will (`Will`) saving throw roll buttons.
+    - Dropdown selector combining Perception checks (`👁️ +mod`) and Initiative rolls (`⚔️ Init`), featuring active combat pulsing animations (`combat-active` and `combat-rolled`).
+- **Domain Handlers Extraction** (`scripts/apps/sheet-helpers/header-handlers.js`, `scripts/apps/sheet-helpers/chat-handler.js`):
+  - Extracted header action handlers (`applyDeltaHP`, `setDirectHP`, `setDirectTempHP`, `rollPerceptionOrInitiative`, `rollSave`, `rollPerception`, `rollInitiative`, `selectTarget`, `toggleRollMode`, `toggleFullscreen`, `switchActor`) into `header-handlers.js`.
+  - Extracted chat tab DOM docking, scroll-to-bottom handling, and mutation observers into `chat-handler.js`.
+  - Reduced `scripts/apps/mobile-sheet.js` to 673 lines (<700 lines target).
+
+---
+
 ## [1.0.11] - 2026-09-19
 
 ### Milestone 10: Code Quality, Battery Optimization & Physical Dice Edge Cases (Issue #1)

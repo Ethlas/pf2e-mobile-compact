@@ -321,6 +321,14 @@ export function patchUserActiveTokens() {
 
 Hooks.once("init", async () => {
   console.log("PF2e Mobile Compact | Initializing module");
+
+  // Synchronize stylesheet href with current module version to prevent stale browser caching
+  const moduleVersion = game.modules?.get("pf2e-mobile-compact")?.version ?? Date.now();
+  document.querySelectorAll('link[href*="pf2e-mobile.css"]').forEach(link => {
+    const baseHref = link.getAttribute("href")?.split("?")[0];
+    if (baseHref) link.setAttribute("href", `${baseHref}?v=${moduleVersion}`);
+  });
+
   if (shouldActivateMobile()) {
     suppressResolutionWarnings();
     patchMediaElements();
