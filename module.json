@@ -2,10 +2,10 @@
   "id": "pf2e-mobile-compact",
   "title": "PF2e Mobile Sheet (Compact)",
   "description": "A mobile-optimized, battery-efficient character sheet for PF2e, designed for small viewports and in-person play.",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "authors": [
     {
-      "name": "Ethan Sarikas",
+      "name": "Ethlas",
       "discord": ""
     }
   ],

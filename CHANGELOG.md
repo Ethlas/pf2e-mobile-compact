@@ -4,6 +4,23 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.16] - 2026-09-22
+
+### Desktop Mode Compatibility & Complete Desktop Dormancy
+
+#### Fixed
+- **Desktop Item Expansion Restored** (`styles/pf2e-mobile.css`):
+  - Strictly scoped `.item-summary` and `.action-summary` rules inside `.pf2e-mobile-sheet`.
+  - Resolved major bug where global `.item-summary { display: none; }` hid item, strike, spell, feat, and inventory drawers on standard desktop PF2e character sheets (`CharacterSheetPF2e`).
+  - Scoped all 337 previously unscoped CSS rules under `.pf2e-mobile-sheet`, `.compendium-picker`, or `.spell-picker-dialog` to eliminate style bleeding into desktop Foundry windows.
+  - Adjusted spell preparation preset action buttons (`.btn-save-preset`, `.btn-apply-preset`, `.btn-delete-preset`) to meet standard 38px touch targets.
+- **Strict Desktop Dormancy & Dynamic Stylesheet Management** (`scripts/pf2e-mobile.js`):
+  - Added `syncStylesheetState()`: automatically disables the module stylesheet (`link.disabled = true`) during desktop sessions, and only enables it if a `PF2eMobileSheet` instance is actively rendered.
+  - Guarded monkey patches: `patchUserActiveTokens()`, `setupPhysicalDiceInterceptor()`, and `ActorClass` sheet routing overrides are strictly bypassed on desktop sessions.
+  - Guarded event listeners: fullscreen transitions, notification sweeping, and low-resolution dialog hooks now early-exit when desktop mode is active.
+
+---
+
 ## [1.0.15] - 2026-09-19
 
 ### Collapsible Inventory, Scroll Preservation, Item Investiture & Rune Management

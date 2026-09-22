@@ -286,6 +286,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     this._registerChatListener();
     this._dockChatElement();
     this._ensureTokenControlled();
+    document.querySelectorAll('link[href*="pf2e-mobile.css"]').forEach(link => { link.disabled = false; });
+    Hooks.callAll("renderPF2eMobileSheet", this, this.element, context);
 
     const savedScroll = this._tabScrollPositions.get(this._activeTab);
     if (typeof savedScroll === "number" && savedScroll > 0) {
@@ -364,6 +366,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     this._unregisterChatListener();
     this._restoreChatElement();
     super._onClose(options);
+    Hooks.callAll("closePF2eMobileSheet", this);
   }
 
   /**

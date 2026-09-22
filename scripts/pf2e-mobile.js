@@ -307,21 +307,58 @@ export function patchUserActiveTokens() {
   }
 }
 
+/**
+ * Ensures the module stylesheet <link> element exists in document.head.
+ * @returns {HTMLLinkElement}
+ */
+export function ensureStylesheetElement() {
+  let link = document.querySelector('link[href*="pf2e-mobile.css"]');
+  if (!link) {
+    link = document.createElement("link");
+    link.id = "pf2e-mobile-compact-style";
+    link.rel = "stylesheet";
+    link.type = "text/css";
+    const moduleVersion = game.modules?.get("pf2e-mobile-compact")?.version ?? Date.now();
+    link.href = `/modules/pf2e-mobile-compact/styles/pf2e-mobile.css?v=${moduleVersion}`;
+    link.disabled = true;
+    document.head.appendChild(link);
+  }
+  return link;
+}
+
+/**
+ * Synchronizes module stylesheet disabled state.
+ * On desktop sessions, the mobile stylesheet is completely disabled unless
+ * an instance of PF2eMobileSheet is actively rendered.
+ */
+export function syncStylesheetState(activeSheet = null) {
+  const link = ensureStylesheetElement();
+  const isMobile = shouldActivateMobile();
+  const hasRenderedMobileSheet = Boolean(document.querySelector(".pf2e-mobile-sheet"))
+    || Boolean(activeSheet?.element)
+    || (typeof foundry !== "undefined" && foundry.applications?.instances?.values
+      ? Array.from(foundry.applications.instances.values()).some(a => a instanceof PF2eMobileSheet && (a.rendered || a.element))
+      : false);
+  const shouldEnable = isMobile || hasRenderedMobileSheet;
+
+  link.disabled = !shouldEnable;
+  document.querySelectorAll('link[href*="pf2e-mobile.css"]').forEach(l => {
+    l.disabled = !shouldEnable;
+  });
+}
+
 Hooks.once("init", async () => {
   console.log("PF2e Mobile Compact | Initializing module");
 
-  // Synchronize stylesheet href with current module version to prevent stale browser caching
-  const moduleVersion = game.modules?.get("pf2e-mobile-compact")?.version ?? Date.now();
-  document.querySelectorAll('link[href*="pf2e-mobile.css"]').forEach(link => {
-    const baseHref = link.getAttribute("href")?.split("?")[0];
-    if (baseHref) link.setAttribute("href", `${baseHref}?v=${moduleVersion}`);
-  });
+  // Ensure stylesheet element exists and is strictly dormant on desktop sessions
+  syncStylesheetState();
 
-  if (shouldActivateMobile()) {
+  const isMobile = shouldActivateMobile();
+  if (isMobile) {
     suppressResolutionWarnings();
     patchMediaElements();
+    patchUserActiveTokens();
   }
-  patchUserActiveTokens();
 
   // Register the custom mobile character sheet with Actors collection (namespaced in v13+)
   const ActorsCollection = foundry.documents?.collections?.Actors ?? (typeof Actors !== "undefined" ? Actors : null);
@@ -333,44 +370,46 @@ Hooks.once("init", async () => {
     });
   }
 
-  // Dynamically route character sheets to PF2eMobileSheet on mobile clients
-  const ActorClass = getDocumentClass?.("Actor") ?? CONFIG.Actor?.documentClass ?? (typeof Actor !== "undefined" ? Actor : null);
-  if (ActorClass) {
-    const originalGetSheetClass = ActorClass.prototype._getSheetClass;
-    ActorClass.prototype._getSheetClass = function () {
-      if (shouldActivateMobile() && this.type === "character") {
-        return PF2eMobileSheet;
-      }
-      return originalGetSheetClass.call(this);
-    };
+  // Dynamically route character sheets to PF2eMobileSheet on mobile clients ONLY
+  if (isMobile) {
+    const ActorClass = getDocumentClass?.("Actor") ?? CONFIG.Actor?.documentClass ?? (typeof Actor !== "undefined" ? Actor : null);
+    if (ActorClass) {
+      const originalGetSheetClass = ActorClass.prototype._getSheetClass;
+      ActorClass.prototype._getSheetClass = function () {
+        if (shouldActivateMobile() && this.type === "character") {
+          return PF2eMobileSheet;
+        }
+        return originalGetSheetClass.call(this);
+      };
 
-    // Override actor.sheet getter directly so accessing .sheet on mobile is guaranteed to return PF2eMobileSheet
-    let sheetDescriptor = null;
-    let proto = ActorClass.prototype;
-    while (proto && proto !== Object.prototype) {
-      sheetDescriptor = Object.getOwnPropertyDescriptor(proto, "sheet");
-      if (sheetDescriptor?.get) break;
-      proto = Object.getPrototypeOf(proto);
-    }
-    if (sheetDescriptor?.get) {
-      const origSheetGetter = sheetDescriptor.get;
-      Object.defineProperty(ActorClass.prototype, "sheet", {
-        get() {
-          if (shouldActivateMobile() && this.type === "character") {
-            const hasPerm = game.user?.isGM || this.isOwner || this.testUserPermission(game.user, "LIMITED");
-            if (!hasPerm) {
-              return origSheetGetter.call(this);
+      // Override actor.sheet getter directly so accessing .sheet on mobile is guaranteed to return PF2eMobileSheet
+      let sheetDescriptor = null;
+      let proto = ActorClass.prototype;
+      while (proto && proto !== Object.prototype) {
+        sheetDescriptor = Object.getOwnPropertyDescriptor(proto, "sheet");
+        if (sheetDescriptor?.get) break;
+        proto = Object.getPrototypeOf(proto);
+      }
+      if (sheetDescriptor?.get) {
+        const origSheetGetter = sheetDescriptor.get;
+        Object.defineProperty(ActorClass.prototype, "sheet", {
+          get() {
+            if (shouldActivateMobile() && this.type === "character") {
+              const hasPerm = game.user?.isGM || this.isOwner || this.testUserPermission(game.user, "LIMITED");
+              if (!hasPerm) {
+                return origSheetGetter.call(this);
+              }
+              if (!this._mobileSheetInstance || !(this._mobileSheetInstance instanceof PF2eMobileSheet) || this._mobileSheetInstance.document !== this) {
+                this._mobileSheetInstance = new PF2eMobileSheet({ document: this });
+              }
+              return this._mobileSheetInstance;
             }
-            if (!this._mobileSheetInstance || !(this._mobileSheetInstance instanceof PF2eMobileSheet) || this._mobileSheetInstance.document !== this) {
-              this._mobileSheetInstance = new PF2eMobileSheet({ document: this });
-            }
-            return this._mobileSheetInstance;
-          }
-          return origSheetGetter.call(this);
-        },
-        configurable: true,
-        enumerable: true
-      });
+            return origSheetGetter.call(this);
+          },
+          configurable: true,
+          enumerable: true
+        });
+      }
     }
   }
 
@@ -438,28 +477,37 @@ Hooks.once("init", async () => {
   ]);
 });
 
-Hooks.once("ready", () => {
-  // Clear cached rollMode on login to guarantee a fresh, non-stale session state
-  try {
-    localStorage.removeItem("pf2e-mobile-compact.rollMode");
-  } catch {}
-
-  if (shouldActivateMobile()) {
-    suppressResolutionWarnings();
-    sweepResolutionNotifications();
-  }
+/**
+ * Fully activates mobile engine overrides (canvas FPS capping, wake lock,
+ * notification suppression, active token fallback, physical dice interceptor).
+ */
+export function activateMobileEnvironment() {
+  if (document.body.classList.contains("pf2e-mobile-active")) return;
+  console.log("PF2e Mobile Compact | Mobile environment confirmed. Activating mobile engine.");
+  document.body.classList.add("pf2e-mobile-active");
+  setupKeepAlive();
+  optimizeCanvasForMobile();
+  suppressResolutionWarnings();
+  patchMediaElements();
+  sweepResolutionNotifications();
   patchUserActiveTokens();
   try {
     setupPhysicalDiceInterceptor();
   } catch (err) {
     console.warn("PF2e Mobile Compact | setupPhysicalDiceInterceptor error:", err);
   }
+}
+
+Hooks.once("ready", () => {
+  // Clear cached rollMode on login to guarantee a fresh, non-stale session state
+  try {
+    localStorage.removeItem("pf2e-mobile-compact.rollMode");
+  } catch {}
+
+  syncStylesheetState();
 
   if (shouldActivateMobile()) {
-    console.log("PF2e Mobile Compact | Mobile environment confirmed. Activating mobile engine.");
-    document.body.classList.add("pf2e-mobile-active");
-    setupKeepAlive();
-    optimizeCanvasForMobile();
+    activateMobileEnvironment();
 
     // Enable browser pinch-to-zoom on mobile devices
     const viewportMeta = document.querySelector('meta[name="viewport"]');
@@ -529,6 +577,7 @@ Hooks.once("ready", () => {
 
   // Keep fullscreen icon and classes synchronized across window changes in all environments
   const onFullscreenStateChange = () => {
+    if (!shouldActivateMobile() && !document.querySelector(".pf2e-mobile-sheet")) return;
     const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
     if (!isFs) {
       document.body.classList.remove("pf2e-fullscreen");
@@ -545,14 +594,11 @@ Hooks.once("ready", () => {
   // Dynamic viewport detection: activate mobile overrides if window is resized or rotated into mobile format
   window.addEventListener("resize", foundry.utils.debounce(() => {
     if (shouldActivateMobile()) {
-      if (!document.body.classList.contains("pf2e-mobile-active")) {
-        console.log("PF2e Mobile Compact | Viewport entered mobile mode. Activating mobile engine.");
-        document.body.classList.add("pf2e-mobile-active");
-        optimizeCanvasForMobile();
-        suppressResolutionWarnings();
-        patchMediaElements();
-        sweepResolutionNotifications();
-      }
+      activateMobileEnvironment();
+      syncStylesheetState();
+      updateFabVisibility();
+    } else {
+      syncStylesheetState();
       updateFabVisibility();
     }
   }, 200));
@@ -572,15 +618,25 @@ export function updateFabVisibility() {
   fab.style.display = isOpen ? "none" : "flex";
 }
 
-// Reactively toggle FAB when mobile character sheet opens or closes
-Hooks.on("renderPF2eMobileSheet", () => updateFabVisibility());
+// Reactively toggle stylesheet and FAB when mobile character sheet opens or closes
+Hooks.on("renderPF2eMobileSheet", (sheet) => {
+  syncStylesheetState(sheet);
+  updateFabVisibility();
+  setTimeout(() => {
+    syncStylesheetState(sheet);
+    updateFabVisibility();
+  }, 0);
+});
 Hooks.on("closePF2eMobileSheet", () => {
-  setTimeout(updateFabVisibility, 50);
+  setTimeout(() => {
+    syncStylesheetState();
+    updateFabVisibility();
+  }, 50);
 });
 
-// Continuously drop resolution warnings whenever notifications or dialogs render
+// Continuously drop resolution warnings whenever notifications or dialogs render (mobile only)
 Hooks.on("renderNotifications", () => {
-  sweepResolutionNotifications();
+  if (shouldActivateMobile()) sweepResolutionNotifications();
 });
 
 Hooks.on("renderDialog", (dialog, html) => {
@@ -593,7 +649,7 @@ Hooks.on("renderDialog", (dialog, html) => {
   }
 });
 
-// Re-optimize ticker whenever scene transitions or canvas re-draws
+// Re-optimize ticker whenever scene transitions or canvas re-draws (mobile only)
 Hooks.on("canvasReady", () => {
   if (shouldActivateMobile()) {
     optimizeCanvasForMobile();

@@ -20,4 +20,5 @@ yarn-error.log*
 # Deploy scripts
 deploy.ps1
 *.local.*
+scratch/
 
