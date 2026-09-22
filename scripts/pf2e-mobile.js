@@ -465,11 +465,14 @@ Hooks.once("init", async () => {
   });
 
   // Preload Handlebars template parts
-  await loadTemplates([
+  const loadTemplatesFn = foundry.applications?.handlebars?.loadTemplates ?? globalThis.loadTemplates;
+  await loadTemplatesFn([
     "modules/pf2e-mobile-compact/templates/mobile-sheet.hbs",
     "modules/pf2e-mobile-compact/templates/physical-dice-dialog.hbs",
+    "modules/pf2e-mobile-compact/templates/compendium-picker.hbs",
     "modules/pf2e-mobile-compact/templates/parts/header.hbs",
     "modules/pf2e-mobile-compact/templates/parts/spells.hbs",
+    "modules/pf2e-mobile-compact/templates/parts/spell-picker-dialog.hbs",
     "modules/pf2e-mobile-compact/templates/parts/actions.hbs",
     "modules/pf2e-mobile-compact/templates/parts/skills.hbs",
     "modules/pf2e-mobile-compact/templates/parts/inventory.hbs",

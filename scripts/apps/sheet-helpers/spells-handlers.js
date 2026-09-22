@@ -59,12 +59,28 @@ export async function prepareSlot(actor, entryId, rank, slotIndex, spellId) {
   const spell = actor.items.get(spellId);
   if (!entry || !spell) return;
 
+  const groupId = rank === 0 ? "cantrips" : rank;
+  const slotKey = `slot${rank}`;
+  const currentPrepared = foundry.utils.deepClone(entry.system.slots?.[slotKey]?.prepared ?? []);
+  const nextPrepared = Array.isArray(currentPrepared) ? currentPrepared : Object.values(currentPrepared);
+
+  while (nextPrepared.length <= slotIndex) {
+    nextPrepared.push({ id: null, expended: false });
+  }
+  if (!nextPrepared[slotIndex]) {
+    nextPrepared[slotIndex] = { id: null, expended: false };
+  }
+
+  // If entry didn't already have an object at slotIndex, update it directly first
+  if (!entry.system.slots?.[slotKey]?.prepared?.[slotIndex]) {
+    nextPrepared[slotIndex] = { id: spell.id, expended: false };
+    await entry.update({ [`system.slots.${slotKey}.prepared`]: nextPrepared });
+    return;
+  }
+
   if (typeof entry.prepareSpell === "function") {
-    await entry.prepareSpell(spell, rank, slotIndex);
+    await entry.prepareSpell(spell, groupId, slotIndex);
   } else {
-    const slotKey = `slot${rank}`;
-    const currentPrepared = foundry.utils.deepClone(entry.system.slots?.[slotKey]?.prepared ?? []);
-    const nextPrepared = Array.isArray(currentPrepared) ? currentPrepared : Object.values(currentPrepared);
     nextPrepared[slotIndex] = { id: spell.id, expended: false };
     await entry.update({ [`system.slots.${slotKey}.prepared`]: nextPrepared });
   }
@@ -99,20 +115,49 @@ export async function onOpenSpellPrepPicker(sheet, event, target) {
     target: s.system.target?.value ?? ""
   })).sort((a, b) => a.name.localeCompare(b.name));
 
-  const content = await renderTemplate("modules/pf2e-mobile-compact/templates/parts/spell-picker-dialog.hbs", {
+  const renderTemplateFn = foundry.applications?.handlebars?.renderTemplate ?? globalThis.renderTemplate;
+  const content = await renderTemplateFn("modules/pf2e-mobile-compact/templates/parts/spell-picker-dialog.hbs", {
     rank: rank === 0 ? "Cantrips" : rank,
     slotNumber: slotIndex + 1,
     spells
   });
 
   let dialogInstance = null;
+  let isSelecting = false;
   const onSelect = async (spellId) => {
-    if (dialogInstance?.close) {
-      await dialogInstance.close();
+    if (isSelecting) return;
+    isSelecting = true;
+    try {
+      if (dialogInstance?.close) {
+        await dialogInstance.close();
+      }
+      await prepareSlot(sheet.actor, entryId, rank, slotIndex, spellId);
+      sheet.render({ parts: ["sheet"] });
+    } finally {
+      isSelecting = false;
     }
-    await prepareSlot(sheet.actor, entryId, rank, slotIndex, spellId);
-    sheet.render({ parts: ["sheet"] });
   };
+
+  function attachPickerEvents(root) {
+    if (!root) return;
+    const searchInput = root.querySelector(".spell-picker-input");
+    const items = root.querySelectorAll(".spell-picker-item");
+    searchInput?.addEventListener("input", (e) => {
+      const query = (e.target.value ?? "").toLowerCase().trim();
+      for (const it of items) {
+        const name = (it.dataset.spellName ?? "").toLowerCase();
+        it.style.display = (!query || name.includes(query)) ? "" : "none";
+      }
+    });
+
+    for (const it of items) {
+      it.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const sId = it.dataset.itemId || it.querySelector("[data-item-id]")?.dataset.itemId;
+        if (sId) await onSelect(sId);
+      });
+    }
+  }
 
   const DialogClass = foundry.applications?.api?.DialogV2 ?? Dialog;
   dialogInstance = new DialogClass({
@@ -123,31 +168,22 @@ export async function onOpenSpellPrepPicker(sheet, event, target) {
       label: "Cancel",
       icon: "fa-solid fa-times"
     }],
-    render: (event, html) => {
-      const root = (html instanceof HTMLElement) ? html : html[0];
-      if (!root) return;
-
-      const searchInput = root.querySelector(".spell-picker-input");
-      const items = root.querySelectorAll(".spell-picker-item");
-      searchInput?.addEventListener("input", (e) => {
-        const query = (e.target.value ?? "").toLowerCase().trim();
-        for (const it of items) {
-          const name = (it.dataset.spellName ?? "").toLowerCase();
-          it.style.display = (!query || name.includes(query)) ? "" : "none";
-        }
-      });
-
-      for (const it of items) {
-        it.addEventListener("click", async (e) => {
-          e.preventDefault();
-          const sId = it.dataset.itemId;
-          if (sId) await onSelect(sId);
-        });
+    actions: {
+      confirmPrepareSpell: async (event, actionTarget) => {
+        const spellId = actionTarget.dataset.itemId || actionTarget.closest("[data-item-id]")?.dataset.itemId;
+        if (spellId) await onSelect(spellId);
       }
+    },
+    render: (event, html) => {
+      const root = (html instanceof HTMLElement) ? html : html?.[0];
+      attachPickerEvents(root);
     }
   });
 
-  dialogInstance.render(true);
+  await dialogInstance.render(true);
+
+  const dialogElement = dialogInstance.element instanceof HTMLElement ? dialogInstance.element : dialogInstance.element?.[0];
+  attachPickerEvents(dialogElement);
 }
 
 /**
@@ -165,13 +201,18 @@ export async function onUnprepareSlot(sheet, event, target) {
   const entry = sheet.actor.spellcasting?.get(entryId);
   if (!entry) return;
 
-  if (typeof entry.unprepareSpell === "function") {
-    await entry.unprepareSpell(rank, slotIndex);
+  const groupId = rank === 0 ? "cantrips" : rank;
+  const slotKey = `slot${rank}`;
+  const currentPrepared = foundry.utils.deepClone(entry.system.slots?.[slotKey]?.prepared ?? []);
+  const nextPrepared = Array.isArray(currentPrepared) ? currentPrepared : Object.values(currentPrepared);
+
+  if (entry.system.slots?.[slotKey]?.prepared?.[slotIndex] && typeof entry.prepareSpell === "function") {
+    await entry.prepareSpell(null, groupId, slotIndex);
   } else {
-    const slotKey = `slot${rank}`;
-    const currentPrepared = foundry.utils.deepClone(entry.system.slots?.[slotKey]?.prepared ?? []);
-    const nextPrepared = Array.isArray(currentPrepared) ? currentPrepared : Object.values(currentPrepared);
-    nextPrepared[slotIndex] = null;
+    while (nextPrepared.length <= slotIndex) {
+      nextPrepared.push({ id: null, expended: false });
+    }
+    nextPrepared[slotIndex] = { id: null, expended: false };
     await entry.update({ [`system.slots.${slotKey}.prepared`]: nextPrepared });
   }
   sheet.render({ parts: ["sheet"] });

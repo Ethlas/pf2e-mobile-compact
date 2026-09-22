@@ -4,6 +4,27 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.17] - 2026-09-22
+
+### Spell Preparation Picker Sizing & Preparation Action Fix
+
+#### Fixed
+- **Spell Preparation Dialog Icon Sizing** (`styles/pf2e-mobile.css`):
+  - Scoped `.spell-item-img`, `.spell-item-info`, `.spell-item-title-row`, `.spell-item-name`, and `.spell-item-meta` under `.spell-picker-dialog`.
+  - Fixed full-size (512×512) unconstrained icon explosion when opening the spell preparation modal from body-level Foundry dialog containers.
+  - Added `.spell-picker-dialog .action-cost-glyph` for styling action glyphs inside the dialog.
+- **Spell Slot Preparation & Selection Handlers** (`scripts/apps/sheet-helpers/spells-handlers.js`):
+  - Registered `confirmPrepareSpell` in `DialogV2`'s `actions` option map and bound live search/click event listeners directly to `dialogInstance.element`.
+  - Mapped cantrip rank parameter `rank === 0 ? "cantrips" : rank` to prevent native PF2e `cantrip-mismatch` drop rejections.
+  - Pre-populated/padded empty slot arrays with `{ id: null, expended: false }` to prevent native PF2e `TypeError: Cannot read properties of undefined (reading 'expended')` crashes.
+  - Fixed `onUnprepareSlot` to safely clear prepared slots using standard PF2e conventions.
+  - Replaced deprecated global `renderTemplate` with `foundry.applications?.handlebars?.renderTemplate ?? globalThis.renderTemplate`.
+- **Handlebars Template Preloading Modernization** (`scripts/pf2e-mobile.js`):
+  - Replaced deprecated global `loadTemplates` with `foundry.applications?.handlebars?.loadTemplates ?? globalThis.loadTemplates`.
+  - Added `spell-picker-dialog.hbs` and `compendium-picker.hbs` to preloaded template part paths.
+
+---
+
 ## [1.0.16] - 2026-09-22
 
 ### Desktop Mode Compatibility & Complete Desktop Dormancy

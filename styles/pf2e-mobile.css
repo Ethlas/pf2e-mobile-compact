@@ -1043,7 +1043,8 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 }.pf2e-mobile-sheet .character-action-card.expanded {
   border-color: #555;
   background: #232323;
-}.pf2e-mobile-sheet .action-cost-glyph {
+}.pf2e-mobile-sheet .action-cost-glyph,
+.spell-picker-dialog .action-cost-glyph {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2246,7 +2247,8 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }.spell-picker-dialog .spell-picker-item:active {
   background: #2c2c2c;
   border-color: #ffb74d;
-}.pf2e-mobile-sheet .spell-item-img {
+}.spell-picker-dialog .spell-item-img,
+.pf2e-mobile-sheet .spell-item-img {
   width: 38px;
   height: 38px;
   border-radius: 4px;
@@ -2254,25 +2256,30 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border: 1px solid #444;
   background: #111;
   flex-shrink: 0;
-}.pf2e-mobile-sheet .spell-item-info {
+}.spell-picker-dialog .spell-item-info,
+.pf2e-mobile-sheet .spell-item-info {
   flex: 1;
   min-width: 0;
-}.pf2e-mobile-sheet .spell-item-title-row {
+}.spell-picker-dialog .spell-item-title-row,
+.pf2e-mobile-sheet .spell-item-title-row {
   display: flex;
   align-items: center;
   gap: 6px;
-}.pf2e-mobile-sheet .spell-item-name {
+}.spell-picker-dialog .spell-item-name,
+.pf2e-mobile-sheet .spell-item-name {
   font-size: 0.9rem;
   color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}.pf2e-mobile-sheet .spell-item-meta {
+}.spell-picker-dialog .spell-item-meta,
+.pf2e-mobile-sheet .spell-item-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin-top: 2px;
-}.pf2e-mobile-sheet .spell-item-meta .detail-tag {
+}.spell-picker-dialog .spell-item-meta .detail-tag,
+.pf2e-mobile-sheet .spell-item-meta .detail-tag {
   font-size: 0.7rem;
   background: #161616;
   border: 1px solid #333;
