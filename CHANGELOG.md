@@ -4,6 +4,28 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.20] - 2026-09-23
+
+### Party Stash & Party Sheet Integration
+
+#### Added
+- **Full Party Sheet Experience on Mobile** (`scripts/apps/sheet-helpers/context-party.js`, `templates/parts/party-overview.hbs`, `templates/parts/party-stash.hbs`, `styles/pf2e-mobile.css`):
+  - **Overview Tab**: Displays party-wide competency pills (all known languages across the party with speaker counts, top party modifiers for every core skill, and Recall Knowledge best modifiers), paired with tactical member cards displaying avatar, level/ancestry/class blurb, interactive HP progress bars with percentage indicators, defense badges (AC, Fortitude, Reflex, Will, Perception), senses, top skills, hero points, and 1-tap sheet switching.
+  - **Stash Tab**: Complete party inventory dashboard displaying coin totals (PP, GP, SP, CP), total party wealth, total bulk, and categorized items (Consumables, Weapons & Armor, and Other Gear/Treasure) with full item cards, bulk badges, and expandable Remaster descriptions.
+- **Touch-Friendly Item & Coin Transfers** (`scripts/apps/sheet-helpers/party-handlers.js`):
+  - **Give / Take Transfer Dialog**: Tapping "Give" on any stash item opens a touch dialog (`promptItemTransfer`) to select any party member as recipient, complete with stepper/slider quantity controls and an "All" button for multi-quantity stacks. Transfers are executed via PF2e's native `party.transferItemToActor(target, item, qty)` API.
+  - **Direct Consumable Usage**: Consumables in the party stash (e.g. healing potions, scrolls, elixirs) can be used directly from the stash using the "Use" button without needing to transfer them first.
+  - **Coin Transfer Dialog**: Added an interactive currency transfer modal (`transferCoins`) enabling players and GMs to withdraw or deposit specific amounts of PP, GP, SP, and CP between party members and the shared stash.
+- **Bidirectional Character & Party Integration** (`scripts/apps/sheet-helpers/context-header.js`, `scripts/apps/sheet-helpers/context-inventory.js`, `templates/parts/header.hbs`, `templates/parts/inventory.hbs`):
+  - **Header Actor Switcher**: Added the party actor directly into the header dropdown (`👥 [Party Name] (Party)`), allowing players to switch between their character and the party stash with a single tap.
+  - **Quick Stash Jump in Gear Tab**: Added a prominent "Party Stash" button to the character inventory header displaying live item count.
+  - **Send to Stash Action**: Added a "Send to Stash" button on all physical inventory items on the character sheet, allowing players to deposit gear directly into the party stash.
+- **Adaptive Bottom Navigation & Routing** (`scripts/apps/mobile-sheet.js`, `scripts/pf2e-mobile.js`, `templates/mobile-sheet.hbs`):
+  - Registered `PF2eMobileSheet` for `party` actors in `ActorsCollection` and routed mobile party sheet requests to `PF2eMobileSheet`.
+  - When viewing a party document, the bottom navigation automatically adapts to show **Overview** (`fa-users`), **Stash** (`fa-box-archive`), and persistent **Chat** (`fa-comments` with unread badge), defaulting to the Stash view on open.
+
+---
+
 ## [1.0.19] - 2026-09-23
 
 ### Skill Rolling Fix & Enhanced Proficiency Badges

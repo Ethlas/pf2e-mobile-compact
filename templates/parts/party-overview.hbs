@@ -1,0 +1,114 @@
+<div class="tab-pane party-overview-tab" data-tab="overview">
+  <!-- Party Overview Summary Cards -->
+  <section class="party-summary-section">
+    <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="party-competencies">
+      <span><i class="fas fa-graduation-cap"></i> Party Competencies</span>
+      <i class="fas fa-chevron-down section-expand-icon"></i>
+    </h3>
+    <div class="party-summary-content">
+      <!-- Languages Strip -->
+      <div class="competency-group">
+        <div class="competency-title"><i class="fas fa-language"></i> Known Languages</div>
+        <div class="tag-strip">
+          {{#each partyLanguages as |lang|}}
+          <span class="competency-pill" title="Speakers: {{#each lang.speakers}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}">
+            {{lang.label}}{{#if (gt lang.speakers.length 1)}} <small>({{lang.speakers.length}})</small>{{/if}}
+          </span>
+          {{else}}
+          <span class="empty-hint">Common only</span>
+          {{/each}}
+        </div>
+      </div>
+
+      <!-- Core Skills Best Modifiers -->
+      <div class="competency-group">
+        <div class="competency-title"><i class="fas fa-dice-d20"></i> Best Party Modifiers</div>
+        <div class="tag-strip">
+          {{#each partySkills as |sk|}}
+          <span class="competency-pill skill-pill" title="{{sk.member}} (+{{sk.mod}})">
+            <strong>{{sk.label}}</strong> +{{sk.mod}} <small>({{sk.member}})</small>
+          </span>
+          {{/each}}
+        </div>
+      </div>
+
+      <!-- Recall Knowledge Best Modifiers -->
+      <div class="competency-group">
+        <div class="competency-title"><i class="fas fa-brain"></i> Recall Knowledge</div>
+        <div class="tag-strip">
+          {{#each partyRecallKnowledge as |rk|}}
+          <span class="competency-pill rk-pill" title="{{rk.member}} (+{{rk.mod}})">
+            <strong>{{rk.label}}</strong> +{{rk.mod}} <small>({{rk.member}})</small>
+          </span>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Party Members Tactical Roster -->
+  <section class="party-roster-section">
+    <h3 class="section-title">
+      <span><i class="fas fa-users"></i> Party Members ({{partyMembers.length}})</span>
+    </h3>
+    <div class="party-members-list">
+      {{#each partyMembers as |member|}}
+      <div class="action-card party-member-card {{#if member.isUserChar}}is-user-char{{/if}}" data-actor-id="{{member.id}}">
+        <div class="member-card-header">
+          <img class="member-avatar" src="{{member.img}}" alt="{{member.name}}" width="42" height="42" />
+          <div class="member-identity">
+            <div class="member-name-row">
+              <span class="member-name"><strong>{{member.name}}</strong></span>
+              {{#if member.heroPoints}}
+              <span class="hero-points-badge" title="Hero Points: {{member.heroPoints}}">
+                <i class="fas fa-shield"></i> {{member.heroPoints}} HPt
+              </span>
+              {{/if}}
+            </div>
+            <span class="member-blurb">{{member.blurb}}</span>
+          </div>
+          {{#if member.isOwner}}
+          <button type="button" class="touch-target btn-switch-member" data-action="switchToPartyMember" data-actor-id="{{member.id}}" title="Open Character Sheet">
+            <i class="fas fa-arrow-right-to-bracket"></i>
+          </button>
+          {{/if}}
+        </div>
+
+        <!-- Mini HP Bar -->
+        <div class="member-hp-bar-wrapper">
+          <div class="member-hp-track">
+            <div class="member-hp-fill {{#if member.hp.isLow}}danger{{else if member.hp.isMedium}}warning{{else}}healthy{{/if}}" style="width: {{member.hp.percent}}%;"></div>
+          </div>
+          <div class="member-hp-text">
+            <span><i class="fas fa-heart"></i> {{member.hp.value}} / {{member.hp.max}}{{#if member.hp.temp}} (+{{member.hp.temp}}){{/if}} HP</span>
+            <span class="member-hp-percent">{{member.hp.percent}}%</span>
+          </div>
+        </div>
+
+        <!-- Defenses Strip -->
+        <div class="member-defenses-strip">
+          <span class="defense-badge ac" title="Armor Class"><strong>AC</strong> {{member.ac}}</span>
+          <span class="defense-badge save" title="Fortitude Save"><strong>Fort</strong> +{{member.saves.fortitude}}</span>
+          <span class="defense-badge save" title="Reflex Save"><strong>Ref</strong> +{{member.saves.reflex}}</span>
+          <span class="defense-badge save" title="Will Save"><strong>Will</strong> +{{member.saves.will}}</span>
+          <span class="defense-badge perc" title="Perception"><strong>Perc</strong> +{{member.perception}}</span>
+        </div>
+
+        <!-- Senses & Key Skills Row -->
+        <div class="member-footer-row">
+          <div class="member-senses" title="Senses: {{member.senses}}">
+            <i class="fas fa-eye"></i> {{member.senses}}
+          </div>
+          <div class="member-top-skills">
+            {{#each member.bestSkills as |sk|}}
+            <span class="mini-skill-pill">{{sk.label}} +{{sk.mod}}</span>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+      {{else}}
+      <p class="empty-hint">No members in this party.</p>
+      {{/each}}
+    </div>
+  </section>
+</div>

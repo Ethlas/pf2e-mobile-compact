@@ -11,14 +11,49 @@
 export function prepareHeaderContext(actor, sheet, context) {
   const system = actor.system ?? {};
 
-  // Owned Characters Switcher Context
-  const owned = game.actors.filter(a => a.type === "character" && a.isOwner);
-  context.ownedCharacters = owned.map(a => ({
+  // Switcher Context: Include owned characters and character's party
+  const isParty = actor.type === "party";
+  context.isParty = isParty;
+
+  const owned = game.actors.filter(a => a.type === "character" && (a.isOwner || game.user.isGM));
+  const actorOptions = owned.map(a => ({
     id: a.id,
-    name: a.name,
-    img: a.img
+    name: `👤 ${a.name}`,
+    img: a.img,
+    isParty: false
   }));
+
+  const partyActor = isParty
+    ? actor
+    : (Array.from(actor.parties ?? [])[0]
+      ?? (game.actors.party?.members.some(m => m.id === actor.id) ? game.actors.party : null)
+      ?? game.actors.find(p => p.type === "party" && p.members?.some(m => m.id === actor.id)));
+
+  if (partyActor && !actorOptions.some(o => o.id === partyActor.id)) {
+    actorOptions.push({
+      id: partyActor.id,
+      name: `👥 ${partyActor.name} (Party)`,
+      img: partyActor.img,
+      isParty: true
+    });
+  }
+
+  context.ownedCharacters = actorOptions;
   context.hasMultipleCharacters = context.ownedCharacters.length > 1;
+
+  if (isParty) {
+    const wealthString = actor.inventory?.totalWealth?.toString?.({ decimal: true })
+      ?? (actor.inventory?.totalWealth ? `${actor.inventory.totalWealth}` : "0 gp");
+    const bulkVal = actor.inventory?.bulk?.value ?? 0;
+    const bulkStr = typeof bulkVal.toDecimal === "function" ? bulkVal.toDecimal().toFixed(1) : (bulkVal.value ?? bulkVal).toString();
+
+    context.partyHeader = {
+      name: actor.name,
+      membersCount: actor.members?.length ?? 0,
+      totalWealth: wealthString,
+      totalBulk: bulkStr
+    };
+  }
 
   // HP & Shield Context
   context.hp = {
@@ -71,12 +106,13 @@ export function prepareHeaderContext(actor, sheet, context) {
   };
 
   // Target Selection: Gather tokens from current scene (supports bypassed canvas)
-  const scene = canvas?.scene ?? game.scenes.viewed ?? game.scenes.active;
+  const canvasObj = typeof canvas !== "undefined" ? canvas : null;
+  const scene = canvasObj?.scene ?? game.scenes?.viewed ?? game.scenes?.active;
   const currentTargetId = Array.from(game.user?.targets ?? []).find(t => t.id)?.id ?? "";
 
   let targetTokens = [];
-  if (canvas?.tokens?.placeables?.length) {
-    targetTokens = canvas.tokens.placeables
+  if (canvasObj?.tokens?.placeables?.length) {
+    targetTokens = canvasObj.tokens.placeables
       .filter(t => t.actor && t.actor.id !== actor.id && t.visible)
       .map(t => ({
         id: t.id,

@@ -3098,3 +3098,418 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   min-width: 44px;
 }
 
+/* ----------------------------------------- */
+/* Party Sheet & Party Stash Styles          */
+/* ----------------------------------------- */
+
+/* Party Header */
+.pf2e-mobile-sheet.party-header .header-party-row,
+.pf2e-mobile-sheet .header-party-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #ddd;
+}
+
+.pf2e-mobile-sheet .party-header-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pf2e-mobile-sheet .party-header-stat i {
+  color: #ffb74d;
+}
+
+/* Party Navigation Bar (3 buttons) */
+.pf2e-mobile-sheet .mobile-bottom-nav.party-nav {
+  display: flex;
+  justify-content: space-around;
+}
+
+.pf2e-mobile-sheet .mobile-bottom-nav.party-nav .nav-item {
+  flex: 1;
+  max-width: 140px;
+}
+
+/* Party Overview Tab */
+.pf2e-mobile-sheet .party-summary-section {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}
+
+.pf2e-mobile-sheet .competency-group {
+  margin-bottom: 8px;
+}
+
+.pf2e-mobile-sheet .competency-title {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #ffb74d;
+  margin-bottom: 4px;
+}
+
+.pf2e-mobile-sheet .tag-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.pf2e-mobile-sheet .competency-pill {
+  font-size: 0.75rem;
+  background: #2a2a2a;
+  color: #eee;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #444;
+}
+
+.pf2e-mobile-sheet .competency-pill.skill-pill {
+  background: #1b3320;
+  border-color: #2e7d32;
+  color: #a5d6a7;
+}
+
+.pf2e-mobile-sheet .competency-pill.rk-pill {
+  background: #1a233a;
+  border-color: #3949ab;
+  color: #9fa8da;
+}
+
+/* Party Member Tactical Cards */
+.pf2e-mobile-sheet .party-member-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #1e1e1e;
+  border: 1px solid #383838;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.pf2e-mobile-sheet .party-member-card.is-user-char {
+  border-left: 3px solid #ff9800;
+}
+
+.pf2e-mobile-sheet .member-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pf2e-mobile-sheet .member-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.pf2e-mobile-sheet .member-identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.pf2e-mobile-sheet .member-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pf2e-mobile-sheet .member-name {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pf2e-mobile-sheet .hero-points-badge {
+  font-size: 0.7rem;
+  color: #ffd54f;
+  background: #42381e;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid #ffb300;
+}
+
+.pf2e-mobile-sheet .member-blurb {
+  display: block;
+  font-size: 0.75rem;
+  color: #aaa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pf2e-mobile-sheet .btn-switch-member {
+  min-height: 38px;
+  height: 38px;
+  min-width: 38px;
+  background: #333;
+  color: #ffb74d;
+  border: 1px solid #555;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Mini HP Bar */
+.pf2e-mobile-sheet .member-hp-bar-wrapper {
+  margin: 4px 0;
+}
+
+.pf2e-mobile-sheet .member-hp-track {
+  height: 8px;
+  background: #111;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #333;
+}
+
+.pf2e-mobile-sheet .member-hp-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.pf2e-mobile-sheet .member-hp-fill.healthy {
+  background: #4caf50;
+}
+
+.pf2e-mobile-sheet .member-hp-fill.warning {
+  background: #ff9800;
+}
+
+.pf2e-mobile-sheet .member-hp-fill.danger {
+  background: #f44336;
+}
+
+.pf2e-mobile-sheet .member-hp-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #bbb;
+  margin-top: 2px;
+}
+
+.pf2e-mobile-sheet .member-defenses-strip {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin: 2px 0;
+}
+
+.pf2e-mobile-sheet .defense-badge {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #252525;
+  border: 1px solid #444;
+  color: #ddd;
+}
+
+.pf2e-mobile-sheet .defense-badge.ac {
+  border-color: #1e88e5;
+  color: #90caf9;
+}
+
+.pf2e-mobile-sheet .defense-badge.save {
+  border-color: #43a047;
+  color: #a5d6a7;
+}
+
+.pf2e-mobile-sheet .defense-badge.perc {
+  border-color: #fb8c00;
+  color: #ffe082;
+}
+
+.pf2e-mobile-sheet .member-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+.pf2e-mobile-sheet .mini-skill-pill {
+  background: #252525;
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid #333;
+  color: #bbb;
+  font-size: 0.7rem;
+  margin-left: 3px;
+}
+
+/* Party Stash Dashboard */
+.pf2e-mobile-sheet .stash-status-dashboard {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}
+
+.pf2e-mobile-sheet .stash-wealth-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.pf2e-mobile-sheet .stash-coins-pills {
+  display: flex;
+  gap: 6px;
+}
+
+.pf2e-mobile-sheet .coin-pill {
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.pf2e-mobile-sheet .coin-pill.pp {
+  color: #b0bec5;
+  background: #263238;
+  border: 1px solid #455a64;
+}
+
+.pf2e-mobile-sheet .coin-pill.gp {
+  color: #ffd54f;
+  background: #3e2723;
+  border: 1px solid #ffb300;
+}
+
+.pf2e-mobile-sheet .coin-pill.sp {
+  color: #cfd8dc;
+  background: #37474f;
+  border: 1px solid #78909c;
+}
+
+.pf2e-mobile-sheet .coin-pill.cp {
+  color: #ffab91;
+  background: #3e2723;
+  border: 1px solid #d84315;
+}
+
+.pf2e-mobile-sheet .stash-total-wealth {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #ffd54f;
+}
+
+.pf2e-mobile-sheet .stash-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pf2e-mobile-sheet .stash-bulk-info {
+  font-size: 0.8rem;
+  color: #aaa;
+}
+
+.pf2e-mobile-sheet .stash-btn-group {
+  display: flex;
+  gap: 6px;
+}
+
+.pf2e-mobile-sheet .btn-coin-transfer,
+.pf2e-mobile-sheet .btn-add-gear {
+  min-height: 38px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.pf2e-mobile-sheet .btn-coin-transfer {
+  background: #37474f;
+  color: #eceff1;
+  border: 1px solid #546e7a;
+}
+
+.pf2e-mobile-sheet .btn-add-gear {
+  background: #2e7d32;
+  color: #fff;
+  border: 1px solid #4caf50;
+}
+
+/* Stash Item Action Buttons */
+.pf2e-mobile-sheet .btn-transfer {
+  min-height: 38px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #1565c0;
+  color: #fff;
+  border: 1px solid #1e88e5;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.pf2e-mobile-sheet .btn-send-stash {
+  min-height: 38px;
+  height: 38px;
+  min-width: 38px;
+  padding: 0 8px;
+  border-radius: 4px;
+  background: #424242;
+  color: #ffb74d;
+  border: 1px solid #616161;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.pf2e-mobile-sheet .btn-party-stash {
+  min-height: 38px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #e65100;
+  color: #fff;
+  border: 1px solid #ff9800;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.pf2e-mobile-sheet .inventory-header-buttons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+

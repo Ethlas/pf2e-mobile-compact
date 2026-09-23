@@ -1,0 +1,175 @@
+<div class="tab-pane party-stash-tab" data-tab="stash">
+  <!-- Stash Status & Coinage Dashboard -->
+  <div class="stash-status-dashboard">
+    <div class="stash-wealth-row">
+      <div class="stash-coins-pills">
+        <span class="coin-pill pp" title="Platinum Pieces"><strong>{{stashCurrency.pp}}</strong> pp</span>
+        <span class="coin-pill gp" title="Gold Pieces"><strong>{{stashCurrency.gp}}</strong> gp</span>
+        <span class="coin-pill sp" title="Silver Pieces"><strong>{{stashCurrency.sp}}</strong> sp</span>
+        <span class="coin-pill cp" title="Copper Pieces"><strong>{{stashCurrency.cp}}</strong> cp</span>
+      </div>
+      <div class="stash-total-wealth" title="Total Wealth">
+        <span class="wealth-label">Wealth:</span>
+        <span class="wealth-val">{{stashCurrency.wealth}}</span>
+      </div>
+    </div>
+
+    <div class="stash-actions-row">
+      <div class="stash-bulk-info">
+        <i class="fas fa-weight-hanging"></i> Bulk: <strong>{{stashBulk.value}}</strong> ({{stashBulk.itemsCount}} items)
+      </div>
+      <div class="stash-btn-group">
+        <button type="button" class="touch-target btn-coin-transfer" data-action="transferCoins" title="Withdraw or Deposit Coins">
+          <i class="fas fa-coins"></i> Transfer Coins
+        </button>
+        <button type="button" class="touch-target btn-add-gear" data-action="openCompendiumPicker" data-type="equipment" title="Add Gear from Compendium">
+          <i class="fas fa-plus"></i> Add Gear
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Consumables Section -->
+  <section class="inventory-section">
+    <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="stash-consumables">
+      <span><i class="fas fa-flask"></i> Consumables ({{stash.consumables.length}})</span>
+      <i class="fas fa-chevron-down section-expand-icon"></i>
+    </h3>
+    <div class="inventory-list">
+      {{#each stash.consumables as |item|}}
+      <div class="action-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
+        <div class="action-card-header">
+          <div class="item-identity">
+            <img class="item-img" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
+            <div class="item-details">
+              <div class="item-title-row touch-target" data-action="toggleActionSummary" data-item-id="{{item.id}}" title="Toggle Description">
+                <span class="item-name"><strong>{{item.name}}</strong> (x{{item.quantity}})</span>
+                {{#if item.description}}
+                <i class="fas fa-chevron-down action-expand-icon {{#if item.isExpanded}}expanded{{/if}}"></i>
+                {{/if}}
+              </div>
+              <div class="item-badges">
+                <span class="item-badge bulk-badge">Bulk: {{item.bulk}}</span>
+              </div>
+            </div>
+          </div>
+          <div class="item-actions">
+            <button type="button" class="touch-target btn-transfer" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
+              <i class="fas fa-hand-holding"></i> Give
+            </button>
+            <button type="button" class="touch-target btn-consume" data-action="consumeItem" data-item-id="{{item.id}}" title="Use Directly">
+              <i class="fas fa-wine-bottle"></i> Use
+            </button>
+            <button type="button" class="touch-target btn-chat" data-action="itemToChat" data-item-id="{{item.id}}" title="Post to Chat">
+              <i class="fas fa-comment"></i>
+            </button>
+          </div>
+        </div>
+        {{#if item.description}}
+        <div class="action-summary item-summary {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
+          <div class="action-description-content">
+            {{{item.description}}}
+          </div>
+        </div>
+        {{/if}}
+      </div>
+      {{else}}
+      <p class="empty-hint">No consumables in party stash.</p>
+      {{/each}}
+    </div>
+  </section>
+
+  <!-- Equipment Section (Weapons & Armor) -->
+  <section class="inventory-section">
+    <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="stash-equipment">
+      <span><i class="fas fa-shield-halved"></i> Weapons & Armor ({{stash.equipment.length}})</span>
+      <i class="fas fa-chevron-down section-expand-icon"></i>
+    </h3>
+    <div class="inventory-list">
+      {{#each stash.equipment as |item|}}
+      <div class="action-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
+        <div class="action-card-header">
+          <div class="item-identity">
+            <img class="item-img" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
+            <div class="item-details">
+              <div class="item-title-row touch-target" data-action="toggleActionSummary" data-item-id="{{item.id}}" title="Toggle Description">
+                <span class="item-name"><strong>{{item.name}}</strong> (x{{item.quantity}})</span>
+                {{#if item.description}}
+                <i class="fas fa-chevron-down action-expand-icon {{#if item.isExpanded}}expanded{{/if}}"></i>
+                {{/if}}
+              </div>
+              <div class="item-badges">
+                <span class="item-badge bulk-badge">Bulk: {{item.bulk}}</span>
+              </div>
+            </div>
+          </div>
+          <div class="item-actions">
+            <button type="button" class="touch-target btn-transfer" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
+              <i class="fas fa-hand-holding"></i> Give
+            </button>
+            <button type="button" class="touch-target btn-chat" data-action="itemToChat" data-item-id="{{item.id}}" title="Post to Chat">
+              <i class="fas fa-comment"></i>
+            </button>
+          </div>
+        </div>
+        {{#if item.description}}
+        <div class="action-summary item-summary {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
+          <div class="action-description-content">
+            {{{item.description}}}
+          </div>
+        </div>
+        {{/if}}
+      </div>
+      {{else}}
+      <p class="empty-hint">No weapons or armor in party stash.</p>
+      {{/each}}
+    </div>
+  </section>
+
+  <!-- Other Gear & Treasure Section -->
+  <section class="inventory-section">
+    <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="stash-gear">
+      <span><i class="fas fa-backpack"></i> Other Gear & Treasure ({{stash.gear.length}})</span>
+      <i class="fas fa-chevron-down section-expand-icon"></i>
+    </h3>
+    <div class="inventory-list">
+      {{#each stash.gear as |item|}}
+      <div class="action-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
+        <div class="action-card-header">
+          <div class="item-identity">
+            <img class="item-img" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
+            <div class="item-details">
+              <div class="item-title-row touch-target" data-action="toggleActionSummary" data-item-id="{{item.id}}" title="Toggle Description">
+                <span class="item-name"><strong>{{item.name}}</strong> (x{{item.quantity}})</span>
+                {{#if item.description}}
+                <i class="fas fa-chevron-down action-expand-icon {{#if item.isExpanded}}expanded{{/if}}"></i>
+                {{/if}}
+              </div>
+              <div class="item-badges">
+                <span class="item-badge bulk-badge">Bulk: {{item.bulk}}</span>
+              </div>
+            </div>
+          </div>
+          <div class="item-actions">
+            <button type="button" class="touch-target btn-transfer" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
+              <i class="fas fa-hand-holding"></i> Give
+            </button>
+            <button type="button" class="touch-target btn-chat" data-action="itemToChat" data-item-id="{{item.id}}" title="Post to Chat">
+              <i class="fas fa-comment"></i>
+            </button>
+          </div>
+        </div>
+        {{#if item.description}}
+        <div class="action-summary item-summary {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
+          <div class="action-description-content">
+            {{{item.description}}}
+          </div>
+        </div>
+        {{/if}}
+      </div>
+      {{else}}
+      <p class="empty-hint">No other gear in party stash.</p>
+      {{/each}}
+    </div>
+  </section>
+</div>

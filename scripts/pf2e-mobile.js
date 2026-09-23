@@ -360,23 +360,23 @@ Hooks.once("init", async () => {
     patchUserActiveTokens();
   }
 
-  // Register the custom mobile character sheet with Actors collection (namespaced in v13+)
+  // Register the custom mobile character and party sheet with Actors collection (namespaced in v13+)
   const ActorsCollection = foundry.documents?.collections?.Actors ?? (typeof Actors !== "undefined" ? Actors : null);
   if (ActorsCollection) {
     ActorsCollection.registerSheet("pf2e", PF2eMobileSheet, {
-      types: ["character"],
+      types: ["character", "party"],
       makeDefault: false,
       label: "PF2e Mobile Compact Sheet"
     });
   }
 
-  // Dynamically route character sheets to PF2eMobileSheet on mobile clients ONLY
+  // Dynamically route character and party sheets to PF2eMobileSheet on mobile clients ONLY
   if (isMobile) {
     const ActorClass = getDocumentClass?.("Actor") ?? CONFIG.Actor?.documentClass ?? (typeof Actor !== "undefined" ? Actor : null);
     if (ActorClass) {
       const originalGetSheetClass = ActorClass.prototype._getSheetClass;
       ActorClass.prototype._getSheetClass = function () {
-        if (shouldActivateMobile() && this.type === "character") {
+        if (shouldActivateMobile() && (this.type === "character" || this.type === "party")) {
           return PF2eMobileSheet;
         }
         return originalGetSheetClass.call(this);
@@ -394,8 +394,11 @@ Hooks.once("init", async () => {
         const origSheetGetter = sheetDescriptor.get;
         Object.defineProperty(ActorClass.prototype, "sheet", {
           get() {
-            if (shouldActivateMobile() && this.type === "character") {
-              const hasPerm = game.user?.isGM || this.isOwner || this.testUserPermission(game.user, "LIMITED");
+            if (shouldActivateMobile() && (this.type === "character" || this.type === "party")) {
+              const hasPerm = game.user?.isGM
+                || this.isOwner
+                || this.testUserPermission(game.user, "LIMITED")
+                || (this.type === "party" && (this.canUserModify?.(game.user, "update") || this.members?.some(m => m.isOwner)));
               if (!hasPerm) {
                 return origSheetGetter.call(this);
               }
@@ -476,6 +479,8 @@ Hooks.once("init", async () => {
     "modules/pf2e-mobile-compact/templates/parts/actions.hbs",
     "modules/pf2e-mobile-compact/templates/parts/skills.hbs",
     "modules/pf2e-mobile-compact/templates/parts/inventory.hbs",
+    "modules/pf2e-mobile-compact/templates/parts/party-overview.hbs",
+    "modules/pf2e-mobile-compact/templates/parts/party-stash.hbs",
     "modules/pf2e-mobile-compact/templates/parts/chat.hbs"
   ]);
 });
