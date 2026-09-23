@@ -505,13 +505,18 @@ export async function onConsumeItem(sheet, event, target) {
  */
 export function onToggleActionSummary(sheet, event, target) {
   event.preventDefault();
-  const actionEl = target.closest(".action-card, .strike-card, .item-card, .inventory-item-card");
+  const actionEl = target.closest(".action-card, .strike-card, .item-card, .inventory-item-card, .staff-activation-group");
   if (!actionEl) return;
 
-  const summaryEl = actionEl.querySelector(".action-summary, .item-summary");
+  const isStaffGroup = actionEl.classList.contains("staff-activation-group");
+  const summaryEl = isStaffGroup
+    ? actionEl.querySelector(".staff-drawer-content")
+    : actionEl.querySelector(".action-summary, .item-summary");
   if (!summaryEl) return;
 
-  const icon = actionEl.querySelector(".action-expand-icon, .action-toggle-icon, .fa-chevron-down");
+  const icon = isStaffGroup
+    ? actionEl.querySelector(".staff-header-card .action-expand-icon")
+    : actionEl.querySelector(".action-expand-icon, .action-toggle-icon, .fa-chevron-down");
   const itemId = target.dataset.itemId || actionEl.dataset.itemId;
 
   if (!sheet._expandedActionIds) {

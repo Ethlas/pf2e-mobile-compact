@@ -14,6 +14,7 @@ import { prepareActionsContext } from "./sheet-helpers/context-actions.js";
 import { prepareSkillsContext } from "./sheet-helpers/context-skills.js";
 import { prepareInventoryContext } from "./sheet-helpers/context-inventory.js";
 import { prepareSpellsContext, formatSpell } from "./sheet-helpers/context-spells.js";
+import { prepareActivationsContext } from "./sheet-helpers/context-activations.js";
 import {
   resolveTargetForAction,
   promptTargetSelection,
@@ -60,6 +61,12 @@ import {
   onToggleSignatureSpell,
   onRemoveSpell
 } from "./sheet-helpers/spells-handlers.js";
+import {
+  onCastStaffSpell,
+  onAdjustStaffCharges,
+  onCastItemSpell,
+  onOpenDailies
+} from "./sheet-helpers/activations-handlers.js";
 import {
   onApplyDeltaHP,
   onSetDirectHP,
@@ -160,7 +167,11 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       applySpellPreset: PF2eMobileSheet._onApplySpellPreset,
       deleteSpellPreset: PF2eMobileSheet._onDeleteSpellPreset,
       toggleSignatureSpell: PF2eMobileSheet._onToggleSignatureSpell,
-      removeSpell: PF2eMobileSheet._onRemoveSpell
+      removeSpell: PF2eMobileSheet._onRemoveSpell,
+      castStaffSpell: PF2eMobileSheet._onCastStaffSpell,
+      adjustStaffCharges: PF2eMobileSheet._onAdjustStaffCharges,
+      castItemSpell: PF2eMobileSheet._onCastItemSpell,
+      openDailies: PF2eMobileSheet._onOpenDailies
     }
   };
 
@@ -414,41 +425,15 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     this._sceneHookIds = [];
   }
 
-  _disableChatInputs(chatEl) {
-    disableChatInputs(chatEl, this);
-  }
-
-  _dockChatElement() {
-    dockChatElement(this);
-  }
-
-  _restoreChatElement() {
-    restoreChatElement(this);
-  }
-
-  _scrollChatToBottom(smooth = false) {
-    scrollChatToBottom(this, smooth);
-  }
-
-  _setupScrollBottomListener() {
-    setupScrollBottomListener(this);
-  }
-
-  _ensureTokenControlled() {
-    ensureTokenControlled(this.actor);
-  }
-
-  _registerChatListener() {
-    registerChatListener(this);
-  }
-
-  _unregisterChatListener() {
-    unregisterChatListener(this);
-  }
-
-  _updateChatBadge() {
-    updateChatBadge(this);
-  }
+  _disableChatInputs(chatEl) { disableChatInputs(chatEl, this); }
+  _dockChatElement() { dockChatElement(this); }
+  _restoreChatElement() { restoreChatElement(this); }
+  _scrollChatToBottom(smooth = false) { scrollChatToBottom(this, smooth); }
+  _setupScrollBottomListener() { setupScrollBottomListener(this); }
+  _ensureTokenControlled() { ensureTokenControlled(this.actor); }
+  _registerChatListener() { registerChatListener(this); }
+  _unregisterChatListener() { unregisterChatListener(this); }
+  _updateChatBadge() { updateChatBadge(this); }
 
   /** @override */
   async _prepareContext(options) {
@@ -501,6 +486,15 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     } catch (err) {
       console.error("PF2e Mobile Compact | Error preparing spells context:", err);
       context.spells = { entries: [], focus: null };
+    }
+
+    try {
+      await prepareActivationsContext(actor, this, context);
+    } catch (err) {
+      console.error("PF2e Mobile Compact | Error preparing activations context:", err);
+      context.activations = { staff: null, wands: [], scrolls: [], other: [] };
+      context.hasActivations = false;
+      context.activationsCount = 0;
     }
 
     try {
@@ -669,6 +663,12 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onCastSpell(event, target) { return onCastSpell(this, event, target); }
   static async _onToggleSignatureSpell(event, target) { return onToggleSignatureSpell(this, event, target); }
   static async _onRemoveSpell(event, target) { return onRemoveSpell(this, event, target); }
+
+  // --- Delegated Activations Handlers ---
+  static async _onCastStaffSpell(event, target) { return onCastStaffSpell(this, event, target); }
+  static async _onAdjustStaffCharges(event, target) { return onAdjustStaffCharges(this, event, target); }
+  static async _onCastItemSpell(event, target) { return onCastItemSpell(this, event, target); }
+  static async _onOpenDailies(event, target) { return onOpenDailies(this, event, target); }
 }
 
 // Backwards-compatibility re-exports

@@ -1,7 +1,7 @@
 param(
   [Parameter(Position = 0)]
-  [ValidateSet("prepare", "desktop", "all")]
-  [string]$Test = "prepare",
+  [ValidateSet("prepare", "desktop", "staves", "exhausted", "all")]
+  [string]$Test = "staves",
 
   [Parameter(Position = 1)]
   [string]$Url = $env:FOUNDRY_URL,
@@ -45,9 +45,15 @@ $env:FOUNDRY_URL = $Url
 $env:FOUNDRY_USERNAME = $Username
 $env:FOUNDRY_PASSWORD = $Password
 
-if ($Test -eq "prepare") {
+if ($Test -eq "staves") {
+  Write-Host "Running Activations, Staves & Dailies Verification on $Url..." -ForegroundColor Cyan
+  node scratch/test-activations-staves.mjs --url $Url --username $Username --password $Password
+} elseif ($Test -eq "prepare") {
   Write-Host "Running Spell Preparation Picker In-Browser Verification on $Url..." -ForegroundColor Cyan
   node scratch/test-valdrin-prepare.mjs --url $Url --username $Username --password $Password
+} elseif ($Test -eq "exhausted") {
+  Write-Host "Running Exhausted Slots & Expended Spells In-Browser Verification on $Url..." -ForegroundColor Cyan
+  node scratch/test-exhausted-slots.mjs --url $Url --username $Username --password $Password
 } elseif ($Test -eq "desktop") {
   Write-Host "Running Desktop Dormancy & Expansion In-Browser Verification on $Url..." -ForegroundColor Cyan
   node scratch/verify-foundry-browser.mjs --url $Url --username $Username --password $Password
@@ -56,4 +62,6 @@ if ($Test -eq "prepare") {
   node scratch/verify-foundry-browser.mjs --url $Url --username $Username --password $Password
   Write-Host "`n=== Running Spell Preparation Picker Verification on $Url ===" -ForegroundColor Cyan
   node scratch/test-valdrin-prepare.mjs --url $Url --username $Username --password $Password
+  Write-Host "`n=== Running Activations, Staves & Dailies Verification on $Url ===" -ForegroundColor Cyan
+  node scratch/test-activations-staves.mjs --url $Url --username $Username --password $Password
 }

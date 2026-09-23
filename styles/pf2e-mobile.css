@@ -1706,7 +1706,38 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }.pf2e-mobile-sheet .btn-daily-reset:active {
   background: #374151;
   color: #fff;
-}/* Collapsible Rank Groups */.pf2e-mobile-sheet .spell-rank-group {
+}
+.pf2e-mobile-sheet .btn-dailies {
+  min-height: 38px;
+  height: 38px;
+  padding: 4px 10px;
+  background: #3b2a0c;
+  border: 1px solid #78521a;
+  color: #fde047;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.pf2e-mobile-sheet .btn-dailies:active {
+  background: #573e13;
+  color: #fff;
+}
+.pf2e-mobile-sheet .subtab-count-badge {
+  background: #2563eb;
+  color: #fff;
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+/* Collapsible Rank Groups */
+.pf2e-mobile-sheet .spell-rank-group {
   margin-bottom: 10px;
 }.pf2e-mobile-sheet .spell-rank-header {
   display: flex;
@@ -1843,7 +1874,8 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }.pf2e-mobile-sheet .btn-restore-slot {
   min-height: 38px;
   height: 38px;
-  padding: 4px 10px;
+  min-width: 38px;
+  padding: 4px 8px;
   background: #1e3a2f;
   border: 1px solid #059669;
   color: #6ee7b7;
@@ -1852,6 +1884,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   font-weight: 600;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   cursor: pointer;
   touch-action: manipulation;
@@ -2626,5 +2659,358 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   color: #fff;
 }.compendium-picker .config-actions .btn-confirm-add:active {
   background: #15803d;
+}
+
+/* ======================================================== */
+/* Activations Tab & Staff Engine                           */
+/* ======================================================== */
+.pf2e-mobile-sheet .spells-activations-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pf2e-mobile-sheet .activation-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pf2e-mobile-sheet .activation-section-title {
+  margin: 6px 0 2px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #d4d4d8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Staff Header Card (Persistent Sticky Header) */
+.pf2e-mobile-sheet .staff-header-card {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #241f18;
+  background: linear-gradient(135deg, #2b251e 0%, #1e1a14 100%);
+  border: 1px solid #634a26;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-radius 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pf2e-mobile-sheet .staff-header-card:active {
+  background: linear-gradient(135deg, #322b22 0%, #25221c 100%);
+}
+
+.pf2e-mobile-sheet .staff-activation-group.expanded .staff-header-card {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-color: #45331a;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.pf2e-mobile-sheet .staff-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  border: 1px solid #8c6832;
+  object-fit: cover;
+  background: #111;
+  flex-shrink: 0;
+}
+
+.pf2e-mobile-sheet .staff-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pf2e-mobile-sheet .staff-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pf2e-mobile-sheet .staff-spells-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #27272a;
+  color: #e4e4e7;
+  border: 1px solid #52525b;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pf2e-mobile-sheet .staff-title-row .action-expand-icon {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: #d4d4d8;
+  transition: transform 0.2s ease;
+}
+
+.pf2e-mobile-sheet .staff-title-row .action-expand-icon.expanded {
+  transform: rotate(180deg);
+}
+
+/* Expandable Staff Content Drawer (Overview + Spells) */
+.pf2e-mobile-sheet .staff-drawer-content {
+  background: #151310;
+  border: 1px solid #634a26;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.pf2e-mobile-sheet .staff-drawer-content.collapsed {
+  display: none !important;
+}
+
+.pf2e-mobile-sheet .staff-description-block {
+  background: #1b1712;
+  border: 1px solid rgba(140, 104, 50, 0.25);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.pf2e-mobile-sheet .staff-description-heading,
+.pf2e-mobile-sheet .staff-spells-heading {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.pf2e-mobile-sheet .staff-name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fef08a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pf2e-mobile-sheet .equipped-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pf2e-mobile-sheet .badge-held {
+  background: #14532d;
+  color: #86efac;
+  border: 1px solid #16a34a;
+}
+
+.pf2e-mobile-sheet .badge-not-held {
+  background: #7f1d1d;
+  color: #fca5a5;
+  border: 1px solid #dc2626;
+}
+
+/* Staff Charges Tracker */
+.pf2e-mobile-sheet .staff-charges-tracker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(254, 240, 138, 0.2);
+}
+
+.pf2e-mobile-sheet .charges-label {
+  font-size: 0.85rem;
+  color: #e4e4e7;
+}
+
+.pf2e-mobile-sheet .charges-label i {
+  color: #eab308;
+}
+
+.pf2e-mobile-sheet .charges-label strong {
+  color: #fde047;
+  font-size: 0.95rem;
+}
+
+.pf2e-mobile-sheet .charges-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.pf2e-mobile-sheet .btn-charge-adjust {
+  min-width: 38px;
+  height: 38px;
+  padding: 0 8px;
+  background: #27272a;
+  border: 1px solid #52525b;
+  color: #f4f4f5;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.pf2e-mobile-sheet .btn-charge-adjust:active {
+  background: #3f3f46;
+  border-color: #eab308;
+  color: #fde047;
+}
+
+/* Staff Spells & Badges */
+.pf2e-mobile-sheet .badge-charge-cost {
+  background: #422006;
+  color: #fed7aa;
+  border: 1px solid #9a3412;
+}
+
+.pf2e-mobile-sheet .badge-cantrip {
+  background: #1e293b;
+  color: #94a3b8;
+  border: 1px solid #475569;
+}
+
+.pf2e-mobile-sheet .btn-staff-charges {
+  background: #7c2d12;
+  border: 1px solid #c2410c;
+  color: #ffedd5;
+  min-height: 38px;
+}
+
+.pf2e-mobile-sheet .btn-staff-charges:active {
+  background: #9a3412;
+}
+
+.pf2e-mobile-sheet .btn-staff-spontaneous {
+  background: #4c1d95;
+  border: 1px solid #7c3aed;
+  color: #ede9fe;
+  min-height: 38px;
+  font-size: 0.78rem;
+  padding: 4px 8px;
+}
+
+.pf2e-mobile-sheet .btn-staff-spontaneous:active {
+  background: #5b21b6;
+}
+
+/* Greyed-out / Disabled state for staff cast buttons */
+.pf2e-mobile-sheet .btn-cast:disabled,
+.pf2e-mobile-sheet .btn-cast.disabled,
+.pf2e-mobile-sheet .btn-staff-charges:disabled,
+.pf2e-mobile-sheet .btn-staff-charges.disabled,
+.pf2e-mobile-sheet .btn-staff-spontaneous:disabled,
+.pf2e-mobile-sheet .btn-staff-spontaneous.disabled {
+  background: #27272a !important;
+  border-color: #3f3f46 !important;
+  color: #71717a !important;
+  opacity: 0.55 !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  filter: grayscale(100%);
+}
+
+.pf2e-mobile-sheet .btn-cast:disabled:active,
+.pf2e-mobile-sheet .btn-cast.disabled:active,
+.pf2e-mobile-sheet .btn-staff-charges:disabled:active,
+.pf2e-mobile-sheet .btn-staff-charges.disabled:active,
+.pf2e-mobile-sheet .btn-staff-spontaneous:disabled:active,
+.pf2e-mobile-sheet .btn-staff-spontaneous.disabled:active {
+  background: #27272a !important;
+  color: #71717a !important;
+  transform: none !important;
+}
+
+.pf2e-mobile-sheet .badge-charge-cost.badge-charge-insufficient {
+  background: #27272a;
+  color: #a1a1aa;
+  border-color: #3f3f46;
+}
+
+/* Wands & Scrolls Items */
+.pf2e-mobile-sheet .activation-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pf2e-mobile-sheet .activation-item-card {
+  padding: 6px 10px;
+}
+
+.pf2e-mobile-sheet .activation-item-img {
+  width: 38px;
+  height: 38px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.pf2e-mobile-sheet .activation-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pf2e-mobile-sheet .wand-uses-badge {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #1e3a8a;
+  color: #bfdbfe;
+  border: 1px solid #3b82f6;
+}
+
+.pf2e-mobile-sheet .wand-uses-badge.badge-expended {
+  background: #450a0a;
+  color: #fca5a5;
+  border-color: #b91c1c;
+}
+
+.pf2e-mobile-sheet .quantity-badge {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #1c1917;
+  color: #d6d3d1;
+  border: 1px solid #57534e;
+}
+
+.pf2e-mobile-sheet .btn-cast-item {
+  min-height: 38px;
+  height: 38px;
+  min-width: 44px;
 }
 

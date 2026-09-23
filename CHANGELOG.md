@@ -4,6 +4,39 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.18] - 2026-09-23
+
+### Item Spells Separation, PF2e Staff Engine & Dailies Integration
+
+#### Added
+- **Dedicated "Activations" Sub-Tab** (`scripts/apps/sheet-helpers/context-activations.js`, `templates/parts/spells.hbs`, `styles/pf2e-mobile.css`):
+  - Created a third sub-navigation view in the Spells tab alongside "Spells" and "Preparation", complete with an item counter badge.
+  - Excluded all item-based spellcasting entries (`category === "items"` and `category === "charges"`, as well as ephemeral item entries) from the main "Spells" view.
+  - Organized item activations into Staves, Wands, Scrolls, and Other Item Spells.
+- **Pathfinder 2e Staves Engine & Rules Fidelity** (`scripts/apps/sheet-helpers/context-activations.js`, `scripts/apps/sheet-helpers/activations-handlers.js`, `templates/parts/spells.hbs`, `styles/pf2e-mobile.css`):
+  - **Expandable Staff Drawer**: The spells castable from a staff are organized inside an expandable drawer (`.staff-drawer-content`), tucked away until the user expands the staff card.
+  - **Persistent Sticky Staff Header**: While the staff drawer is expanded and the user browses through staff spells, the staff header card (showing the staff image, name, held status, spell counter badge, and interactive daily charges tracker with `[-]` and `[+]` adjusters) is pinned with `position: sticky; top: 0`, keeping charges and staff information persistent at the top of the viewport.
+  - Multi-tier staff spell resolution engine: retrieves staff spells from `pf2e-dailies` collections, `dailiesStaffData.spells`, `dailiesApi.getSpells(staffItem, maxCharges)`, or autonomous Remaster HTML description parsing (`getSpellsFromStaffDescription`).
+  - Cantrips cost 0 charges and cast freely at will.
+  - Ranked spells clearly display their charge cost (Rank $N$ costs $N$ charges).
+  - **Greyed-Out Buttons & Insufficient Charges Guard**: Cast buttons on staff spells requiring more charges than currently available (or lacking spontaneous slots) are styled with `opacity: 0.55`, `filter: grayscale(100%)`, `#27272a` dark neutral surface, and descriptive tooltips explaining charge requirements (`Not enough charges (requires X)`). Attempted clicks show an informative warning notification.
+  - **Strict Charge Requirement & Zero Charges Handling**: Ranked staff spells strictly require charges to be cast. When staff charges are 0, both pure charge casting and 1-charge + slot casting are disabled with clear tooltips (`No staff charges remaining`). Cantrips cost 0 charges and remain freely castable at will.
+  - **Exclusion of Staff Entries from Main Spell List**: Enhanced `isItemSpellcastingEntry` to reliably recognize all staff-derived entries (by category, preparation type, ID, flags, and physical inventory matching), completely preventing staff spells from leaking into the main Spells list or polluting character class spell slot pools.
+  - **Spontaneous Caster Rule & Remaster Slot Flexibility**: Spontaneous casters holding a staff can cast staff spells by expending 1 staff charge plus an available spontaneous spell slot of the spell's rank or higher (per Remaster rules).
+  - Seamlessly integrates with the `pf2e-dailies` API (`getStaffData`, `setStaffChargesValue`, `getStaffItem`), delegating casting directly to `StaffSpellcasting.cast(spell, options)` with autonomous fallback to native PF2e charge tracking flags when the module is not present.
+- **Dailies Quick Action Button** (`scripts/apps/sheet-helpers/activations-handlers.js`, `templates/parts/spells.hbs`, `styles/pf2e-mobile.css`):
+  - Added a touch-friendly "Dailies" button with a warm amber/sun accent next to "Daily Rest" in the Spells tab toolbar.
+  - Invokes `game.dailies.api.openDailiesInterface(actor)` directly from the mobile sheet.
+- **Exhausted Spell Slots & Expended Prepared Spells Feedback** (`scripts/apps/sheet-helpers/context-spells.js`, `scripts/apps/sheet-helpers/spells-handlers.js`, `templates/parts/spells.hbs`, `styles/pf2e-mobile.css`):
+  - Spontaneous spells automatically grey out their Cast button (`.disabled`, `opacity: 0.55`, `filter: grayscale(100%)`, `#27272a` dark neutral surface) when all spell slots for that rank are exhausted, complete with an informative tooltip (`No Rank X spell slots remaining`).
+  - Prepared spells that were used/expended retain an accessible, greyed-out Cast button (`title="Spell slot already expended"`) alongside a dedicated, touch-friendly `[Restore]` icon button (`min-width: 38px`, `height: 38px`).
+  - Focus spells with 0 focus points and innate spells with 0 daily uses are similarly disabled and greyed out.
+  - Tapping disabled cast buttons triggers a clear, explanatory warning notification instead of failing silently or throwing uncaught system errors.
+- **Modular Presets Refactoring** (`scripts/apps/sheet-helpers/spell-presets-handlers.js`, `scripts/apps/sheet-helpers/spells-handlers.js`):
+  - Extracted spell preset save, load, and delete workflows into `spell-presets-handlers.js`, keeping `spells-handlers.js` lean (576 lines) and strictly complying with repository modularity rules.
+
+---
+
 ## [1.0.17] - 2026-09-22
 
 ### Spell Preparation Picker Sizing & Preparation Action Fix
