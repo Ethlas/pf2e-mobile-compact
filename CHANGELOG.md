@@ -4,6 +4,31 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.18] - 2026-09-23
+
+### Hotfix: Property Rune Slugs Did Not Match PF2e's Registry
+
+#### Fixed
+- **Etching a Multi-Word Property Rune Broke the Weapon** (`scripts/apps/sheet-helpers/rune-data.js`, `rune-handlers.js`):
+  - Root cause: the rune tables keyed property runes in kebab-case (`greater-flaming`, `ghost-touch`, `acid-resistant`), but PF2e stores and looks them up in camelCase (`greaterFlaming`, `ghostTouch`, `acidResistant`). 84 of the module's 146 slugs did not exist in PF2e's `RUNE_DATA` registry.
+  - PF2e's data preparation indexes `RUNE_DATA.<type>.property[slug]` without guarding for unknown keys (`item/weapon/document.ts`, `item/physical/runes.ts`), so an unresolved slug threw `TypeError: Cannot read properties of undefined (reading 'damage')` while building the item's strikes. Only single-word runes (`flaming`, `keen`, `frost`), where both conventions coincide, worked.
+  - Regenerated both rune tables from the PF2e system's own registry: correct camelCase slugs, all 80 weapon and 58 armor property runes (previously 96 and 51 entries, 41 of which named runes PF2e does not implement), with English labels and `i18n` keys taken from the system's `en.json`.
+- **Unknown Rune Slugs Can No Longer Reach PF2e** (`scripts/apps/sheet-helpers/rune-handlers.js`):
+  - Added `sanitizePropertyRunes()`, applied at both the weapon and armor write sites, so any slug this PF2e build cannot resolve is logged and dropped instead of being written to `system.runes.property`.
+- **Localized Rune Labels** (`scripts/apps/sheet-helpers/context-inventory.js`, `rune-data.js`):
+  - Added `getPropertyRuneLabel()`, which prefers PF2e's localization key so rune badges render in the client's language, falling back to the English name and then to a de-camelized slug.
+- **Compendium Lookups Still Resolve** (`scripts/apps/sheet-helpers/rune-data.js`):
+  - `getRuneItemMeta()` now emits kebab-case search terms alongside the camelCase slug, since `pf2e.equipment-srd` item slugs are kebab-case (`greater-flaming-rune`). This keeps "return rune to inventory" working.
+  - `cleanCoreName()` de-camelizes before stripping tier words, so inventory matching works against camelCase slugs, kebab-case compendium slugs, and display names alike.
+- **Regression Guard** (`scripts/verify.mjs`):
+  - Added check 4b, failing the build if any property rune slug contains a hyphen. Verified it reports all 68 pre-fix slugs and exits non-zero.
+
+#### Known Limitations (not addressed here)
+- Property rune slot count still uses `min(potency, 3)`. PF2e's `getPropertyRuneSlots()` also grants +1 slot for orichalcum and derives potency from character level under Automatic Bonus Progression; potency is `ZeroToFour`, not 0-3.
+- Duplicate pruning is exact-match only; PF2e's `prunePropertyRunes` also strips lesser runes when a greater one is present.
+
+---
+
 ## [1.0.17] - 2026-09-22
 
 ### Spell Preparation Picker Sizing & Preparation Action Fix

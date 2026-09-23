@@ -4,7 +4,14 @@
  * and restricts or filters rune etching to items actually owned by the actor.
  */
 
-import { WEAPON_PROPERTY_RUNES, ARMOR_PROPERTY_RUNES, matchPropertyRune, getRuneItemMeta } from "./rune-data.js";
+import {
+  WEAPON_PROPERTY_RUNES,
+  ARMOR_PROPERTY_RUNES,
+  matchPropertyRune,
+  getRuneItemMeta,
+  getPropertyRuneLabel,
+  sanitizePropertyRunes
+} from "./rune-data.js";
 
 export { WEAPON_PROPERTY_RUNES, ARMOR_PROPERTY_RUNES };
 
@@ -576,8 +583,9 @@ export async function promptRuneConfiguration(sheet, item) {
         const str = parseInt(rootEl.querySelector("#rune-striking-select")?.value ?? "0", 10) || 0;
         const propSelects = rootEl.querySelectorAll(".rune-prop-slot");
         const rawProps = Array.from(propSelects).map(s => s.value).filter(Boolean);
-        // Strictly limit property runes to potency capacity
-        const props = [...new Set(rawProps)].slice(0, pot);
+        // Strictly limit property runes to potency capacity, and drop any slug
+        // this PF2e build cannot resolve (an unknown slug throws in its data prep).
+        const props = sanitizePropertyRunes([...new Set(rawProps)], true).slice(0, pot);
 
         const oldPot = runes.potency ?? 0;
         const oldStr = runes.striking ?? 0;
@@ -616,8 +624,9 @@ export async function promptRuneConfiguration(sheet, item) {
         const res = parseInt(rootEl.querySelector("#rune-resilient-select")?.value ?? "0", 10) || 0;
         const propSelects = rootEl.querySelectorAll(".rune-prop-slot");
         const rawProps = Array.from(propSelects).map(s => s.value).filter(Boolean);
-        // Strictly limit property runes to potency capacity
-        const props = [...new Set(rawProps)].slice(0, pot);
+        // Strictly limit property runes to potency capacity, and drop any slug
+        // this PF2e build cannot resolve (an unknown slug throws in its data prep).
+        const props = sanitizePropertyRunes([...new Set(rawProps)], false).slice(0, pot);
 
         const oldPot = runes.potency ?? 0;
         const oldRes = runes.resilient ?? 0;

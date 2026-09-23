@@ -4,7 +4,7 @@
  * consumables, weapons, armor, and gear with mobile-ready status metadata.
  */
 
-import { WEAPON_PROPERTY_RUNES, ARMOR_PROPERTY_RUNES } from "./rune-data.js";
+import { getPropertyRuneLabel } from "./rune-data.js";
 
 const PHYSICAL_ITEM_TYPES = new Set([
   "ammo",
@@ -310,8 +310,7 @@ function formatWeaponRunes(runes) {
     parts.push(...runes.property.map(p => {
       const slug = typeof p === "string" ? p : p?.slug ?? p?.value ?? "";
       if (!slug) return null;
-      const def = WEAPON_PROPERTY_RUNES[slug] ?? CONFIG.PF2E?.weaponPropertyRunes?.[slug];
-      return def ? (def.name ?? slug) : (slug.charAt(0).toUpperCase() + slug.slice(1));
+      return getPropertyRuneLabel(slug, true) || slug;
     }).filter(Boolean));
   }
   return parts.join(" ");
@@ -334,8 +333,7 @@ function formatArmorRunes(runes) {
     parts.push(...runes.property.map(p => {
       const slug = typeof p === "string" ? p : p?.slug ?? p?.value ?? "";
       if (!slug) return null;
-      const def = ARMOR_PROPERTY_RUNES[slug] ?? CONFIG.PF2E?.armorPropertyRunes?.[slug];
-      return def ? (def.name ?? slug) : (slug.charAt(0).toUpperCase() + slug.slice(1));
+      return getPropertyRuneLabel(slug, false) || slug;
     }).filter(Boolean));
   }
   return parts.join(" ");

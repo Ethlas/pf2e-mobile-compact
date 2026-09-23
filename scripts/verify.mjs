@@ -174,6 +174,37 @@ function checkActionsInTemplates(dir) {
 }
 checkActionsInTemplates(path.join(rootDir, "templates"));
 
+// 4b. Property Rune Slug Format Check
+console.log("\n--- 4b. PF2e Property Rune Slug Verification ---");
+const runeDataPath = path.join(rootDir, "scripts/apps/sheet-helpers/rune-data.js");
+if (fs.existsSync(runeDataPath)) {
+  const runeSrc = fs.readFileSync(runeDataPath, "utf-8");
+  // PF2e stores property runes under camelCase slugs ("greaterFlaming", "ghostTouch").
+  // A kebab-case key here is a slug PF2e cannot resolve; its data preparation then
+  // throws on RUNE_DATA.<type>.property[slug].damage while building strikes.
+  const badSlugs = [];
+  const tableRegex = /export const (WEAPON|ARMOR)_PROPERTY_RUNES = \{([\s\S]*?)\n\};/g;
+  let tableMatch;
+  let tablesFound = 0;
+  while ((tableMatch = tableRegex.exec(runeSrc)) !== null) {
+    tablesFound++;
+    const keyRegex = /^\s{2}"?([A-Za-z0-9_-]+)"?\s*:/gm;
+    let keyMatch;
+    while ((keyMatch = keyRegex.exec(tableMatch[2])) !== null) {
+      if (keyMatch[1].includes("-")) badSlugs.push(`${tableMatch[1]}: ${keyMatch[1]}`);
+    }
+  }
+  if (tablesFound !== 2) {
+    logFail(`Expected 2 property rune tables in rune-data.js, found ${tablesFound}.`);
+  } else if (badSlugs.length > 0) {
+    for (const bad of badSlugs) {
+      logFail(`Kebab-case property rune slug '${bad}'. PF2e uses camelCase (e.g. greaterFlaming, ghostTouch); a mismatched slug throws during item data preparation.`);
+    }
+  } else {
+    logPass("All property rune slugs are camelCase.");
+  }
+}
+
 // 5. CSS Minimum Touch Target Check
 console.log("\n--- 5. Mobile CSS Touch Target Audit ---");
 const cssPath = path.join(rootDir, "styles/pf2e-mobile.css");
