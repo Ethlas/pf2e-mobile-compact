@@ -4,6 +4,25 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.19] - 2026-09-23
+
+### Skill Rolling Fix & Enhanced Proficiency Badges
+
+#### Fixed
+- **Skill Rolling in Skills Tab** (`scripts/apps/sheet-helpers/actions-handlers.js`):
+  - Fixed an issue where tapping on skill buttons did not roll them. Replaced the non-existent `sheet.actor.rollSkill(event, skillSlug)` call with PF2e's native `actor.getStatistic(skillSlug).roll(...)` API.
+  - Retained full integration with `PhysicalDiceManager.withPhysicalMode` to support physical dice d20 entry on mobile devices alongside digital dice rolls.
+  - Automatically forwards targeted tokens from `game.user.targets` so PF2e can calculate degrees of success against target DCs when applicable.
+
+#### Added & Improved
+- **Skill Proficiency Badges & Organization** (`scripts/apps/sheet-helpers/context-skills.js`, `templates/parts/skills.hbs`, `styles/pf2e-mobile.css`):
+  - Added high-contrast proficiency badges (`U`, `T`, `E`, `M`, `L`) styled with PF2e system colors (`--color-proficiency-*`) displaying the character's training level for each skill.
+  - Localized all core skill labels via `game.i18n.localize()` so raw localization keys (e.g. `PF2E.Skill.Acrobatics`) are never displayed.
+  - Split skills into "Core Skills" and "Lore Skills" sections when the character possesses Lore skills, sorting each group alphabetically by localized label.
+  - Added responsive tactile tap feedback (`:active { transform: scale(0.98); background: #424242; }`) and set `pointer-events: none` on child elements of the skill button to guarantee reliable touch event propagation on iOS WebKit and Android Chromium.
+
+---
+
 ## [1.0.18] - 2026-09-23
 
 ### Item Spells Separation, PF2e Staff Engine & Dailies Integration

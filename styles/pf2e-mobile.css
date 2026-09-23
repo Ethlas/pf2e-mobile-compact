@@ -1155,19 +1155,103 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   padding: 1px 4px;
   border-radius: 3px;
   text-decoration: none;
-}/* Skills Grid */.pf2e-mobile-sheet .skills-grid {
+}/* Skills Grid */
+.pf2e-mobile-sheet .skills-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
-}.pf2e-mobile-sheet .skill-button {
+}
+@media (max-width: 340px) {
+  .pf2e-mobile-sheet .skills-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.pf2e-mobile-sheet .skill-button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
+  padding: 8px 10px;
   min-height: 48px;
-}.pf2e-mobile-sheet .skill-mod {
+  background: #252525;
+  border: 1px solid #3c3c3c;
+  border-radius: 6px;
+  color: #eee;
+  text-align: left;
+  transition: background 0.15s ease, transform 0.08s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.pf2e-mobile-sheet .skill-button:hover {
+  background: #303030;
+  border-color: #555;
+}
+.pf2e-mobile-sheet .skill-button:active {
+  background: #424242;
+  transform: scale(0.98);
+}
+.pf2e-mobile-sheet .skill-button * {
+  pointer-events: none;
+}
+.pf2e-mobile-sheet .skill-info {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.pf2e-mobile-sheet .skill-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 4px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.pf2e-mobile-sheet .skill-rank-badge.rank-0 {
+  background: var(--color-proficiency-untrained, #333);
+  color: #777;
+  border: 1px solid #444;
+}
+.pf2e-mobile-sheet .skill-rank-badge.rank-1 {
+  background: var(--color-proficiency-trained, #142845);
+  color: #90caf9;
+  border: 1px solid #1976d2;
+}
+.pf2e-mobile-sheet .skill-rank-badge.rank-2 {
+  background: var(--color-proficiency-expert, #2e1c42);
+  color: #ce93d8;
+  border: 1px solid #8e24aa;
+}
+.pf2e-mobile-sheet .skill-rank-badge.rank-3 {
+  background: var(--color-proficiency-master, #472d0e);
+  color: #ffe082;
+  border: 1px solid #f57f17;
+}
+.pf2e-mobile-sheet .skill-rank-badge.rank-4 {
+  background: var(--color-proficiency-legendary, #4a1212);
+  color: #ff8a80;
+  border: 1px solid #d32f2f;
+}
+.pf2e-mobile-sheet .skill-name {
+  font-size: 0.88rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pf2e-mobile-sheet .skill-mod {
   font-weight: bold;
+  font-size: 0.95rem;
   color: #ffb74d;
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+.pf2e-mobile-sheet .lore-skills-section {
+  margin-top: 14px;
 }/* ----------------------------------------- *//* Spells Tab & Slots                        *//* ----------------------------------------- */.pf2e-mobile-sheet .spell-rank-group {
   margin-bottom: 16px;
 }.pf2e-mobile-sheet .spell-rank-header {

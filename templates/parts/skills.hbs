@@ -1,14 +1,74 @@
 <div class="tab-pane skills-tab" data-tab="skills">
-  <section class="actions-section">
-    <h3 class="section-title"><i class="fas fa-dice-d20"></i> Skills</h3>
+  {{#if coreSkills.length}}
+  <!-- Core Skills Section -->
+  <section class="actions-section core-skills-section">
+    <h3 class="section-title"><i class="fas fa-dice-d20"></i> Core Skills</h3>
     <div class="skills-grid">
-      {{#each skills as |skill|}}
-      <button type="button" class="touch-target skill-button" data-action="rollSkill" data-skill="{{skill.slug}}">
-        <span class="skill-name">{{skill.label}}</span>
+      {{#each coreSkills as |skill|}}
+      <button
+        type="button"
+        class="touch-target skill-button prof-rank-{{skill.rank}}"
+        data-action="rollSkill"
+        data-skill="{{skill.slug}}"
+        data-statistic="{{skill.slug}}"
+        aria-label="{{skill.label}} Check ({{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}})"
+      >
+        <div class="skill-info">
+          <span class="skill-rank-badge rank-{{skill.rank}}" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
+          <span class="skill-name">{{skill.label}}</span>
+        </div>
         <span class="skill-mod">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
       </button>
       {{/each}}
     </div>
   </section>
-</div>
+  {{else}}
+  <!-- Unified Skills Section Fallback -->
+  <section class="actions-section">
+    <h3 class="section-title"><i class="fas fa-dice-d20"></i> Skills</h3>
+    <div class="skills-grid">
+      {{#each skills as |skill|}}
+      <button
+        type="button"
+        class="touch-target skill-button {{#if skill.isLore}}is-lore{{/if}} prof-rank-{{skill.rank}}"
+        data-action="rollSkill"
+        data-skill="{{skill.slug}}"
+        data-statistic="{{skill.slug}}"
+        aria-label="{{skill.label}} Check ({{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}})"
+      >
+        <div class="skill-info">
+          <span class="skill-rank-badge rank-{{skill.rank}}" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
+          <span class="skill-name">{{skill.label}}</span>
+        </div>
+        <span class="skill-mod">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
+      </button>
+      {{/each}}
+    </div>
+  </section>
+  {{/if}}
 
+  {{#if loreSkills.length}}
+  <!-- Lore Skills Section -->
+  <section class="actions-section lore-skills-section">
+    <h3 class="section-title"><i class="fas fa-book-atlas"></i> Lore Skills</h3>
+    <div class="skills-grid">
+      {{#each loreSkills as |skill|}}
+      <button
+        type="button"
+        class="touch-target skill-button is-lore prof-rank-{{skill.rank}}"
+        data-action="rollSkill"
+        data-skill="{{skill.slug}}"
+        data-statistic="{{skill.slug}}"
+        aria-label="{{skill.label}} Check ({{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}})"
+      >
+        <div class="skill-info">
+          <span class="skill-rank-badge rank-{{skill.rank}}" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
+          <span class="skill-name">{{skill.label}}</span>
+        </div>
+        <span class="skill-mod">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
+      </button>
+      {{/each}}
+    </div>
+  </section>
+  {{/if}}
+</div>

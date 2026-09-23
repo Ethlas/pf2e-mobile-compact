@@ -468,21 +468,48 @@ export async function onRollActionCheck(sheet, event, target) {
 
 /**
  * Action handler: roll skill check.
+ * Resolves skill statistic and executes PF2e native check workflow with physical dice interception.
  * @param {object} sheet
  * @param {Event} event
  * @param {HTMLElement} target
  */
 export async function onRollSkill(sheet, event, target) {
-  const skillSlug = target.dataset.skill;
+  const skillSlug = target?.dataset?.skill ?? target?.closest?.("[data-skill]")?.dataset?.skill;
   if (!skillSlug) return;
 
-  const skill = sheet.actor.system.skills?.[skillSlug];
+  const stat = sheet.actor.getStatistic?.(skillSlug) ?? sheet.actor.skills?.[skillSlug];
+  const skillData = sheet.actor.system?.skills?.[skillSlug];
+  const rawLabel = stat?.label ?? skillData?.label ?? skillSlug;
+  const label = typeof rawLabel === "string" ? (game.i18n?.localize?.(rawLabel) ?? rawLabel) : String(rawLabel);
+
+  let targetToken = null;
+  const currentTarget = Array.from(game.user?.targets ?? []).find(t => t.id);
+  if (currentTarget) {
+    targetToken = getTargetableToken(currentTarget.id) ?? currentTarget;
+  }
+
+  // Ensure origin token adapter is initialized
+  getOriginToken(sheet.actor);
+
   await PhysicalDiceManager.withPhysicalMode({
-    title: `${skill?.label ?? skillSlug} Check`,
+    title: `${label} Check`,
+    target: targetToken,
     actor: sheet.actor
   }, async () => {
-    if (typeof sheet.actor.rollSkill === "function") {
+    const rollOptions = { event };
+    if (targetToken) {
+      rollOptions.target = targetToken.object ?? targetToken;
+    }
+
+    if (typeof stat?.roll === "function") {
+      await stat.roll(rollOptions);
+    } else if (typeof stat?.check?.roll === "function") {
+      await stat.check.roll(rollOptions);
+    } else if (typeof sheet.actor.rollSkill === "function") {
       await sheet.actor.rollSkill(event, skillSlug);
+    } else {
+      console.warn(`pf2e-mobile-compact | Could not find roll method for skill: ${skillSlug}`);
+      ui.notifications?.warn?.(`Could not find roll method for skill: ${label}`);
     }
   }, sheet.rollMode === "physical");
 }
