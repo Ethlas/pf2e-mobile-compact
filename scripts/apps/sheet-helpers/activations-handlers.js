@@ -61,7 +61,7 @@ export async function onCastStaffSpell(sheet, event, target) {
   const dailiesApi = game.dailies?.api;
   let currentCharges = 0;
   let maxCharges = rank;
-  let staffId = "staff";
+  let staffId = target.dataset.staffId || "staff";
 
   if (typeof dailiesApi?.getStaffData === "function") {
     const sData = dailiesApi.getStaffData(actor);
@@ -71,9 +71,16 @@ export async function onCastStaffSpell(sheet, event, target) {
       staffId = sData.staffId ?? staffId;
     }
   } else {
-    staffId = entry?.id?.replace(/-casting$/, "") ?? "staff";
-    const flagVal = actor.getFlag("pf2e-mobile-compact", `staffCharges-${staffId}`);
-    currentCharges = typeof flagVal === "number" ? flagVal : maxCharges;
+    const dailiesFlag = actor.getFlag?.("pf2e-dailies", "extra.dailies.staves");
+    if (dailiesFlag?.charges) {
+      currentCharges = Number(dailiesFlag.charges.value ?? 0);
+      maxCharges = Number(dailiesFlag.charges.max ?? currentCharges);
+      staffId = dailiesFlag.staffId ?? staffId;
+    } else {
+      staffId = staffId !== "staff" ? staffId : (entry?.id?.replace(/-casting$/, "") ?? "staff");
+      const flagVal = actor.getFlag("pf2e-mobile-compact", `staffCharges-${staffId}`);
+      currentCharges = typeof flagVal === "number" ? flagVal : maxCharges;
+    }
   }
 
   // 3. RESOURCE & CHARGE VALIDATION (Must occur before targeting prompts)
@@ -215,12 +222,15 @@ export async function onAdjustStaffCharges(sheet, event, target) {
   }
 
   // Fallback
-  const staffItem = actor.items.find(i => {
+  const targetStaffId = target.dataset.staffId;
+  const dailiesFlag = actor.getFlag?.("pf2e-dailies", "extra.dailies.staves");
+  const preparedStaffId = dailiesFlag?.staffId ?? targetStaffId;
+  const staffItem = preparedStaffId ? (actor.items.get(preparedStaffId) ?? null) : actor.items.find(i => {
     const traits = i.system?.traits?.value ?? i.traits?.value ?? [];
     const traitList = Array.isArray(traits) ? traits : Array.from(traits);
     return traitList.some(t => String(t).toLowerCase() === "staff") || i.name.toLowerCase().includes("staff");
   });
-  const staffId = staffItem?.id ?? "default";
+  const staffId = staffItem?.id ?? targetStaffId ?? "default";
   const flagKey = `staffCharges-${staffId}`;
   const current = Number(actor.getFlag("pf2e-mobile-compact", flagKey) ?? 0);
   const nextVal = Math.max(0, current + delta);

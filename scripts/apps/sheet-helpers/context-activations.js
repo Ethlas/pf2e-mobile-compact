@@ -77,26 +77,55 @@ export async function prepareActivationsContext(actor, sheet, context) {
   if (typeof dailiesApi?.getStaffData === "function") {
     try {
       dailiesStaffData = dailiesApi.getStaffData(actor);
-      dailiesStaffItem = dailiesApi.getStaffItem?.(actor);
     } catch (err) {
       console.warn("PF2e Mobile Compact | Error reading pf2e-dailies staff data:", err);
     }
   }
+  // Check actor flags for pf2e-dailies staff preparation if API returned nothing
+  const dailiesFlag = actor.getFlag?.("pf2e-dailies", "extra.dailies.staves");
+  if (!dailiesStaffData && dailiesFlag) {
+    dailiesStaffData = dailiesFlag;
+  }
 
-  // Find physical staff item in actor inventory
-  const staffItem = dailiesStaffItem ?? items.find(i => {
-    const traits = i.system?.traits?.value ?? i.traits?.value ?? [];
-    const traitList = Array.isArray(traits) ? traits : Array.from(traits);
-    return traitList.some(t => String(t).toLowerCase() === "staff") || i.name.toLowerCase().includes("staff");
-  });
+  // Resolve the morning-prepared staff ID
+  const preparedStaffId = dailiesStaffData?.staffId;
 
-  // Find associated charges or staff spellcasting entry
+  // Resolve the physical staff item in actor inventory:
+  // 1. Direct match with the morning-prepared staffId
+  // 2. dailiesApi.getStaffItem(actor)
+  // 3. Fallback to equipped/held staff in inventory
+  // 4. Fallback to any staff in inventory
+  let staffItem = preparedStaffId ? (actor.items.get(preparedStaffId) ?? null) : null;
+  if (!staffItem && typeof dailiesApi?.getStaffItem === "function") {
+    try {
+      staffItem = dailiesApi.getStaffItem(actor);
+    } catch {}
+  }
+  if (!staffItem) {
+    const allStaves = items.filter(i => {
+      const traits = i.system?.traits?.value ?? i.traits?.value ?? [];
+      const traitList = Array.isArray(traits) ? traits : Array.from(traits);
+      return traitList.some(t => String(t).toLowerCase() === "staff") || i.name.toLowerCase().includes("staff");
+    });
+    // Prefer staff currently held in hand
+    staffItem = allStaves.find(i => (i.system?.equipped?.carryType ?? (i.isEquipped ? "held" : "stowed")) === "held")
+      ?? allStaves[0]
+      ?? null;
+  }
+
+  // Find associated charges or staff spellcasting entry specifically matching staffItem
   const staffEntry = allEntries.find(e => {
+    if (staffItem) {
+      if (e.id === `${staffItem.id}-casting` || e.id === staffItem.id) return true;
+      if (e.flags?.["pf2e-dailies"]?.staff === staffItem.id || e.flags?.pf2e?.staff === staffItem.id) return true;
+      if (e.name.toLowerCase().includes(staffItem.name.toLowerCase())) return true;
+    }
+    // Only match generic charges/staff entry if it doesn't belong to another specific staff item in inventory
     const cat = String(e.category ?? e.system?.category ?? "").toLowerCase();
-    if (cat === "charges" || cat === "staff") return true;
-    if (staffItem && (e.id === `${staffItem.id}-casting` || e.name.toLowerCase().includes(staffItem.name.toLowerCase()))) return true;
-    if (e.flags?.["pf2e-dailies"]?.staff || e.flags?.pf2e?.staff) return true;
-    if (e.name.toLowerCase().includes("staff")) return true;
+    if (cat === "charges" || cat === "staff") {
+      const belongsToOther = items.some(i => i.id !== staffItem?.id && (e.id === `${i.id}-casting` || e.name.toLowerCase().includes(i.name.toLowerCase())));
+      return !belongsToOther;
+    }
     return false;
   });
 
@@ -173,41 +202,56 @@ export async function prepareActivationsContext(actor, sheet, context) {
       }
     }
 
-    // Collect staff spells from:
-    // 1. pf2e-dailies ephemeral spell collection: actor.spellcasting.collections.get(entryId)
-    // 2. staffEntry.spells
-    // 3. pf2e-dailies staffData.spells
-    // 4. pf2e-dailies getSpells API
-    // 5. Physical staff item description HTML parser
+    // Collect staff spells with strict priority given to morning preparation:
+    // 1. pf2e-dailies morning-prepared spells for this staff
+    // 2. Ephemeral spell collection strictly belonging to this staff item
+    // 3. pf2e-dailies getSpells API for this specific staff item
+    // 4. Physical staff item description HTML parser
+    // 5. Existing staffEntry.spells strictly filtered to avoid spells from other staves
     let staffSpellDocs = [];
     const ItemClass = getDocumentClass?.("Item") ?? Item;
     const entryId = staffEntry?.id ?? `${staffItem?.id}-casting`;
 
-    const staffCollection = actor.spellcasting?.collections?.get(entryId);
-    if (staffCollection?.contents?.length) {
-      staffSpellDocs = staffCollection.contents;
-    } else if (staffEntry?.spells?.contents?.length) {
-      staffSpellDocs = staffEntry.spells.contents;
-    } else if (Array.isArray(dailiesStaffData?.spells) && dailiesStaffData.spells.length > 0) {
+    // Priority 1: Morning-prepared spells from pf2e-dailies
+    if (Array.isArray(dailiesStaffData?.spells) && dailiesStaffData.spells.length > 0 && (!preparedStaffId || staffItem?.id === preparedStaffId)) {
       staffSpellDocs = dailiesStaffData.spells.map(source => {
         if (source instanceof Item) return source;
         const spellData = foundry.utils.mergeObject(source, { "system.location.value": entryId }, { inplace: false });
         return new ItemClass(spellData, { parent: actor });
       });
-    } else if (staffItem) {
-      if (typeof dailiesApi?.getSpells === "function") {
-        try {
-          const rawSpells = await dailiesApi.getSpells(staffItem, maxCharges, entryId);
-          if (Array.isArray(rawSpells) && rawSpells.length > 0) {
-            staffSpellDocs = rawSpells.map(source => (source instanceof Item ? source : new ItemClass(source, { parent: actor })));
-          }
-        } catch (e) {
-          console.warn("PF2e Mobile Compact | Error in dailies getSpells:", e);
+    }
+
+    // Priority 2: Ephemeral collection specifically created for this staff item
+    if (!staffSpellDocs.length && staffItem) {
+      const staffCollection = actor.spellcasting?.collections?.get(`${staffItem.id}-casting`);
+      if (staffCollection?.contents?.length) {
+        staffSpellDocs = staffCollection.contents;
+      }
+    }
+
+    // Priority 3: pf2e-dailies getSpells API for this specific staff item
+    if (!staffSpellDocs.length && staffItem && typeof dailiesApi?.getSpells === "function") {
+      try {
+        const rawSpells = await dailiesApi.getSpells(staffItem, maxCharges, entryId);
+        if (Array.isArray(rawSpells) && rawSpells.length > 0) {
+          staffSpellDocs = rawSpells.map(source => (source instanceof Item ? source : new ItemClass(source, { parent: actor })));
         }
+      } catch (e) {
+        console.warn("PF2e Mobile Compact | Error in dailies getSpells:", e);
       }
-      if (!staffSpellDocs.length) {
-        staffSpellDocs = await getSpellsFromStaffDescription(staffItem, maxCharges, entryId, actor);
-      }
+    }
+
+    // Priority 4: Parse staff description HTML for this specific staff item
+    if (!staffSpellDocs.length && staffItem) {
+      staffSpellDocs = await getSpellsFromStaffDescription(staffItem, maxCharges, entryId, actor);
+    }
+
+    // Priority 5: Existing staffEntry.spells, strictly filtered to exclude spells belonging to other staves
+    if (!staffSpellDocs.length && staffEntry?.spells?.contents?.length) {
+      staffSpellDocs = staffEntry.spells.contents.filter(spell => {
+        const otherStaff = items.find(i => i.id !== staffItem?.id && (spell.system?.location?.value?.includes(i.id) || i.name.toLowerCase().includes(spell.name.toLowerCase())));
+        return !otherStaff;
+      });
     }
 
     // Cache active staff spells for casting execution lookup
