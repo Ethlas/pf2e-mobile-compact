@@ -4,6 +4,32 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.21] - 2026-09-24
+
+### Staff Preparation Spells Isolation & Morning Dailies Fix
+
+#### Fixed
+- **Staff Spells Isolation & Old Spells Cleanup** (`scripts/apps/sheet-helpers/context-activations.js`, `templates/parts/spells.hbs`):
+  - Fixed an issue where expanding a newly prepared staff continued to show spells belonging to the previous staff.
+  - Rewrote the staff spell resolution order to give strict Priority 1 to morning-prepared spells from `pf2e-dailies` (`dailiesStaffData.spells`), completely preventing stale spells from preexisting spellcasting entries on the actor from overriding the active staff.
+  - Filtered fallback spell entries to ensure spells belonging to other staves in inventory are excluded.
+- **Accurate Morning-Prepared Staff Binding** (`scripts/apps/sheet-helpers/context-activations.js`, `scripts/apps/sheet-helpers/activations-handlers.js`):
+  - Bound staff resolution directly to the morning-prepared staff ID (`preparedStaffId = dailiesStaffData?.staffId ?? actor.getFlag("pf2e-dailies", "extra.dailies.staves")?.staffId`) rather than returning the first staff found in inventory.
+  - Passed `data-staff-id` on charge adjustment buttons (`adjustStaffCharges`) and cast buttons (`castStaffSpell`) in `spells.hbs`, ensuring charge tracking and spellcasting target the specific staff prepared in the morning.
+
+#### Improved
+- **Stacked Staff Spell Cards Layout** (`templates/parts/spells.hbs`, `styles/pf2e-mobile.css`):
+  - Dedicated the top row exclusively to the spell name, action cost glyph, charge badge, and expand chevron so spell titles have full horizontal room on mobile viewports.
+  - Kept the quick details row (`Range`, `Target`, `Area/Size`, `Save/Defense`, `Duration`) permanently visible in the second row.
+  - Moved the cast/action buttons (`Chat`, `Cast Charges`, `1 Chg + Slot`) into a dedicated full-width button row underneath the spell details.
+  - Relocated spell traits/tags (`Cantrip`, `Concentrate`, `Manipulate`, etc.) into the expandable spell description drawer.
+- **Compact Normal Spell Card Header & Source Badges** (`templates/parts/spells.hbs`, `styles/pf2e-mobile.css`):
+  - Converted spell source badges (`Focus`, `Innate`, `Prepared`, `Spontaneous`) into compact 1-letter badges (`F`, `I`, `P`, `S`) placed in the `.spell-details` row directly underneath the spell name alongside `Range`, `Target`, `Area/Size`, `Save/Defense`, and `Duration`, freeing up maximum horizontal space for the spell name next to the `Cast` button.
+  - Moved spell traits (`Cantrip`, `Concentrate`, `Manipulate`, etc.) into the expandable description drawer.
+  - Added full untruncated spell name display (both by un-truncating `.action-name` when `.spell-card.expanded` is active and displaying a `.expanded-spell-fullname` banner with the full source name inside the expanded drawer).
+
+---
+
 ## [1.0.20] - 2026-09-23
 
 ### Party Stash & Party Sheet Integration

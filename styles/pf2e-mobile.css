@@ -3042,6 +3042,100 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-color: #3f3f46;
 }
 
+/* Staff Spell Card Stacked Mobile Layout */
+.pf2e-mobile-sheet .staff-spell-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+}
+
+.pf2e-mobile-sheet .staff-spell-header {
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.pf2e-mobile-sheet .staff-spell-header .action-title-group {
+  width: 100%;
+  min-height: 38px;
+}
+
+.pf2e-mobile-sheet .staff-spell-header .action-name {
+  font-size: 0.98rem;
+  white-space: normal;
+  line-height: 1.25;
+  flex: 1;
+}
+
+.pf2e-mobile-sheet .staff-spell-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.pf2e-mobile-sheet .staff-spell-details {
+  margin: 0;
+}
+
+.pf2e-mobile-sheet .staff-spell-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 2px;
+}
+
+.pf2e-mobile-sheet .staff-spell-actions .staff-btn-flex {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 38px;
+}
+
+.pf2e-mobile-sheet .staff-spell-traits {
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed #3f3f46;
+}
+
+.pf2e-mobile-sheet .badge-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.pf2e-mobile-sheet .spell-card.expanded .action-name,
+.pf2e-mobile-sheet .action-card.expanded .action-name {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.25;
+}
+
+.pf2e-mobile-sheet .expanded-spell-fullname {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: #f4f4f5;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #333;
+  word-break: break-word;
+}
+
 /* Wands & Scrolls Items */
 .pf2e-mobile-sheet .activation-cards-list {
   display: flex;
