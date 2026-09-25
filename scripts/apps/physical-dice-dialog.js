@@ -88,6 +88,14 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
     this._reject = params.reject;
   }
 
+  /** @override */
+  async render(options = {}, _options = {}) {
+    if (typeof options === "boolean") {
+      options = { ...(_options && typeof _options === "object" ? _options : {}), force: options };
+    }
+    return super.render(options, _options);
+  }
+
   /**
    * Prompts the player for a physical check outcome.
    * @param {object} params

@@ -206,6 +206,9 @@ export function matchPropertyRune(item, isWeapon) {
   const itemIsGreater = itemName.includes("greater") || itemSlug.includes("greater");
   const itemIsMajor = itemName.includes("major") || itemSlug.includes("major");
   const itemIsTrue = itemName.includes("true") || itemSlug.includes("true");
+  const itemIsLesser = itemName.includes("lesser") || itemSlug.includes("lesser");
+  const itemIsModerate = itemName.includes("moderate") || itemSlug.includes("moderate");
+  const itemIsMinor = itemName.includes("minor") || itemSlug.includes("minor");
 
   const itemCore = cleanCoreName(itemName);
   const slugCore = cleanCoreName(itemSlug);
@@ -219,14 +222,20 @@ export function matchPropertyRune(item, isWeapon) {
     const runeName = def.name.toLowerCase().trim();
     const runeSlug = slug.toLowerCase().trim();
 
-    // Check tier consistency
+    // Check tier consistency across all PF2e tiers
     const runeIsGreater = runeSlug.startsWith("greater") || runeName.startsWith("greater");
     const runeIsMajor = runeSlug.startsWith("major") || runeName.startsWith("major");
     const runeIsTrue = runeSlug.startsWith("true") || runeName.startsWith("true");
+    const runeIsLesser = runeSlug.startsWith("lesser") || runeName.startsWith("lesser");
+    const runeIsModerate = runeSlug.startsWith("moderate") || runeName.startsWith("moderate");
+    const runeIsMinor = runeSlug.startsWith("minor") || runeName.startsWith("minor");
 
     if (runeIsGreater !== itemIsGreater) continue;
     if (runeIsMajor !== itemIsMajor) continue;
     if (runeIsTrue !== itemIsTrue) continue;
+    if (runeIsLesser !== itemIsLesser) continue;
+    if (runeIsModerate !== itemIsModerate) continue;
+    if (runeIsMinor !== itemIsMinor) continue;
 
     const runeCore = cleanCoreName(runeName);
     const runeSlugCore = cleanCoreName(runeSlug);
@@ -237,7 +246,7 @@ export function matchPropertyRune(item, isWeapon) {
     if (isExactMatch || isPartialMatch) {
       // Must have etched usage, rune trait, "rune" in name/slug, or be equipment type
       if (isEtched || hasRuneTrait || itemName.includes("rune") || itemSlug.includes("rune") || item.type === "equipment") {
-        return { slug, name: def.name };
+        return { slug, name: getPropertyRuneLabel(slug, isWeapon) || def.name };
       }
     }
   }
@@ -316,23 +325,43 @@ export function getRuneItemMeta({ category, value, itemType }) {
   }
 
   if (category === "property") {
-    const propSlug = String(value);
+    const rawSlug = String(value ?? "");
+    const propSlug = normalizePropertyRuneSlug(rawSlug, !isArmor) ?? rawSlug;
     const dict = isArmor ? ARMOR_PROPERTY_RUNES : WEAPON_PROPERTY_RUNES;
     const baseName = getPropertyRuneLabel(propSlug, !isArmor);
+    const englishBaseName = dict[propSlug]?.name ?? baseName;
     const name = baseName.toLowerCase().endsWith("rune") ? baseName : `${baseName} Rune`;
+    const englishName = englishBaseName.toLowerCase().endsWith("rune") ? englishBaseName : `${englishBaseName} Rune`;
+
     // PF2e stores property runes camelCase, but compendium item slugs are kebab-case
-    // ("greaterFlaming" vs "greater-flaming-rune"), so offer both spellings.
+    // ("greaterFlaming" vs "greater-flaming-rune" or Remaster "flaming-greater"), so offer all spellings.
     const kebabSlug = decamelize(propSlug).toLowerCase();
+    const terms = new Set([
+      name.toLowerCase(),
+      baseName.toLowerCase(),
+      englishName.toLowerCase(),
+      englishBaseName.toLowerCase(),
+      `${kebabSlug}-rune`,
+      kebabSlug,
+      propSlug.toLowerCase()
+    ]);
+
+    const tierMatch = englishBaseName.match(/^(Greater|Major|True|Lesser|Moderate|Minor)\s+(.+)$/i);
+    if (tierMatch) {
+      const tier = tierMatch[1].toLowerCase();
+      const core = tierMatch[2].toLowerCase();
+      const coreKebab = core.replace(/[^a-z0-9]+/g, "-");
+      terms.add(`${core} (${tier})`);
+      terms.add(`${core} (${tier}) rune`);
+      terms.add(`${core} rune (${tier})`);
+      terms.add(`${coreKebab}-${tier}`);
+      terms.add(`${coreKebab}-${tier}-rune`);
+    }
+
     return {
       name,
       slug: propSlug,
-      searchTerms: [
-        name.toLowerCase(),
-        baseName.toLowerCase(),
-        `${kebabSlug}-rune`,
-        kebabSlug,
-        propSlug
-      ]
+      searchTerms: [...terms]
     };
   }
 
@@ -352,8 +381,9 @@ export function getRuneItemMeta({ category, value, itemType }) {
  * @returns {string}
  */
 export function getPropertyRuneLabel(slug, isWeapon) {
-  const def = (isWeapon ? WEAPON_PROPERTY_RUNES : ARMOR_PROPERTY_RUNES)[slug];
-  if (def?.i18n) {
+  const normalized = normalizePropertyRuneSlug(slug, isWeapon) ?? slug;
+  const def = (isWeapon ? WEAPON_PROPERTY_RUNES : ARMOR_PROPERTY_RUNES)[normalized];
+  if (def?.i18n && typeof game !== "undefined") {
     const localized = game.i18n?.localize?.(def.i18n);
     if (localized && localized !== def.i18n) return localized;
   }
@@ -375,12 +405,45 @@ export function isKnownPropertyRune(slug, isWeapon) {
 }
 
 /**
- * Filters a list of property rune slugs down to the ones PF2e can resolve.
+ * Normalizes a property rune slug (e.g. legacy kebab-case "greater-flaming"
+ * or suffix "flaming-greater") to PF2e's canonical camelCase slug ("greaterFlaming")
+ * if it exists in the property rune registry. Returns null if unrecognised.
+ * @param {string} slug
+ * @param {boolean} isWeapon
+ * @returns {string | null}
+ */
+export function normalizePropertyRuneSlug(slug, isWeapon) {
+  if (!slug || typeof slug !== "string") return null;
+  const trimmed = slug.trim();
+  if (!trimmed) return null;
+  if (isKnownPropertyRune(trimmed, isWeapon)) return trimmed;
+
+  const toCamel = (s) =>
+    s
+      .replace(/[-_\s]+([a-zA-Z0-9])/g, (_, c) => c.toUpperCase())
+      .replace(/^[A-Z]/, c => c.toLowerCase());
+
+  const directCamel = toCamel(trimmed);
+  if (isKnownPropertyRune(directCamel, isWeapon)) return directCamel;
+
+  const suffixMatch = trimmed.match(/^(.+)-(greater|major|true|lesser|moderate|minor)$/i);
+  if (suffixMatch) {
+    const prefixCamel = toCamel(`${suffixMatch[2].toLowerCase()}-${suffixMatch[1]}`);
+    if (isKnownPropertyRune(prefixCamel, isWeapon)) return prefixCamel;
+  }
+
+  return null;
+}
+
+/**
+ * Filters and normalizes a list of property rune slugs down to the canonical
+ * camelCase slugs PF2e can resolve.
  *
  * PF2e's data preparation indexes `RUNE_DATA.<type>.property[slug]` without
  * guarding for unknown keys, so an unrecognised slug reaching
- * `system.runes.property` throws while building the item's strikes. Anything
- * this drops is logged rather than written.
+ * `system.runes.property` throws while building the item's strikes. Legacy
+ * kebab-case slugs ("greater-flaming") are converted to camelCase ("greaterFlaming"),
+ * while genuinely unknown slugs are logged and dropped.
  *
  * @param {string[]} slugs
  * @param {boolean} isWeapon
@@ -390,9 +453,15 @@ export function sanitizePropertyRunes(slugs, isWeapon) {
   const input = Array.isArray(slugs) ? slugs : [];
   const kept = [];
   const dropped = [];
-  for (const slug of input) {
-    if (isKnownPropertyRune(slug, isWeapon)) kept.push(slug);
-    else if (slug) dropped.push(slug);
+  for (const raw of input) {
+    const slug = typeof raw === "string" ? raw : raw?.slug ?? raw?.value ?? "";
+    if (!slug) continue;
+    const normalized = normalizePropertyRuneSlug(slug, isWeapon);
+    if (normalized) {
+      if (!kept.includes(normalized)) kept.push(normalized);
+    } else {
+      dropped.push(slug);
+    }
   }
   if (dropped.length > 0) {
     console.warn(

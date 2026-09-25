@@ -10,9 +10,16 @@
       <span class="encumbered-badge danger">Over Limit</span>
       {{/if}}
     </div>
-    <button type="button" class="touch-target btn-primary" data-action="openCompendiumPicker" data-type="equipment">
-      <i class="fas fa-plus"></i> Add Gear
-    </button>
+    <div class="inventory-header-buttons">
+      {{#if partyStash}}
+      <button type="button" class="touch-target btn-party-stash" data-action="openPartyStash" data-party-id="{{partyStash.id}}" title="Open {{partyStash.name}} Stash">
+        <i class="fas fa-box-archive"></i> Stash ({{partyStash.itemsCount}})
+      </button>
+      {{/if}}
+      <button type="button" class="touch-target btn-primary" data-action="openCompendiumPicker" data-type="equipment">
+        <i class="fas fa-plus"></i> Add Gear
+      </button>
+    </div>
   </div>
 
   <!-- Consumables Section -->
@@ -51,6 +58,11 @@
             {{else}}
             <button type="button" class="touch-target btn-consume" data-action="consumeItem" data-item-id="{{item.id}}" title="Use or Administer to Comrade">
               <i class="fas fa-hand-holding-heart"></i> Use
+            </button>
+            {{/if}}
+            {{#if ../partyStash}}
+            <button type="button" class="touch-target btn-send-stash" data-action="sendToPartyStash" data-item-id="{{item.id}}" title="Send to Party Stash">
+              <i class="fas fa-box-archive"></i>
             </button>
             {{/if}}
           </div>
@@ -123,6 +135,11 @@
               <i class="fas fa-eraser"></i> Clean
             </button>
             {{/if}}
+            {{#if ../partyStash}}
+            <button type="button" class="touch-target btn-send-stash" data-action="sendToPartyStash" data-item-id="{{item.id}}" title="Send to Party Stash">
+              <i class="fas fa-box-archive"></i>
+            </button>
+            {{/if}}
             <span class="item-bulk">Bulk: {{item.bulk}}</span>
           </div>
         </div>
@@ -189,6 +206,11 @@
               <i class="fas fa-gem"></i> Runes
             </button>
             {{/if}}
+            {{#if ../partyStash}}
+            <button type="button" class="touch-target btn-send-stash" data-action="sendToPartyStash" data-item-id="{{item.id}}" title="Send to Party Stash">
+              <i class="fas fa-box-archive"></i>
+            </button>
+            {{/if}}
             <span class="item-bulk">Bulk: {{item.bulk}}</span>
           </div>
         </div>
@@ -247,7 +269,14 @@
               </div>
             </div>
           </div>
-          <span class="item-bulk">Bulk: {{item.bulk}}</span>
+          <div class="item-actions">
+            {{#if ../partyStash}}
+            <button type="button" class="touch-target btn-send-stash" data-action="sendToPartyStash" data-item-id="{{item.id}}" title="Send to Party Stash">
+              <i class="fas fa-box-archive"></i>
+            </button>
+            {{/if}}
+            <span class="item-bulk">Bulk: {{item.bulk}}</span>
+          </div>
         </div>
         {{#if item.description}}
         <div class="action-summary item-summary {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">

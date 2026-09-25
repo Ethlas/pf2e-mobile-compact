@@ -80,6 +80,16 @@ export async function prepareInventoryContext(actor, sheet, context) {
     isOverLimit: encumbrance.isOverLimit ?? false
   };
 
+  const party = Array.from(actor.parties ?? [])[0]
+    ?? (game.actors.party?.members.some(m => m.id === actor.id) ? game.actors.party : null)
+    ?? game.actors.find(p => p.type === "party" && p.members?.some(m => m.id === actor.id));
+
+  context.partyStash = party ? {
+    id: party.id,
+    name: party.name,
+    itemsCount: party.items.filter(i => (typeof i.isOfType === "function" ? i.isOfType("physical") : PHYSICAL_ITEM_TYPES.has(i.type))).length
+  } : null;
+
   const items = actor.items ?? [];
 
   // Defensive check for physical items (PF2e isOfType predicate and physical item set)

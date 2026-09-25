@@ -468,21 +468,48 @@ export async function onRollActionCheck(sheet, event, target) {
 
 /**
  * Action handler: roll skill check.
+ * Resolves skill statistic and executes PF2e native check workflow with physical dice interception.
  * @param {object} sheet
  * @param {Event} event
  * @param {HTMLElement} target
  */
 export async function onRollSkill(sheet, event, target) {
-  const skillSlug = target.dataset.skill;
+  const skillSlug = target?.dataset?.skill ?? target?.closest?.("[data-skill]")?.dataset?.skill;
   if (!skillSlug) return;
 
-  const skill = sheet.actor.system.skills?.[skillSlug];
+  const stat = sheet.actor.getStatistic?.(skillSlug) ?? sheet.actor.skills?.[skillSlug];
+  const skillData = sheet.actor.system?.skills?.[skillSlug];
+  const rawLabel = stat?.label ?? skillData?.label ?? skillSlug;
+  const label = typeof rawLabel === "string" ? (game.i18n?.localize?.(rawLabel) ?? rawLabel) : String(rawLabel);
+
+  let targetToken = null;
+  const currentTarget = Array.from(game.user?.targets ?? []).find(t => t.id);
+  if (currentTarget) {
+    targetToken = getTargetableToken(currentTarget.id) ?? currentTarget;
+  }
+
+  // Ensure origin token adapter is initialized
+  getOriginToken(sheet.actor);
+
   await PhysicalDiceManager.withPhysicalMode({
-    title: `${skill?.label ?? skillSlug} Check`,
+    title: `${label} Check`,
+    target: targetToken,
     actor: sheet.actor
   }, async () => {
-    if (typeof sheet.actor.rollSkill === "function") {
+    const rollOptions = { event };
+    if (targetToken) {
+      rollOptions.target = targetToken.object ?? targetToken;
+    }
+
+    if (typeof stat?.roll === "function") {
+      await stat.roll(rollOptions);
+    } else if (typeof stat?.check?.roll === "function") {
+      await stat.check.roll(rollOptions);
+    } else if (typeof sheet.actor.rollSkill === "function") {
       await sheet.actor.rollSkill(event, skillSlug);
+    } else {
+      console.warn(`pf2e-mobile-compact | Could not find roll method for skill: ${skillSlug}`);
+      ui.notifications?.warn?.(`Could not find roll method for skill: ${label}`);
     }
   }, sheet.rollMode === "physical");
 }
@@ -505,13 +532,18 @@ export async function onConsumeItem(sheet, event, target) {
  */
 export function onToggleActionSummary(sheet, event, target) {
   event.preventDefault();
-  const actionEl = target.closest(".action-card, .strike-card, .item-card, .inventory-item-card");
+  const actionEl = target.closest(".action-card, .strike-card, .item-card, .inventory-item-card, .staff-activation-group");
   if (!actionEl) return;
 
-  const summaryEl = actionEl.querySelector(".action-summary, .item-summary");
+  const isStaffGroup = actionEl.classList.contains("staff-activation-group");
+  const summaryEl = isStaffGroup
+    ? actionEl.querySelector(".staff-drawer-content")
+    : actionEl.querySelector(".action-summary, .item-summary");
   if (!summaryEl) return;
 
-  const icon = actionEl.querySelector(".action-expand-icon, .action-toggle-icon, .fa-chevron-down");
+  const icon = isStaffGroup
+    ? actionEl.querySelector(".staff-header-card .action-expand-icon")
+    : actionEl.querySelector(".action-expand-icon, .action-toggle-icon, .fa-chevron-down");
   const itemId = target.dataset.itemId || actionEl.dataset.itemId;
 
   if (!sheet._expandedActionIds) {

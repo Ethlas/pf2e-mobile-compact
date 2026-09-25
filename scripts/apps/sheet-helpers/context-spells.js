@@ -2,6 +2,7 @@
  * Context preparation helper for Spells (Cast View and Preparation View).
  */
 import { getGlyph } from "../../utils/sheet-utils.js";
+import { isItemSpellcastingEntry } from "./context-activations.js";
 
 /**
  * Format spell item details.
@@ -42,12 +43,51 @@ export async function formatSpell(actor, sheet, spell, entryId, extra = {}) {
   }
 
   const entry = actor.spellcasting?.get(entryId);
-  const isSpontaneous = entry?.isSpontaneous || entry?.system?.prepared?.value === "spontaneous";
-  const isCantrip = spell.isCantrip || traits.some(t => t.label.toLowerCase() === "cantrip") || spell.system?.level?.value === 0;
-  const isFocus = spell.isFocusSpell || traits.some(t => t.label.toLowerCase() === "focus");
+  const isSpontaneous = extra.isSpontaneous ?? (entry?.isSpontaneous || entry?.system?.prepared?.value === "spontaneous");
+  const isCantrip = spell.isCantrip || traits.some(t => t.label.toLowerCase() === "cantrip") || spell.system?.level?.value === 0 || extra.castRank === 0;
+  const isFocus = extra.isFocus ?? (spell.isFocusSpell || traits.some(t => t.label.toLowerCase() === "focus"));
+  const isInnate = extra.isInnate ?? (entry?.isInnate || entry?.system?.prepared?.value === "innate" || spell.isInnate);
   const isRitual = spell.isRitual || traits.some(t => t.label.toLowerCase() === "ritual");
   const isSignature = !!(spell.system?.location?.signature || spell.isSignature);
   const canSignature = isSpontaneous && !isCantrip && !isFocus && !isRitual;
+
+  let canCast = extra.canCast ?? true;
+  let cannotCastReason = extra.cannotCastReason ?? "";
+
+  if (extra.canCast === undefined) {
+    if (isCantrip) {
+      canCast = true;
+    } else if (extra.isPrepared) {
+      if (extra.isExpended) {
+        canCast = false;
+        cannotCastReason = "Spell slot already expended";
+      }
+    } else if (isFocus) {
+      const focusVal = actor.system.resources?.focus?.value ?? 0;
+      if (focusVal <= 0) {
+        canCast = false;
+        cannotCastReason = "No Focus Points remaining";
+      }
+    } else if (isInnate) {
+      const usesMax = spell.system?.uses?.max ?? 0;
+      const usesVal = spell.system?.uses?.value ?? 0;
+      if (usesMax > 0 && usesVal <= 0) {
+        canCast = false;
+        cannotCastReason = "No uses remaining";
+      }
+    } else if (isSpontaneous) {
+      const castRank = extra.castRank ?? spell.rank ?? 1;
+      if (castRank > 0) {
+        const slotKey = `slot${castRank}`;
+        const slotData = entry?.system?.slots?.[slotKey];
+        const slotsRemaining = slotData?.value ?? 0;
+        if (slotsRemaining <= 0) {
+          canCast = false;
+          cannotCastReason = `No Rank ${castRank} spell slots remaining`;
+        }
+      }
+    }
+  }
 
   const cardKey = extra.cardKey ?? (extra.castRank !== undefined ? `${spell.id}-${extra.castRank}` : spell.id);
 
@@ -68,6 +108,8 @@ export async function formatSpell(actor, sheet, spell, entryId, extra = {}) {
     isAttack,
     isSignature,
     canSignature,
+    canCast,
+    cannotCastReason,
     description: enrichedDescription || rawDescription,
     isExpanded: sheet._expandedActionIds?.has(cardKey) || (!extra.cardKey && sheet._expandedActionIds?.has(spell.id)),
     ...extra
@@ -81,11 +123,13 @@ export async function formatSpell(actor, sheet, spell, entryId, extra = {}) {
  * @param {object} context
  */
 export async function prepareSpellsContext(actor, sheet, context) {
-  const entries = actor.spellcasting?.contents ?? [];
+  const allEntries = actor.spellcasting?.contents ?? [];
+  const entries = allEntries.filter(e => !isItemSpellcastingEntry(e, actor));
   const hasPreparedEntry = entries.some(e => e.isPrepared || e.system?.prepared?.value === "prepared");
 
   context.hasPreparedEntry = hasPreparedEntry;
-  context.spellSubTab = hasPreparedEntry ? sheet._spellSubTab : "spells";
+  const currentSubTab = sheet._spellSubTab || "spells";
+  context.spellSubTab = (currentSubTab === "preparation" && !hasPreparedEntry) ? "spells" : currentSubTab;
 
   // 1. GATHER ALL SPELLS ACROSS ALL ENTRIES
   // We group by rank: 0 (Cantrips) to 10
@@ -202,6 +246,12 @@ export async function prepareSpellsContext(actor, sheet, context) {
       }
 
       for (const spell of spells) {
+        // Defensive check: skip if spell originates from an item or staff
+        if (spell.system?.location?.value) {
+          const locEntry = actor.spellcasting?.get(spell.system.location.value);
+          if (locEntry && isItemSpellcastingEntry(locEntry, actor)) continue;
+        }
+
         const traits = spell.system?.traits?.value ?? spell.traits?.value ?? [];
         const traitLabels = Array.isArray(traits) ? traits.map(t => typeof t === "string" ? t.toLowerCase() : String(t?.value ?? t?.label ?? "").toLowerCase()) : [];
         const isCantrip = spell.isCantrip || traitLabels.includes("cantrip") || spell.system?.level?.value === 0;

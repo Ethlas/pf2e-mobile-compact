@@ -3,90 +3,22 @@ const { ActorSheetV2 } = foundry.applications.sheets;
 import { CompendiumPickerApp } from "./compendium-picker.js";
 import { PhysicalDiceManager } from "../rolls/physical-dice-interceptor.js";
 import { clamp, getGlyph } from "../utils/sheet-utils.js";
-import {
-  getTargetableToken,
-  getOriginToken,
-  setTargetToken,
-  ensureTokenControlled
-} from "../tokens/token-adapter.js";
+import { getTargetableToken, getOriginToken, setTargetToken, ensureTokenControlled } from "../tokens/token-adapter.js";
 import { prepareHeaderContext } from "./sheet-helpers/context-header.js";
+import { preparePartyContext } from "./sheet-helpers/context-party.js";
 import { prepareActionsContext } from "./sheet-helpers/context-actions.js";
 import { prepareSkillsContext } from "./sheet-helpers/context-skills.js";
 import { prepareInventoryContext } from "./sheet-helpers/context-inventory.js";
 import { prepareSpellsContext, formatSpell } from "./sheet-helpers/context-spells.js";
-import {
-  resolveTargetForAction,
-  promptTargetSelection,
-  promptVariantSelection,
-  promptStatisticSelection,
-  promptStrikeSelection
-} from "./sheet-helpers/sheet-prompts.js";
-import {
-  onExecuteStrike,
-  onExecuteDamage,
-  onExecuteCritical,
-  onExecuteAuxiliaryAction,
-  onItemToChat,
-  onUseAction,
-  onRollActionCheck,
-  onRollSkill,
-  onToggleActionSummary
-} from "./sheet-helpers/actions-handlers.js";
-import {
-  onUseConsumable,
-  onApplyPoison,
-  onDetachSubitem,
-  onChangeCarryType,
-  onToggleInventorySection,
-  onConfigureRunes,
-  onToggleInvested,
-  onToggleEquipped
-} from "./sheet-helpers/inventory-handlers.js";
-import {
-  onSwitchSpellSubTab,
-  onToggleRankGroup,
-  onOpenSpellPrepPicker,
-  prepareSlot,
-  onUnprepareSlot,
-  onToggleSlotExpended,
-  onResetDailySpells,
-  onSaveSpellPreset,
-  onApplySpellPreset,
-  onDeleteSpellPreset,
-  onOpenCompendiumPicker,
-  onAdjustSlot,
-  onAdjustFocus,
-  onCastSpell,
-  onToggleSignatureSpell,
-  onRemoveSpell
-} from "./sheet-helpers/spells-handlers.js";
-import {
-  onApplyDeltaHP,
-  onSetDirectHP,
-  onSetDirectTempHP,
-  onRollPerceptionOrInitiative,
-  onApplyDamage,
-  onApplyHeal,
-  onSetTempHP,
-  onAdjustTempHP,
-  onRollSave,
-  onRollPerception,
-  onRollInitiative,
-  onSelectTarget,
-  onToggleRollMode,
-  onToggleFullscreen,
-  onSwitchActor
-} from "./sheet-helpers/header-handlers.js";
-import {
-  disableChatInputs,
-  dockChatElement,
-  restoreChatElement,
-  scrollChatToBottom,
-  setupScrollBottomListener,
-  registerChatListener,
-  unregisterChatListener,
-  updateChatBadge
-} from "./sheet-helpers/chat-handler.js";
+import { prepareActivationsContext } from "./sheet-helpers/context-activations.js";
+import { onTransferStashItem, onSendToPartyStash, onOpenPartyStash, onSwitchToPartyMember, onTransferCoins } from "./sheet-helpers/party-handlers.js";
+import { resolveTargetForAction, promptTargetSelection, promptVariantSelection, promptStatisticSelection, promptStrikeSelection } from "./sheet-helpers/sheet-prompts.js";
+import { onExecuteStrike, onExecuteDamage, onExecuteCritical, onExecuteAuxiliaryAction, onItemToChat, onUseAction, onRollActionCheck, onRollSkill, onToggleActionSummary } from "./sheet-helpers/actions-handlers.js";
+import { onUseConsumable, onApplyPoison, onDetachSubitem, onChangeCarryType, onToggleInventorySection, onConfigureRunes, onToggleInvested, onToggleEquipped } from "./sheet-helpers/inventory-handlers.js";
+import { onSwitchSpellSubTab, onToggleRankGroup, onOpenSpellPrepPicker, prepareSlot, onUnprepareSlot, onToggleSlotExpended, onResetDailySpells, onSaveSpellPreset, onApplySpellPreset, onDeleteSpellPreset, onOpenCompendiumPicker, onAdjustSlot, onAdjustFocus, onCastSpell, onToggleSignatureSpell, onRemoveSpell } from "./sheet-helpers/spells-handlers.js";
+import { onCastStaffSpell, onAdjustStaffCharges, onCastItemSpell, onOpenDailies } from "./sheet-helpers/activations-handlers.js";
+import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleFullscreen, onSwitchActor } from "./sheet-helpers/header-handlers.js";
+import { disableChatInputs, dockChatElement, restoreChatElement, scrollChatToBottom, setupScrollBottomListener, registerChatListener, unregisterChatListener, updateChatBadge } from "./sheet-helpers/chat-handler.js";
 
 /**
  * Mobile-optimized compact character sheet application subclassing Foundry VTT's modern ActorSheetV2.
@@ -160,7 +92,16 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       applySpellPreset: PF2eMobileSheet._onApplySpellPreset,
       deleteSpellPreset: PF2eMobileSheet._onDeleteSpellPreset,
       toggleSignatureSpell: PF2eMobileSheet._onToggleSignatureSpell,
-      removeSpell: PF2eMobileSheet._onRemoveSpell
+      removeSpell: PF2eMobileSheet._onRemoveSpell,
+      castStaffSpell: PF2eMobileSheet._onCastStaffSpell,
+      adjustStaffCharges: PF2eMobileSheet._onAdjustStaffCharges,
+      castItemSpell: PF2eMobileSheet._onCastItemSpell,
+      openDailies: PF2eMobileSheet._onOpenDailies,
+      transferStashItem: PF2eMobileSheet._onTransferStashItem,
+      sendToPartyStash: PF2eMobileSheet._onSendToPartyStash,
+      openPartyStash: PF2eMobileSheet._onOpenPartyStash,
+      switchToPartyMember: PF2eMobileSheet._onSwitchToPartyMember,
+      transferCoins: PF2eMobileSheet._onTransferCoins
     }
   };
 
@@ -173,6 +114,13 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       template: "modules/pf2e-mobile-compact/templates/mobile-sheet.hbs"
     }
   };
+
+  constructor(...args) {
+    super(...args);
+    if (this.actor?.type === "party") {
+      this._activeTab = "stash";
+    }
+  }
 
   /** @type {string} */
   _activeTab = "actions";
@@ -238,6 +186,14 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    */
   get rollMode() {
     return this._rollMode;
+  }
+
+  /** @override */
+  async render(options = {}, _options = {}) {
+    if (typeof options === "boolean") {
+      options = { ...(_options && typeof _options === "object" ? _options : {}), force: options };
+    }
+    return super.render(options, _options);
   }
 
   /** @override */
@@ -414,41 +370,15 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     this._sceneHookIds = [];
   }
 
-  _disableChatInputs(chatEl) {
-    disableChatInputs(chatEl, this);
-  }
-
-  _dockChatElement() {
-    dockChatElement(this);
-  }
-
-  _restoreChatElement() {
-    restoreChatElement(this);
-  }
-
-  _scrollChatToBottom(smooth = false) {
-    scrollChatToBottom(this, smooth);
-  }
-
-  _setupScrollBottomListener() {
-    setupScrollBottomListener(this);
-  }
-
-  _ensureTokenControlled() {
-    ensureTokenControlled(this.actor);
-  }
-
-  _registerChatListener() {
-    registerChatListener(this);
-  }
-
-  _unregisterChatListener() {
-    unregisterChatListener(this);
-  }
-
-  _updateChatBadge() {
-    updateChatBadge(this);
-  }
+  _disableChatInputs(chatEl) { disableChatInputs(chatEl, this); }
+  _dockChatElement() { dockChatElement(this); }
+  _restoreChatElement() { restoreChatElement(this); }
+  _scrollChatToBottom(smooth = false) { scrollChatToBottom(this, smooth); }
+  _setupScrollBottomListener() { setupScrollBottomListener(this); }
+  _ensureTokenControlled() { ensureTokenControlled(this.actor); }
+  _registerChatListener() { registerChatListener(this); }
+  _unregisterChatListener() { unregisterChatListener(this); }
+  _updateChatBadge() { updateChatBadge(this); }
 
   /** @override */
   async _prepareContext(options) {
@@ -477,6 +407,15 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       console.error("PF2e Mobile Compact | Error preparing header context:", err);
     }
 
+    if (actor.type === "party") {
+      try {
+        await preparePartyContext(actor, this, context);
+      } catch (err) {
+        console.error("PF2e Mobile Compact | Error preparing party context:", err);
+      }
+      return context;
+    }
+
     try {
       await prepareActionsContext(actor, this, context);
     } catch (err) {
@@ -501,6 +440,15 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     } catch (err) {
       console.error("PF2e Mobile Compact | Error preparing spells context:", err);
       context.spells = { entries: [], focus: null };
+    }
+
+    try {
+      await prepareActivationsContext(actor, this, context);
+    } catch (err) {
+      console.error("PF2e Mobile Compact | Error preparing activations context:", err);
+      context.activations = { staff: null, wands: [], scrolls: [], other: [] };
+      context.hasActivations = false;
+      context.activationsCount = 0;
     }
 
     try {
@@ -669,6 +617,19 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onCastSpell(event, target) { return onCastSpell(this, event, target); }
   static async _onToggleSignatureSpell(event, target) { return onToggleSignatureSpell(this, event, target); }
   static async _onRemoveSpell(event, target) { return onRemoveSpell(this, event, target); }
+
+  // --- Delegated Activations Handlers ---
+  static async _onCastStaffSpell(event, target) { return onCastStaffSpell(this, event, target); }
+  static async _onAdjustStaffCharges(event, target) { return onAdjustStaffCharges(this, event, target); }
+  static async _onCastItemSpell(event, target) { return onCastItemSpell(this, event, target); }
+  static async _onOpenDailies(event, target) { return onOpenDailies(this, event, target); }
+
+  // --- Delegated Party Handlers ---
+  static async _onTransferStashItem(event, target) { return onTransferStashItem(this, event, target); }
+  static async _onSendToPartyStash(event, target) { return onSendToPartyStash(this, event, target); }
+  static async _onOpenPartyStash(event, target) { return onOpenPartyStash(this, event, target); }
+  static async _onSwitchToPartyMember(event, target) { return onSwitchToPartyMember(this, event, target); }
+  static async _onTransferCoins(event, target) { return onTransferCoins(this, event, target); }
 }
 
 // Backwards-compatibility re-exports

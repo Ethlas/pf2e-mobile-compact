@@ -4,28 +4,158 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
-## [1.0.18] - 2026-09-23
+## [1.0.23] - 2026-09-25
 
-### Hotfix: Property Rune Slugs Did Not Match PF2e's Registry
+### Hotfix: Property Rune Slugs & Bottom Navigation Viewport Fix (Issue #7 / PR #8)
 
 #### Fixed
 - **Etching a Multi-Word Property Rune Broke the Weapon** (`scripts/apps/sheet-helpers/rune-data.js`, `rune-handlers.js`):
   - Root cause: the rune tables keyed property runes in kebab-case (`greater-flaming`, `ghost-touch`, `acid-resistant`), but PF2e stores and looks them up in camelCase (`greaterFlaming`, `ghostTouch`, `acidResistant`). 84 of the module's 146 slugs did not exist in PF2e's `RUNE_DATA` registry.
   - PF2e's data preparation indexes `RUNE_DATA.<type>.property[slug]` without guarding for unknown keys (`item/weapon/document.ts`, `item/physical/runes.ts`), so an unresolved slug threw `TypeError: Cannot read properties of undefined (reading 'damage')` while building the item's strikes. Only single-word runes (`flaming`, `keen`, `frost`), where both conventions coincide, worked.
   - Regenerated both rune tables from the PF2e system's own registry: correct camelCase slugs, all 80 weapon and 58 armor property runes (previously 96 and 51 entries, 41 of which named runes PF2e does not implement), with English labels and `i18n` keys taken from the system's `en.json`.
-- **Unknown Rune Slugs Can No Longer Reach PF2e** (`scripts/apps/sheet-helpers/rune-handlers.js`):
-  - Added `sanitizePropertyRunes()`, applied at both the weapon and armor write sites, so any slug this PF2e build cannot resolve is logged and dropped instead of being written to `system.runes.property`.
-- **Localized Rune Labels** (`scripts/apps/sheet-helpers/context-inventory.js`, `rune-data.js`):
-  - Added `getPropertyRuneLabel()`, which prefers PF2e's localization key so rune badges render in the client's language, falling back to the English name and then to a de-camelized slug.
-- **Compendium Lookups Still Resolve** (`scripts/apps/sheet-helpers/rune-data.js`):
-  - `getRuneItemMeta()` now emits kebab-case search terms alongside the camelCase slug, since `pf2e.equipment-srd` item slugs are kebab-case (`greater-flaming-rune`). This keeps "return rune to inventory" working.
-  - `cleanCoreName()` de-camelizes before stripping tier words, so inventory matching works against camelCase slugs, kebab-case compendium slugs, and display names alike.
+- **Automatic Normalization & Migration of Legacy Kebab-Case Rune Slugs** (`scripts/apps/sheet-helpers/rune-data.js`, `rune-handlers.js`, `scripts/pf2e-mobile.js`):
+  - Added `normalizePropertyRuneSlug()` and updated `sanitizePropertyRunes()` so legacy kebab-case slugs (`greater-flaming`, `ghost-touch`) and suffix-ordered slugs (`flaming-greater`) are automatically converted to their valid PF2e camelCase equivalents (`greaterFlaming`, `ghostTouch`) rather than being destructively dropped or triggering false rune-unetch inventory duplicates.
+  - Added `migrateActorPropertyRunes()` invoked during `ready` and `renderPF2eMobileSheet` to automatically self-heal owned weapons and armor with legacy kebab-case runes from v1.0.17.
+- **Full Tier Consistency in `matchPropertyRune()`** (`scripts/apps/sheet-helpers/rune-data.js`):
+  - Added `lesser`, `moderate`, and `minor` tier checks alongside `greater`, `major`, and `true`, fixing a bug where `Lesser Dread` (`lesserDread`) was misidentified as `Moderate Dread` (`moderateDread`).
+- **Localized Rune Labels & Compendium Lookups** (`scripts/apps/sheet-helpers/context-inventory.js`, `rune-data.js`, `rune-handlers.js`):
+  - Added `getPropertyRuneLabel()`, which prefers PF2e's localization key so rune badges and dialog options render in the client's language, falling back to the English name and then to a de-camelized slug.
+  - Enhanced `getRuneItemMeta()` and `returnRuneToInventory()` to match both prefix (`greater-flaming-rune`, `Greater Flaming`) and PF2e Remaster parenthetical/suffix conventions (`flaming-greater`, `Flaming (Greater)`), while preserving English fallback search terms on non-English clients and matching existing inventory stacks via `searchTerms` and `matchPropertyRune()`.
+- **Bottom Navigation Bar & `Hooks.once("init")` Settings Order Fix** (`scripts/pf2e-mobile.js`, `scripts/apps/mobile-sheet.js`, `styles/pf2e-mobile.css`):
+  - Moved `game.settings.register("pf2e-mobile-compact", "mobileActivationMode", ...)` to the very start of `Hooks.once("init")` before `shouldActivateMobile()` is called.
+  - Removed a stray CSS syntax error in `styles/pf2e-mobile.css`, changed `.window-content` and `.mobile-sheet-body` to `flex: 1 1 0% !important; min-height: 0 !important; height: auto !important;` so header heights never push `<nav class="mobile-bottom-nav">` outside the container, and clamped windowed sheet height to the viewport in `_onRender`.
 - **Regression Guard** (`scripts/verify.mjs`):
   - Added check 4b, failing the build if any property rune slug contains a hyphen. Verified it reports all 68 pre-fix slugs and exits non-zero.
 
 #### Known Limitations (not addressed here)
 - Property rune slot count still uses `min(potency, 3)`. PF2e's `getPropertyRuneSlots()` also grants +1 slot for orichalcum and derives potency from character level under Automatic Bonus Progression; potency is `ZeroToFour`, not 0-3.
 - Duplicate pruning is exact-match only; PF2e's `prunePropertyRunes` also strips lesser runes when a greater one is present.
+
+---
+
+## [1.0.22] - 2026-09-24
+
+### iPhone / iOS Safari Compatibility — WebKit GPU Memory Protection & Mobile Viewport Fixes (Issue #9)
+
+#### Fixed
+- **WebKit WebProcess / GPUProcess Crash & Auto-Reload Loop (`scripts/pf2e-mobile.js`)**:
+  - Resolved the critical iOS Safari crash loop (`"A problem repeatedly occurred on this webpage"`) caused by PixiJS allocating 3x Retina WebGL framebuffers (`devicePixelRatio: 3`) and continuously rendering full-resolution scene textures, lighting, and weather effects in the background.
+  - Moved `body.pf2e-mobile-active` activation, viewport meta injection (`injectMobileViewportMeta`), and canvas optimization (`optimizeCanvasForMobile`) to execute immediately during `Hooks.once("init")` *before* `game.initializeCanvas()` runs.
+  - Clamped `PIXI.settings.RESOLUTION` and `canvas.app.renderer.resolution` to `1` on mobile, stopped `canvas.app.ticker`, disabled `canvas.app.stage.renderable` and `interactiveChildren`, and cleared canvas weather particles (`canvas.weather.clear()`), while preserving `canvas.scene` and `scene.tokens` for headless token geometry (`token-adapter.js`).
+  - Added `resumeCanvasFromMobile()` so desktop clients deactivating mobile mode can cleanly restore canvas rendering.
+- **Notch / Dynamic Island & Home Indicator Safe-Area Collisions (`scripts/pf2e-mobile.js`, `styles/pf2e-mobile.css`)**:
+  - Updated `meta[name="viewport"]` to include `viewport-fit=cover` so `env(safe-area-inset-*)` variables evaluate accurately on iOS devices.
+  - Added Apple Web App (PWA) meta tags (`apple-mobile-web-app-capable="yes"`, `apple-mobile-web-app-status-bar-style="black-translucent"`, `apple-mobile-web-app-title="PF2e Mobile"`).
+  - Updated `.pf2e-mobile-sheet .mobile-header-dashboard`, `#notifications`, `.mobile-tab-content`, `.mobile-bottom-nav`, and `#pf2e-mobile-fab` to respect `env(safe-area-inset-top)`, `env(safe-area-inset-bottom)`, `env(safe-area-inset-left)`, and `env(safe-area-inset-right)`.
+- **iOS Safari Input Auto-Zoom Prevention (`styles/pf2e-mobile.css`, `scripts/apps/sheet-helpers/sheet-prompts.js`, `scripts/apps/sheet-helpers/rune-handlers.js`)**:
+  - Enforced `font-size: 16px !important` on all `<input>`, `<select>`, and `<textarea>` elements inside `.pf2e-mobile-sheet`, `body.pf2e-mobile-active`, and `DialogV2` modals to prevent Safari from auto-zooming the viewport on focus.
+- **Elastic Rubber-Band Window Overscroll (`styles/pf2e-mobile.css`)**:
+  - Locked `html:has(body.pf2e-mobile-active)` and `body.pf2e-mobile-active` with `position: fixed`, `inset: 0`, `height: 100dvh`, `overflow: hidden`, and `overscroll-behavior: none`, and applied `overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;` to `.mobile-tab-content`.
+- **WebKit Delegated Clicks, Native Select Pickers & Fullscreen Fallback (`styles/pf2e-mobile.css`, `scripts/apps/sheet-helpers/header-handlers.js`, `scripts/apps/sheet-helpers/sheet-prompts.js`, `scripts/apps/sheet-helpers/rune-handlers.js`, `scripts/utils/sheet-utils.js`)**:
+  - Added `cursor: pointer !important; touch-action: manipulation; -webkit-tap-highlight-color: transparent;` to all `[data-action]`, `[data-change-action]`, and `.touch-target` elements so iOS WebKit reliably dispatches delegated click events on non-button elements (`<div>`, `<span>`).
+  - Added `onclick="event.stopPropagation()"` to `<select>` elements inside `DialogV2` modals in `sheet-prompts.js` and `rune-handlers.js` so native iOS picker wheels open reliably.
+  - Added `isIOSDevice()` in `sheet-utils.js` and updated `onToggleFullscreen()` in `header-handlers.js` with a CSS fullscreen fallback and a one-time iOS Home Screen PWA tip.
+  - Wrapped `patchMediaElements()` in defensive `try/catch` blocks in `scripts/pf2e-mobile.js`.
+
+---
+
+## [1.0.21] - 2026-09-24
+
+### Staff Preparation Spells Isolation & Morning Dailies Fix
+
+#### Fixed
+- **Staff Spells Isolation & Old Spells Cleanup** (`scripts/apps/sheet-helpers/context-activations.js`, `templates/parts/spells.hbs`):
+  - Fixed an issue where expanding a newly prepared staff continued to show spells belonging to the previous staff.
+  - Rewrote the staff spell resolution order to give strict Priority 1 to morning-prepared spells from `pf2e-dailies` (`dailiesStaffData.spells`), completely preventing stale spells from preexisting spellcasting entries on the actor from overriding the active staff.
+  - Filtered fallback spell entries to ensure spells belonging to other staves in inventory are excluded.
+- **Accurate Morning-Prepared Staff Binding** (`scripts/apps/sheet-helpers/context-activations.js`, `scripts/apps/sheet-helpers/activations-handlers.js`):
+  - Bound staff resolution directly to the morning-prepared staff ID (`preparedStaffId = dailiesStaffData?.staffId ?? actor.getFlag("pf2e-dailies", "extra.dailies.staves")?.staffId`) rather than returning the first staff found in inventory.
+  - Passed `data-staff-id` on charge adjustment buttons (`adjustStaffCharges`) and cast buttons (`castStaffSpell`) in `spells.hbs`, ensuring charge tracking and spellcasting target the specific staff prepared in the morning.
+
+#### Improved
+- **Stacked Staff Spell Cards Layout** (`templates/parts/spells.hbs`, `styles/pf2e-mobile.css`):
+  - Dedicated the top row exclusively to the spell name, action cost glyph, charge badge, and expand chevron so spell titles have full horizontal room on mobile viewports.
+  - Kept the quick details row (`Range`, `Target`, `Area/Size`, `Save/Defense`, `Duration`) permanently visible in the second row.
+  - Moved the cast/action buttons (`Chat`, `Cast Charges`, `1 Chg + Slot`) into a dedicated full-width button row underneath the spell details.
+  - Relocated spell traits/tags (`Cantrip`, `Concentrate`, `Manipulate`, etc.) into the expandable spell description drawer.
+- **Compact Normal Spell Card Header & Source Badges** (`templates/parts/spells.hbs`, `styles/pf2e-mobile.css`):
+  - Converted spell source badges (`Focus`, `Innate`, `Prepared`, `Spontaneous`) into compact 1-letter badges (`F`, `I`, `P`, `S`) placed in the `.spell-details` row directly underneath the spell name alongside `Range`, `Target`, `Area/Size`, `Save/Defense`, and `Duration`, freeing up maximum horizontal space for the spell name next to the `Cast` button.
+  - Moved spell traits (`Cantrip`, `Concentrate`, `Manipulate`, etc.) into the expandable description drawer.
+  - Added full untruncated spell name display (both by un-truncating `.action-name` when `.spell-card.expanded` is active and displaying a `.expanded-spell-fullname` banner with the full source name inside the expanded drawer).
+
+---
+
+## [1.0.20] - 2026-09-23
+
+### Party Stash & Party Sheet Integration
+
+#### Added
+- **Full Party Sheet Experience on Mobile** (`scripts/apps/sheet-helpers/context-party.js`, `templates/parts/party-overview.hbs`, `templates/parts/party-stash.hbs`, `styles/pf2e-mobile.css`):
+  - **Overview Tab**: Displays party-wide competency pills (all known languages across the party with speaker counts, top party modifiers for every core skill, and Recall Knowledge best modifiers), paired with tactical member cards displaying avatar, level/ancestry/class blurb, interactive HP progress bars with percentage indicators, defense badges (AC, Fortitude, Reflex, Will, Perception), senses, top skills, hero points, and 1-tap sheet switching.
+  - **Stash Tab**: Complete party inventory dashboard displaying coin totals (PP, GP, SP, CP), total party wealth, total bulk, and categorized items (Consumables, Weapons & Armor, and Other Gear/Treasure) with full item cards, bulk badges, and expandable Remaster descriptions.
+- **Touch-Friendly Item & Coin Transfers** (`scripts/apps/sheet-helpers/party-handlers.js`):
+  - **Give / Take Transfer Dialog**: Tapping "Give" on any stash item opens a touch dialog (`promptItemTransfer`) to select any party member as recipient, complete with stepper/slider quantity controls and an "All" button for multi-quantity stacks. Transfers are executed via PF2e's native `party.transferItemToActor(target, item, qty)` API.
+  - **Direct Consumable Usage**: Consumables in the party stash (e.g. healing potions, scrolls, elixirs) can be used directly from the stash using the "Use" button without needing to transfer them first.
+  - **Coin Transfer Dialog**: Added an interactive currency transfer modal (`transferCoins`) enabling players and GMs to withdraw or deposit specific amounts of PP, GP, SP, and CP between party members and the shared stash.
+- **Bidirectional Character & Party Integration** (`scripts/apps/sheet-helpers/context-header.js`, `scripts/apps/sheet-helpers/context-inventory.js`, `templates/parts/header.hbs`, `templates/parts/inventory.hbs`):
+  - **Header Actor Switcher**: Added the party actor directly into the header dropdown (`👥 [Party Name] (Party)`), allowing players to switch between their character and the party stash with a single tap.
+  - **Quick Stash Jump in Gear Tab**: Added a prominent "Party Stash" button to the character inventory header displaying live item count.
+  - **Send to Stash Action**: Added a "Send to Stash" button on all physical inventory items on the character sheet, allowing players to deposit gear directly into the party stash.
+- **Adaptive Bottom Navigation & Routing** (`scripts/apps/mobile-sheet.js`, `scripts/pf2e-mobile.js`, `templates/mobile-sheet.hbs`):
+  - Registered `PF2eMobileSheet` for `party` actors in `ActorsCollection` and routed mobile party sheet requests to `PF2eMobileSheet`.
+  - When viewing a party document, the bottom navigation automatically adapts to show **Overview** (`fa-users`), **Stash** (`fa-box-archive`), and persistent **Chat** (`fa-comments` with unread badge), defaulting to the Stash view on open.
+
+---
+
+## [1.0.19] - 2026-09-23
+
+### Skill Rolling Fix & Enhanced Proficiency Badges
+
+#### Fixed
+- **Skill Rolling in Skills Tab** (`scripts/apps/sheet-helpers/actions-handlers.js`):
+  - Fixed an issue where tapping on skill buttons did not roll them. Replaced the non-existent `sheet.actor.rollSkill(event, skillSlug)` call with PF2e's native `actor.getStatistic(skillSlug).roll(...)` API.
+  - Retained full integration with `PhysicalDiceManager.withPhysicalMode` to support physical dice d20 entry on mobile devices alongside digital dice rolls.
+  - Automatically forwards targeted tokens from `game.user.targets` so PF2e can calculate degrees of success against target DCs when applicable.
+
+#### Added & Improved
+- **Skill Proficiency Badges & Organization** (`scripts/apps/sheet-helpers/context-skills.js`, `templates/parts/skills.hbs`, `styles/pf2e-mobile.css`):
+  - Added high-contrast proficiency badges (`U`, `T`, `E`, `M`, `L`) styled with PF2e system colors (`--color-proficiency-*`) displaying the character's training level for each skill.
+  - Localized all core skill labels via `game.i18n.localize()` so raw localization keys (e.g. `PF2E.Skill.Acrobatics`) are never displayed.
+  - Split skills into "Core Skills" and "Lore Skills" sections when the character possesses Lore skills, sorting each group alphabetically by localized label.
+  - Added responsive tactile tap feedback (`:active { transform: scale(0.98); background: #424242; }`) and set `pointer-events: none` on child elements of the skill button to guarantee reliable touch event propagation on iOS WebKit and Android Chromium.
+
+---
+
+## [1.0.18] - 2026-09-23
+
+### Item Spells Separation, PF2e Staff Engine & Dailies Integration
+
+#### Added
+- **Dedicated "Activations" Sub-Tab** (`scripts/apps/sheet-helpers/context-activations.js`, `templates/parts/spells.hbs`, `styles/pf2e-mobile.css`):
+  - Created a third sub-navigation view in the Spells tab alongside "Spells" and "Preparation", complete with an item counter badge.
+  - Excluded all item-based spellcasting entries (`category === "items"` and `category === "charges"`, as well as ephemeral item entries) from the main "Spells" view.
+  - Organized item activations into Staves, Wands, Scrolls, and Other Item Spells.
+- **Pathfinder 2e Staves Engine & Rules Fidelity** (`scripts/apps/sheet-helpers/context-activations.js`, `scripts/apps/sheet-helpers/activations-handlers.js`, `templates/parts/spells.hbs`, `styles/pf2e-mobile.css`):
+  - **Expandable Staff Drawer**: The spells castable from a staff are organized inside an expandable drawer (`.staff-drawer-content`), tucked away until the user expands the staff card.
+  - **Persistent Sticky Staff Header**: While the staff drawer is expanded and the user browses through staff spells, the staff header card (showing the staff image, name, held status, spell counter badge, and interactive daily charges tracker with `[-]` and `[+]` adjusters) is pinned with `position: sticky; top: 0`, keeping charges and staff information persistent at the top of the viewport.
+  - Multi-tier staff spell resolution engine: retrieves staff spells from `pf2e-dailies` collections, `dailiesStaffData.spells`, `dailiesApi.getSpells(staffItem, maxCharges)`, or autonomous Remaster HTML description parsing (`getSpellsFromStaffDescription`).
+  - Cantrips cost 0 charges and cast freely at will.
+  - Ranked spells clearly display their charge cost (Rank $N$ costs $N$ charges).
+  - **Greyed-Out Buttons & Insufficient Charges Guard**: Cast buttons on staff spells requiring more charges than currently available (or lacking spontaneous slots) are styled with `opacity: 0.55`, `filter: grayscale(100%)`, `#27272a` dark neutral surface, and descriptive tooltips explaining charge requirements (`Not enough charges (requires X)`). Attempted clicks show an informative warning notification.
+  - **Strict Charge Requirement & Zero Charges Handling**: Ranked staff spells strictly require charges to be cast. When staff charges are 0, both pure charge casting and 1-charge + slot casting are disabled with clear tooltips (`No staff charges remaining`). Cantrips cost 0 charges and remain freely castable at will.
+  - **Exclusion of Staff Entries from Main Spell List**: Enhanced `isItemSpellcastingEntry` to reliably recognize all staff-derived entries (by category, preparation type, ID, flags, and physical inventory matching), completely preventing staff spells from leaking into the main Spells list or polluting character class spell slot pools.
+  - **Spontaneous Caster Rule & Remaster Slot Flexibility**: Spontaneous casters holding a staff can cast staff spells by expending 1 staff charge plus an available spontaneous spell slot of the spell's rank or higher (per Remaster rules).
+  - Seamlessly integrates with the `pf2e-dailies` API (`getStaffData`, `setStaffChargesValue`, `getStaffItem`), delegating casting directly to `StaffSpellcasting.cast(spell, options)` with autonomous fallback to native PF2e charge tracking flags when the module is not present.
+- **Dailies Quick Action Button** (`scripts/apps/sheet-helpers/activations-handlers.js`, `templates/parts/spells.hbs`, `styles/pf2e-mobile.css`):
+  - Added a touch-friendly "Dailies" button with a warm amber/sun accent next to "Daily Rest" in the Spells tab toolbar.
+  - Invokes `game.dailies.api.openDailiesInterface(actor)` directly from the mobile sheet.
+- **Exhausted Spell Slots & Expended Prepared Spells Feedback** (`scripts/apps/sheet-helpers/context-spells.js`, `scripts/apps/sheet-helpers/spells-handlers.js`, `templates/parts/spells.hbs`, `styles/pf2e-mobile.css`):
+  - Spontaneous spells automatically grey out their Cast button (`.disabled`, `opacity: 0.55`, `filter: grayscale(100%)`, `#27272a` dark neutral surface) when all spell slots for that rank are exhausted, complete with an informative tooltip (`No Rank X spell slots remaining`).
+  - Prepared spells that were used/expended retain an accessible, greyed-out Cast button (`title="Spell slot already expended"`) alongside a dedicated, touch-friendly `[Restore]` icon button (`min-width: 38px`, `height: 38px`).
+  - Focus spells with 0 focus points and innate spells with 0 daily uses are similarly disabled and greyed out.
+  - Tapping disabled cast buttons triggers a clear, explanatory warning notification instead of failing silently or throwing uncaught system errors.
+- **Modular Presets Refactoring** (`scripts/apps/sheet-helpers/spell-presets-handlers.js`, `scripts/apps/sheet-helpers/spells-handlers.js`):
+  - Extracted spell preset save, load, and delete workflows into `spell-presets-handlers.js`, keeping `spells-handlers.js` lean (576 lines) and strictly complying with repository modularity rules.
 
 ---
 

@@ -1,21 +1,22 @@
-<header class="mobile-header-dashboard">
+<header class="mobile-header-dashboard {{#if isParty}}party-header{{/if}}">
   <!-- Row 1: Identity & Controls Toolbar -->
   <div class="header-top-row">
     <div class="actor-identity-wrapper">
       {{#if hasMultipleCharacters}}
-      <select class="actor-switcher touch-target" data-change-action="switchActor" title="Switch Character" aria-label="Switch Character">
+      <select class="actor-switcher touch-target" data-change-action="switchActor" title="Switch Character / Party" aria-label="Switch Character">
         {{#each ownedCharacters as |char|}}
         <option value="{{char.id}}" {{#if (eq char.id ../actor.id)}}selected{{/if}}>
-          👤 {{char.name}}
+          {{char.name}}
         </option>
         {{/each}}
       </select>
       {{else}}
-      <span class="actor-name" title="{{actor.name}}">👤 {{actor.name}}</span>
+      <span class="actor-name" title="{{actor.name}}">{{#if isParty}}👥{{else}}👤{{/if}} {{actor.name}}</span>
       {{/if}}
     </div>
 
     <div class="header-controls-wrapper">
+      {{#unless isParty}}
       <select name="target-select" class="touch-target header-target-select" data-change-action="selectTarget" aria-label="Select Target" title="Target Token">
         <option value="">🎯 No Target</option>
         {{#each targets}}
@@ -24,6 +25,7 @@
         </option>
         {{/each}}
       </select>
+      {{/unless}}
 
       <select name="roll-mode" class="touch-target header-roll-mode-select" data-change-action="toggleRollMode" aria-label="Roll Mode" title="Roll Mode">
         <option value="digital" {{#if (eq rollMode "digital")}}selected{{/if}}>🎲 Digital</option>
@@ -36,6 +38,20 @@
     </div>
   </div>
 
+  {{#if isParty}}
+  <!-- Party Overview Dashboard Strip -->
+  <div class="header-party-row">
+    <div class="party-header-stat">
+      <i class="fas fa-users"></i> <span><strong>{{partyHeader.membersCount}}</strong> Members</span>
+    </div>
+    <div class="party-header-stat">
+      <i class="fas fa-coins"></i> <span><strong>{{partyHeader.totalWealth}}</strong></span>
+    </div>
+    <div class="party-header-stat">
+      <i class="fas fa-weight-hanging"></i> <span>Bulk: <strong>{{partyHeader.totalBulk}}</strong></span>
+    </div>
+  </div>
+  {{else}}
   <!-- Row 2: Consolidated HP & Temp HP Streamlined Controls -->
   <div class="header-hp-row">
     <!-- Quick Delta Box (+/-) on Left -->
@@ -100,4 +116,5 @@
       </select>
     </div>
   </div>
+  {{/if}}
 </header>
