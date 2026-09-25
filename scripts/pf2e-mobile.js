@@ -405,16 +405,19 @@ export function patchUserActiveTokens() {
  * @returns {HTMLLinkElement}
  */
 export function ensureStylesheetElement() {
+  const moduleVersion = game.modules?.get("pf2e-mobile-compact")?.version ?? Date.now();
   let link = document.querySelector('link[href*="pf2e-mobile.css"]');
   if (!link) {
     link = document.createElement("link");
     link.id = "pf2e-mobile-compact-style";
     link.rel = "stylesheet";
     link.type = "text/css";
-    const moduleVersion = game.modules?.get("pf2e-mobile-compact")?.version ?? Date.now();
     link.href = `/modules/pf2e-mobile-compact/styles/pf2e-mobile.css?v=${moduleVersion}`;
     link.disabled = true;
     document.head.appendChild(link);
+  } else if (!link.href.includes(`v=${moduleVersion}`)) {
+    const baseHref = link.getAttribute("href")?.split("?")[0] || "/modules/pf2e-mobile-compact/styles/pf2e-mobile.css";
+    link.setAttribute("href", `${baseHref}?v=${moduleVersion}`);
   }
   return link;
 }
@@ -442,6 +445,46 @@ export function syncStylesheetState(activeSheet = null) {
 
 Hooks.once("init", async () => {
   console.log("PF2e Mobile Compact | Initializing module");
+
+  // Client Setting: Mobile Activation Mode (Must be registered FIRST before shouldActivateMobile() is called)
+  game.settings.register("pf2e-mobile-compact", "mobileActivationMode", {
+    name: "Mobile Activation Mode",
+    hint: "Controls when mobile UI overrides, canvas suppression, and the mobile compact sheet are activated.",
+    scope: "client",
+    config: true,
+    type: String,
+    choices: {
+      "auto": "Auto-Detect (Mobile App / Browser Only)",
+      "always": "Always (Force Mobile View on Desktop)",
+      "never": "Never (Desktop View Only)"
+    },
+    default: "auto",
+    onChange: () => window.location.reload()
+  });
+
+  // Client Setting: Auto-Open Character Sheet
+  game.settings.register("pf2e-mobile-compact", "autoOpenSheet", {
+    name: "Auto-Open Sheet on Mobile",
+    hint: "Automatically launch the assigned character sheet when connecting from a mobile browser or app.",
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: true
+  });
+
+  // Client Setting: Default Roll Mode (Digital vs Physical Dice)
+  game.settings.register("pf2e-mobile-compact", "rollMode", {
+    name: "Default Roll Mode",
+    hint: "Controls whether rolls default to digital dice or manual physical table dice entry.",
+    scope: "client",
+    config: false,
+    type: String,
+    choices: {
+      "digital": "Digital",
+      "physical": "Physical"
+    },
+    default: "digital"
+  });
 
   // Ensure stylesheet element exists and is strictly dormant on desktop sessions
   syncStylesheetState();
@@ -522,46 +565,6 @@ Hooks.once("init", async () => {
   if (!Handlebars.helpers.gt) {
     Handlebars.registerHelper("gt", (a, b) => a > b);
   }
-
-  // Client Setting: Mobile Activation Mode
-  game.settings.register("pf2e-mobile-compact", "mobileActivationMode", {
-    name: "Mobile Activation Mode",
-    hint: "Controls when mobile UI overrides, canvas suppression, and the mobile compact sheet are activated.",
-    scope: "client",
-    config: true,
-    type: String,
-    choices: {
-      "auto": "Auto-Detect (Mobile App / Browser Only)",
-      "always": "Always (Force Mobile View on Desktop)",
-      "never": "Never (Desktop View Only)"
-    },
-    default: "auto",
-    onChange: () => window.location.reload()
-  });
-
-  // Client Setting: Auto-Open Character Sheet
-  game.settings.register("pf2e-mobile-compact", "autoOpenSheet", {
-    name: "Auto-Open Sheet on Mobile",
-    hint: "Automatically launch the assigned character sheet when connecting from a mobile browser or app.",
-    scope: "client",
-    config: true,
-    type: Boolean,
-    default: true
-  });
-
-  // Client Setting: Default Roll Mode (Digital vs Physical Dice)
-  game.settings.register("pf2e-mobile-compact", "rollMode", {
-    name: "Default Roll Mode",
-    hint: "Controls whether rolls default to digital dice or manual physical table dice entry.",
-    scope: "client",
-    config: false,
-    type: String,
-    choices: {
-      "digital": "Digital",
-      "physical": "Physical"
-    },
-    default: "digital"
-  });
 
   // Preload Handlebars template parts
   const loadTemplatesFn = foundry.applications?.handlebars?.loadTemplates ?? globalThis.loadTemplates;
