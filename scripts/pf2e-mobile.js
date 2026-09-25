@@ -3,9 +3,9 @@
  */
 import { PF2eMobileSheet } from "./apps/mobile-sheet.js";
 import { setupPhysicalDiceInterceptor } from "./rolls/physical-dice-interceptor.js";
-import { isMobileDevice } from "./utils/sheet-utils.js";
+import { isMobileDevice, isIOSDevice } from "./utils/sheet-utils.js";
 
-export { isMobileDevice };
+export { isMobileDevice, isIOSDevice };
 
 /**
  * Evaluates whether mobile mode should activate for the current client session,
@@ -21,6 +21,43 @@ export function shouldActivateMobile() {
   } catch {
     // Before settings are ready, fallback to device detection
     return isMobileDevice();
+  }
+}
+
+/**
+ * Injects or updates the viewport meta tag with `viewport-fit=cover` (for iPhone Notch / Dynamic Island
+ * and Home Indicator safe-area insets) and injects Apple standalone Web App (PWA) meta tags.
+ */
+export function injectMobileViewportMeta() {
+  if (typeof document === "undefined" || !document.head) return;
+  try {
+    let viewportMeta = document.querySelector('meta[name="viewport"]');
+    if (!viewportMeta) {
+      viewportMeta = document.createElement("meta");
+      viewportMeta.name = "viewport";
+      document.head.appendChild(viewportMeta);
+    }
+    viewportMeta.setAttribute(
+      "content",
+      "width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    );
+
+    const pwaMetaTags = [
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "PF2e Mobile" }
+    ];
+    for (const tagDef of pwaMetaTags) {
+      if (!document.querySelector(`meta[name="${tagDef.name}"]`)) {
+        const meta = document.createElement("meta");
+        meta.name = tagDef.name;
+        meta.content = tagDef.content;
+        document.head.appendChild(meta);
+      }
+    }
+  } catch (err) {
+    console.warn("PF2e Mobile Compact | Failed to inject mobile viewport meta tags:", err);
   }
 }
 
@@ -74,16 +111,56 @@ export function setupKeepAlive() {
 }
 
 /**
- * Configures canvas ticker on mobile to cap frame rate at 30 FPS to conserve battery
- * while keeping token coordinates and animations fully functional.
+ * Pauses PixiJS canvas WebGL render loop and clamps framebuffer resolution to 1x on mobile
+ * to prevent iOS Safari WebKit GPUProcess / WebProcess out-of-memory crashes while keeping
+ * Scene TokenDocuments and headless token geometry fully functional.
  */
 export function optimizeCanvasForMobile() {
-  if (canvas?.app?.ticker) {
-    try {
-      canvas.app.ticker.maxFPS = 30;
-      console.log("PF2e Mobile Compact | Canvas ticker capped at 30 FPS for mobile battery optimization.");
-    } catch {}
+  try {
+    if (typeof PIXI !== "undefined") {
+      if (PIXI.settings) PIXI.settings.RESOLUTION = 1;
+      if (PIXI.Ticker?.shared) PIXI.Ticker.shared.maxFPS = 15;
+      if (PIXI.Ticker?.system) PIXI.Ticker.system.maxFPS = 15;
+    }
+  } catch {}
+
+  if (!canvas?.app) return;
+  try {
+    if (canvas.app.renderer) {
+      canvas.app.renderer.resolution = 1;
+    }
+    if (canvas.app.stage) {
+      canvas.app.stage.renderable = false;
+      canvas.app.stage.interactiveChildren = false;
+    }
+    if (canvas.weather?.clear) {
+      canvas.weather.clear();
+    }
+    if (canvas.app.ticker) {
+      canvas.app.ticker.maxFPS = 15;
+      canvas.app.ticker.stop();
+    }
+    console.log("PF2e Mobile Compact | Canvas WebGL ticker paused & stage rendering suspended for mobile GPU memory protection.");
+  } catch (err) {
+    console.warn("PF2e Mobile Compact | optimizeCanvasForMobile warning:", err);
   }
+}
+
+/**
+ * Resumes PixiJS canvas rendering if mobile mode is deactivated on a desktop client.
+ */
+export function resumeCanvasFromMobile() {
+  if (!canvas?.app) return;
+  try {
+    if (canvas.app.stage) {
+      canvas.app.stage.renderable = true;
+      canvas.app.stage.interactiveChildren = true;
+    }
+    if (canvas.app.ticker && !canvas.app.ticker.started) {
+      canvas.app.ticker.maxFPS = 60;
+      canvas.app.ticker.start();
+    }
+  } catch {}
 }
 
 /**
@@ -205,63 +282,78 @@ export function suppressResolutionWarnings() {
  * Prevents mobile browsers (e.g. Firefox Mobile / Safari) from failing with
  * "Invalid URI. Load of media resource failed" when audio/media elements or AudioHelper
  * receive an empty or whitespace-only source URI.
+ * Defensively wrapped in try/catch for strict iOS WebKit property descriptors.
  */
 export function patchMediaElements() {
-  if (typeof HTMLMediaElement !== "undefined" && HTMLMediaElement.prototype && !HTMLMediaElement.prototype._pf2eMobilePatched) {
-    const proto = HTMLMediaElement.prototype;
-    const descriptor = Object.getOwnPropertyDescriptor(proto, "src");
-    if (descriptor && descriptor.set) {
-      const origSet = descriptor.set;
-      Object.defineProperty(proto, "src", {
-        set(val) {
-          if (val === "" || val === null || val === undefined || (typeof val === "string" && !val.trim())) {
+  try {
+    if (typeof HTMLMediaElement !== "undefined" && HTMLMediaElement.prototype && !HTMLMediaElement.prototype._pf2eMobilePatched) {
+      const proto = HTMLMediaElement.prototype;
+      const descriptor = Object.getOwnPropertyDescriptor(proto, "src");
+      if (descriptor && descriptor.set && descriptor.configurable !== false) {
+        const origSet = descriptor.set;
+        Object.defineProperty(proto, "src", {
+          set(val) {
+            if (val === "" || val === null || val === undefined || (typeof val === "string" && !val.trim())) {
+              return;
+            }
+            return origSet.call(this, val);
+          },
+          get: descriptor.get,
+          configurable: true,
+          enumerable: true
+        });
+      }
+
+      const origSetAttr = proto.setAttribute;
+      if (typeof origSetAttr === "function") {
+        proto.setAttribute = function (name, val) {
+          if (name === "src" && (val === "" || val === null || val === undefined || (typeof val === "string" && !val.trim()))) {
             return;
           }
-          return origSet.call(this, val);
-        },
-        get: descriptor.get,
-        configurable: true,
-        enumerable: true
-      });
-    }
-
-    const origSetAttr = proto.setAttribute;
-    proto.setAttribute = function (name, val) {
-      if (name === "src" && (val === "" || val === null || val === undefined || (typeof val === "string" && !val.trim()))) {
-        return;
+          return origSetAttr.call(this, name, val);
+        };
       }
-      return origSetAttr.call(this, name, val);
-    };
 
-    HTMLMediaElement.prototype._pf2eMobilePatched = true;
+      HTMLMediaElement.prototype._pf2eMobilePatched = true;
+    }
+  } catch (err) {
+    console.warn("PF2e Mobile Compact | HTMLMediaElement patch skipped:", err);
   }
 
   // Guard window.Audio constructor against empty string URLs
-  if (typeof window !== "undefined" && window.Audio && !window.Audio._pf2eMobilePatched) {
-    const OrigAudio = window.Audio;
-    window.Audio = function (src) {
-      if (src === "" || src === null || src === undefined || (typeof src === "string" && !src.trim())) {
-        return new OrigAudio();
-      }
-      return new OrigAudio(src);
-    };
-    window.Audio.prototype = OrigAudio.prototype;
-    window.Audio._pf2eMobilePatched = true;
+  try {
+    if (typeof window !== "undefined" && window.Audio && !window.Audio._pf2eMobilePatched) {
+      const OrigAudio = window.Audio;
+      window.Audio = function (src) {
+        if (src === "" || src === null || src === undefined || (typeof src === "string" && !src.trim())) {
+          return new OrigAudio();
+        }
+        return new OrigAudio(src);
+      };
+      window.Audio.prototype = OrigAudio.prototype;
+      window.Audio._pf2eMobilePatched = true;
+    }
+  } catch (err) {
+    console.warn("PF2e Mobile Compact | window.Audio patch skipped:", err);
   }
 
   // Guard Foundry's AudioHelper.play against empty audio sources
-  const AudioHelperClass = foundry.audio?.AudioHelper ?? (typeof AudioHelper !== "undefined" ? AudioHelper : null);
-  if (AudioHelperClass && !AudioHelperClass._pf2eMobilePatched) {
-    const origPlay = AudioHelperClass.play;
-    if (typeof origPlay === "function") {
-      AudioHelperClass.play = function (options, ...args) {
-        if (!options || !options.src || typeof options.src !== "string" || !options.src.trim()) {
-          return null;
-        }
-        return origPlay.call(this, options, ...args);
-      };
+  try {
+    const AudioHelperClass = foundry.audio?.AudioHelper ?? (typeof AudioHelper !== "undefined" ? AudioHelper : null);
+    if (AudioHelperClass && !AudioHelperClass._pf2eMobilePatched) {
+      const origPlay = AudioHelperClass.play;
+      if (typeof origPlay === "function") {
+        AudioHelperClass.play = function (options, ...args) {
+          if (!options || !options.src || typeof options.src !== "string" || !options.src.trim()) {
+            return null;
+          }
+          return origPlay.call(this, options, ...args);
+        };
+      }
+      AudioHelperClass._pf2eMobilePatched = true;
     }
-    AudioHelperClass._pf2eMobilePatched = true;
+  } catch (err) {
+    console.warn("PF2e Mobile Compact | AudioHelper patch skipped:", err);
   }
 }
 
@@ -355,6 +447,9 @@ Hooks.once("init", async () => {
 
   const isMobile = shouldActivateMobile();
   if (isMobile) {
+    document.body?.classList.add("pf2e-mobile-active");
+    injectMobileViewportMeta();
+    optimizeCanvasForMobile();
     suppressResolutionWarnings();
     patchMediaElements();
     patchUserActiveTokens();
@@ -485,16 +580,20 @@ Hooks.once("init", async () => {
   ]);
 });
 
+let mobileEnvActivated = false;
+
 /**
- * Fully activates mobile engine overrides (canvas FPS capping, wake lock,
- * notification suppression, active token fallback, physical dice interceptor).
+ * Fully activates mobile engine overrides (canvas WebGL ticker pausing, viewport safe-area meta,
+ * wake lock, notification suppression, active token fallback, physical dice interceptor).
  */
 export function activateMobileEnvironment() {
-  if (document.body.classList.contains("pf2e-mobile-active")) return;
-  console.log("PF2e Mobile Compact | Mobile environment confirmed. Activating mobile engine.");
-  document.body.classList.add("pf2e-mobile-active");
-  setupKeepAlive();
+  document.body?.classList.add("pf2e-mobile-active");
+  injectMobileViewportMeta();
   optimizeCanvasForMobile();
+  if (mobileEnvActivated) return;
+  mobileEnvActivated = true;
+  console.log("PF2e Mobile Compact | Mobile environment confirmed. Activating mobile engine.");
+  setupKeepAlive();
   suppressResolutionWarnings();
   patchMediaElements();
   sweepResolutionNotifications();
@@ -517,15 +616,6 @@ Hooks.once("ready", () => {
   if (shouldActivateMobile()) {
     activateMobileEnvironment();
 
-    // Enable browser pinch-to-zoom on mobile devices
-    const viewportMeta = document.querySelector('meta[name="viewport"]');
-    if (viewportMeta) {
-      viewportMeta.setAttribute(
-        "content",
-        "width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes"
-      );
-    }
-
     // Resolve assigned or owned character
     const userChar = game.user.character;
     const isUserCharValid = userChar && (userChar.isOwner || userChar.testUserPermission(game.user, "LIMITED"));
@@ -543,10 +633,10 @@ Hooks.once("ready", () => {
           if (!character._mobileSheetInstance || !(character._mobileSheetInstance instanceof PF2eMobileSheet)) {
             character._mobileSheetInstance = new PF2eMobileSheet({ document: character });
           }
-          character._mobileSheetInstance.render(true);
+          character._mobileSheetInstance.render({ force: true });
         } catch (err) {
           console.error("PF2e Mobile Compact | Error auto-opening mobile sheet:", err);
-          character.sheet?.render?.(true);
+          character.sheet?.render?.({ force: true });
         }
       }
     }
@@ -558,7 +648,7 @@ Hooks.once("ready", () => {
       fab.type = "button";
       fab.title = "Open Mobile Sheet";
       fab.innerHTML = '<i class="fas fa-user-shield"></i>';
-      fab.style.cssText = "position:fixed;bottom:20px;right:20px;z-index:9999;width:52px;height:52px;border-radius:50%;background:#e65100;color:#fff;border:2px solid #ffb74d;box-shadow:0 4px 12px rgba(0,0,0,0.6);font-size:22px;display:none;align-items:center;justify-content:center;cursor:pointer;";
+      fab.style.cssText = "position:fixed;bottom:calc(20px + env(safe-area-inset-bottom, 0px));right:calc(20px + env(safe-area-inset-right, 0px));z-index:9999;width:52px;height:52px;border-radius:50%;background:#e65100;color:#fff;border:2px solid #ffb74d;box-shadow:0 4px 12px rgba(0,0,0,0.6);font-size:22px;display:none;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;";
       fab.addEventListener("click", () => {
         const uChar = game.user.character;
         const isUCharValid = uChar && (uChar.isOwner || uChar.testUserPermission(game.user, "LIMITED"));
@@ -571,7 +661,7 @@ Hooks.once("ready", () => {
           if (!char._mobileSheetInstance || !(char._mobileSheetInstance instanceof PF2eMobileSheet)) {
             char._mobileSheetInstance = new PF2eMobileSheet({ document: char });
           }
-          char._mobileSheetInstance.render(true);
+          char._mobileSheetInstance.render({ force: true });
         } else {
           ui.notifications?.warn?.("PF2e Mobile: No character actor found for this user.");
         }

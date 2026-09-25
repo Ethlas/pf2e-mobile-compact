@@ -1,4 +1,4 @@
-import { clamp } from "../../utils/sheet-utils.js";
+import { clamp, isIOSDevice } from "../../utils/sheet-utils.js";
 import { PhysicalDiceManager } from "../../rolls/physical-dice-interceptor.js";
 import { setTargetToken } from "../../tokens/token-adapter.js";
 
@@ -358,14 +358,17 @@ export async function onToggleRollMode(sheet, event, target) {
   }
 }
 
+let iosFullscreenTipShown = false;
+
 /**
  * Action handler: toggle fullscreen mode for mobile app view.
+ * Includes graceful CSS fullscreen fallback and iOS Safari Home Screen PWA guidance.
  * @param {object} sheet
  * @param {Event} event
  * @param {HTMLElement} target
  */
 export async function onToggleFullscreen(sheet, event, target) {
-  const sheetEl = target?.closest?.(".pf2e-mobile-sheet");
+  const sheetEl = target?.closest?.(".pf2e-mobile-sheet") ?? sheet?.element;
   const isCurrentlyFs = !!(
     document.fullscreenElement ||
     document.webkitFullscreenElement ||
@@ -374,21 +377,31 @@ export async function onToggleFullscreen(sheet, event, target) {
   );
 
   if (!isCurrentlyFs) {
+    let nativeEntered = false;
     if (document.documentElement.requestFullscreen) {
       try {
         await document.documentElement.requestFullscreen();
+        nativeEntered = true;
       } catch (err) {
         console.warn("PF2e Mobile Compact | Fullscreen request failed, using CSS fullscreen fallback:", err);
       }
     } else if (document.documentElement.webkitRequestFullscreen) {
       try {
         await document.documentElement.webkitRequestFullscreen();
+        nativeEntered = true;
       } catch (err) {
         console.warn("PF2e Mobile Compact | WebKit fullscreen request failed, using CSS fullscreen fallback:", err);
       }
     }
     document.body.classList.add("pf2e-fullscreen");
     sheetEl?.classList.add("fullscreen-mode");
+
+    // On iPhone Safari (where Apple disables Fullscreen API on non-video elements), show a helpful one-time tip
+    const isStandalone = window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator?.standalone === true;
+    if (!nativeEntered && isIOSDevice() && !isStandalone && !iosFullscreenTipShown) {
+      iosFullscreenTipShown = true;
+      ui.notifications?.info?.("Full-bleed view active. Tip: On iPhone Safari, tap Share → 'Add to Home Screen' for true fullscreen without browser toolbars.");
+    }
   } else {
     if (document.fullscreenElement && document.exitFullscreen) {
       try {
@@ -429,6 +442,6 @@ export async function onSwitchActor(sheet, event, target) {
 
   console.log(`PF2e Mobile Compact | Switching character to ${newActor.name}`);
   await sheet.close();
-  newActor.sheet.render(true);
+  newActor.sheet.render({ force: true });
 }
 

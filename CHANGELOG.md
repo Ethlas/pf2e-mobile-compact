@@ -4,6 +4,32 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.22] - 2026-09-24
+
+### iPhone / iOS Safari Compatibility — WebKit GPU Memory Protection & Mobile Viewport Fixes (Issue #9)
+
+#### Fixed
+- **WebKit WebProcess / GPUProcess Crash & Auto-Reload Loop (`scripts/pf2e-mobile.js`)**:
+  - Resolved the critical iOS Safari crash loop (`"A problem repeatedly occurred on this webpage"`) caused by PixiJS allocating 3x Retina WebGL framebuffers (`devicePixelRatio: 3`) and continuously rendering full-resolution scene textures, lighting, and weather effects in the background.
+  - Moved `body.pf2e-mobile-active` activation, viewport meta injection (`injectMobileViewportMeta`), and canvas optimization (`optimizeCanvasForMobile`) to execute immediately during `Hooks.once("init")` *before* `game.initializeCanvas()` runs.
+  - Clamped `PIXI.settings.RESOLUTION` and `canvas.app.renderer.resolution` to `1` on mobile, stopped `canvas.app.ticker`, disabled `canvas.app.stage.renderable` and `interactiveChildren`, and cleared canvas weather particles (`canvas.weather.clear()`), while preserving `canvas.scene` and `scene.tokens` for headless token geometry (`token-adapter.js`).
+  - Added `resumeCanvasFromMobile()` so desktop clients deactivating mobile mode can cleanly restore canvas rendering.
+- **Notch / Dynamic Island & Home Indicator Safe-Area Collisions (`scripts/pf2e-mobile.js`, `styles/pf2e-mobile.css`)**:
+  - Updated `meta[name="viewport"]` to include `viewport-fit=cover` so `env(safe-area-inset-*)` variables evaluate accurately on iOS devices.
+  - Added Apple Web App (PWA) meta tags (`apple-mobile-web-app-capable="yes"`, `apple-mobile-web-app-status-bar-style="black-translucent"`, `apple-mobile-web-app-title="PF2e Mobile"`).
+  - Updated `.pf2e-mobile-sheet .mobile-header-dashboard`, `#notifications`, `.mobile-tab-content`, `.mobile-bottom-nav`, and `#pf2e-mobile-fab` to respect `env(safe-area-inset-top)`, `env(safe-area-inset-bottom)`, `env(safe-area-inset-left)`, and `env(safe-area-inset-right)`.
+- **iOS Safari Input Auto-Zoom Prevention (`styles/pf2e-mobile.css`, `scripts/apps/sheet-helpers/sheet-prompts.js`, `scripts/apps/sheet-helpers/rune-handlers.js`)**:
+  - Enforced `font-size: 16px !important` on all `<input>`, `<select>`, and `<textarea>` elements inside `.pf2e-mobile-sheet`, `body.pf2e-mobile-active`, and `DialogV2` modals to prevent Safari from auto-zooming the viewport on focus.
+- **Elastic Rubber-Band Window Overscroll (`styles/pf2e-mobile.css`)**:
+  - Locked `html:has(body.pf2e-mobile-active)` and `body.pf2e-mobile-active` with `position: fixed`, `inset: 0`, `height: 100dvh`, `overflow: hidden`, and `overscroll-behavior: none`, and applied `overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;` to `.mobile-tab-content`.
+- **WebKit Delegated Clicks, Native Select Pickers & Fullscreen Fallback (`styles/pf2e-mobile.css`, `scripts/apps/sheet-helpers/header-handlers.js`, `scripts/apps/sheet-helpers/sheet-prompts.js`, `scripts/apps/sheet-helpers/rune-handlers.js`, `scripts/utils/sheet-utils.js`)**:
+  - Added `cursor: pointer !important; touch-action: manipulation; -webkit-tap-highlight-color: transparent;` to all `[data-action]`, `[data-change-action]`, and `.touch-target` elements so iOS WebKit reliably dispatches delegated click events on non-button elements (`<div>`, `<span>`).
+  - Added `onclick="event.stopPropagation()"` to `<select>` elements inside `DialogV2` modals in `sheet-prompts.js` and `rune-handlers.js` so native iOS picker wheels open reliably.
+  - Added `isIOSDevice()` in `sheet-utils.js` and updated `onToggleFullscreen()` in `header-handlers.js` with a CSS fullscreen fallback and a one-time iOS Home Screen PWA tip.
+  - Wrapped `patchMediaElements()` in defensive `try/catch` blocks in `scripts/pf2e-mobile.js`.
+
+---
+
 ## [1.0.21] - 2026-09-24
 
 ### Staff Preparation Spells Isolation & Morning Dailies Fix

@@ -44,3 +44,15 @@ export function isMobileDevice() {
   return Boolean(isStandaloneApp || isMobileUA || isIPad || isMobileViewport || isTouchCompact);
 }
 
+/**
+ * Check if the client is running on an iOS / iPadOS WebKit device (iPhone, iPad, iPod).
+ * @returns {boolean}
+ */
+export function isIOSDevice() {
+  if (typeof window === "undefined" || typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  const isIOSUA = /iPhone|iPad|iPod/i.test(ua);
+  const isIPadOS = (navigator.platform === "MacIntel" || /Macintosh/i.test(ua)) && (navigator.maxTouchPoints > 1);
+  return Boolean(isIOSUA || isIPadOS);
+}
+

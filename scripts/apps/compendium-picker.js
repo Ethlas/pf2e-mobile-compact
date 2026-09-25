@@ -59,6 +59,14 @@ export class CompendiumPickerApp extends HandlebarsApplicationMixin(ApplicationV
     this._debouncedRender = foundry.utils?.debounce?.(() => this.render(), 250);
   }
 
+  /** @override */
+  async render(options = {}, _options = {}) {
+    if (typeof options === "boolean") {
+      options = { ...(_options && typeof _options === "object" ? _options : {}), force: options };
+    }
+    return super.render(options, _options);
+  }
+
   /**
    * Extract tradition strings from an index entry or document.
    * @param {object} itemData
