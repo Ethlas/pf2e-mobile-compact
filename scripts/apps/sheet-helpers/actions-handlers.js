@@ -317,13 +317,22 @@ export async function onUseAction(sheet, event, target) {
     }
 
     try {
-      if (typeof systemAction.use === "function") {
-        await systemAction.use(useOptions);
-        return;
-      } else if (typeof systemAction === "function") {
-        await systemAction(useOptions);
-        return;
-      }
+      const executed = await PhysicalDiceManager.withPhysicalMode({
+        title: item.name,
+        subtitle: chosenVariant?.label ?? "",
+        target: targetToken,
+        actor
+      }, async () => {
+        if (typeof systemAction.use === "function") {
+          await systemAction.use(useOptions);
+          return true;
+        } else if (typeof systemAction === "function") {
+          await systemAction(useOptions);
+          return true;
+        }
+        return false;
+      }, sheet.rollMode === "physical");
+      if (executed) return;
     } catch (err) {
       console.warn(`pf2e-mobile-compact | Error executing action ${item.name}:`, err);
       ui.notifications?.warn?.(`Action execution: ${err.message}`);

@@ -33,8 +33,9 @@
   <section class="inventory-section">
     <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="stash-consumables">
       <span><i class="fas fa-flask"></i> Consumables ({{stash.consumables.length}})</span>
-      <i class="fas fa-chevron-down section-expand-icon"></i>
+      <i class="fas fa-chevron-down section-expand-icon {{#if stash.isConsumablesCollapsed}}collapsed{{/if}}"></i>
     </h3>
+    {{#unless stash.isConsumablesCollapsed}}
     <div class="inventory-list">
       {{#each stash.consumables as |item|}}
       <div class="action-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
@@ -77,14 +78,16 @@
       <p class="empty-hint">No consumables in party stash.</p>
       {{/each}}
     </div>
+    {{/unless}}
   </section>
 
   <!-- Equipment Section (Weapons & Armor) -->
   <section class="inventory-section">
     <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="stash-equipment">
       <span><i class="fas fa-shield-halved"></i> Weapons & Armor ({{stash.equipment.length}})</span>
-      <i class="fas fa-chevron-down section-expand-icon"></i>
+      <i class="fas fa-chevron-down section-expand-icon {{#if stash.isEquipmentCollapsed}}collapsed{{/if}}"></i>
     </h3>
+    {{#unless stash.isEquipmentCollapsed}}
     <div class="inventory-list">
       {{#each stash.equipment as |item|}}
       <div class="action-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
@@ -124,14 +127,16 @@
       <p class="empty-hint">No weapons or armor in party stash.</p>
       {{/each}}
     </div>
+    {{/unless}}
   </section>
 
   <!-- Other Gear & Treasure Section -->
   <section class="inventory-section">
     <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="stash-gear">
       <span><i class="fas fa-backpack"></i> Other Gear & Treasure ({{stash.gear.length}})</span>
-      <i class="fas fa-chevron-down section-expand-icon"></i>
+      <i class="fas fa-chevron-down section-expand-icon {{#if stash.isGearCollapsed}}collapsed{{/if}}"></i>
     </h3>
+    {{#unless stash.isGearCollapsed}}
     <div class="inventory-list">
       {{#each stash.gear as |item|}}
       <div class="action-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
@@ -171,5 +176,6 @@
       <p class="empty-hint">No other gear in party stash.</p>
       {{/each}}
     </div>
+    {{/unless}}
   </section>
 </div>

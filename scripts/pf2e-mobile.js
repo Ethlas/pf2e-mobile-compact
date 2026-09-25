@@ -405,19 +405,16 @@ export function patchUserActiveTokens() {
  * @returns {HTMLLinkElement}
  */
 export function ensureStylesheetElement() {
-  const moduleVersion = game.modules?.get("pf2e-mobile-compact")?.version ?? Date.now();
   let link = document.querySelector('link[href*="pf2e-mobile.css"]');
   if (!link) {
     link = document.createElement("link");
     link.id = "pf2e-mobile-compact-style";
     link.rel = "stylesheet";
     link.type = "text/css";
+    const moduleVersion = game.modules?.get("pf2e-mobile-compact")?.version ?? Date.now();
     link.href = `/modules/pf2e-mobile-compact/styles/pf2e-mobile.css?v=${moduleVersion}`;
     link.disabled = true;
     document.head.appendChild(link);
-  } else if (!link.href.includes(`v=${moduleVersion}`)) {
-    const baseHref = link.getAttribute("href")?.split("?")[0] || "/modules/pf2e-mobile-compact/styles/pf2e-mobile.css";
-    link.setAttribute("href", `${baseHref}?v=${moduleVersion}`);
   }
   return link;
 }
@@ -446,7 +443,7 @@ export function syncStylesheetState(activeSheet = null) {
 Hooks.once("init", async () => {
   console.log("PF2e Mobile Compact | Initializing module");
 
-  // Client Setting: Mobile Activation Mode (Must be registered FIRST before shouldActivateMobile() is called)
+  // Client Setting: Mobile Activation Mode (Registered first so shouldActivateMobile() reads it accurately during init)
   game.settings.register("pf2e-mobile-compact", "mobileActivationMode", {
     name: "Mobile Activation Mode",
     hint: "Controls when mobile UI overrides, canvas suppression, and the mobile compact sheet are activated.",
@@ -509,53 +506,52 @@ Hooks.once("init", async () => {
     });
   }
 
-  // Dynamically route character and party sheets to PF2eMobileSheet on mobile clients ONLY
-  if (isMobile) {
-    const ActorClass = getDocumentClass?.("Actor") ?? CONFIG.Actor?.documentClass ?? (typeof Actor !== "undefined" ? Actor : null);
-    if (ActorClass) {
-      const originalGetSheetClass = ActorClass.prototype._getSheetClass;
-      ActorClass.prototype._getSheetClass = function () {
-        if (shouldActivateMobile() && (this.type === "character" || this.type === "party")) {
-          return PF2eMobileSheet;
-        }
-        return originalGetSheetClass.call(this);
-      };
+  // Dynamically route character and party sheets to PF2eMobileSheet whenever shouldActivateMobile() is true
+  const ActorClass = getDocumentClass?.("Actor") ?? CONFIG.Actor?.documentClass ?? (typeof Actor !== "undefined" ? Actor : null);
+  if (ActorClass && !ActorClass.prototype._pf2eMobileSheetRouted) {
+    const originalGetSheetClass = ActorClass.prototype._getSheetClass;
+    ActorClass.prototype._getSheetClass = function () {
+      if (shouldActivateMobile() && (this.type === "character" || this.type === "party")) {
+        return PF2eMobileSheet;
+      }
+      return originalGetSheetClass.call(this);
+    };
 
-      // Override actor.sheet getter directly so accessing .sheet on mobile is guaranteed to return PF2eMobileSheet
-      let sheetDescriptor = null;
-      let proto = ActorClass.prototype;
-      while (proto && proto !== Object.prototype) {
-        sheetDescriptor = Object.getOwnPropertyDescriptor(proto, "sheet");
-        if (sheetDescriptor?.get) break;
-        proto = Object.getPrototypeOf(proto);
-      }
-      if (sheetDescriptor?.get) {
-        const origSheetGetter = sheetDescriptor.get;
-        Object.defineProperty(ActorClass.prototype, "sheet", {
-          get() {
-            if (shouldActivateMobile() && (this.type === "character" || this.type === "party")) {
-              const hasPerm = game.user?.isGM
-                || this.isOwner
-                || this.testUserPermission(game.user, "LIMITED")
-                || (this.type === "party" && (this.canUserModify?.(game.user, "update") || this.members?.some(m => m.isOwner)));
-              if (!hasPerm) {
-                return origSheetGetter.call(this);
-              }
-              if (!this._mobileSheetInstance || !(this._mobileSheetInstance instanceof PF2eMobileSheet) || this._mobileSheetInstance.document !== this) {
-                this._mobileSheetInstance = new PF2eMobileSheet({ document: this });
-              }
-              return this._mobileSheetInstance;
-            }
-            return origSheetGetter.call(this);
-          },
-          configurable: true,
-          enumerable: true
-        });
-      }
+    // Override actor.sheet getter directly so accessing .sheet on mobile is guaranteed to return PF2eMobileSheet
+    let sheetDescriptor = null;
+    let proto = ActorClass.prototype;
+    while (proto && proto !== Object.prototype) {
+      sheetDescriptor = Object.getOwnPropertyDescriptor(proto, "sheet");
+      if (sheetDescriptor?.get) break;
+      proto = Object.getPrototypeOf(proto);
     }
+    if (sheetDescriptor?.get) {
+      const origSheetGetter = sheetDescriptor.get;
+      Object.defineProperty(ActorClass.prototype, "sheet", {
+        get() {
+          if (shouldActivateMobile() && (this.type === "character" || this.type === "party")) {
+            const hasPerm = game.user?.isGM
+              || this.isOwner
+              || this.testUserPermission(game.user, "LIMITED")
+              || (this.type === "party" && (this.canUserModify?.(game.user, "update") || this.members?.some(m => m.isOwner)));
+            if (!hasPerm) {
+              return origSheetGetter.call(this);
+            }
+            if (!this._mobileSheetInstance || !(this._mobileSheetInstance instanceof PF2eMobileSheet) || this._mobileSheetInstance.document !== this) {
+              this._mobileSheetInstance = new PF2eMobileSheet({ document: this });
+            }
+            return this._mobileSheetInstance;
+          }
+          return origSheetGetter.call(this);
+        },
+        configurable: true,
+        enumerable: true
+      });
+    }
+    ActorClass.prototype._pf2eMobileSheetRouted = true;
   }
 
-  // Ensure essential Handlebars comparison helpers are available
+  // Ensure essential Handlebars comparison and logical helpers are available
   if (!Handlebars.helpers.eq) {
     Handlebars.registerHelper("eq", (a, b) => a === b);
   }
@@ -564,6 +560,15 @@ Hooks.once("init", async () => {
   }
   if (!Handlebars.helpers.gt) {
     Handlebars.registerHelper("gt", (a, b) => a > b);
+  }
+  if (!Handlebars.helpers.not) {
+    Handlebars.registerHelper("not", (a) => !a);
+  }
+  if (!Handlebars.helpers.and) {
+    Handlebars.registerHelper("and", (...args) => args.slice(0, -1).every(Boolean));
+  }
+  if (!Handlebars.helpers.or) {
+    Handlebars.registerHelper("or", (...args) => args.slice(0, -1).some(Boolean));
   }
 
   // Preload Handlebars template parts
@@ -732,6 +737,10 @@ export function updateFabVisibility() {
 // Reactively toggle stylesheet and FAB when mobile character sheet opens or closes
 Hooks.on("renderPF2eMobileSheet", (sheet) => {
   if (sheet?.actor) migrateActorPropertyRunes(sheet.actor);
+  try {
+    setupPhysicalDiceInterceptor();
+    patchUserActiveTokens();
+  } catch {}
   syncStylesheetState(sheet);
   updateFabVisibility();
   setTimeout(() => {

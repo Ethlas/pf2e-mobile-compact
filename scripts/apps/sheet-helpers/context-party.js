@@ -253,7 +253,7 @@ export async function preparePartyContext(partyActor, sheet, context) {
     const qty = item.quantity ?? item.system?.quantity ?? 1;
     const bulkStr = typeof item.bulk?.value?.toString === "function" ? item.bulk.value.toString() : (item.system?.bulk?.value ?? "-");
 
-    const description = isExpanded ? await enrichItemDescription(item, partyActor) : "";
+    const description = await enrichItemDescription(item, partyActor);
 
     return {
       id: item.id,
@@ -271,9 +271,14 @@ export async function preparePartyContext(partyActor, sheet, context) {
     };
   }));
 
+  const collapsedSections = sheet._collapsedInventorySections;
+  context.isCompetenciesCollapsed = collapsedSections instanceof Set && collapsedSections.has("party-competencies");
   context.stash = {
     consumables: formattedItems.filter(i => i.category === "consumables"),
     equipment: formattedItems.filter(i => i.category === "equipment"),
-    gear: formattedItems.filter(i => i.category === "gear")
+    gear: formattedItems.filter(i => i.category === "gear"),
+    isConsumablesCollapsed: collapsedSections instanceof Set && collapsedSections.has("stash-consumables"),
+    isEquipmentCollapsed: collapsedSections instanceof Set && collapsedSections.has("stash-equipment"),
+    isGearCollapsed: collapsedSections instanceof Set && collapsedSections.has("stash-gear")
   };
 }

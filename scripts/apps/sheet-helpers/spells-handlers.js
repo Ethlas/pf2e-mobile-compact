@@ -27,7 +27,8 @@ export async function onSwitchSpellSubTab(sheet, event, target) {
 export function onToggleRankGroup(sheet, event, target) {
   if (event.target?.closest?.(".slot-counter")) return;
   event.preventDefault();
-  const rank = parseInt(target.dataset.rank, 10);
+  const rawRank = target.dataset.rank ?? "";
+  const rank = /^\d+$/.test(rawRank) ? parseInt(rawRank, 10) : rawRank;
   const groupEl = target.closest(".spell-rank-group");
   if (!groupEl) return;
 

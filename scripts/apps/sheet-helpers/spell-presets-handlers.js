@@ -9,31 +9,70 @@
  * @param {HTMLElement} target
  */
 export async function onSaveSpellPreset(sheet, event, target) {
-  const name = await new Promise(resolve => {
-    const DialogClass = foundry.applications?.api?.DialogV2 ?? Dialog;
-    new DialogClass({
+  const content = `<div style="margin-bottom: 10px;">
+    <label style="display:block; margin-bottom: 5px; font-weight: bold;">Preset Name:</label>
+    <input type="text" id="preset-name-input" placeholder="e.g. Combat, Dungeon, Social" style="width: 100%; height: 40px;" autofocus />
+  </div>`;
+
+  let name = null;
+  if (foundry.applications?.api?.DialogV2?.wait) {
+    name = await foundry.applications.api.DialogV2.wait({
       window: { title: "Save Spell Preset" },
-      content: `<div style="margin-bottom: 10px;">
-        <label style="display:block; margin-bottom: 5px; font-weight: bold;">Preset Name:</label>
-        <input type="text" id="preset-name-input" placeholder="e.g. Combat, Dungeon, Social" style="width: 100%; height: 40px;" autofocus />
-      </div>`,
-      buttons: [{
-        action: "save",
-        label: "Save",
-        icon: "fa-solid fa-save",
-        callback: (evt, btn, form) => {
-          const root = btn?.closest(".window-content") ?? document;
-          const input = root.querySelector("#preset-name-input");
-          resolve(input?.value?.trim() || "Default Preset");
+      content,
+      buttons: [
+        {
+          action: "save",
+          label: "Save",
+          icon: "fa-solid fa-save",
+          default: true,
+          callback: (evt, btn, dialog) => {
+            const root = dialog?.element ?? btn?.closest(".window-content") ?? document;
+            const input = root.querySelector("#preset-name-input");
+            return input?.value?.trim() || "Default Preset";
+          }
+        },
+        {
+          action: "cancel",
+          label: "Cancel",
+          icon: "fa-solid fa-times",
+          callback: () => null
         }
-      }, {
-        action: "cancel",
-        label: "Cancel",
-        icon: "fa-solid fa-times",
-        callback: () => resolve(null)
-      }]
-    }).render(true);
-  });
+      ],
+      rejectClose: false
+    });
+  } else {
+    name = await new Promise(resolve => {
+      let settled = false;
+      const done = (val) => {
+        if (!settled) {
+          settled = true;
+          resolve(val);
+        }
+      };
+      new Dialog({
+        title: "Save Spell Preset",
+        content,
+        buttons: {
+          save: {
+            label: "Save",
+            icon: '<i class="fa-solid fa-save"></i>',
+            callback: (html) => {
+              const root = html instanceof HTMLElement ? html : html?.[0];
+              const input = root?.querySelector("#preset-name-input");
+              done(input?.value?.trim() || "Default Preset");
+            }
+          },
+          cancel: {
+            label: "Cancel",
+            icon: '<i class="fa-solid fa-times"></i>',
+            callback: () => done(null)
+          }
+        },
+        default: "save",
+        close: () => done(null)
+      }).render(true);
+    });
+  }
 
   if (!name) return;
 

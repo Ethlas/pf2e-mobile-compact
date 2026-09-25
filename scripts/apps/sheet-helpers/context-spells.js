@@ -159,10 +159,22 @@ export async function prepareSpellsContext(actor, sheet, context) {
       const slotData = systemData.slots?.[slotKey];
       if (slotData && slotData.max > 0) {
         const bucket = rankBuckets[r];
+        let availSlots = slotData.value ?? 0;
+        if (isPrepared && slotData.prepared) {
+          const prepArr = Array.isArray(slotData.prepared) ? slotData.prepared : Object.values(slotData.prepared);
+          availSlots = prepArr.filter(p => p?.id && !p.expended).length;
+        }
+        const maxSlots = slotData.max ?? 0;
+        // Prefer spontaneous entries for manual +/- slot counter, or entry with higher max slots
+        const shouldReplace = !bucket.hasSlots
+          || (isSpontaneous && !bucket._isSpontaneousSlotOwner)
+          || (!bucket._isSpontaneousSlotOwner && maxSlots > bucket.slots.max);
         bucket.hasSlots = true;
-        bucket.slots.value = Math.max(bucket.slots.value, slotData.value ?? 0);
-        bucket.slots.max = Math.max(bucket.slots.max, slotData.max ?? 0);
-        if (!bucket.entryId) bucket.entryId = entryId;
+        if (shouldReplace) {
+          bucket.slots = { value: availSlots, max: maxSlots };
+          bucket.entryId = entryId;
+          bucket._isSpontaneousSlotOwner = isSpontaneous;
+        }
       }
     }
 

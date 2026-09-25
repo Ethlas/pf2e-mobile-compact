@@ -251,13 +251,16 @@ export async function onCastItemSpell(sheet, event, target) {
   const entryId = target.dataset.entryId;
 
   const item = actor.items.get(itemId);
-  if (!item) {
-    ui.notifications?.warn?.("Item not found.");
+  const entry = entryId ? actor.spellcasting?.get(entryId) : null;
+  const entrySpell = entry?.spells?.get(itemId) ?? entry?.spells?.contents?.[0] ?? null;
+
+  if (!item && !entrySpell) {
+    ui.notifications?.warn?.("Item or spell not found.");
     return;
   }
 
   // Target prompt
-  const spellName = item.system?.spell?.name ?? item.name;
+  const spellName = item?.system?.spell?.name ?? entrySpell?.name ?? item?.name ?? "Spell";
   const targetToken = await resolveTargetForAction(sheet, `Cast ${spellName}`);
   if (targetToken === false) return; // Cancelled
 
@@ -271,18 +274,19 @@ export async function onCastItemSpell(sheet, event, target) {
     actor
   }, async () => {
     // If native PF2e consumable item, consume() handles chat, template, uses and deduction
-    if (typeof item.consume === "function") {
+    if (item && typeof item.consume === "function") {
       await item.consume();
       return;
     }
 
-    // Ephemeral entry fallback
-    const entry = actor.spellcasting?.get(entryId);
-    const spell = entry?.spells?.contents?.[0];
+    // Ephemeral / item spellcasting entry fallback
+    const spell = entrySpell ?? (item?.type === "spell" ? item : null);
     if (entry && spell && typeof entry.cast === "function") {
       await entry.cast(spell);
     } else if (spell && typeof spell.toMessage === "function") {
       await spell.toMessage();
+    } else if (item && typeof item.toMessage === "function") {
+      await item.toMessage();
     }
   }, sheet.rollMode === "physical");
 

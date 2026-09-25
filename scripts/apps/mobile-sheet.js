@@ -243,29 +243,6 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     this._dockChatElement();
     this._ensureTokenControlled();
     document.querySelectorAll('link[href*="pf2e-mobile.css"]').forEach(link => { link.disabled = false; });
-
-    // Ensure windowed sheet height and top offset never push the bottom nav below the viewport
-    try {
-      const isFullBleed = document.body.classList.contains("pf2e-mobile-active")
-        || document.body.classList.contains("pf2e-fullscreen")
-        || this.element?.classList?.contains("fullscreen-mode")
-        || window.innerWidth <= 768;
-      if (isFullBleed && this.element) {
-        this.element.style.top = "0px";
-        this.element.style.left = "0px";
-        this.element.style.width = "100%";
-        this.element.style.height = "100%";
-      } else if (this.element && window.innerHeight) {
-        const maxH = Math.max(400, window.innerHeight - 24);
-        const curH = this.position?.height ?? this.element.offsetHeight ?? 750;
-        const clampedH = Math.min(curH, maxH);
-        const curTop = this.position?.top ?? this.element.offsetTop ?? 20;
-        const clampedTop = Math.max(8, Math.min(curTop, window.innerHeight - clampedH - 8));
-        this.element.style.height = `${clampedH}px`;
-        this.element.style.top = `${clampedTop}px`;
-      }
-    } catch {}
-
     Hooks.callAll("renderPF2eMobileSheet", this, this.element, context);
 
     const savedScroll = this._tabScrollPositions.get(this._activeTab);

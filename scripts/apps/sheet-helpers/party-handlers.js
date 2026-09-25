@@ -381,8 +381,9 @@ export async function onTransferCoins(sheet, event, target) {
     </div>
   `;
 
+  let result = null;
   if (foundry.applications?.api?.DialogV2?.wait) {
-    const result = await foundry.applications.api.DialogV2.wait({
+    result = await foundry.applications.api.DialogV2.wait({
       window: { title: "Transfer Currency" },
       content,
       buttons: [
@@ -404,15 +405,59 @@ export async function onTransferCoins(sheet, event, target) {
         },
         { action: "cancel", label: "Cancel", icon: "fa-solid fa-times" }
       ],
+      rejectClose: false,
       render: (e, dialog) => {
         dialog.element.querySelectorAll("select").forEach(sel => {
           sel.addEventListener("click", ev => ev.stopPropagation());
         });
       }
     });
+  } else {
+    result = await new Promise(resolve => {
+      let settled = false;
+      const done = (val) => {
+        if (!settled) {
+          settled = true;
+          resolve(val);
+        }
+      };
+      new Dialog({
+        title: "Transfer Currency",
+        content,
+        buttons: {
+          transfer: {
+            label: "Execute Transfer",
+            icon: '<i class="fa-solid fa-coins"></i>',
+            callback: (html) => {
+              const root = html instanceof HTMLElement ? html : html?.[0];
+              const dir = root?.querySelector("#coin-direction")?.value;
+              const memId = root?.querySelector("#coin-member")?.value;
+              const pp = Math.max(parseInt(root?.querySelector("#coin-pp")?.value, 10) || 0, 0);
+              const gp = Math.max(parseInt(root?.querySelector("#coin-gp")?.value, 10) || 0, 0);
+              const sp = Math.max(parseInt(root?.querySelector("#coin-sp")?.value, 10) || 0, 0);
+              const cp = Math.max(parseInt(root?.querySelector("#coin-cp")?.value, 10) || 0, 0);
+              done({ dir, memId, coins: { pp, gp, sp, cp } });
+            }
+          },
+          cancel: {
+            label: "Cancel",
+            icon: '<i class="fa-solid fa-times"></i>',
+            callback: () => done(null)
+          }
+        },
+        default: "transfer",
+        close: () => done(null)
+      }).render(true);
+    });
+  }
 
-    if (!result) return;
+  if (result && typeof result === "object" && result.coins) {
     const { dir, memId, coins } = result;
+    const totalCoins = (coins.pp || 0) + (coins.gp || 0) + (coins.sp || 0) + (coins.cp || 0);
+    if (totalCoins <= 0) {
+      ui.notifications?.warn?.("Please enter at least 1 coin to transfer.");
+      return;
+    }
     const targetMember = partyMembers.find(m => m.id === memId);
     if (!targetMember) return;
 

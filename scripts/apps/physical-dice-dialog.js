@@ -236,9 +236,13 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
       const rawVal = input?.value?.trim();
       const val = parseInt(rawVal, 10);
       const faces = this._faces || 20;
+      const count = Math.max(1, this._count || 1);
+      const isSingleChoice = this._isFortune || this._isMisfortune || count === 1;
+      const minVal = isSingleChoice ? 1 : count;
+      const maxVal = isSingleChoice ? faces : count * faces;
 
-      if (isNaN(val) || val < 1 || val > faces) {
-        showError(`Please enter a valid roll between 1 and ${faces}.`);
+      if (isNaN(val) || val < minVal || val > maxVal) {
+        showError(`Please enter a valid roll between ${minVal} and ${maxVal}.`);
         input?.focus();
         return;
       }

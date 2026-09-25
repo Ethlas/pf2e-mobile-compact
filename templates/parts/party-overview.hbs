@@ -3,8 +3,9 @@
   <section class="party-summary-section">
     <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="party-competencies">
       <span><i class="fas fa-graduation-cap"></i> Party Competencies</span>
-      <i class="fas fa-chevron-down section-expand-icon"></i>
+      <i class="fas fa-chevron-down section-expand-icon {{#if isCompetenciesCollapsed}}collapsed{{/if}}"></i>
     </h3>
+    {{#unless isCompetenciesCollapsed}}
     <div class="party-summary-content">
       <!-- Languages Strip -->
       <div class="competency-group">
@@ -25,8 +26,8 @@
         <div class="competency-title"><i class="fas fa-dice-d20"></i> Best Party Modifiers</div>
         <div class="tag-strip">
           {{#each partySkills as |sk|}}
-          <span class="competency-pill skill-pill" title="{{sk.member}} (+{{sk.mod}})">
-            <strong>{{sk.label}}</strong> +{{sk.mod}} <small>({{sk.member}})</small>
+          <span class="competency-pill skill-pill" title="{{sk.member}} ({{#if (gte sk.mod 0)}}+{{/if}}{{sk.mod}})">
+            <strong>{{sk.label}}</strong> {{#if (gte sk.mod 0)}}+{{/if}}{{sk.mod}} <small>({{sk.member}})</small>
           </span>
           {{/each}}
         </div>
@@ -37,13 +38,14 @@
         <div class="competency-title"><i class="fas fa-brain"></i> Recall Knowledge</div>
         <div class="tag-strip">
           {{#each partyRecallKnowledge as |rk|}}
-          <span class="competency-pill rk-pill" title="{{rk.member}} (+{{rk.mod}})">
-            <strong>{{rk.label}}</strong> +{{rk.mod}} <small>({{rk.member}})</small>
+          <span class="competency-pill rk-pill" title="{{rk.member}} ({{#if (gte rk.mod 0)}}+{{/if}}{{rk.mod}})">
+            <strong>{{rk.label}}</strong> {{#if (gte rk.mod 0)}}+{{/if}}{{rk.mod}} <small>({{rk.member}})</small>
           </span>
           {{/each}}
         </div>
       </div>
     </div>
+    {{/unless}}
   </section>
 
   <!-- Party Members Tactical Roster -->
@@ -88,10 +90,10 @@
         <!-- Defenses Strip -->
         <div class="member-defenses-strip">
           <span class="defense-badge ac" title="Armor Class"><strong>AC</strong> {{member.ac}}</span>
-          <span class="defense-badge save" title="Fortitude Save"><strong>Fort</strong> +{{member.saves.fortitude}}</span>
-          <span class="defense-badge save" title="Reflex Save"><strong>Ref</strong> +{{member.saves.reflex}}</span>
-          <span class="defense-badge save" title="Will Save"><strong>Will</strong> +{{member.saves.will}}</span>
-          <span class="defense-badge perc" title="Perception"><strong>Perc</strong> +{{member.perception}}</span>
+          <span class="defense-badge save" title="Fortitude Save"><strong>Fort</strong> {{#if (gte member.saves.fortitude 0)}}+{{/if}}{{member.saves.fortitude}}</span>
+          <span class="defense-badge save" title="Reflex Save"><strong>Ref</strong> {{#if (gte member.saves.reflex 0)}}+{{/if}}{{member.saves.reflex}}</span>
+          <span class="defense-badge save" title="Will Save"><strong>Will</strong> {{#if (gte member.saves.will 0)}}+{{/if}}{{member.saves.will}}</span>
+          <span class="defense-badge perc" title="Perception"><strong>Perc</strong> {{#if (gte member.perception 0)}}+{{/if}}{{member.perception}}</span>
         </div>
 
         <!-- Senses & Key Skills Row -->
@@ -101,7 +103,7 @@
           </div>
           <div class="member-top-skills">
             {{#each member.bestSkills as |sk|}}
-            <span class="mini-skill-pill">{{sk.label}} +{{sk.mod}}</span>
+            <span class="mini-skill-pill">{{sk.label}} {{#if (gte sk.mod 0)}}+{{/if}}{{sk.mod}}</span>
             {{/each}}
           </div>
         </div>

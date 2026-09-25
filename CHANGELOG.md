@@ -4,6 +4,37 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.24] - 2026-09-25
+
+### Codebase Audit & Comprehensive Bug Fixes
+
+#### Fixed
+- **Initialization Order & Dynamic Sheet Routing** (`scripts/pf2e-mobile.js`):
+  - Registered `mobileActivationMode`, `autoOpenSheet`, and `rollMode` settings at the start of `Hooks.once("init")` before `shouldActivateMobile()` is evaluated, fixing `"always"` mode on desktop/tablets and `"never"` mode on mobile.
+  - Installed `Actor.prototype._getSheetClass` and `sheet` getter routing unconditionally in `init` (guarded dynamically by `shouldActivateMobile()`), and ensured `setupPhysicalDiceInterceptor()` and `patchUserActiveTokens()` are active whenever `PF2eMobileSheet` renders.
+- **Physical Dice Mode Environment, Negative Check Modifiers & Multi-Die Check Partitioning** (`scripts/rolls/physical-dice-interceptor.js`, `scripts/apps/physical-dice-dialog.js`):
+  - Replaced `isMobileDevice()` hardcodes in `isPhysicalModeActive()`, `withPhysicalMode()`, and `shouldIntercept()` with `_isPhysicalEnvironment()`, honoring `mobileActivationMode` and open `.pf2e-mobile-sheet` windows.
+  - Fixed `interceptRoll()` check modifier calculation so negative operators (`1d20 - 2`) are respected instead of summed as positive numbers.
+  - Validated non-fortune multi-die check inputs (`count > 1`) against `count..(count * faces)` and partitioned the entered sum across individual dice via `partitionTotal()`.
+- **Staff Rank Group Accordion Collapse (`NaN` Key)** (`scripts/apps/sheet-helpers/spells-handlers.js`):
+  - Preserved string rank group keys (`"staff-0"`, `"staff-1"`, etc.) in `onToggleRankGroup` instead of converting them to `NaN` via `parseInt`.
+- **Party Sheet Stash Item Descriptions & Section Collapse Headers** (`scripts/apps/sheet-helpers/context-party.js`, `templates/parts/party-overview.hbs`, `templates/parts/party-stash.hbs`):
+  - Enriched stash item descriptions unconditionally in `preparePartyContext` so collapsed stash items render `.action-summary` and can be expanded on tap.
+  - Wired `isCompetenciesCollapsed`, `stash.isConsumablesCollapsed`, `stash.isEquipmentCollapsed`, and `stash.isGearCollapsed` in `context-party.js` and templates.
+- **Casting "Other Item Spells" & Multi-Entry Spell Slot Trackers** (`scripts/apps/sheet-helpers/activations-handlers.js`, `scripts/apps/sheet-helpers/context-spells.js`):
+  - Updated `onCastItemSpell` to resolve spells from `actor.spellcasting.get(entryId).spells.get(itemId)` when casting from ephemeral/embedded item spellcasting entries.
+  - Kept `rankBuckets[r].slots` and `rankBuckets[r].entryId` paired to the same owner entry (preferring spontaneous entries for manual `+/-` slot tracking) and computed unexpended prepared slot counts.
+- **Dialog Promise & Rune Source Consumption Fixes** (`scripts/apps/sheet-helpers/spell-presets-handlers.js`, `scripts/apps/sheet-helpers/party-handlers.js`, `scripts/apps/sheet-helpers/rune-handlers.js`, `scripts/apps/sheet-helpers/actions-handlers.js`):
+  - Updated `onSaveSpellPreset` to use `DialogV2.wait(..., { rejectClose: false })` with a `close` handler so dismissing the dialog resolves `null` instead of hanging.
+  - Added zero-coin validation (`totalCoins <= 0`) and classic `Dialog` fallback in `onTransferCoins`.
+  - Deduplicated `newlyAddedSources` by item ID in `openRuneEditorDialog` before deducting quantity or deleting source items.
+  - Wrapped `systemAction.use(useOptions)` in `PhysicalDiceManager.withPhysicalMode` inside `onUseAction`.
+- **Negative Modifier Formatting (`+-` Fix) & CSS Brace Validation** (`templates/parts/header.hbs`, `templates/parts/party-overview.hbs`, `styles/pf2e-mobile.css`, `scripts/verify.mjs`):
+  - Replaced hardcoded `+{{...mod}}` with conditional `{{#if (gte ...mod 0)}}+{{/if}}{{...mod}}` across header saves/perception/initiative and party overview modifiers.
+  - Removed stray unmatched closing brace in `styles/pf2e-mobile.css` and added automated CSS brace balance verification to `scripts/verify.mjs`.
+
+---
+
 ## [1.0.23] - 2026-09-25
 
 ### Hotfix: Property Rune Slugs & Bottom Navigation Viewport Fix (Issue #7 / PR #8)
