@@ -4,6 +4,35 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.23] - 2026-09-25
+
+### Hotfix: Property Rune Slugs & Bottom Navigation Viewport Fix (Issue #7 / PR #8)
+
+#### Fixed
+- **Etching a Multi-Word Property Rune Broke the Weapon** (`scripts/apps/sheet-helpers/rune-data.js`, `rune-handlers.js`):
+  - Root cause: the rune tables keyed property runes in kebab-case (`greater-flaming`, `ghost-touch`, `acid-resistant`), but PF2e stores and looks them up in camelCase (`greaterFlaming`, `ghostTouch`, `acidResistant`). 84 of the module's 146 slugs did not exist in PF2e's `RUNE_DATA` registry.
+  - PF2e's data preparation indexes `RUNE_DATA.<type>.property[slug]` without guarding for unknown keys (`item/weapon/document.ts`, `item/physical/runes.ts`), so an unresolved slug threw `TypeError: Cannot read properties of undefined (reading 'damage')` while building the item's strikes. Only single-word runes (`flaming`, `keen`, `frost`), where both conventions coincide, worked.
+  - Regenerated both rune tables from the PF2e system's own registry: correct camelCase slugs, all 80 weapon and 58 armor property runes (previously 96 and 51 entries, 41 of which named runes PF2e does not implement), with English labels and `i18n` keys taken from the system's `en.json`.
+- **Automatic Normalization & Migration of Legacy Kebab-Case Rune Slugs** (`scripts/apps/sheet-helpers/rune-data.js`, `rune-handlers.js`, `scripts/pf2e-mobile.js`):
+  - Added `normalizePropertyRuneSlug()` and updated `sanitizePropertyRunes()` so legacy kebab-case slugs (`greater-flaming`, `ghost-touch`) and suffix-ordered slugs (`flaming-greater`) are automatically converted to their valid PF2e camelCase equivalents (`greaterFlaming`, `ghostTouch`) rather than being destructively dropped or triggering false rune-unetch inventory duplicates.
+  - Added `migrateActorPropertyRunes()` invoked during `ready` and `renderPF2eMobileSheet` to automatically self-heal owned weapons and armor with legacy kebab-case runes from v1.0.17.
+- **Full Tier Consistency in `matchPropertyRune()`** (`scripts/apps/sheet-helpers/rune-data.js`):
+  - Added `lesser`, `moderate`, and `minor` tier checks alongside `greater`, `major`, and `true`, fixing a bug where `Lesser Dread` (`lesserDread`) was misidentified as `Moderate Dread` (`moderateDread`).
+- **Localized Rune Labels & Compendium Lookups** (`scripts/apps/sheet-helpers/context-inventory.js`, `rune-data.js`, `rune-handlers.js`):
+  - Added `getPropertyRuneLabel()`, which prefers PF2e's localization key so rune badges and dialog options render in the client's language, falling back to the English name and then to a de-camelized slug.
+  - Enhanced `getRuneItemMeta()` and `returnRuneToInventory()` to match both prefix (`greater-flaming-rune`, `Greater Flaming`) and PF2e Remaster parenthetical/suffix conventions (`flaming-greater`, `Flaming (Greater)`), while preserving English fallback search terms on non-English clients and matching existing inventory stacks via `searchTerms` and `matchPropertyRune()`.
+- **Bottom Navigation Bar & `Hooks.once("init")` Settings Order Fix** (`scripts/pf2e-mobile.js`, `scripts/apps/mobile-sheet.js`, `styles/pf2e-mobile.css`):
+  - Moved `game.settings.register("pf2e-mobile-compact", "mobileActivationMode", ...)` to the very start of `Hooks.once("init")` before `shouldActivateMobile()` is called.
+  - Removed a stray CSS syntax error in `styles/pf2e-mobile.css`, changed `.window-content` and `.mobile-sheet-body` to `flex: 1 1 0% !important; min-height: 0 !important; height: auto !important;` so header heights never push `<nav class="mobile-bottom-nav">` outside the container, and clamped windowed sheet height to the viewport in `_onRender`.
+- **Regression Guard** (`scripts/verify.mjs`):
+  - Added check 4b, failing the build if any property rune slug contains a hyphen. Verified it reports all 68 pre-fix slugs and exits non-zero.
+
+#### Known Limitations (not addressed here)
+- Property rune slot count still uses `min(potency, 3)`. PF2e's `getPropertyRuneSlots()` also grants +1 slot for orichalcum and derives potency from character level under Automatic Bonus Progression; potency is `ZeroToFour`, not 0-3.
+- Duplicate pruning is exact-match only; PF2e's `prunePropertyRunes` also strips lesser runes when a greater one is present.
+
+---
+
 ## [1.0.22] - 2026-09-24
 
 ### iPhone / iOS Safari Compatibility — WebKit GPU Memory Protection & Mobile Viewport Fixes (Issue #9)

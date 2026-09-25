@@ -4,6 +4,7 @@
 import { PF2eMobileSheet } from "./apps/mobile-sheet.js";
 import { setupPhysicalDiceInterceptor } from "./rolls/physical-dice-interceptor.js";
 import { isMobileDevice, isIOSDevice } from "./utils/sheet-utils.js";
+import { migrateActorPropertyRunes } from "./apps/sheet-helpers/rune-handlers.js";
 
 export { isMobileDevice, isIOSDevice };
 
@@ -700,6 +701,15 @@ Hooks.once("ready", () => {
       updateFabVisibility();
     }
   }, 200));
+
+  // Auto-migrate any legacy kebab-case property rune slugs on owned actors
+  try {
+    for (const actor of game.actors ?? []) {
+      if (actor.isOwner) migrateActorPropertyRunes(actor);
+    }
+  } catch (err) {
+    console.warn("PF2e Mobile Compact | Property rune migration warning:", err);
+  }
 });
 
 /**
@@ -718,6 +728,7 @@ export function updateFabVisibility() {
 
 // Reactively toggle stylesheet and FAB when mobile character sheet opens or closes
 Hooks.on("renderPF2eMobileSheet", (sheet) => {
+  if (sheet?.actor) migrateActorPropertyRunes(sheet.actor);
   syncStylesheetState(sheet);
   updateFabVisibility();
   setTimeout(() => {

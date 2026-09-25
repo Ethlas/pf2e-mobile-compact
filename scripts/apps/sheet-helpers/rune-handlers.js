@@ -4,9 +4,43 @@
  * and restricts or filters rune etching to items actually owned by the actor.
  */
 
-import { WEAPON_PROPERTY_RUNES, ARMOR_PROPERTY_RUNES, matchPropertyRune, getRuneItemMeta } from "./rune-data.js";
+import {
+  WEAPON_PROPERTY_RUNES,
+  ARMOR_PROPERTY_RUNES,
+  matchPropertyRune,
+  getRuneItemMeta,
+  getPropertyRuneLabel,
+  normalizePropertyRuneSlug,
+  sanitizePropertyRunes
+} from "./rune-data.js";
 
 export { WEAPON_PROPERTY_RUNES, ARMOR_PROPERTY_RUNES };
+
+/**
+ * Self-heals any legacy kebab-case or invalid property rune slugs stored on an
+ * actor's owned weapons or armor (e.g. "greater-flaming" -> "greaterFlaming").
+ * @param {Actor} actor
+ */
+export async function migrateActorPropertyRunes(actor) {
+  if (!actor?.isOwner || !actor.items) return;
+  for (const item of actor.items) {
+    const isWeapon = item.type === "weapon";
+    const isArmor = item.type === "armor";
+    if (!isWeapon && !isArmor) continue;
+    const rawProps = item._source?.system?.runes?.property ?? item.system?.runes?.property;
+    if (!Array.isArray(rawProps) || rawProps.length === 0) continue;
+    const sanitized = sanitizePropertyRunes(rawProps, isWeapon);
+    const changed = sanitized.length !== rawProps.length || sanitized.some((s, idx) => s !== rawProps[idx]);
+    if (changed) {
+      try {
+        console.info(`PF2e Mobile Compact | Auto-migrating property runes on ${item.name}:`, rawProps, "->", sanitized);
+        await item.update({ "system.runes.property": sanitized });
+      } catch (err) {
+        console.warn(`PF2e Mobile Compact | Failed to auto-migrate property runes on ${item.name}:`, err);
+      }
+    }
+  }
+}
 
 /**
  * Scan actor's inventory for fundamental and property runes.
@@ -61,10 +95,11 @@ export function scanInventoryRunes(actor, targetItem, itemType) {
   if (Array.isArray(currentRunes.property)) {
     for (const p of currentRunes.property) {
       if (!p) continue;
-      const slug = typeof p === "string" ? p : p?.slug ?? p?.value ?? "";
+      const rawSlug = typeof p === "string" ? p : p?.slug ?? p?.value ?? "";
+      if (!rawSlug) continue;
+      const slug = normalizePropertyRuneSlug(rawSlug, isWeapon);
       if (!slug) continue;
-      const def = (isWeapon ? WEAPON_PROPERTY_RUNES[slug] : ARMOR_PROPERTY_RUNES[slug]) ?? {};
-      const loc = def.name ?? (slug.charAt(0).toUpperCase() + slug.slice(1));
+      const loc = getPropertyRuneLabel(slug, isWeapon) || (slug.charAt(0).toUpperCase() + slug.slice(1));
       available.property.set(slug, {
         label: `${loc} (Current)`,
         source: "current"
@@ -136,12 +171,13 @@ export function scanInventoryRunes(actor, targetItem, itemType) {
     if (Array.isArray(itemRunes.property)) {
       for (const p of itemRunes.property) {
         if (!p) continue;
-        const pSlug = typeof p === "string" ? p : p?.slug ?? p?.value ?? "";
-        if (!pSlug) continue;
-        const runesDict = isWeapon ? WEAPON_PROPERTY_RUNES : ARMOR_PROPERTY_RUNES;
-        if (runesDict[pSlug] && !available.property.has(pSlug)) {
+        const rawPSlug = typeof p === "string" ? p : p?.slug ?? p?.value ?? "";
+        if (!rawPSlug) continue;
+        const pSlug = normalizePropertyRuneSlug(rawPSlug, isWeapon);
+        if (pSlug && !available.property.has(pSlug)) {
+          const label = getPropertyRuneLabel(pSlug, isWeapon);
           available.property.set(pSlug, {
-            label: `${runesDict[pSlug].name} (${item.name})`,
+            label: `${label} (${item.name})`,
             source: "inventory",
             item
           });
@@ -263,7 +299,9 @@ function buildRuneOptionsHTML({ isWeapon, isArmor, isShield, available, runes })
   const currentStriking = runes.striking ?? 0;
   const currentResilient = runes.resilient ?? 0;
   const currentReinforcing = runes.reinforcing ?? 0;
-  const currentProperties = Array.isArray(runes.property) ? runes.property : [];
+  const currentProperties = (isWeapon || isArmor)
+    ? sanitizePropertyRunes(runes.property, isWeapon)
+    : [];
 
   let potencyOptions = "";
   let fundamentalSecondOptions = "";
@@ -339,16 +377,22 @@ export async function returnRuneToInventory(actor, runeInfo) {
   const targetSlug = meta.slug;
   const targetName = meta.name;
   const searchTerms = (meta.searchTerms ?? [targetName.toLowerCase()]).map(s => s.toLowerCase());
+  const isWeapon = runeInfo.itemType === "weapon";
 
   // 1. If actor already has this rune item in inventory, increment quantity
-  const existing = actor.items.find(i =>
-    ["equipment", "consumable", "treasure"].includes(i.type) &&
-    (
-      (targetSlug && i.slug === targetSlug) ||
-      (i.name.toLowerCase() === targetName.toLowerCase()) ||
-      (targetSlug && i.slug === `${targetSlug}-rune`)
-    )
-  );
+  const existing = actor.items.find(i => {
+    if (!["equipment", "consumable", "treasure"].includes(i.type)) return false;
+    const iSlug = (i.slug ?? "").toLowerCase();
+    const iName = (i.name ?? "").toLowerCase();
+    if (targetSlug && (i.slug === targetSlug || iSlug === `${targetSlug.toLowerCase()}-rune`)) return true;
+    if (iName === targetName.toLowerCase()) return true;
+    if (searchTerms.some(st => iName === st || iSlug === st.replace(/\s+/g, "-"))) return true;
+    if (runeInfo.category === "property") {
+      const matched = matchPropertyRune(i, isWeapon);
+      if (matched && matched.slug === targetSlug) return true;
+    }
+    return false;
+  });
 
   if (existing) {
     const currentQty = existing.system?.quantity ?? existing.quantity ?? 1;
@@ -364,7 +408,7 @@ export async function returnRuneToInventory(actor, runeInfo) {
       const entry = index.find(e => {
         const entrySlug = (e.system?.slug ?? e.slug ?? "").toLowerCase();
         const entryName = (e.name ?? "").toLowerCase();
-        if (targetSlug && (entrySlug === targetSlug || entrySlug === `${targetSlug}-rune`)) return true;
+        if (targetSlug && (entrySlug === targetSlug.toLowerCase() || entrySlug === `${targetSlug.toLowerCase()}-rune`)) return true;
         return searchTerms.some(st => entryName === st || entrySlug === st.replace(/\s+/g, "-"));
       });
 
@@ -576,12 +620,13 @@ export async function promptRuneConfiguration(sheet, item) {
         const str = parseInt(rootEl.querySelector("#rune-striking-select")?.value ?? "0", 10) || 0;
         const propSelects = rootEl.querySelectorAll(".rune-prop-slot");
         const rawProps = Array.from(propSelects).map(s => s.value).filter(Boolean);
-        // Strictly limit property runes to potency capacity
-        const props = [...new Set(rawProps)].slice(0, pot);
+        // Strictly limit property runes to potency capacity, and normalize/drop any slug
+        // this PF2e build cannot resolve (an unknown slug throws in its data prep).
+        const props = sanitizePropertyRunes([...new Set(rawProps)], true).slice(0, pot);
 
         const oldPot = runes.potency ?? 0;
         const oldStr = runes.striking ?? 0;
-        const oldProps = Array.isArray(runes.property) ? runes.property : [];
+        const oldProps = sanitizePropertyRunes(runes.property, true);
 
         if (pot > oldPot && available.potency.get(pot)?.item) {
           newlyAddedSources.push(available.potency.get(pot).item);
@@ -616,12 +661,13 @@ export async function promptRuneConfiguration(sheet, item) {
         const res = parseInt(rootEl.querySelector("#rune-resilient-select")?.value ?? "0", 10) || 0;
         const propSelects = rootEl.querySelectorAll(".rune-prop-slot");
         const rawProps = Array.from(propSelects).map(s => s.value).filter(Boolean);
-        // Strictly limit property runes to potency capacity
-        const props = [...new Set(rawProps)].slice(0, pot);
+        // Strictly limit property runes to potency capacity, and normalize/drop any slug
+        // this PF2e build cannot resolve (an unknown slug throws in its data prep).
+        const props = sanitizePropertyRunes([...new Set(rawProps)], false).slice(0, pot);
 
         const oldPot = runes.potency ?? 0;
         const oldRes = runes.resilient ?? 0;
-        const oldProps = Array.isArray(runes.property) ? runes.property : [];
+        const oldProps = sanitizePropertyRunes(runes.property, false);
 
         if (pot > oldPot && available.potency.get(pot)?.item) {
           newlyAddedSources.push(available.potency.get(pot).item);
