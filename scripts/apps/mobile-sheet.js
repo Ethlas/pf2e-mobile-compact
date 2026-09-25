@@ -189,6 +189,14 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   /** @override */
+  async render(options = {}, _options = {}) {
+    if (typeof options === "boolean") {
+      options = { ...(_options && typeof _options === "object" ? _options : {}), force: options };
+    }
+    return super.render(options, _options);
+  }
+
+  /** @override */
   _canRender(options) {
     if (!this.document) return false;
     const hasPerm = game.user?.isGM || this.document.isOwner || this.document.testUserPermission(game.user, this.options.viewPermission ?? "LIMITED");

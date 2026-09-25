@@ -243,7 +243,7 @@ export function buildPropertySlotsHTML(potency, currentProperties = [], availabl
     html += `
       <div class="rune-prop-slot-wrapper" style="margin-bottom: 8px;">
         <label style="display:block; margin-bottom: 4px; font-size: 0.82rem; color: #aaa;">Property Rune ${slotIdx + 1}:</label>
-        <select class="rune-prop-slot" data-slot-index="${slotIdx}" style="width: 100%; min-height: 44px; font-size: 0.95rem; border-radius: 6px; padding: 6px; background: #222; color: #fff; border: 1px solid #444;">
+        <select class="rune-prop-slot" data-slot-index="${slotIdx}" onclick="event.stopPropagation()" style="width: 100%; min-height: 44px; font-size: 16px; border-radius: 6px; padding: 6px; background: #222; color: #fff; border: 1px solid #444; touch-action: manipulation;">
           ${options}
         </select>
       </div>
@@ -456,13 +456,13 @@ export async function promptRuneConfiguration(sheet, item) {
       return `
         <div style="margin-bottom: 12px;">
           <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #aaa;">Fundamental Potency:</label>
-          <select id="rune-potency-select" style="width: 100%; min-height: 44px; font-size: 1rem; border-radius: 6px; padding: 6px; background: #222; color: #fff; border: 1px solid #444;">
+          <select id="rune-potency-select" onclick="event.stopPropagation()" style="width: 100%; min-height: 44px; font-size: 16px; border-radius: 6px; padding: 6px; background: #222; color: #fff; border: 1px solid #444; touch-action: manipulation;">
             ${potencyOptions}
           </select>
         </div>
         <div style="margin-bottom: 12px;">
           <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #aaa;">Fundamental Striking:</label>
-          <select id="rune-striking-select" style="width: 100%; min-height: 44px; font-size: 1rem; border-radius: 6px; padding: 6px; background: #222; color: #fff; border: 1px solid #444;">
+          <select id="rune-striking-select" onclick="event.stopPropagation()" style="width: 100%; min-height: 44px; font-size: 16px; border-radius: 6px; padding: 6px; background: #222; color: #fff; border: 1px solid #444; touch-action: manipulation;">
             ${fundamentalSecondOptions}
           </select>
         </div>
@@ -482,13 +482,13 @@ export async function promptRuneConfiguration(sheet, item) {
       return `
         <div style="margin-bottom: 12px;">
           <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #aaa;">Fundamental Potency:</label>
-          <select id="rune-potency-select" style="width: 100%; min-height: 44px; font-size: 1rem; border-radius: 6px; padding: 6px; background: #222; color: #fff; border: 1px solid #444;">
+          <select id="rune-potency-select" onclick="event.stopPropagation()" style="width: 100%; min-height: 44px; font-size: 16px; border-radius: 6px; padding: 6px; background: #222; color: #fff; border: 1px solid #444; touch-action: manipulation;">
             ${potencyOptions}
           </select>
         </div>
         <div style="margin-bottom: 12px;">
           <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #aaa;">Fundamental Resilient:</label>
-          <select id="rune-resilient-select" style="width: 100%; min-height: 44px; font-size: 1rem; border-radius: 6px; padding: 6px; background: #222; color: #fff; border: 1px solid #444;">
+          <select id="rune-resilient-select" onclick="event.stopPropagation()" style="width: 100%; min-height: 44px; font-size: 16px; border-radius: 6px; padding: 6px; background: #222; color: #fff; border: 1px solid #444; touch-action: manipulation;">
             ${fundamentalSecondOptions}
           </select>
         </div>
@@ -507,7 +507,7 @@ export async function promptRuneConfiguration(sheet, item) {
     return `
       <div style="margin-bottom: 12px;">
         <label style="display:block; margin-bottom: 4px; font-size: 0.85rem; color: #aaa;">Reinforcing Rune:</label>
-        <select id="rune-reinforcing-select" style="width: 100%; min-height: 44px; font-size: 1rem; border-radius: 6px; padding: 6px; background: #222; color: #fff; border: 1px solid #444;">
+        <select id="rune-reinforcing-select" onclick="event.stopPropagation()" style="width: 100%; min-height: 44px; font-size: 16px; border-radius: 6px; padding: 6px; background: #222; color: #fff; border: 1px solid #444; touch-action: manipulation;">
           ${fundamentalSecondOptions}
         </select>
       </div>

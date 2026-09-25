@@ -51,7 +51,7 @@ export async function promptTargetSelection(sheet, actionLabel) {
       <div style="padding: 10px; text-align: center;">
         <p style="margin-bottom: 10px; font-size: 1.05rem;"><strong>Target for ${actionLabel}</strong></p>
         <label for="action-target-select" style="display:block; margin-bottom: 6px; font-size: 0.9rem; color: #bbb;">Select Target Token:</label>
-        <select id="action-target-select" style="width: 100%; min-height: 48px; font-size: 1rem; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444;">
+        <select id="action-target-select" onclick="event.stopPropagation()" style="width: 100%; min-height: 48px; font-size: 16px; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444; touch-action: manipulation;">
           <option value="">-- No Target --</option>
           ${optionsHtml}
         </select>
@@ -116,7 +116,7 @@ export async function promptVariantSelection(sheet, actionLabel, variants) {
       <div style="padding: 10px; text-align: center;">
         <p style="margin-bottom: 10px; font-size: 1.05rem;"><strong>${actionLabel}</strong></p>
         <label for="action-variant-select" style="display:block; margin-bottom: 6px; font-size: 0.9rem; color: #bbb;">Select Action Variant:</label>
-        <select id="action-variant-select" style="width: 100%; min-height: 48px; font-size: 1rem; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444;">
+        <select id="action-variant-select" onclick="event.stopPropagation()" style="width: 100%; min-height: 48px; font-size: 16px; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444; touch-action: manipulation;">
           ${optionsHtml}
         </select>
       </div>
@@ -172,7 +172,7 @@ export async function promptStatisticSelection(sheet, actionLabel, statistics) {
       <div style="padding: 10px; text-align: center;">
         <p style="margin-bottom: 10px; font-size: 1.05rem;"><strong>${actionLabel}</strong></p>
         <label for="action-stat-select" style="display:block; margin-bottom: 6px; font-size: 0.9rem; color: #bbb;">Select Skill to Check:</label>
-        <select id="action-stat-select" style="width: 100%; min-height: 48px; font-size: 1rem; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444;">
+        <select id="action-stat-select" onclick="event.stopPropagation()" style="width: 100%; min-height: 48px; font-size: 16px; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444; touch-action: manipulation;">
           ${optionsHtml}
         </select>
       </div>
@@ -224,7 +224,7 @@ export async function promptStrikeSelection(sheet, actionLabel, strikes) {
       <div style="padding: 10px; text-align: center;">
         <p style="margin-bottom: 10px; font-size: 1.05rem;"><strong>${actionLabel}</strong></p>
         <label for="action-strike-select" style="display:block; margin-bottom: 6px; font-size: 0.9rem; color: #bbb;">Select Weapon Strike to Attack With:</label>
-        <select id="action-strike-select" style="width: 100%; min-height: 48px; font-size: 1rem; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444;">
+        <select id="action-strike-select" onclick="event.stopPropagation()" style="width: 100%; min-height: 48px; font-size: 16px; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444; touch-action: manipulation;">
           ${optionsHtml}
         </select>
       </div>
@@ -298,7 +298,7 @@ export async function promptConsumableUsage(sheet, item) {
         </div>
         <p style="margin-bottom: 12px; font-size: 0.9rem; color: #bbb;">Choose who receives this consumable:</p>
         <label for="consumable-recipient-select" style="display:block; margin-bottom: 6px; font-size: 0.85rem; color: #888;">Recipient:</label>
-        <select id="consumable-recipient-select" style="width: 100%; min-height: 48px; font-size: 1rem; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444;">
+        <select id="consumable-recipient-select" onclick="event.stopPropagation()" style="width: 100%; min-height: 48px; font-size: 16px; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444; touch-action: manipulation;">
           <option value="self">Self (${sheet.actor.name})</option>
           ${comradeOptions}
         </select>
@@ -362,7 +362,7 @@ export async function promptWeaponSelectionForAttachment(sheet, consumable, weap
         </div>
         <p style="margin-bottom: 12px; font-size: 0.9rem; color: #bbb;">Select weapon to apply this poison or oil to (1 Interact Action):</p>
         <label for="weapon-attach-select" style="display:block; margin-bottom: 6px; font-size: 0.85rem; color: #888;">Weapon:</label>
-        <select id="weapon-attach-select" style="width: 100%; min-height: 48px; font-size: 1rem; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444;">
+        <select id="weapon-attach-select" onclick="event.stopPropagation()" style="width: 100%; min-height: 48px; font-size: 16px; border-radius: 6px; padding: 8px; background: #222; color: #fff; border: 1px solid #444; touch-action: manipulation;">
           ${weaponOptions}
         </select>
       </div>
