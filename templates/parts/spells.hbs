@@ -323,11 +323,11 @@
             <span class="staff-spells-badge">{{activations.staff.spellCount}} Spells</span>
             <i class="fas fa-chevron-down action-expand-icon {{#if activations.staff.isExpanded}}expanded{{/if}}"></i>
           </div>
-          <div class="staff-charges-tracker" onclick="event.stopPropagation()">
+          <div class="staff-charges-tracker">
             <span class="charges-label"><i class="fas fa-bolt"></i> Charges: <strong>{{activations.staff.charges.value}} / {{activations.staff.charges.max}}</strong></span>
             <div class="charges-buttons">
-              <button type="button" class="touch-target btn-charge-adjust" data-action="adjustStaffCharges" data-delta="-1" data-staff-id="{{activations.staff.id}}" title="Spend Staff Charge">-1</button>
-              <button type="button" class="touch-target btn-charge-adjust" data-action="adjustStaffCharges" data-delta="1" data-staff-id="{{activations.staff.id}}" title="Gain Staff Charge">+1</button>
+              <button type="button" class="touch-target btn-charge-adjust" data-action="adjustStaffCharges" data-delta="-1" data-current="{{activations.staff.charges.value}}" data-max="{{activations.staff.charges.max}}" data-staff-id="{{activations.staff.id}}" title="Spend Staff Charge">-1</button>
+              <button type="button" class="touch-target btn-charge-adjust" data-action="adjustStaffCharges" data-delta="1" data-current="{{activations.staff.charges.value}}" data-max="{{activations.staff.charges.max}}" data-staff-id="{{activations.staff.id}}" title="Gain Staff Charge">+1</button>
             </div>
           </div>
         </div>

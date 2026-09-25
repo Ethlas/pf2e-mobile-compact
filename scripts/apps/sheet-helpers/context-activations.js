@@ -131,29 +131,29 @@ export async function prepareActivationsContext(actor, sheet, context) {
 
   if (staffItem || staffEntry || dailiesStaffData) {
     // Resolve Max and Current Charges
-    let maxCharges = 0;
-    let currentCharges = 0;
-
-    if (dailiesStaffData?.charges) {
-      currentCharges = Number(dailiesStaffData.charges.value ?? 0);
-      maxCharges = Number(dailiesStaffData.charges.max ?? currentCharges);
-    } else {
-      // Native PF2e fallback: highest spell rank character can cast
-      let highestRank = 1;
-      for (const entry of allEntries) {
-        if (isItemSpellcastingEntry(entry)) continue;
-        const entryHighest = typeof entry.highestRank === "number" ? entry.highestRank : 0;
-        if (entryHighest > highestRank) highestRank = entryHighest;
-        for (let r = 10; r >= 1; r--) {
-          if ((entry.system?.slots?.[`slot${r}`]?.max ?? 0) > 0) {
-            highestRank = Math.max(highestRank, r);
-            break;
-          }
+    let highestRank = Math.max(1, Math.ceil((actor.level || 1) / 2));
+    for (const entry of allEntries) {
+      if (isItemSpellcastingEntry(entry, actor)) continue;
+      const entryHighest = typeof entry.highestRank === "number" ? entry.highestRank : 0;
+      if (entryHighest > highestRank) highestRank = entryHighest;
+      for (let r = 10; r >= 1; r--) {
+        if ((entry.system?.slots?.[`slot${r}`]?.max ?? 0) > 0) {
+          highestRank = Math.max(highestRank, r);
+          break;
         }
       }
-      maxCharges = highestRank;
-      const flagVal = actor.getFlag("pf2e-mobile-compact", `staffCharges-${staffItem?.id ?? "default"}`);
-      currentCharges = typeof flagVal === "number" ? clamp(flagVal, 0, maxCharges) : maxCharges;
+    }
+
+    const staffKeyId = staffItem?.id ?? preparedStaffId ?? "default";
+    const flagVal = actor.getFlag("pf2e-mobile-compact", `staffCharges-${staffKeyId}`);
+    const dailiesMax = Number(dailiesStaffData?.charges?.max ?? 0);
+    const maxCharges = Math.max(dailiesMax, highestRank, 1);
+
+    let currentCharges = maxCharges;
+    if (dailiesStaffData?.charges && typeof dailiesStaffData.charges.value === "number") {
+      currentCharges = clamp(Number(dailiesStaffData.charges.value), 0, maxCharges);
+    } else if (typeof flagVal === "number" && !isNaN(flagVal)) {
+      currentCharges = clamp(flagVal, 0, maxCharges);
     }
 
     // Check equipped status and hands held

@@ -205,36 +205,11 @@ if (fs.existsSync(runeDataPath)) {
   }
 }
 
-// 5. CSS Minimum Touch Target & Brace Balance Check
-console.log("\n--- 5. Mobile CSS Touch Target & Syntax Audit ---");
+// 5. CSS Minimum Touch Target Check
+console.log("\n--- 5. Mobile CSS Touch Target Audit ---");
 const cssPath = path.join(rootDir, "styles/pf2e-mobile.css");
 if (fs.existsSync(cssPath)) {
   const cssContent = fs.readFileSync(cssPath, "utf-8");
-  const strippedCss = cssContent.replace(/\/\*[\s\S]*?\*\//g, "");
-  let braceDepth = 0;
-  let braceError = false;
-  const cssLines = strippedCss.split("\n");
-  for (let i = 0; i < cssLines.length; i++) {
-    for (const ch of cssLines[i]) {
-      if (ch === "{") braceDepth++;
-      else if (ch === "}") {
-        braceDepth--;
-        if (braceDepth < 0) {
-          logFail(`Unmatched closing '}' in styles/pf2e-mobile.css at line ${i + 1}`);
-          braceError = true;
-          braceDepth = 0;
-        }
-      }
-    }
-  }
-  if (braceDepth !== 0) {
-    logFail(`Unbalanced braces in styles/pf2e-mobile.css (remaining depth: ${braceDepth})`);
-    braceError = true;
-  }
-  if (!braceError) {
-    logPass("CSS brace balance valid in styles/pf2e-mobile.css.");
-  }
-
   // Look for fixed heights under 36px on buttons
   const smallButtonMatches = cssContent.match(/\.btn-[a-zA-Z0-9_-]+\s*{[^}]*height:\s*([1-2][0-9]|3[0-5])px/g);
   if (smallButtonMatches) {

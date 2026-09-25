@@ -725,17 +725,9 @@ export async function promptRuneConfiguration(sheet, item) {
       // Handle optional inventory source item consumption
       const consumeSource = rootEl.querySelector("#rune-consume-source")?.checked ?? false;
       if (consumeSource && newlyAddedSources.length > 0) {
-        const sourceCounts = new Map();
         for (const src of newlyAddedSources) {
-          if (!src?.id) continue;
-          const entry = sourceCounts.get(src.id) ?? { item: src, count: 0 };
-          entry.count += 1;
-          sourceCounts.set(src.id, entry);
-        }
-        for (const { item: src, count } of sourceCounts.values()) {
-          const currentQty = src.quantity ?? src.system?.quantity ?? 1;
-          if (currentQty > count) {
-            await src.update({ "system.quantity": currentQty - count });
+          if (src.quantity > 1) {
+            await src.update({ "system.quantity": src.quantity - 1 });
           } else {
             await src.delete();
           }

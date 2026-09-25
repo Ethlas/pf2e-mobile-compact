@@ -317,22 +317,13 @@ export async function onUseAction(sheet, event, target) {
     }
 
     try {
-      const executed = await PhysicalDiceManager.withPhysicalMode({
-        title: item.name,
-        subtitle: chosenVariant?.label ?? "",
-        target: targetToken,
-        actor
-      }, async () => {
-        if (typeof systemAction.use === "function") {
-          await systemAction.use(useOptions);
-          return true;
-        } else if (typeof systemAction === "function") {
-          await systemAction(useOptions);
-          return true;
-        }
-        return false;
-      }, sheet.rollMode === "physical");
-      if (executed) return;
+      if (typeof systemAction.use === "function") {
+        await systemAction.use(useOptions);
+        return;
+      } else if (typeof systemAction === "function") {
+        await systemAction(useOptions);
+        return;
+      }
     } catch (err) {
       console.warn(`pf2e-mobile-compact | Error executing action ${item.name}:`, err);
       ui.notifications?.warn?.(`Action execution: ${err.message}`);
@@ -540,6 +531,7 @@ export async function onConsumeItem(sheet, event, target) {
  * @param {HTMLElement} target
  */
 export function onToggleActionSummary(sheet, event, target) {
+  if (event.target?.closest?.(".staff-charges-tracker, .charges-buttons, .btn-charge-adjust")) return;
   event.preventDefault();
   const actionEl = target.closest(".action-card, .strike-card, .item-card, .inventory-item-card, .staff-activation-group");
   if (!actionEl) return;

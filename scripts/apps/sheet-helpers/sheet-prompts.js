@@ -391,4 +391,95 @@ export async function promptWeaponSelectionForAttachment(sheet, consumable, weap
   });
 }
 
+export async function promptSpontaneousSlotSelection(sheet, spellName, minRank, eligibleSlots) {
+  if (!Array.isArray(eligibleSlots) || eligibleSlots.length === 0) return null;
+
+  return new Promise((resolve) => {
+    let isResolved = false;
+    const finish = (val) => {
+      if (!isResolved) {
+        isResolved = true;
+        resolve(val);
+      }
+    };
+
+    const DialogV2 = foundry.applications?.api?.DialogV2;
+
+    const buttonsHtml = eligibleSlots.map((slot, idx) => `
+      <button type="button" class="spont-slot-choice-btn touch-target" data-slot-idx="${idx}"
+        style="width: 100%; min-height: 44px; margin-bottom: 6px; padding: 8px 12px; font-size: 0.95rem; font-weight: 600; border-radius: 6px; background: rgba(120, 80, 220, 0.22); color: #e8ddff; border: 1px solid rgba(155, 115, 255, 0.5); display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+        <span><i class="fas fa-wand-magic-sparkles"></i> Rank ${slot.rank} — ${slot.entryName}</span>
+        <span style="font-size: 0.85rem; color: #c4b0f5;">${slot.available} / ${slot.max} left</span>
+      </button>
+    `).join("");
+
+    const content = `
+      <div class="mobile-spont-slot-prompt" style="padding: 6px 2px;">
+        <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #ccc;">
+          Select a <strong>Rank ${minRank}+</strong> spontaneous spell slot to expend alongside <strong>1 Staff Charge</strong> for <strong>${spellName}</strong>:
+        </p>
+        <div class="spont-slot-choices" style="display: flex; flex-direction: column;">
+          ${buttonsHtml}
+        </div>
+      </div>
+    `;
+
+    if (DialogV2) {
+      let dialogInstance = null;
+      dialogInstance = new DialogV2({
+        window: { title: `1 Chg + Slot: ${spellName}` },
+        content,
+        buttons: [
+          {
+            action: "cancel",
+            label: "Cancel",
+            icon: "fas fa-times",
+            callback: () => finish(null)
+          }
+        ],
+        render: (event, dialog) => {
+          const root = dialog.element;
+          root.querySelectorAll(".spont-slot-choice-btn").forEach(btn => {
+            btn.addEventListener("click", (ev) => {
+              ev.preventDefault();
+              ev.stopPropagation();
+              const idx = parseInt(btn.dataset.slotIdx, 10);
+              finish(eligibleSlots[idx] ?? null);
+              dialogInstance?.close();
+            });
+          });
+        },
+        close: () => finish(null)
+      });
+      dialogInstance.render(true);
+    } else {
+      let d = null;
+      d = new Dialog({
+        title: `1 Chg + Slot: ${spellName}`,
+        content,
+        buttons: {
+          cancel: {
+            icon: '<i class="fas fa-times"></i>',
+            label: "Cancel",
+            callback: () => finish(null)
+          }
+        },
+        render: (html) => {
+          const root = html instanceof HTMLElement ? html : html[0];
+          root?.querySelectorAll(".spont-slot-choice-btn").forEach(btn => {
+            btn.addEventListener("click", (ev) => {
+              ev.preventDefault();
+              const idx = parseInt(btn.dataset.slotIdx, 10);
+              finish(eligibleSlots[idx] ?? null);
+              d?.close();
+            });
+          });
+        },
+        close: () => finish(null)
+      });
+      d.render(true);
+    }
+  });
+}
+
 export { promptRuneConfiguration, scanInventoryRunes } from "./rune-handlers.js";

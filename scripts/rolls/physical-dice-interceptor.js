@@ -67,23 +67,8 @@ export class PhysicalDiceManager {
    * Only intercepts when executing on a mobile phone / mobile context.
    * @returns {boolean}
    */
-  static _isPhysicalEnvironment() {
-    if (this.activeContext?.isPhysical === true) return true;
-    try {
-      if (typeof document !== "undefined" && document.querySelector(".pf2e-mobile-sheet")) {
-        return true;
-      }
-      if (game.settings?.settings?.has?.("pf2e-mobile-compact.mobileActivationMode")) {
-        const mode = game.settings.get("pf2e-mobile-compact", "mobileActivationMode");
-        if (mode === "always") return true;
-        if (mode === "never") return false;
-      }
-    } catch {}
-    return isMobileDevice();
-  }
-
   static isPhysicalModeActive() {
-    if (!this._isPhysicalEnvironment()) return false;
+    if (!isMobileDevice()) return false;
     if (this.activeContext?.isPhysical === false) return false;
     if (this.activeContext?.isPhysical === true) return true;
 
@@ -111,7 +96,7 @@ export class PhysicalDiceManager {
    * @returns {Promise<any>}
    */
   static async withPhysicalMode(context, fn, isPhysical = true) {
-    if (!isPhysical && !this._isPhysicalEnvironment()) {
+    if (!isMobileDevice()) {
       return fn();
     }
     const prevContext = this.activeContext;
@@ -223,7 +208,7 @@ export class PhysicalDiceManager {
    * @returns {boolean}
    */
   static shouldIntercept(roll) {
-    if (!this._isPhysicalEnvironment()) return false;
+    if (!isMobileDevice()) return false;
     if (!this.isPhysicalModeActive()) return false;
     if (roll._evaluated || roll._isPhysicalIntercepted) return false;
 
@@ -387,9 +372,8 @@ export class PhysicalDiceManager {
 
     // Find d20 or primary die term
     const d20Term = diceTerms.find(t => t.faces === 20) ?? diceTerms[0];
-    const totalMod = typeof roll.options?.totalModifier === "number"
-      ? roll.options.totalModifier
-      : this.extractNumericModifier(roll, diceTerms);
+    const modTerms = terms.filter(t => typeof t.number === "number" && typeof t.faces !== "number");
+    const totalMod = modTerms.reduce((sum, t) => sum + (t.number ?? 0), 0);
 
     const faces = d20Term.faces ?? 20;
     const count = d20Term.number ?? 1;
@@ -418,15 +402,10 @@ export class PhysicalDiceManager {
     }
 
     // Populate d20 term results
-    // If the roll had fortune (kh) or misfortune (kl) or single die, user entered the chosen die result directly.
-    // If multiple dice without keep/drop (e.g. 2d4), partition the entered total across the dice.
+    // If the roll had fortune (kh) or misfortune (kl), user entered the chosen die result directly.
+    // Setting each die result to d20Result ensures native Foundry keep/drop evaluation preserves the user's chosen value.
     const resultCount = Math.max(1, count);
-    if (isFortune || isMisfortune || resultCount === 1) {
-      d20Term.results = Array.from({ length: resultCount }, () => ({ result: d20Result, active: true }));
-    } else {
-      const partitioned = this.partitionTotal(d20Result, resultCount, faces);
-      d20Term.results = partitioned.map(val => ({ result: val, active: true }));
-    }
+    d20Term.results = Array.from({ length: resultCount }, () => ({ result: d20Result, active: true }));
     d20Term._isPhysicalIntercepted = true;
     roll._isPhysicalIntercepted = true;
 
