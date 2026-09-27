@@ -70,3 +70,22 @@ Welcome to the **PF2e Mobile Sheet (Compact)** repository (`pf2e-mobile-compact`
    - Never commit or store plaintext passwords in repository files or skill runbooks.
    - For every feature milestone, bug fix, or breaking change, document the change under the corresponding version in [`CHANGELOG.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/CHANGELOG.md).
    - Bump version in [`module.json`](file:///d:/Dnd/coding/pf2e-mobile-compact/module.json) when releasing new milestone versions.
+
+---
+
+## 4. Foundry VTT AI Content Policy Compliance ([Official Policy](https://foundryvtt.com/article/ai-policy/))
+
+All code, templates, assets, and documentation in this repository MUST strictly adhere to the **Foundry VTT AI Content Policy (Revised March 18, 2026)** (detailed in [`.agents/rules/foundry-ai-policy.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/.agents/rules/foundry-ai-policy.md)):
+
+1. **Zero AI-Generated Prepared Media (Sections 3.1, 4.2, 4.3)**:
+   - **Never** generate or bundle AI-created images, illustrations, tokens, icons, video, or audio files (`.png`, `.jpg`, `.webp`, `.gif`, `.mp3`, `.ogg`, `.wav`).
+   - Use FontAwesome (`fa-solid`, `fas`), Foundry VTT built-in icons (`icons/...`), PF2e system icons (`systems/pf2e/...`), CSS styling, or clean geometric UI `<svg>` icons (`< 10 KB`, no embedded raster `<image>` data URLs).
+   - Any bundled raster/audio asset must be 100% human-created and listed in `ASSET_PROVENANCE.json` with creator attribution and license details.
+2. **Zero AI-Generated Lore/Rules Text & No Third-Party Scraping (Sections 1.1, 4.1)**:
+   - Never bundle AI-written lore, item descriptions, or copied third-party rules constants (`pf2e`, `pf2e-kingmaker-tools`, `pf2e-dailies`). Always delegate at runtime to official system compendia and installed module APIs (`kmApp._preparePartContext`, `game.pf2e`).
+3. **Human Author Comprehension & Anti-"Vibe Coding" (Sections 4.4 & 7)**:
+   - All AI-assisted code must be modular, clearly structured, and documented with JSDoc headers and `CHANGELOG.md` design rationale so the human author (`Ethlas`) can personally understand, explain, modify, and maintain 100% of the codebase.
+4. **Runtime Code Safety & Honest Package Categorization (Sections 5, 4.5, 6.6)**:
+   - Never use `eval()` or `new Function()` to execute unconfirmed dynamically generated code at runtime.
+   - Never label the package as `"Zero AI"`, and ensure `module.json` descriptions and marketing copy are human-authored/approved.
+

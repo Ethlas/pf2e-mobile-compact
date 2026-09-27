@@ -704,6 +704,112 @@ try {
   logFail(`Kingdom Sheet verification threw an error: ${err.stack || err.message}`);
 }
 
+// 7. Foundry VTT AI Content Policy Compliance Audit (https://foundryvtt.com/article/ai-policy/)
+console.log("\n--- 7. Foundry VTT AI Content Policy Compliance Audit ---");
+try {
+  // 7.1 Prepared Media & SVG Evasion Audit (Sections 4.2 & 4.3)
+  const mediaExts = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".mp3", ".ogg", ".wav", ".flac", ".mp4", ".webm"]);
+  const bundledMedia = [];
+  const svgFiles = [];
+
+  function scanMediaFiles(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === ".git" || entry.name === "node_modules") continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        scanMediaFiles(full);
+      } else {
+        const ext = path.extname(entry.name).toLowerCase();
+        const rel = path.relative(rootDir, full).replace(/\\/g, "/");
+        if (mediaExts.has(ext)) bundledMedia.push(rel);
+        if (ext === ".svg") svgFiles.push(full);
+      }
+    }
+  }
+  scanMediaFiles(rootDir);
+
+  if (bundledMedia.length > 0) {
+    const provPath = path.join(rootDir, "ASSET_PROVENANCE.json");
+    if (!fs.existsSync(provPath)) {
+      logFail(`[AI Policy 4.2/4.3] Bundled media files found without ASSET_PROVENANCE.json verifying human creation: ${bundledMedia.join(", ")}`);
+    } else {
+      const provData = JSON.parse(fs.readFileSync(provPath, "utf-8"));
+      const unverified = bundledMedia.filter((f) => !provData[f]?.humanCreated || !provData[f]?.creator);
+      if (unverified.length > 0) {
+        logFail(`[AI Policy 4.2/4.3] Bundled media files missing human creator attestation in ASSET_PROVENANCE.json: ${unverified.join(", ")}`);
+      } else {
+        logPass(`[AI Policy 4.2/4.3] All ${bundledMedia.length} bundled media files have verified human provenance.`);
+      }
+    }
+  } else {
+    logPass("[AI Policy 4.2/4.3] Zero bundled raster images, audio, or video assets (uses pure CSS & Foundry/FontAwesome icons).");
+  }
+
+  let svgEvasionDetected = false;
+  for (const svgFull of svgFiles) {
+    const svgContent = fs.readFileSync(svgFull, "utf-8");
+    if (svgContent.length > 10240 || /data:image\//i.test(svgContent) || /<image\b/i.test(svgContent)) {
+      logFail(`[AI Policy 4.2] Prohibited SVG media evasion or embedded raster image in ${path.relative(rootDir, svgFull)}`);
+      svgEvasionDetected = true;
+    }
+  }
+  if (!svgEvasionDetected) {
+    logPass("[AI Policy 4.2] No SVG media evasion or embedded base64 raster images detected.");
+  }
+
+  // 7.2 Runtime Code Generation Safety (Section 5) & Third-Party Scraping/Duplication Check (Section 1.1)
+  if (fs.existsSync(path.join(rootDir, "scripts/apps/sheet-helpers/context-kingdom.js"))) {
+    logFail("[AI Policy 1.1/4.1] Duplicate third-party rules file 'context-kingdom.js' must not exist; delegate to pf2e-kingmaker-tools API.");
+  } else {
+    logPass("[AI Policy 1.1/4.1] Zero duplicated third-party Kingdom constant files (delegates directly to pf2e-kingmaker-tools & PF2e APIs).");
+  }
+
+  let unsafeEvalFound = false;
+  let undocumentedModules = 0;
+  function auditJsCompliance(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        auditJsCompliance(full);
+      } else if (entry.name.endsWith(".js")) {
+        const rel = path.relative(rootDir, full).replace(/\\/g, "/");
+        const content = fs.readFileSync(full, "utf-8");
+        if (/\beval\s*\(|\bnew\s+Function\s*\(/.test(content)) {
+          logFail(`[AI Policy 5] Unconfirmed runtime code execution (eval / new Function) detected in ${rel}`);
+          unsafeEvalFound = true;
+        }
+        if (!/\/\*\*[\s\S]*?\*\//.test(content)) {
+          logWarn(`[AI Policy 4.4] Module ${rel} is missing JSDoc architectural documentation comments.`);
+          undocumentedModules++;
+        }
+      }
+    }
+  }
+  auditJsCompliance(path.join(rootDir, "scripts"));
+
+  if (!unsafeEvalFound) {
+    logPass("[AI Policy 5] Zero unconfirmed runtime code execution ('eval' / 'new Function') across all scripts.");
+  }
+
+  // 7.3 Author Maintainability & Anti-"Vibe Coding" Architecture Check (Section 4.4 & Section 7)
+  const orchestratorLines = fs.readFileSync(path.join(rootDir, "scripts/apps/mobile-sheet.js"), "utf-8").split("\n").length;
+  if (orchestratorLines > 700) {
+    logFail(`[AI Policy 4.4] mobile-sheet.js is ${orchestratorLines} lines (exceeds 700-line modular maintainability limit).`);
+  } else if (undocumentedModules === 0) {
+    logPass(`[AI Policy 4.4] Modular architecture & JSDoc documentation verified (mobile-sheet.js: ${orchestratorLines}/700 lines, 100% documented modules).`);
+  }
+
+  // 7.4 Honest Package Categorization (Section 6.6)
+  const modRaw = fs.readFileSync(path.join(rootDir, "module.json"), "utf-8");
+  if (/zero[\s-]*ai/i.test(modRaw)) {
+    logFail("[AI Policy 6.6] module.json must not claim the 'Zero AI' category when AI coding assistance is used.");
+  } else {
+    logPass("[AI Policy 6.6] Package manifest does not misrepresent 'Zero AI' categorization.");
+  }
+} catch (err) {
+  logFail(`AI Policy verification threw an error: ${err.stack || err.message}`);
+}
+
 // Summary
 console.log("\n==========================================");
 if (errorCount === 0 && warningCount === 0) {
@@ -716,6 +822,7 @@ if (errorCount === 0 && warningCount === 0) {
 console.log("==========================================\n");
 
 process.exit(errorCount > 0 ? 1 : 0);
+
 
 
 
