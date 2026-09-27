@@ -18,9 +18,11 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
   - Support for `pf2e-kingmaker-tools` Homebrew Leadership Modifiers (`enableLeadershipModifiers` / `useLeadershipModifiers`) with interactive `Invested` / `Skilled` / `Uninvested` `<select>` pickers, live Leader Skill Bonus badges (`+1`/`+2`/`+3`), and mobile **PC Skills (`inspect-leader-skills`)** & **Kingdom Skills (`inspect-kingdom-skills`)** modal inspectors.
   - Support for Homebrew Leadership activities (**Naval Support**, **Cleanse Item**), V&K XP buttons (`vkXp`, `solution-xp`, `rp-xp`, `level-up`, `end-turn`), and rigid Settlement Level-Up (`level-up-settlement`).
   - All Kingdom skill checks (`rollKingdomSkillCheck`) and activity rolls (`performKingdomActivity`) automatically integrate with `PhysicalDiceManager.withPhysicalMode` for Digital (`🎲`) and Physical (`✋`) dice modes, plus mobile-styled `DialogV2` modals for `KingdomCheckDialog`, `Consumption Breakdown`, and `InspectSettlement`.
-- **Section-by-Section Automated Verification Suite & GitHub Actions CI (`scripts/verify.mjs`, `.github/workflows/ci-verify.yml`)**:
+- **Section-by-Section Automated Verification Suite, GitHub Actions CI & Foundry AI Policy Enforcement (`scripts/verify.mjs`, `.github/workflows/ci-verify.yml`, `.agents/rules/foundry-ai-policy.md`, `.agents/skills/foundry-ai-policy-audit/SKILL.md`)**:
   - Expanded `scripts/verify.mjs` to validate all 26 ES modules, static `PF2eMobileSheet` action method definitions, HTML tag and Handlebars block balance across all 17 templates, 196 `data-action` and `data-change-action` bindings, CSS brace balance, and end-to-end interactive tests across all 5 Kingdom tabs.
+  - Added Section 7 (`Foundry VTT AI Content Policy Compliance Audit`) to `scripts/verify.mjs`, `.agents/rules/foundry-ai-policy.md`, `.agents/skills/foundry-ai-policy-audit/SKILL.md`, and `AGENTS.md` enforcing Foundry VTT's March 18, 2026 AI Content Policy (zero AI-generated media/SVG evasion, zero copied third-party rules constants, zero runtime `eval`/`new Function`, modular `< 700` line orchestrator with 100% JSDoc coverage, and honest package categorization).
   - Added `.github/workflows/ci-verify.yml` to run `node scripts/verify.mjs` automatically on every Pull Request and push to `main`.
+
 
 ---
 
