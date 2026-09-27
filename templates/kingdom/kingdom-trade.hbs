@@ -1,0 +1,61 @@
+<div class="tab-pane kingdom-trade-tab" data-tab="trade">
+  <section class="km-card">
+    <div class="km-card-header">
+      <span><i class="fas fa-handshake"></i> Diplomatic Relations &amp; Trade Agreements</span>
+      <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="add-group">
+        <i class="fa-solid fa-plus"></i> Add Group
+      </button>
+    </div>
+
+    <div class="km-trade-list">
+      {{#each km.groupsArray as |grp|}}
+        <div class="km-trade-card" style="display:flex;flex-direction:column;gap:8px;padding:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <input type="text" class="km-native-select" style="flex:1;font-weight:700;"
+                   data-change-action="updateKingdomField"
+                   data-field-name="{{grp.nameInput.name}}"
+                   value="{{grp.nameInput.value}}" />
+            <button type="button" class="km-btn-sm" style="color:#fca5a5;"
+                    data-action="dispatchKingdomNativeAction"
+                    data-km-action="delete-group" data-index="{{grp.index}}" title="Delete Group">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;">
+            <label style="display:flex;align-items:center;gap:4px;font-size:0.78rem;">
+              <span>DC:</span>
+              <input type="number" class="km-num-input" style="width:58px;"
+                     data-change-action="updateKingdomField"
+                     data-field-name="{{grp.negotiationDCInput.name}}"
+                     value="{{grp.negotiationDCInput.value}}" />
+            </label>
+
+            <label style="display:flex;align-items:center;gap:4px;font-size:0.78rem;color:#fca5a5;">
+              <input type="checkbox" data-change-action="updateKingdomField"
+                     data-field-name="{{grp.atWarInput.name}}"
+                     {{#if grp.atWarInput.value}}checked{{/if}} />
+              At War
+            </label>
+
+            {{#if grp.relationsInput.options.length}}
+              <select class="km-native-select" style="flex:1;min-width:135px;"
+                      data-change-action="updateKingdomField"
+                      data-field-name="{{grp.relationsInput.name}}">
+                {{#each grp.relationsInput.options}}
+                  <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                {{/each}}
+              </select>
+            {{else}}
+              <span class="km-badge">{{grp.relationsInput.value}}</span>
+            {{/if}}
+          </div>
+        </div>
+      {{else}}
+        <p class="empty-hint">No diplomatic groups or trade agreements established yet.</p>
+      {{/each}}
+    </div>
+  </section>
+</div>
+
+

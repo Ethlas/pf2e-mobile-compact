@@ -196,7 +196,6 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   user-select: text;
 }.pf2e-mobile-sheet * {
   box-sizing: border-box;
-}/* ----------------------------------------- *//* Touch Targets & Universal Controls        *//* ----------------------------------------- */.pf2e-mobile-sheet button,
 }/* ----------------------------------------- *//* Touch Targets & Universal Controls        *//* ----------------------------------------- */.pf2e-mobile-sheet [data-action],
 .pf2e-mobile-sheet [data-change-action],
 .pf2e-mobile-sheet .touch-target,

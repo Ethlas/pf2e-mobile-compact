@@ -4,6 +4,26 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.25] - 2026-09-27
+
+### Mobile Kingdom Sheet (`pf2e-kingmaker-tools` Integration), Homebrew Rules & Automated CI Verification
+
+#### Added
+- **Mobile Kingdom Sheet (`scripts/kingdom/kingdom-handlers.js`, `templates/kingdom/*.hbs`, `styles/kingdom.css`)**:
+  - Added full 5-tab Mobile Kingdom Sheet (`Turn`, `Kingdom`, `Settlements`, `Trade`, `Notes`) integrated into `PF2eMobileSheet` (`templates/mobile-sheet.hbs`, `templates/parts/header.hbs`, `templates/parts/party-overview.hbs`).
+  - Seamless switching between Character Sheets, Party Sheet, and Kingdom Sheet via the Header Actor Switcher (`👑 <Kingdom Name> (Kingdom)`) and the Party Overview launcher button (`Open Kingdom Sheet (Mobile View)`).
+  - Direct API delegation to `pf2e-kingmaker-tools` (`kmApp._preparePartContext("form", {}, {})`, `kmApp._onClickAction`, `kmApp._onChangeForm`) and native PF2e (`partyActor.system.campaign`) with zero duplicated rule constants.
+- **Full Leadership Roster & `pf2e-kingmaker-tools` Homebrew Rules Support**:
+  - Interactive 8-role Leadership Roster (`Ruler`, `Counselor`, `General`, `Emissary`, `Magister`, `Treasurer`, `Viceroy`, `Warden`) with mobile Character Assignment `<select>`, Vacancy toggle, and Active Turn Leader `<select>`.
+  - Support for `pf2e-kingmaker-tools` Homebrew Leadership Modifiers (`enableLeadershipModifiers` / `useLeadershipModifiers`) with interactive `Invested` / `Skilled` / `Uninvested` `<select>` pickers, live Leader Skill Bonus badges (`+1`/`+2`/`+3`), and mobile **PC Skills (`inspect-leader-skills`)** & **Kingdom Skills (`inspect-kingdom-skills`)** modal inspectors.
+  - Support for Homebrew Leadership activities (**Naval Support**, **Cleanse Item**), V&K XP buttons (`vkXp`, `solution-xp`, `rp-xp`, `level-up`, `end-turn`), and rigid Settlement Level-Up (`level-up-settlement`).
+  - All Kingdom skill checks (`rollKingdomSkillCheck`) and activity rolls (`performKingdomActivity`) automatically integrate with `PhysicalDiceManager.withPhysicalMode` for Digital (`🎲`) and Physical (`✋`) dice modes, plus mobile-styled `DialogV2` modals for `KingdomCheckDialog`, `Consumption Breakdown`, and `InspectSettlement`.
+- **Section-by-Section Automated Verification Suite & GitHub Actions CI (`scripts/verify.mjs`, `.github/workflows/ci-verify.yml`)**:
+  - Expanded `scripts/verify.mjs` to validate all 26 ES modules, static `PF2eMobileSheet` action method definitions, HTML tag and Handlebars block balance across all 17 templates, 196 `data-action` and `data-change-action` bindings, CSS brace balance, and end-to-end interactive tests across all 5 Kingdom tabs.
+  - Added `.github/workflows/ci-verify.yml` to run `node scripts/verify.mjs` automatically on every Pull Request and push to `main`.
+
+---
+
 ## [1.0.24] - 2026-09-25
 
 ### Codebase Audit & Comprehensive Bug Fixes

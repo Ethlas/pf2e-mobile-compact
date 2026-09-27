@@ -1,6 +1,4 @@
-/**
- * Context preparation helper for Mobile Sheet Header & Dashboard.
- */
+import { hasKingdomData, getKingdomName } from "../../kingdom/kingdom-handlers.js";
 
 /**
  * Prepares header dashboard data: HP, shield, defenses, initiative, targets, owned characters, and focus.
@@ -11,8 +9,10 @@
 export function prepareHeaderContext(actor, sheet, context) {
   const system = actor.system ?? {};
 
-  // Switcher Context: Include owned characters and character's party
-  const isParty = actor.type === "party";
+  // Switcher Context: Include owned characters, character's party, and Kingdom Sheet
+  const isKingdom = Boolean(actor.type === "party" && sheet?._isKingdomMode);
+  const isParty = actor.type === "party" && !isKingdom;
+  context.isKingdom = isKingdom;
   context.isParty = isParty;
 
   const owned = game.actors.filter(a => a.type === "character" && (a.isOwner || game.user.isGM));
@@ -20,21 +20,42 @@ export function prepareHeaderContext(actor, sheet, context) {
     id: a.id,
     name: `👤 ${a.name}`,
     img: a.img,
-    isParty: false
+    isParty: false,
+    isKingdom: false,
+    selected: !isKingdom && a.id === actor.id
   }));
 
-  const partyActor = isParty
+  const partyActor = (actor.type === "party")
     ? actor
     : (Array.from(actor.parties ?? [])[0]
-      ?? (game.actors.party?.members.some(m => m.id === actor.id) ? game.actors.party : null)
-      ?? game.actors.find(p => p.type === "party" && p.members?.some(m => m.id === actor.id)));
+      ?? (game.actors.party?.members?.some?.(m => m.id === actor.id) ? game.actors.party : null)
+      ?? game.actors.find(p => p.type === "party" && p.members?.some?.(m => m.id === actor.id))
+      ?? game.actors.party
+      ?? game.actors.find(p => p.type === "party" && hasKingdomData(p))
+      ?? game.actors.find(p => p.type === "party"));
 
   if (partyActor && !actorOptions.some(o => o.id === partyActor.id)) {
     actorOptions.push({
       id: partyActor.id,
       name: `👥 ${partyActor.name} (Party)`,
       img: partyActor.img,
-      isParty: true
+      isParty: true,
+      isKingdom: false,
+      selected: !isKingdom && partyActor.id === actor.id
+    });
+  }
+
+  const partyHasKingdom = Boolean(partyActor && hasKingdomData(partyActor));
+  context.hasKingdom = partyHasKingdom;
+  if (partyActor && partyHasKingdom) {
+    const kmName = getKingdomName(partyActor);
+    actorOptions.push({
+      id: `kingdom:${partyActor.id}`,
+      name: `👑 ${kmName} (Kingdom)`,
+      img: partyActor.img,
+      isParty: false,
+      isKingdom: true,
+      selected: isKingdom && partyActor.id === actor.id
     });
   }
 

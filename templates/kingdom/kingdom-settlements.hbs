@@ -1,0 +1,58 @@
+<div class="km-settlements-container">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+    <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="create-settlement">
+      <i class="fa-solid fa-plus"></i> New Settlement
+    </button>
+  </div>
+  {{#if km.settlements.length}}
+    <div class="km-settlements-list">
+      {{#each km.settlements}}
+        <div class="km-settlement-card {{#if this.isCapital}}is-capital{{/if}}">
+          <div class="km-settlement-top">
+            <div class="km-settlement-title-wrap">
+              {{#if this.isCapital}}
+                <i class="fa-solid fa-crown km-capital-icon" title="Capital Settlement"></i>
+              {{else}}
+                <i class="fa-solid fa-city km-city-icon"></i>
+              {{/if}}
+              <div>
+                <h3 class="km-settlement-name">{{this.name}}</h3>
+                <span class="km-settlement-meta">{{this.size}} &bull; Level {{this.level}} &bull; {{this.residentialLots}} Res. Lots</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              {{#if this.isRigid}}
+                <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction"
+                        data-km-action="level-up-settlement" data-id="{{this.id}}" data-level-up-to="{{this.canLevelUpTo}}"
+                        {{#unless this.canLevelUpTo}}disabled{{/unless}} title="Upgrade Settlement">
+                  <i class="fa-solid fa-arrow-turn-up"></i> Upgrade
+                </button>
+              {{/if}}
+              <button type="button" class="km-inspect-btn" data-action="inspectKingdomSettlement" data-settlement-id="{{this.id}}">
+                <i class="fa-solid fa-magnifying-glass-chart"></i> Inspect
+              </button>
+            </div>
+          </div>
+
+          <div class="km-settlement-warnings">
+            {{#if this.isOvercrowded}}
+              <span class="km-warn-chip danger"><i class="fa-solid fa-users-slash"></i> Overcrowded (+1 Unrest)</span>
+            {{/if}}
+            {{#if this.isSecondaryTerritory}}
+              <span class="km-warn-chip warn"><i class="fa-solid fa-compass"></i> Secondary Territory</span>
+            {{/if}}
+            {{#if this.lacksBridge}}
+              <span class="km-warn-chip info"><i class="fa-solid fa-bridge-water"></i> Lacks Bridge</span>
+            {{/if}}
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  {{else}}
+    <div class="km-empty-state">
+      <i class="fa-solid fa-city"></i>
+      <p>No settlements founded yet.</p>
+    </div>
+  {{/if}}
+</div>
+

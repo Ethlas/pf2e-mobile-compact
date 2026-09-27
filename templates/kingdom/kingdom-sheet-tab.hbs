@@ -1,0 +1,178 @@
+<div class="km-sheet-tab-container">
+  {{!-- Sub-Section Pill Switcher: Stats & Worksites vs Charter, Leaders & Levels --}}
+  <div class="km-subtab-bar">
+    <button type="button" class="km-subtab-btn {{#if (eq kingdomUi.sheetSubTab 'stats')}}active{{/if}}"
+            data-action="switchKingdomSheetSubTab" data-subtab="stats">
+      <i class="fa-solid fa-sliders"></i> Size, Skills &amp; Worksites
+    </button>
+    <button type="button" class="km-subtab-btn {{#if (eq kingdomUi.sheetSubTab 'charter')}}active{{/if}}"
+            data-action="switchKingdomSheetSubTab" data-subtab="charter">
+      <i class="fa-solid fa-scroll"></i> Charter &amp; Level Choices
+    </button>
+  </div>
+
+  {{!-- SECTION 1: Left-Column Equivalent (Size, Consumption, Ability Scores, Skills, Worksites) --}}
+  {{#if (eq kingdomUi.sheetSubTab "stats")}}
+    <div class="km-sheet-section">
+      {{!-- Size & Consumption Strip --}}
+      <div class="km-stats-top-grid">
+        <div class="km-stat-tile">
+          <span class="km-tile-label">Size &amp; Nation</span>
+          <strong class="km-tile-val">{{km.size}} Hexes</strong>
+          <small class="km-tile-sub">{{km.kingdomSize}} ({{km.resourceDiceIncome}})</small>
+        </div>
+        <button type="button" class="km-stat-tile clickable" data-action="openConsumptionBreakdown">
+          <span class="km-tile-label">Consumption <i class="fa-solid fa-circle-info"></i></span>
+          <strong class="km-tile-val">{{km.consumption}} Food</strong>
+          <small class="km-tile-sub">Tap for breakdown</small>
+        </button>
+      </div>
+
+      {{!-- Kingdom Ability Scores --}}
+      <div class="km-card">
+        <div class="km-card-header">
+          <span><i class="fa-solid fa-shield-heart"></i> Kingdom Ability Scores</span>
+        </div>
+        <div class="km-abilities-grid">
+          {{#each km.abilityScores}}
+            <div class="km-ability-box">
+              <span class="km-ab-label">{{this.label}}</span>
+              <strong class="km-ab-mod">{{this.mod}}</strong>
+              <small class="km-ab-score">Score {{this.value}}</small>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+
+      {{!-- Kingdom Skills List --}}
+      <div class="km-card">
+        <div class="km-card-header">
+          <span><i class="fa-solid fa-graduation-cap"></i> Kingdom Skills</span>
+        </div>
+        <div class="km-skills-grid">
+          {{#each km.skillChecks}}
+            <button type="button" class="km-skill-btn" data-action="rollKingdomSkillCheck"
+                    data-skill="{{this.skill}}" data-label="{{this.label}}">
+              <span class="km-skill-name">{{this.label}}</span>
+              <span class="km-skill-meta">
+                <span class="km-prof-badge {{this.valueClass}}">{{this.proficiency}}</span>
+                <strong class="km-skill-mod">{{this.modifier}}</strong>
+              </span>
+            </button>
+          {{/each}}
+        </div>
+      </div>
+
+      {{!-- Worksites Table --}}
+      <div class="km-card">
+        <div class="km-card-header">
+          <span><i class="fa-solid fa-pickaxe"></i> Kingdom Worksites</span>
+        </div>
+        <div class="km-worksites-table">
+          <div class="km-ws-header">
+            <span>Worksite Type</span>
+            <span>Regular</span>
+            <span>Resource Hex</span>
+          </div>
+          {{#each km.worksitesContext}}
+            <div class="km-ws-row">
+              <span class="km-ws-label">{{this.label}}</span>
+              <span class="km-ws-val">{{this.quantityValue}}</span>
+              <span class="km-ws-val">{{this.resourcesValue}}</span>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  {{/if}}
+
+  {{!-- SECTION 2: Charter, Heartland, Government, Leaders & Level-by-Level Progression --}}
+  {{#if (eq kingdomUi.sheetSubTab "charter")}}
+    <div class="km-sheet-section">
+      {{!-- Charter, Heartland, Government --}}
+      <div class="km-card">
+        <div class="km-card-header">
+          <span><i class="fa-solid fa-landmark"></i> Foundation &amp; Government</span>
+        </div>
+        <div class="km-foundation-list">
+          <div class="km-found-row">
+            <span class="km-found-type">Charter</span>
+            <strong class="km-found-name">{{km.charter.type.value}}</strong>
+          </div>
+          <div class="km-found-row">
+            <span class="km-found-type">Heartland</span>
+            <strong class="km-found-name">{{km.heartland.type.value}}</strong>
+          </div>
+          <div class="km-found-row">
+            <span class="km-found-type">Government</span>
+            <strong class="km-found-name">{{km.government.type.value}}</strong>
+          </div>
+        </div>
+      </div>
+
+      {{!-- Leadership Roster --}}
+      <div class="km-card">
+        <div class="km-card-header">
+          <span><i class="fa-solid fa-users-gear"></i> Leadership Roles</span>
+        </div>
+        <div class="km-leaders-list">
+          {{#each km.leadersContext}}
+            <div class="km-leader-row {{#if this.vacant.value}}is-vacant{{/if}}">
+              <div class="km-leader-role-wrap">
+                <strong class="km-leader-role">{{this.actor.label}}</strong>
+                <span class="km-leader-actor">{{this.actorName}}</span>
+              </div>
+              <div class="km-leader-badges">
+                {{#if this.invested.value}}
+                  <span class="km-badge invested"><i class="fa-solid fa-star"></i> Invested</span>
+                {{/if}}
+                {{#if this.vacant.value}}
+                  <span class="km-badge vacant">Vacant</span>
+                {{/if}}
+              </div>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+
+      {{!-- Level-by-Level Progression Choices --}}
+      <div class="km-card">
+        <div class="km-card-header">
+          <span><i class="fa-solid fa-layer-group"></i> Level Progression &amp; Feats</span>
+          <select class="km-native-select km-level-filter" data-change-action="filterKingdomLevel" aria-label="Filter Kingdom Level">
+            {{#each kingdomUi.levelOptions}}
+              <option value="{{this}}" {{#if (eq this ../kingdomUi.selectedLevelFilter)}}selected{{/if}}>
+                {{#if (eq this "all")}}All Levels{{else}}Level {{this}}{{/if}}
+              </option>
+            {{/each}}
+          </select>
+        </div>
+
+        <div class="km-levels-timeline">
+          {{#each kingdomUi.filteredLevels}}
+            <div class="km-level-block {{#if this.isUnlocked}}unlocked{{else}}locked{{/if}}">
+              <div class="km-level-header">
+                <span class="km-level-badge">Level {{this.level}}</span>
+                <span class="km-level-status">{{#if this.isUnlocked}}Unlocked{{else}}Locked{{/if}}</span>
+              </div>
+              {{#if this.features.length}}
+                <ul class="km-level-features">
+                  {{#each this.features}}
+                    <li class="km-feature-item">
+                      <strong>{{this.name}}</strong>
+                      {{#if this.description}}
+                        <div class="km-feature-desc">{{{this.description}}}</div>
+                      {{/if}}
+                    </li>
+                  {{/each}}
+                </ul>
+              {{else}}
+                <p class="km-level-empty">No choices recorded for this level.</p>
+              {{/if}}
+            </div>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  {{/if}}
+</div>

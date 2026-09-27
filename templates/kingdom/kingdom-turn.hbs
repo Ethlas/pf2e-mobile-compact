@@ -1,0 +1,317 @@
+<div class="km-turn-container">
+  {{!-- Sub-Section Pill Switcher: Statuses & Resources vs Turn Flow --}}
+  <div class="km-subtab-bar">
+    <button type="button" class="km-subtab-btn {{#if (eq kingdomUi.turnSubTab 'status')}}active{{/if}}"
+            data-action="switchKingdomTurnSubTab" data-subtab="status">
+      <i class="fa-solid fa-chart-pie"></i> Status &amp; Resources
+    </button>
+    <button type="button" class="km-subtab-btn {{#if (eq kingdomUi.turnSubTab 'flow')}}active{{/if}}"
+            data-action="switchKingdomTurnSubTab" data-subtab="flow">
+      <i class="fa-solid fa-list-check"></i> Turn Flow
+    </button>
+  </div>
+
+  {{!-- Sticky Context Bar: Active Leader & Active Settlement (Native Selects) --}}
+  <div class="km-context-bar">
+    <div class="km-select-group">
+      <label class="km-select-label"><i class="fa-solid fa-user-crown"></i> Active Leader</label>
+      <select class="km-native-select" data-change-action="setKingdomActiveLeader" aria-label="Active Kingdom Leader">
+        {{#each km.activeLeader.options}}
+          <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+        {{/each}}
+      </select>
+    </div>
+    <div class="km-select-group">
+      <label class="km-select-label"><i class="fa-solid fa-city"></i> Settlement</label>
+      <select class="km-native-select" data-change-action="setKingdomActiveSettlement" aria-label="Active Settlement">
+        {{#each km.settlementInput.options}}
+          <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+        {{/each}}
+      </select>
+    </div>
+  </div>
+
+  {{!-- SECTION 1: Statuses & Resources --}}
+  {{#if (eq kingdomUi.turnSubTab "status")}}
+    <div class="km-turn-section km-status-section">
+      {{!-- 1. Resources & Commodities (Top Priority) --}}
+      <div class="km-card km-resources-card">
+        <div class="km-card-header">
+          <span><i class="fa-solid fa-coins"></i> Resources &amp; Commodities</span>
+          <span class="km-card-sub">Dice: {{km.rdNowDisplay}}</span>
+        </div>
+        <div class="km-rp-row">
+          <div class="km-rp-pill primary">
+            <span class="km-rp-label">Resource Points (Now)</span>
+            <span class="km-rp-val">{{km.rpNowInput.value}} RP</span>
+          </div>
+          <div class="km-rp-pill">
+            <span class="km-rp-label">RP Next Turn</span>
+            <span class="km-rp-val">{{km.rpNextInput.value}} RP</span>
+          </div>
+          <div class="km-rp-pill">
+            <span class="km-rp-label">Resource Dice</span>
+            <span class="km-rp-val">{{km.rdNowDisplay}}</span>
+          </div>
+        </div>
+
+        <div class="km-commodities-grid">
+          {{#each km.commoditiesArray}}
+            <div class="km-commodity-box">
+              <div class="km-comm-top">
+                <span class="km-comm-name">{{this.name}}</span>
+              </div>
+              <div class="km-comm-vals">
+                <span class="km-comm-now">{{this.now.value}}<small>/{{this.max.value}}</small></span>
+                {{#if this.next}}
+                  <span class="km-comm-next">+{{this.next.value}}</span>
+                {{/if}}
+              </div>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+
+      {{!-- 2. Unrest & Ruin --}}
+      <div class="km-card km-unrest-ruin-card">
+        <div class="km-card-header">
+          <span><i class="fa-solid fa-fire-flame-curved"></i> Unrest &amp; Ruin</span>
+          {{#if km.atWarInput.value}}
+            <span class="km-war-badge"><i class="fa-solid fa-swords"></i> AT WAR</span>
+          {{/if}}
+        </div>
+
+        <div class="km-unrest-banner {{#if km.unrestPenalty}}has-penalty{{/if}}">
+          <div class="km-unrest-main">
+            <span class="km-unrest-title">Unrest</span>
+            <span class="km-unrest-score">{{km.unrestInput.value}} <small>/ {{#if km.anarchyAt}}{{km.anarchyAt}}{{else}}20{{/if}} (Anarchy)</small></span>
+          </div>
+          <div class="km-unrest-pen">
+            Penalty: <strong>{{km.unrestPenalty}}</strong>
+          </div>
+        </div>
+
+        <div class="km-ruin-grid">
+          {{#each km.ruinArray}}
+            <div class="km-ruin-item {{#if this.penalty.value}}has-penalty{{/if}}">
+              <div class="km-ruin-top">
+                <span class="km-ruin-name">{{this.name}}</span>
+                <span class="km-ruin-pen">Pen: {{this.penalty.value}}</span>
+              </div>
+              <div class="km-ruin-bar-row">
+                <span class="km-ruin-pts">{{this.score.value}} / {{this.thresholdDisplay}}</span>
+              </div>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+
+      {{!-- 3. Leadership Vacancies & Homebrew Skill Modifiers --}}
+      {{#if km.leadersContext.length}}
+        <div class="km-card">
+          <div class="km-card-header">
+            <span><i class="fa-solid fa-crown"></i> Leadership &amp; Vacancies</span>
+            {{#if km.useLeadershipModifiers}}
+              <div style="display:flex;gap:4px;">
+                <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="inspect-leader-skills">
+                  <i class="fa-solid fa-user-check"></i> PC Skills
+                </button>
+                <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="inspect-kingdom-skills">
+                  <i class="fa-solid fa-table-list"></i> Kingdom Skills
+                </button>
+              </div>
+            {{/if}}
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            {{#each km.leadersContext}}
+              <label style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 8px;background:rgba(255,255,255,0.04);border-radius:6px;font-size:0.78rem;">
+                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                  <strong>{{this.displayName}}</strong>
+                  {{#if this.leaderBonus}}<small style="color:#86efac;">({{this.leaderBonus}})</small>{{/if}}
+                </span>
+                <span style="display:flex;align-items:center;gap:3px;color:{{#if this.isVacant}}#fca5a5{{else}}#94a3b8{{/if}};font-size:0.72rem;white-space:nowrap;">
+                  <input type="checkbox" data-change-action="updateKingdomField"
+                         data-field-name="{{this.vacantFieldName}}" {{#if this.isVacant}}checked{{/if}} />
+                  Vacant
+                </span>
+              </label>
+            {{/each}}
+          </div>
+        </div>
+      {{/if}}
+
+      {{!-- 4. Solutions & Ongoing Events --}}
+      <div class="km-card km-penalties-card">
+        <div class="km-card-header">
+          <span><i class="fa-solid fa-triangle-exclamation"></i> Solutions &amp; Ongoing Events</span>
+        </div>
+        <div class="km-solutions-row">
+          <span class="km-sol-chip"><i class="fa-solid fa-wand-sparkles"></i> Supernatural Solutions: <strong>{{#if km.supernaturalSolutionsInput}}{{km.supernaturalSolutionsInput.value}}{{else}}0{{/if}}</strong></span>
+          <span class="km-sol-chip"><i class="fa-solid fa-lightbulb"></i> Creative Solutions: <strong>{{#if km.creativeSolutionsInput}}{{km.creativeSolutionsInput.value}}{{else}}0{{/if}}</strong></span>
+        </div>
+
+        {{#if km.ongoingEvents.length}}
+          <div class="km-events-list">
+            {{#each km.ongoingEvents}}
+              <div class="km-event-row">
+                <div class="km-event-info">
+                  <strong>{{this.name.value}}</strong>
+                  <small>Lvl {{this.level.value}} &bull; {{this.skill.value}}</small>
+                </div>
+                <button type="button" class="km-btn-sm" data-action="resolveKingdomEvent"
+                        data-index="{{@index}}" data-event-name="{{this.name.value}}">
+                  <i class="fa-solid fa-dice-d20"></i> Resolve
+                </button>
+              </div>
+            {{/each}}
+          </div>
+        {{/if}}
+      </div>
+
+      {{!-- 5. Kingdom Skills Quick-Bar --}}
+      <div class="km-card km-skills-quick-card">
+        <div class="km-card-header">
+          <span><i class="fa-solid fa-dice-d20"></i> Kingdom Skills (Control DC {{kingdomHeader.controlDc}})</span>
+        </div>
+        <div class="km-skills-grid">
+          {{#each km.skillsArray}}
+            <button type="button" class="km-skill-btn" data-action="rollKingdomSkillCheck"
+                    data-skill="{{this.skill}}" data-label="{{this.name}}">
+              <span class="km-skill-name">{{this.name}}</span>
+              <span class="km-skill-meta">
+                <span class="km-prof-badge">{{this.proficiencyLabel}}</span>
+                <strong class="km-skill-mod">{{this.modifier}}</strong>
+              </span>
+            </button>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  {{/if}}
+
+  {{!-- SECTION 2: Turn Flow Accordion --}}
+  {{#if (eq kingdomUi.turnSubTab "flow")}}
+    <div class="km-turn-section km-flow-section">
+      {{#each kingdomUi.phases}}
+        <div class="km-phase-section {{#if this.isCollapsed}}is-collapsed{{/if}}">
+          <button type="button" class="km-phase-header" data-action="toggleKingdomPhase" data-phase="{{this.key}}">
+            <div class="km-phase-title-wrap">
+              <i class="fa-solid {{this.icon}} km-phase-icon"></i>
+              <span class="km-phase-title">{{this.title}}</span>
+              {{#if this.isUpkeep}}
+                <span class="km-phase-tag readonly">GM Desktop</span>
+              {{else}}
+                <span class="km-phase-tag interactive">{{this.activities.length}} Actions</span>
+              {{/if}}
+            </div>
+            <i class="fa-solid fa-chevron-down km-phase-chevron"></i>
+          </button>
+
+          <div class="km-phase-body">
+            {{#if this.isUpkeep}}
+              <div class="km-upkeep-summary">
+                <p class="km-upkeep-note">
+                  <i class="fa-solid fa-circle-info"></i> Upkeep buttons are executed by the GM on desktop. Review expected upkeep steps below:
+                </p>
+                <div class="km-upkeep-grid">
+                  <div class="km-upkeep-step"><strong>1. Assign Leadership:</strong> Check vacancies &amp; new roles</div>
+                  <div class="km-upkeep-step"><strong>2. Adjust Unrest:</strong> Current Unrest {{../kingdomHeader.unrest}} ({{../kingdomHeader.unrestPenalty}})</div>
+                  <div class="km-upkeep-step"><strong>3. Collect Resources:</strong> Roll {{../km.rdNowDisplay}} (+1 {{../kingdomHeader.fameType}})</div>
+                  <div class="km-upkeep-step"><strong>4. Pay Consumption:</strong> {{#if ../km.consumption.total}}{{../km.consumption.total}}{{else}}{{../km.consumption}}{{/if}} Food</div>
+                </div>
+              </div>
+            {{/if}}
+
+            {{#if this.hasRegionExtras}}
+              <div class="km-region-extras-bar">
+                <button type="button" class="km-btn-secondary" data-action="claimKingdomRefuge">
+                  <i class="fa-solid fa-campground"></i> Claimed Refuge (+1 Fame)
+                </button>
+                <button type="button" class="km-btn-secondary" data-action="claimKingdomLandmark">
+                  <i class="fa-solid fa-monument"></i> Claimed Landmark
+                </button>
+              </div>
+            {{/if}}
+
+            <div class="km-activities-list">
+              {{#each this.activities}}
+                <div class="km-activity-card {{#if this.isExpanded}}is-expanded{{/if}}">
+                  <div class="km-activity-header" data-action="toggleKingdomActivity" data-activity-id="{{this.id}}">
+                    <div class="km-activity-info">
+                      <span class="km-activity-name">{{this.displayName}}</span>
+                      <span class="km-activity-skills">
+                        {{#each this.skills}}{{this.label}}{{#unless @last}}, {{/unless}}{{/each}}
+                      </span>
+                    </div>
+                    <div class="km-activity-actions">
+                      {{#unless ../this.isUpkeep}}
+                        <button type="button" class="km-perform-btn" data-action="performKingdomActivity"
+                                data-activity-id="{{this.id}}" data-activity-name="{{this.displayName}}"
+                                {{#if this.disabled}}disabled{{/if}}>
+                          <i class="fa-solid {{#if this.hasCheck}}fa-dice-d20{{else}}fa-play{{/if}}"></i> Perform
+                        </button>
+                      {{/unless}}
+                      <i class="fa-solid fa-chevron-down km-act-chevron"></i>
+                    </div>
+                  </div>
+
+                  <div class="km-activity-details">
+                    {{#if this.requirement}}
+                      <p class="km-act-req"><strong>Requirement:</strong> {{this.requirement}}</p>
+                    {{/if}}
+                    {{#if this.automationNotes}}
+                      <p class="km-act-req"><strong>Automation:</strong> {{this.automationNotes}}</p>
+                    {{/if}}
+                    {{#if this.description}}
+                      <div class="km-act-desc">{{{this.description}}}</div>
+                    {{/if}}
+                    <div class="km-act-degrees">
+                      {{#if this.criticalSuccess}}<div class="km-deg cs"><strong>Crit Success:</strong> {{{this.criticalSuccess}}}</div>{{/if}}
+                      {{#if this.success}}<div class="km-deg s"><strong>Success:</strong> {{{this.success}}}</div>{{/if}}
+                      {{#if this.failure}}<div class="km-deg f"><strong>Failure:</strong> {{{this.failure}}}</div>{{/if}}
+                      {{#if this.criticalFailure}}<div class="km-deg cf"><strong>Crit Failure:</strong> {{{this.criticalFailure}}}</div>{{/if}}
+                    </div>
+                    {{#if this.isCollectTaxes}}
+                      <div class="km-collect-taxes-extra">
+                        <button type="button" class="km-btn-secondary" data-action="skipCollectTaxes"
+                                {{#if ../../km.collectTaxesReduceUnrestDisabled}}disabled{{/if}}>
+                          <i class="fa-solid fa-hand-holding-heart"></i> Skip Taxes &amp; Roll to Reduce Unrest
+                        </button>
+                      </div>
+                    {{/if}}
+                  </div>
+                </div>
+              {{/each}}
+            </div>
+          </div>
+        </div>
+      {{/each}}
+
+      {{!-- XP, Homebrew V&K XP & End Turn Card --}}
+      <div class="km-card" style="margin-top:8px;">
+        <div class="km-card-header">
+          <span><i class="fa-solid fa-star"></i> Turn XP &amp; End Turn</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+          <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="hex-xp" data-hexes="1">+1 Hex XP</button>
+          <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="hex-xp" data-hexes="2">+2 Hexes XP</button>
+          {{#if km.vkXp}}
+            <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="gain-xp" data-xp="10">Farm/Worksite (+10 XP)</button>
+            <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="gain-xp" data-xp="5">Bridge/Road (+5 XP)</button>
+            <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="structure-xp">Structure XP</button>
+          {{/if}}
+          <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="solution-xp">Unused Solution XP</button>
+          <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="rp-xp">Convert RP to XP</button>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="km-btn-secondary" style="flex:1;" data-action="dispatchKingdomNativeAction" data-km-action="level-up" {{#unless km.canLevelUp}}disabled{{/unless}}>
+            <i class="fa-solid fa-arrow-up"></i> Level Up
+          </button>
+          <button type="button" class="km-perform-btn" style="flex:1;" data-action="dispatchKingdomNativeAction" data-km-action="end-turn">
+            <i class="fa-solid fa-flag-checkered"></i> End Kingdom Turn
+          </button>
+        </div>
+      </div>
+    </div>
+  {{/if}}
+</div>

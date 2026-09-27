@@ -1,22 +1,22 @@
-<header class="mobile-header-dashboard {{#if isParty}}party-header{{/if}}">
+<header class="mobile-header-dashboard {{#if isParty}}party-header{{/if}} {{#if isKingdom}}kingdom-header{{/if}}">
   <!-- Row 1: Identity & Controls Toolbar -->
   <div class="header-top-row">
     <div class="actor-identity-wrapper">
       {{#if hasMultipleCharacters}}
-      <select class="actor-switcher touch-target" data-change-action="switchActor" title="Switch Character / Party" aria-label="Switch Character">
+      <select class="actor-switcher touch-target" data-change-action="switchActor" title="Switch Character / Party / Kingdom" aria-label="Switch Character">
         {{#each ownedCharacters as |char|}}
-        <option value="{{char.id}}" {{#if (eq char.id ../actor.id)}}selected{{/if}}>
+        <option value="{{char.id}}" {{#if char.selected}}selected{{/if}}>
           {{char.name}}
         </option>
         {{/each}}
       </select>
       {{else}}
-      <span class="actor-name" title="{{actor.name}}">{{#if isParty}}👥{{else}}👤{{/if}} {{actor.name}}</span>
+      <span class="actor-name" title="{{actor.name}}">{{#if isKingdom}}👑{{else if isParty}}👥{{else}}👤{{/if}} {{actor.name}}</span>
       {{/if}}
     </div>
 
     <div class="header-controls-wrapper">
-      {{#unless isParty}}
+      {{#unless (or isParty isKingdom)}}
       <select name="target-select" class="touch-target header-target-select" data-change-action="selectTarget" aria-label="Select Target" title="Target Token">
         <option value="">🎯 No Target</option>
         {{#each targets}}
@@ -38,7 +38,23 @@
     </div>
   </div>
 
-  {{#if isParty}}
+  {{#if isKingdom}}
+  <!-- Kingdom Overview Dashboard Strip -->
+  <div class="kingdom-summary-strip">
+    <div class="kingdom-header-badges">
+      <span class="km-badge km-lvl"><i class="fa-solid fa-crown"></i> Lvl {{kingdomHeader.level}}</span>
+      <span class="km-badge km-xp"><i class="fa-solid fa-star"></i> {{kingdomHeader.xp}} / {{kingdomHeader.xpMax}} XP</span>
+      <span class="km-badge km-dc"><i class="fa-solid fa-shield-halved"></i> DC {{kingdomHeader.controlDc}}</span>
+      <span class="km-badge km-fame"><i class="fa-solid fa-medal"></i> {{kingdomHeader.fameType}}: {{kingdomHeader.fameValue}}</span>
+      <span class="km-badge km-unrest {{#if kingdomHeader.unrestPenalty}}has-penalty{{/if}}">
+        <i class="fa-solid fa-fire-flame-curved"></i> Unrest {{kingdomHeader.unrest}} ({{kingdomHeader.unrestPenalty}})
+      </span>
+      {{#if kingdomHeader.atWar}}
+      <span class="km-badge km-war"><i class="fa-solid fa-swords"></i> AT WAR</span>
+      {{/if}}
+    </div>
+  </div>
+  {{else if isParty}}
   <!-- Party Overview Dashboard Strip -->
   <div class="header-party-row">
     <div class="party-header-stat">

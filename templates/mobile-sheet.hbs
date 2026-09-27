@@ -1,7 +1,19 @@
 <div class="mobile-sheet-body">
   <!-- Dynamic Tab Content Area -->
   <main class="mobile-tab-content">
-    {{#if isParty}}
+    {{#if isKingdom}}
+      {{#if (eq activeTab "turn")}}
+        {{> "modules/pf2e-mobile-compact/templates/kingdom/kingdom-turn.hbs"}}
+      {{else if (eq activeTab "kingdom")}}
+        {{> "modules/pf2e-mobile-compact/templates/kingdom/kingdom-sheet-tab.hbs"}}
+      {{else if (eq activeTab "settlements")}}
+        {{> "modules/pf2e-mobile-compact/templates/kingdom/kingdom-settlements.hbs"}}
+      {{else if (eq activeTab "trade")}}
+        {{> "modules/pf2e-mobile-compact/templates/kingdom/kingdom-trade.hbs"}}
+      {{else if (eq activeTab "notes")}}
+        {{> "modules/pf2e-mobile-compact/templates/kingdom/kingdom-notes.hbs"}}
+      {{/if}}
+    {{else if isParty}}
       {{#if (eq activeTab "overview")}}
         {{> "modules/pf2e-mobile-compact/templates/parts/party-overview.hbs"}}
       {{else if (eq activeTab "stash")}}
@@ -25,9 +37,73 @@
     </div>
   </main>
 
-  <!-- Bottom Navigation Bar: Adaptive for Character vs Party -->
-  <nav class="mobile-bottom-nav {{#if isParty}}party-nav{{/if}}">
-    {{#if isParty}}
+  <!-- Bottom Navigation Bar: Adaptive for Kingdom vs Party vs Character -->
+  <nav class="mobile-bottom-nav {{#if isKingdom}}kingdom-nav{{else if isParty}}party-nav{{/if}}">
+    {{#if isKingdom}}
+      <button
+        type="button"
+        class="nav-item {{#if (eq activeTab "turn")}}active{{/if}}"
+        data-action="switchTab"
+        data-tab="turn"
+        aria-label="Turn Tab"
+      >
+        <i class="fa-solid fa-hourglass-half"></i>
+        <span>Turn</span>
+      </button>
+      <button
+        type="button"
+        class="nav-item {{#if (eq activeTab "kingdom")}}active{{/if}}"
+        data-action="switchTab"
+        data-tab="kingdom"
+        aria-label="Kingdom Tab"
+      >
+        <i class="fa-solid fa-crown"></i>
+        <span>Kingdom</span>
+      </button>
+      <button
+        type="button"
+        class="nav-item {{#if (eq activeTab "settlements")}}active{{/if}}"
+        data-action="switchTab"
+        data-tab="settlements"
+        aria-label="Settlements Tab"
+      >
+        <i class="fa-solid fa-city"></i>
+        <span>Settlements</span>
+      </button>
+      <button
+        type="button"
+        class="nav-item {{#if (eq activeTab "trade")}}active{{/if}}"
+        data-action="switchTab"
+        data-tab="trade"
+        aria-label="Trade Tab"
+      >
+        <i class="fa-solid fa-handshake"></i>
+        <span>Trade</span>
+      </button>
+      <button
+        type="button"
+        class="nav-item {{#if (eq activeTab "notes")}}active{{/if}}"
+        data-action="switchTab"
+        data-tab="notes"
+        aria-label="Notes Tab"
+      >
+        <i class="fa-solid fa-book"></i>
+        <span>Notes</span>
+      </button>
+      <button
+        type="button"
+        class="nav-item nav-chat {{#if (eq activeTab "chat")}}active{{/if}}"
+        data-action="switchTab"
+        data-tab="chat"
+        aria-label="Chat Tab"
+      >
+        <div class="nav-icon-wrapper">
+          <i class="fas fa-comments"></i>
+          <span class="chat-badge {{#unless unreadChatCount}}hidden{{/unless}}">{{unreadChatCount}}</span>
+        </div>
+        <span>Chat</span>
+      </button>
+    {{else if isParty}}
       <button
         type="button"
         class="nav-item {{#if (eq activeTab "overview")}}active{{/if}}"

@@ -1,0 +1,660 @@
+/* ============================================================================
+ * PF2e Mobile Sheet (Compact) - Mobile Kingdom Sheet Styles
+ * ============================================================================ */
+
+/* Party Overview -> Open Mobile Kingdom Sheet Banner */
+.party-kingdom-banner {
+  margin-bottom: 12px;
+}
+
+.open-kingdom-sheet-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(180, 130, 45, 0.25), rgba(110, 75, 20, 0.35));
+  border: 1px solid rgba(235, 185, 80, 0.55);
+  color: #f9e3a8;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  gap: 10px;
+}
+
+.open-kingdom-sheet-btn:active {
+  transform: scale(0.99);
+}
+
+/* Header Kingdom Summary Strip */
+.kingdom-summary-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(20, 22, 30, 0.65);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.kingdom-header-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.km-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+  color: #e6e8f0;
+}
+
+.km-badge.km-lvl {
+  background: rgba(230, 180, 60, 0.22);
+  color: #f9db82;
+  border: 1px solid rgba(230, 180, 60, 0.4);
+}
+
+.km-badge.km-dc {
+  background: rgba(85, 150, 245, 0.2);
+  color: #9ec5ff;
+  border: 1px solid rgba(85, 150, 245, 0.35);
+}
+
+.km-badge.km-unrest.has-penalty {
+  background: rgba(235, 85, 85, 0.22);
+  color: #ff9e9e;
+  border: 1px solid rgba(235, 85, 85, 0.45);
+}
+
+.km-badge.km-war {
+  background: rgba(220, 50, 50, 0.35);
+  color: #ffd2d2;
+  border: 1px solid rgba(255, 90, 90, 0.6);
+}
+
+.km-badge.invested {
+  background: rgba(235, 185, 70, 0.2);
+  color: #f7d774;
+}
+
+.km-badge.vacant {
+  background: rgba(225, 75, 75, 0.25);
+  color: #ff9c9c;
+}
+
+/* Sub-Tab Pill Switcher */
+.km-subtab-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 8px 10px 4px;
+}
+
+.km-subtab-btn {
+  min-height: 40px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #b8bfd0;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.km-subtab-btn.active {
+  background: rgba(225, 175, 65, 0.22);
+  border-color: rgba(225, 175, 65, 0.6);
+  color: #ffe294;
+}
+
+/* Sticky Context Bar (Active Leader & Settlement) */
+.km-context-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 6px 10px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.km-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.km-select-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #9aa3b8;
+}
+
+.km-native-select {
+  min-height: 38px;
+  padding: 4px 8px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(16, 18, 26, 0.9);
+  color: #f0f2f8;
+  font-size: 0.84rem;
+}
+
+/* Cards & Sections */
+.km-turn-section,
+.km-sheet-section,
+.km-settlements-container,
+.km-trade-container,
+.km-notes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 10px 24px;
+}
+
+.km-card {
+  background: rgba(26, 29, 39, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.km-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #f3d486;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 6px;
+}
+
+.km-card-sub {
+  font-size: 0.76rem;
+  color: #a8b2c8;
+  font-weight: 500;
+}
+
+/* Resources & Commodities */
+.km-rp-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.km-rp-pill {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.km-rp-pill.primary {
+  background: rgba(225, 175, 65, 0.14);
+  border-color: rgba(225, 175, 65, 0.38);
+}
+
+.km-rp-label {
+  font-size: 0.7rem;
+  color: #9aa3b8;
+}
+
+.km-rp-val {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f6f8ff;
+}
+
+.km-commodities-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+
+.km-commodity-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 7px;
+  padding: 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.km-comm-top {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: #c5cde0;
+}
+
+.km-comm-vals {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.km-comm-now small {
+  font-weight: 400;
+  color: #8b95ab;
+}
+
+.km-comm-next {
+  font-size: 0.72rem;
+  color: #7ee29a;
+}
+
+/* Unrest & Ruin */
+.km-unrest-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.km-unrest-banner.has-penalty {
+  background: rgba(225, 70, 70, 0.16);
+  border: 1px solid rgba(225, 70, 70, 0.35);
+}
+
+.km-ruin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.km-ruin-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 7px;
+  padding: 6px 8px;
+}
+
+.km-ruin-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.km-ruin-pts {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #e4e8f5;
+}
+
+/* Skills Grid */
+.km-skills-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.km-skill-btn {
+  min-height: 40px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #eef1f8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.km-skill-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.km-prof-badge {
+  font-size: 0.68rem;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  text-transform: uppercase;
+}
+
+/* Turn Flow Phases & Activity Cards */
+.km-phase-section {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(22, 25, 34, 0.9);
+  overflow: hidden;
+}
+
+.km-phase-header {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: none;
+  color: #f4d88a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.km-phase-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.km-phase-tag {
+  font-size: 0.7rem;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #d2d8e8;
+}
+
+.km-phase-section.is-collapsed .km-phase-body {
+  display: none;
+}
+
+.km-phase-section.is-collapsed .km-phase-chevron {
+  transform: rotate(-90deg);
+}
+
+.km-phase-body {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.km-upkeep-summary {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+}
+
+.km-upkeep-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.km-region-extras-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.km-btn-secondary,
+.km-btn-sm,
+.km-inspect-btn {
+  min-height: 38px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  border: 1px solid rgba(230, 180, 60, 0.45);
+  background: rgba(230, 180, 60, 0.15);
+  color: #fbe094;
+  font-weight: 600;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.km-activity-card {
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.km-activity-header {
+  min-height: 44px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.km-activity-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.km-activity-name {
+  font-weight: 600;
+  font-size: 0.86rem;
+  color: #f0f3fa;
+}
+
+.km-activity-skills {
+  font-size: 0.72rem;
+  color: #95a0b8;
+}
+
+.km-activity-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.km-perform-btn {
+  min-height: 38px;
+  padding: 5px 11px;
+  border-radius: 7px;
+  border: 1px solid rgba(90, 180, 115, 0.55);
+  background: rgba(65, 145, 85, 0.25);
+  color: #b7f7c6;
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.km-activity-details {
+  display: none;
+  padding: 8px 10px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.8rem;
+  color: #d4dae8;
+}
+
+.km-activity-card.is-expanded .km-activity-details {
+  display: block;
+}
+
+/* Kingdom Page (Size, Abilities, Worksites, Charter, Levels) */
+.km-stats-top-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.km-stat-tile {
+  background: rgba(26, 29, 39, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  color: #f2f4fa;
+  min-height: 44px;
+}
+
+.km-abilities-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.km-ability-box {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.km-worksites-table {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.km-ws-header,
+.km-ws-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  padding: 5px 6px;
+  font-size: 0.82rem;
+}
+
+.km-ws-header {
+  font-weight: 700;
+  color: #9ba5bc;
+}
+
+.km-foundation-list,
+.km-leaders-list,
+.km-levels-timeline,
+.km-settlements-list,
+.km-trade-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.km-found-row,
+.km-leader-row,
+.km-settlement-top,
+.km-trade-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.km-settlement-card,
+.km-trade-card {
+  background: rgba(26, 29, 39, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+/* Never display the desktop KingdomSheet or desktop Inspect/Consumption windows when Mobile Sheet is active */
+body.pf2e-mobile-active .km-kingdom-sheet,
+body:has(.pf2e-mobile-sheet) .km-kingdom-sheet,
+.km-kingdom-sheet.km-mobile-hidden-proxy,
+body.pf2e-mobile-active .application[id^="kmInspectSettlement-"],
+body:has(.pf2e-mobile-sheet) .application[id^="kmInspectSettlement-"],
+body.pf2e-mobile-active .application[id^="kmConsumptionBreakdown-"],
+body:has(.pf2e-mobile-sheet) .application[id^="kmConsumptionBreakdown-"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Style pf2e-kingmaker-tools Check & Browser modals to match pf2e-mobile-compact dark theme on mobile */
+.pf2e-mobile-km-dialog,
+.application[id^="kmCheck-"],
+.application[id^="kmStructureBrowser"] {
+  width: min(95vw, 410px) !important;
+  max-width: 95vw !important;
+  max-height: 86vh !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: #141722 !important;
+  border: 1px solid rgba(230, 180, 60, 0.45) !important;
+  border-radius: 12px !important;
+  color: #eef1f8 !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.75) !important;
+}
+
+.pf2e-mobile-km-dialog .window-header {
+  background: rgba(24, 28, 40, 0.95) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f3d486 !important;
+}
+
+.pf2e-mobile-km-dialog .window-content {
+  background: #141722 !important;
+  color: #eef1f8 !important;
+  padding: 10px !important;
+  overflow-y: auto !important;
+}
+
+.pf2e-mobile-km-dialog .km-check-header {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.pf2e-mobile-km-dialog select,
+.pf2e-mobile-km-dialog input[type="text"],
+.pf2e-mobile-km-dialog input[type="number"] {
+  min-height: 38px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 7px !important;
+  color: #f2f4fa !important;
+  padding: 4px 8px !important;
+}
+
+.pf2e-mobile-km-dialog button[data-action="roll"],
+.pf2e-mobile-km-dialog button[data-action="assurance"] {
+  width: 100% !important;
+  min-height: 44px !important;
+  margin-top: 8px !important;
+  border-radius: 8px !important;
+  background: linear-gradient(135deg, rgba(65, 145, 85, 0.35), rgba(45, 110, 65, 0.45)) !important;
+  border: 1px solid rgba(95, 195, 125, 0.65) !important;
+  color: #c8fadd !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+}
+
