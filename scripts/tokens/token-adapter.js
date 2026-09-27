@@ -5,6 +5,57 @@
  */
 
 /**
+ * Delegates token distance calculation strictly to PF2e's native `TokenPF2e.prototype.distanceTo`
+ * (`CONFIG.Token.objectClass.prototype.distanceTo`) or Foundry's native `grid.measurePath`.
+ * Never re-implements PF2e or Foundry distance math.
+ * @param {object} tokenA
+ * @param {object} tokenB
+ * @param {object} [options]
+ * @returns {number}
+ */
+export function measurePF2eTokenDistance(tokenA, tokenB, options = {}) {
+  if (!tokenA || !tokenB) return NaN;
+  if (tokenA === tokenB || (tokenA.id && tokenA.id === tokenB.id)) return 0;
+
+  const scene = tokenB.scene ?? tokenA.scene ?? tokenB.document?.parent ?? tokenA.document?.parent ?? canvas?.scene ?? game.scenes?.current ?? game.scenes?.viewed ?? game.scenes?.active;
+  const grid = canvas?.grid ?? scene?.grid;
+
+  // 1. Use PF2e's native TokenPF2e.prototype.distanceTo when canvas is active & ready
+  if (canvas?.ready && typeof tokenA.distanceTo === "function" && tokenA instanceof (CONFIG?.Token?.objectClass ?? Function)) {
+    try {
+      const targetObj = tokenB.object ?? tokenB;
+      const dist = tokenA.distanceTo(targetObj, options);
+      if (typeof dist === "number" && Number.isFinite(dist)) {
+        return dist;
+      }
+    } catch {}
+  }
+
+  // 2. Foundry VTT BaseGrid#measurePath API (https://foundryvtt.com/api/classes/foundry.grid.BaseGrid.html)
+  if (typeof grid?.measurePath === "function") {
+    const gridSize = grid.size ?? 100;
+    const docA = tokenA.document ?? tokenA;
+    const docB = tokenB.document ?? tokenB;
+    const cA = tokenA.center ?? docA.center ?? {
+      x: (tokenA.x ?? docA.x ?? 0) + ((docA.width ?? 1) * gridSize) / 2,
+      y: (tokenA.y ?? docA.y ?? 0) + ((docA.height ?? 1) * gridSize) / 2
+    };
+    const cB = tokenB.center ?? docB.center ?? {
+      x: (tokenB.x ?? docB.x ?? 0) + ((docB.width ?? 1) * gridSize) / 2,
+      y: (tokenB.y ?? docB.y ?? 0) + ((docB.height ?? 1) * gridSize) / 2
+    };
+    const pA = { x: cA.x, y: cA.y, elevation: tokenA.elevation ?? docA.elevation ?? 0 };
+    const pB = { x: cB.x, y: cB.y, elevation: tokenB.elevation ?? docB.elevation ?? 0 };
+    const result = grid.measurePath([pA, pB]);
+    if (typeof result?.distance === "number" && Number.isFinite(result.distance)) {
+      return Math.round(result.distance);
+    }
+  }
+
+  return NaN;
+}
+
+/**
  * Resolves a token for targeting or origin, supporting both live Canvas Placeables
  * and headless TokenDocuments when canvas rendering is bypassed on mobile.
  * @param {string} tokenId
@@ -22,37 +73,6 @@ export function getTargetableToken(tokenId) {
     ?? (canvas?.tokens?.get?.(tokenId) instanceof (foundry.canvas?.placeables?.Token ?? Object) ? canvas.tokens.get(tokenId) : null);
 
   if (placeable && typeof placeable.setTarget === "function") {
-    // Non-destructively attach distanceTo if missing on live placeable
-    if (typeof placeable.distanceTo !== "function") {
-      placeable.distanceTo = function(otherToken) {
-        if (!otherToken) return 0;
-        const gridSize = canvas?.grid?.size ?? scene?.grid?.size ?? 100;
-        const gridDistance = scene?.grid?.distance ?? 5;
-        const r0 = this.bounds ?? {
-          x: this.x, y: this.y,
-          width: (this.document?.width ?? 1) * gridSize,
-          height: (this.document?.height ?? 1) * gridSize,
-          left: this.x, right: this.x + (this.document?.width ?? 1) * gridSize,
-          top: this.y, bottom: this.y + (this.document?.height ?? 1) * gridSize
-        };
-        const r1 = otherToken.bounds ?? {
-          x: otherToken.x, y: otherToken.y,
-          width: (otherToken.document?.width ?? 1) * gridSize,
-          height: (otherToken.document?.height ?? 1) * gridSize,
-          left: otherToken.x, right: otherToken.x + (otherToken.document?.width ?? 1) * gridSize,
-          top: otherToken.y, bottom: otherToken.y + (otherToken.document?.height ?? 1) * gridSize
-        };
-        const dx = r0.right <= r1.left ? r1.left - r0.right : r1.right <= r0.left ? r0.left - r1.right : 0;
-        const dy = r0.bottom <= r1.top ? r1.top - r0.bottom : r1.bottom <= r0.top ? r0.top - r1.bottom : 0;
-        const distGridX = (dx / gridSize) * gridDistance;
-        const distGridY = (dy / gridSize) * gridDistance;
-        const maxDim = Math.max(distGridX, distGridY);
-        const minDim = Math.min(distGridX, distGridY);
-        const dist2D = maxDim + Math.floor(minDim / (gridDistance * 2)) * gridDistance;
-        const dz = Math.abs((this.elevation ?? this.document?.elevation ?? 0) - (otherToken.elevation ?? otherToken.document?.elevation ?? 0));
-        return dz > 0 ? Math.max(dist2D, dz) : dist2D;
-      };
-    }
     return placeable;
   }
 
@@ -73,7 +93,7 @@ export function getTargetableToken(tokenId) {
   const heightPx = (tokenDoc.height ?? 1) * gridSize;
 
   // Construct PIXI.Rectangle or compatible bounds object
-  const bounds = {
+  const bounds = tokenDoc.bounds ?? {
     x: tokenDoc.x,
     y: tokenDoc.y,
     width: widthPx,
@@ -93,48 +113,22 @@ export function getTargetableToken(tokenId) {
     x: tokenDoc.x,
     y: tokenDoc.y,
     elevation: tokenDoc.elevation ?? 0,
-    center: {
+    center: tokenDoc.center ?? {
       x: tokenDoc.x + widthPx / 2,
       y: tokenDoc.y + heightPx / 2
     },
     bounds,
+    get mechanicalBounds() {
+      return tokenDoc.mechanicalBounds ?? this.bounds;
+    },
     get isTargeted() {
       return Array.from(game.user.targets).some(t => t.id === this.id);
     },
-    distanceTo(otherToken, { reach = null } = {}) {
-      if (!otherToken) return 0;
-      const targetBounds = otherToken.bounds ?? {
-        x: otherToken.x, y: otherToken.y,
-        width: (otherToken.document?.width ?? 1) * gridSize,
-        height: (otherToken.document?.height ?? 1) * gridSize,
-        left: otherToken.x, right: otherToken.x + (otherToken.document?.width ?? 1) * gridSize,
-        top: otherToken.y, bottom: otherToken.y + (otherToken.document?.height ?? 1) * gridSize
-      };
-
-      const selfElevation = this.elevation ?? this.document?.elevation ?? 0;
-      const targetElevation = otherToken.elevation ?? otherToken.document?.elevation ?? 0;
-      const dz = Math.abs(selfElevation - targetElevation);
-
-      // Distance calculation across bounding boxes (2.5D cuboid measurement)
-      const r0 = this.bounds;
-      const r1 = targetBounds;
-
-      const dx = r0.right <= r1.left ? r1.left - r0.right : r1.right <= r0.left ? r0.left - r1.right : 0;
-      const dy = r0.bottom <= r1.top ? r1.top - r0.bottom : r1.bottom <= r0.top ? r0.top - r1.bottom : 0;
-
-      const distGridX = (dx / gridSize) * gridDistance;
-      const distGridY = (dy / gridSize) * gridDistance;
-
-      // Diagonal distance (Pathfinder 2e rules: max(dx, dy) + floor(min(dx, dy) / 2))
-      const maxDim = Math.max(distGridX, distGridY);
-      const minDim = Math.min(distGridX, distGridY);
-      const dist2D = maxDim + Math.floor(minDim / (gridDistance * 2)) * gridDistance;
-
-      const totalDist = dz > 0 ? Math.max(dist2D, dz) : dist2D;
-      return totalDist;
+    distanceTo(otherToken, options = {}) {
+      return measurePF2eTokenDistance(this, otherToken, options);
     },
     isAdjacentTo(otherToken) {
-      return this.distanceTo(otherToken) <= gridDistance;
+      return this.distanceTo(otherToken) === gridDistance;
     },
     canFlank(flankee, context = {}) {
       const actor = this.actor;
@@ -253,7 +247,7 @@ export function getTargetableToken(tokenId) {
         }, { volatile: false });
       }
 
-      Hooks.callAll("targetToken", user, this, state);
+      Hooks?.callAll?.("targetToken", user, this, state);
     },
 
     // PIXI Container compatibility stubs for UI modules (e.g. pf2e-flatcheck-helper, target markers)
@@ -297,21 +291,56 @@ export function getTargetableToken(tokenId) {
  * @param {Actor} actor
  * @returns {object|null}
  */
-export function getOriginToken(actor) {
-  if (!actor) return null;
-  // If active placeable token is on canvas, prefer it directly!
-  const activePlaceables = typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(true, false) : [];
-  if (activePlaceables?.length) {
-    return activePlaceables[0];
-  }
-  const scene = canvas?.scene ?? game.scenes.viewed ?? game.scenes.active;
-  const activeTokenDoc = scene?.tokens?.find(t => t.actorId === actor.id)
-    ?? (typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(true, true)?.shift() : null);
+export function getOriginToken(actor, sceneOverride = null) {
+  const scene = sceneOverride ?? canvas?.scene ?? game.scenes?.current ?? game.scenes?.viewed ?? game.scenes?.active;
+  if (actor) {
+    if (actor.token?.id) {
+      return getTargetableToken(actor.token.id) ?? actor.token;
+    }
+    // Pass linked=false so both linked and unlinked actor tokens on canvas are found
+    const activePlaceables = typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(false, false) : [];
+    if (activePlaceables?.length) {
+      return getTargetableToken(activePlaceables[0].id) ?? activePlaceables[0];
+    }
+    const tokensList = scene?.tokens?.contents ?? (scene?.tokens ? Array.from(scene.tokens) : []);
+    const activeTokenDoc = tokensList.find(t => t.actorId === actor.id || t.actor?.id === actor.id || t.name === actor.name)
+      ?? (typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(false, true)?.shift() : null);
 
-  if (activeTokenDoc?.id) {
-    return getTargetableToken(activeTokenDoc.id);
+    if (activeTokenDoc?.id) {
+      return getTargetableToken(activeTokenDoc.id) ?? activeTokenDoc;
+    }
   }
+  const controlled = canvas?.tokens?.controlled?.[0];
+  if (controlled) return controlled;
   return null;
+}
+
+/**
+ * Computes the PF2e grid distance between the actor's origin token and a target token.
+ * Supports both live Canvas placeables and headless TokenDocument adapters.
+ * @param {Actor} actor
+ * @param {object|string} targetTokenOrId
+ * @returns {{ distance: number, label: string } | null}
+ */
+export function getTokenDistanceInfo(actor, targetTokenOrId) {
+  if (!actor || !targetTokenOrId) return null;
+
+  const targetId = typeof targetTokenOrId === "string" ? targetTokenOrId : targetTokenOrId.id;
+  const targetToken = (targetId ? getTargetableToken(targetId) : null) ?? (typeof targetTokenOrId === "object" ? targetTokenOrId : null);
+  if (!targetToken) return null;
+
+  const targetScene = targetToken.scene ?? targetToken.document?.parent ?? null;
+  const originToken = getOriginToken(actor, targetScene);
+  if (!originToken || originToken.id === targetToken.id) return null;
+
+  const dist = measurePF2eTokenDistance(originToken, targetToken);
+  if (typeof dist !== "number" || !Number.isFinite(dist)) return null;
+
+  const rounded = Number.isInteger(dist) ? dist : Math.round(dist * 10) / 10;
+  return {
+    distance: rounded,
+    label: String(rounded)
+  };
 }
 
 /**

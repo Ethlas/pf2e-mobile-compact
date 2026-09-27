@@ -17,14 +17,19 @@
 
     <div class="header-controls-wrapper">
       {{#unless (or isParty isKingdom)}}
-      <select name="target-select" class="touch-target header-target-select" data-change-action="selectTarget" aria-label="Select Target" title="Target Token">
-        <option value="">🎯 No Target</option>
-        {{#each targets}}
-        <option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>
-          🎯 {{this.name}}
-        </option>
-        {{/each}}
-      </select>
+      <div class="header-target-group">
+        <select name="target-select" class="touch-target header-target-select" data-change-action="selectTarget" aria-label="Select Target" title="{{#if activeTarget}}Target: {{activeTarget.displayName}}{{else}}Target Token{{/if}}">
+          <option value="">🎯 No Target</option>
+          {{#each targets}}
+          <option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>
+            🎯 {{this.displayName}}
+          </option>
+          {{/each}}
+        </select>
+        {{#if activeTarget.distanceLabel}}
+        <span class="header-target-distance-pill" title="Distance to {{activeTarget.rawName}}">({{activeTarget.distanceLabel}})</span>
+        {{/if}}
+      </div>
       {{/unless}}
 
       <select name="roll-mode" class="touch-target header-roll-mode-select" data-change-action="toggleRollMode" aria-label="Roll Mode" title="Roll Mode">

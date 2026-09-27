@@ -1,4 +1,5 @@
 import { hasKingdomData, getKingdomName } from "../../kingdom/kingdom-handlers.js";
+import { getTokenDistanceInfo } from "../../tokens/token-adapter.js";
 
 /**
  * Prepares header dashboard data: HP, shield, defenses, initiative, targets, owned characters, and focus.
@@ -135,11 +136,19 @@ export function prepareHeaderContext(actor, sheet, context) {
   if (canvasObj?.tokens?.placeables?.length) {
     targetTokens = canvasObj.tokens.placeables
       .filter(t => t.actor && t.actor.id !== actor.id && t.visible)
-      .map(t => ({
-        id: t.id,
-        name: t.name,
-        selected: t.id === currentTargetId
-      }));
+      .map(t => {
+        const distInfo = getTokenDistanceInfo(actor, t);
+        const formattedName = distInfo ? `${t.name} (${distInfo.label})` : t.name;
+        return {
+          id: t.id,
+          rawName: t.name,
+          name: formattedName,
+          distance: distInfo?.distance ?? null,
+          distanceLabel: distInfo?.label ?? null,
+          displayName: formattedName,
+          selected: t.id === currentTargetId
+        };
+      });
   } else if (scene?.tokens) {
     targetTokens = scene.tokens.contents
       .filter(t => {
@@ -148,13 +157,32 @@ export function prepareHeaderContext(actor, sheet, context) {
         if (t.hidden && !game.user.isGM) return false;
         return true;
       })
-      .map(t => ({
-        id: t.id,
-        name: t.name,
-        selected: t.id === currentTargetId
-      }));
+      .map(t => {
+        const distInfo = getTokenDistanceInfo(actor, t.id);
+        const formattedName = distInfo ? `${t.name} (${distInfo.label})` : t.name;
+        return {
+          id: t.id,
+          rawName: t.name,
+          name: formattedName,
+          distance: distInfo?.distance ?? null,
+          distanceLabel: distInfo?.label ?? null,
+          displayName: formattedName,
+          selected: t.id === currentTargetId
+        };
+      });
   }
+
+  targetTokens.sort((a, b) => {
+    if (a.distance !== null && b.distance !== null && a.distance !== b.distance) {
+      return a.distance - b.distance;
+    }
+    if (a.distance !== null && b.distance === null) return -1;
+    if (a.distance === null && b.distance !== null) return 1;
+    return (a.rawName || a.name || "").localeCompare(b.rawName || b.name || "");
+  });
+
   context.targets = targetTokens;
+  context.activeTarget = targetTokens.find(t => t.selected) ?? null;
 
   // Focus Pool
   const focusResource = system.resources?.focus;
