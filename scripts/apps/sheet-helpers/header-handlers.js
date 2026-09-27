@@ -334,6 +334,9 @@ export async function onRollInitiative(sheet, event, target) {
 export async function onSelectTarget(sheet, event, target) {
   const tokenId = target.value;
   await setTargetToken(tokenId);
+  if (sheet?.rendered) {
+    sheet.render({ parts: ["header"] });
+  }
 }
 
 /**

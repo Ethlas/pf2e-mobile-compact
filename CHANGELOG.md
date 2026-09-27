@@ -4,6 +4,22 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.26] - 2026-09-27
+
+### Real-Time Target Distance Display (`Name (distance)`)
+
+#### Added
+- **Target Distance Calculation (`scripts/tokens/token-adapter.js`)**:
+  - Added `getTokenDistanceInfo(actor, targetTokenOrId)` to calculate PF2e grid-aware distances (including 2.5D elevation and alternating diagonals) across both live Canvas placeables and headless `TokenDocument` adapters, returning clean numeric distance labels (`{ distance, label }`).
+  - Updated `getOriginToken(actor)` so live canvas placeables also resolve through `getTargetableToken(placeable.id)` to guarantee `.distanceTo()` availability.
+- **Header Target Selector & Active Distance Badge (`scripts/apps/sheet-helpers/context-header.js`, `templates/parts/header.hbs`, `styles/pf2e-mobile.css`)**:
+  - Updated header target selector options to display `🎯 Name (distance)` (e.g., `🎯 Goblin Warrior (15)`) without unit clutter, sorted closest-first (`distance` ascending).
+  - Added a compact `.header-target-distance-pill` badge (`(15)`) beside the target selector when a target is active so the distance remains visible even when long monster names ellipsis-truncate in the closed `<select>`.
+- **Action & Consumable Target Modals (`scripts/apps/sheet-helpers/sheet-prompts.js`)**:
+  - Updated `promptTargetSelection` and `promptConsumableUsage` modals to display `Name (distance)` (e.g. `Goblin Warrior (15)`, `Comrade: Kyra (5)`) and sort tokens by distance ascending.
+
+---
+
 ## [1.0.25] - 2026-09-27
 
 ### Mobile Kingdom Sheet (`pf2e-kingmaker-tools` Integration), Homebrew Rules & Automated CI Verification

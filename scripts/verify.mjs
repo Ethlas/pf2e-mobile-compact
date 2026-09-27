@@ -700,8 +700,83 @@ try {
   } else {
     logPass("[Settlements & Trade Tabs] Settlement Inspector modal, Homebrew Upgrade Settlement ('level-up-settlement'), and Diplomatic Group actions verified.");
   }
+
+  // 6.6 Test Target Distance Calculation (BaseGrid#measurePath), Sorting, and Target Selection
+  const { onSelectTarget } = await import("./apps/sheet-helpers/header-handlers.js");
+  const mockTokens = [
+    { id: "tok-char1", name: "Valeros", actorId: "char1", actor: mockCharActor, x: 100, y: 100, width: 1, height: 1, elevation: 0, hidden: false },
+    { id: "tok-goblin", name: "Goblin Warrior", actorId: "npc-goblin", actor: { id: "npc-goblin", name: "Goblin Warrior" }, x: 400, y: 100, width: 1, height: 1, elevation: 0, hidden: false },
+    { id: "tok-orc", name: "Orc Brute", actorId: "npc-orc", actor: { id: "npc-orc", name: "Orc Brute" }, x: 200, y: 100, width: 1, height: 1, elevation: 0, hidden: false }
+  ];
+  const mockGrid = {
+    size: 100,
+    distance: 5,
+    measurePath(waypoints) {
+      const [a, b] = waypoints;
+      const dx = Math.abs((b.x ?? 0) - (a.x ?? 0)) / 100;
+      const dy = Math.abs((b.y ?? 0) - (a.y ?? 0)) / 100;
+      const dz = Math.abs((b.elevation ?? 0) - (a.elevation ?? 0)) / 5;
+      const dims = [dx, dy, dz].sort((x, y) => y - x);
+      return { distance: (dims[0] + Math.floor((dims[1] + dims[2]) / 2)) * 5 };
+    }
+  };
+  const mockScene = {
+    id: "scene-combat",
+    grid: mockGrid,
+    tokens: {
+      contents: mockTokens,
+      get: (id) => mockTokens.find(t => t.id === id),
+      find: (fn) => mockTokens.find(fn)
+    }
+  };
+  globalThis.canvas = { scene: mockScene, grid: mockGrid, ready: false };
+  globalThis.game.scenes.viewed = mockScene;
+  globalThis.game.scenes.active = mockScene;
+  globalThis.game.user.targets = new Set();
+
+  let headerRenderedAfterSelect = false;
+  const mockCharSheetForTarget = {
+    actor: mockCharActor,
+    rendered: true,
+    render: ({ parts } = {}) => {
+      if (parts?.includes("header")) headerRenderedAfterSelect = true;
+    }
+  };
+
+  const targetCtxBefore = {};
+  prepareHeaderContext(mockCharActor, mockCharSheetForTarget, targetCtxBefore);
+
+  if (
+    targetCtxBefore.targets?.length !== 2 ||
+    targetCtxBefore.targets[0].displayName !== "Orc Brute (5)" ||
+    targetCtxBefore.targets[0].name !== "Orc Brute (5)" ||
+    targetCtxBefore.targets[1].displayName !== "Goblin Warrior (15)" ||
+    targetCtxBefore.targets[1].name !== "Goblin Warrior (15)"
+  ) {
+    logFail(`[Target Distance] Expected sorted targets ['Orc Brute (5)', 'Goblin Warrior (15)'], got: ${JSON.stringify(targetCtxBefore.targets?.map(t => t.displayName))}`);
+  } else {
+    logPass("[Target Distance] BaseGrid#measurePath calculates exact distances and sorts targets closest-first ('Orc Brute (5)', 'Goblin Warrior (15)').");
+  }
+
+  await onSelectTarget(mockCharSheetForTarget, {}, { value: "tok-goblin" });
+  const targetCtxAfter = {};
+  prepareHeaderContext(mockCharActor, mockCharSheetForTarget, targetCtxAfter);
+  const headerTplText = fs.readFileSync(path.join(rootDir, "templates/parts/header.hbs"), "utf8");
+
+  if (
+    !headerRenderedAfterSelect ||
+    targetCtxAfter.activeTarget?.id !== "tok-goblin" ||
+    targetCtxAfter.activeTarget?.displayName !== "Goblin Warrior (15)" ||
+    targetCtxAfter.activeTarget?.distanceLabel !== "15" ||
+    !headerTplText.includes("{{this.displayName}}") ||
+    !headerTplText.includes("({{activeTarget.distanceLabel}})")
+  ) {
+    logFail(`[Target Distance] Selecting target failed to update activeTarget or header.hbs template bindings: ${JSON.stringify(targetCtxAfter.activeTarget)}`);
+  } else {
+    logPass("[Target Distance] Selecting target ('tok-goblin') updates activeTarget ('Goblin Warrior (15)'), triggers header re-render, and binds ({{activeTarget.distanceLabel}}) in header.hbs.");
+  }
 } catch (err) {
-  logFail(`Kingdom Sheet verification threw an error: ${err.stack || err.message}`);
+  logFail(`Kingdom Sheet / Target Distance verification threw an error: ${err.stack || err.message}`);
 }
 
 // 7. Foundry VTT AI Content Policy Compliance Audit (https://foundryvtt.com/article/ai-policy/)

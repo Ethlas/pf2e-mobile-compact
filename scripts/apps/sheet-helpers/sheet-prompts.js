@@ -1,4 +1,4 @@
-import { getTargetableToken, setTargetToken } from "../../tokens/token-adapter.js";
+import { getTargetableToken, setTargetToken, getTokenDistanceInfo } from "../../tokens/token-adapter.js";
 
 /**
  * Resolves the target token for an action.
@@ -31,12 +31,27 @@ export async function promptTargetSelection(sheet, actionLabel) {
   if (canvas?.tokens?.placeables?.length) {
     availableTokens = canvas.tokens.placeables
       .filter(t => t.actor && t.actor.id !== sheet.actor.id && t.visible)
-      .map(t => ({ id: t.id, name: t.name, selected: t.id === currentTargetId }));
+      .map(t => {
+        const distInfo = getTokenDistanceInfo(sheet.actor, t);
+        const formatted = distInfo ? `${t.name} (${distInfo.label})` : t.name;
+        return { id: t.id, rawName: t.name, name: formatted, displayName: formatted, distance: distInfo?.distance ?? null, selected: t.id === currentTargetId };
+      });
   } else if (scene?.tokens) {
     availableTokens = scene.tokens.contents
       .filter(t => t.actor && t.actorId !== sheet.actor.id && (!t.hidden || game.user.isGM))
-      .map(t => ({ id: t.id, name: t.name, selected: t.id === currentTargetId }));
+      .map(t => {
+        const distInfo = getTokenDistanceInfo(sheet.actor, t.id);
+        const formatted = distInfo ? `${t.name} (${distInfo.label})` : t.name;
+        return { id: t.id, rawName: t.name, name: formatted, displayName: formatted, distance: distInfo?.distance ?? null, selected: t.id === currentTargetId };
+      });
   }
+
+  availableTokens.sort((a, b) => {
+    if (a.distance !== null && b.distance !== null && a.distance !== b.distance) return a.distance - b.distance;
+    if (a.distance !== null && b.distance === null) return -1;
+    if (a.distance === null && b.distance !== null) return 1;
+    return (a.rawName || a.name || "").localeCompare(b.rawName || b.name || "");
+  });
 
   // If there are no other tokens on the scene, proceed without target
   if (availableTokens.length === 0) return null;
@@ -44,7 +59,7 @@ export async function promptTargetSelection(sheet, actionLabel) {
   return new Promise(resolve => {
     const { DialogV2 } = foundry.applications.api;
     const optionsHtml = availableTokens
-      .map(t => `<option value="${t.id}" ${t.selected ? "selected" : ""}>${t.name}</option>`)
+      .map(t => `<option value="${t.id}" ${t.selected ? "selected" : ""}>${t.displayName}</option>`)
       .join("");
 
     const content = `
@@ -266,28 +281,49 @@ export async function promptConsumableUsage(sheet, item) {
   if (canvas?.tokens?.placeables?.length) {
     candidates = canvas.tokens.placeables
       .filter(t => t.actor && t.actor.id !== sheet.actor.id && t.visible && (t.document?.disposition >= 0 || t.actor.hasPlayerOwner))
-      .map(t => ({
-        id: t.id,
-        name: t.name,
-        selected: t.id === currentTargetId,
-        actorName: t.actor?.name ?? t.name
-      }));
+      .map(t => {
+        const distInfo = getTokenDistanceInfo(sheet.actor, t);
+        const formatted = distInfo ? `${t.name} (${distInfo.label})` : t.name;
+        return {
+          id: t.id,
+          rawName: t.name,
+          name: formatted,
+          displayName: formatted,
+          distance: distInfo?.distance ?? null,
+          selected: t.id === currentTargetId,
+          actorName: t.actor?.name ?? t.name
+        };
+      });
   } else if (scene?.tokens) {
     candidates = scene.tokens.contents
       .filter(t => t.actor && t.actorId !== sheet.actor.id && (!t.hidden || game.user.isGM) && (t.disposition >= 0 || t.actor?.hasPlayerOwner))
-      .map(t => ({
-        id: t.id,
-        name: t.name,
-        selected: t.id === currentTargetId,
-        actorName: t.actor?.name ?? t.name
-      }));
+      .map(t => {
+        const distInfo = getTokenDistanceInfo(sheet.actor, t.id);
+        const formatted = distInfo ? `${t.name} (${distInfo.label})` : t.name;
+        return {
+          id: t.id,
+          rawName: t.name,
+          name: formatted,
+          displayName: formatted,
+          distance: distInfo?.distance ?? null,
+          selected: t.id === currentTargetId,
+          actorName: t.actor?.name ?? t.name
+        };
+      });
   }
+
+  candidates.sort((a, b) => {
+    if (a.distance !== null && b.distance !== null && a.distance !== b.distance) return a.distance - b.distance;
+    if (a.distance !== null && b.distance === null) return -1;
+    if (a.distance === null && b.distance !== null) return 1;
+    return (a.rawName || a.name || "").localeCompare(b.rawName || b.name || "");
+  });
 
   return new Promise(resolve => {
     const { DialogV2 } = foundry.applications.api;
 
     const comradeOptions = candidates.map(c =>
-      `<option value="${c.id}" ${c.selected ? "selected" : ""}>Comrade: ${c.name}</option>`
+      `<option value="${c.id}" ${c.selected ? "selected" : ""}>Comrade: ${c.displayName}</option>`
     ).join("");
 
     const content = `
