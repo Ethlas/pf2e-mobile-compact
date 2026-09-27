@@ -6,6 +6,27 @@ import { clamp, getGlyph } from "../utils/sheet-utils.js";
 import { getTargetableToken, getOriginToken, setTargetToken, ensureTokenControlled } from "../tokens/token-adapter.js";
 import { prepareHeaderContext } from "./sheet-helpers/context-header.js";
 import { preparePartyContext } from "./sheet-helpers/context-party.js";
+import {
+  prepareKingdomContext,
+  onOpenMobileKingdomSheet,
+  onSwitchKingdomTurnSubTab,
+  onSwitchKingdomSheetSubTab,
+  onToggleKingdomPhase,
+  onToggleKingdomActivity,
+  onSetKingdomActiveLeader,
+  onSetKingdomActiveSettlement,
+  onRollKingdomSkillCheck,
+  onPerformKingdomActivity,
+  onSkipCollectTaxes,
+  onClaimKingdomRefuge,
+  onClaimKingdomLandmark,
+  onOpenConsumptionBreakdown,
+  onInspectKingdomSettlement,
+  onFilterKingdomLevel,
+  onResolveKingdomEvent,
+  onUpdateKingdomField,
+  onDispatchKingdomNativeAction
+} from "../kingdom/kingdom-handlers.js";
 import { prepareActionsContext } from "./sheet-helpers/context-actions.js";
 import { prepareSkillsContext } from "./sheet-helpers/context-skills.js";
 import { prepareInventoryContext } from "./sheet-helpers/context-inventory.js";
@@ -101,7 +122,25 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       sendToPartyStash: PF2eMobileSheet._onSendToPartyStash,
       openPartyStash: PF2eMobileSheet._onOpenPartyStash,
       switchToPartyMember: PF2eMobileSheet._onSwitchToPartyMember,
-      transferCoins: PF2eMobileSheet._onTransferCoins
+      transferCoins: PF2eMobileSheet._onTransferCoins,
+      openMobileKingdomSheet: PF2eMobileSheet._onOpenMobileKingdomSheet,
+      switchKingdomTurnSubTab: PF2eMobileSheet._onSwitchKingdomTurnSubTab,
+      switchKingdomSheetSubTab: PF2eMobileSheet._onSwitchKingdomSheetSubTab,
+      toggleKingdomPhase: PF2eMobileSheet._onToggleKingdomPhase,
+      toggleKingdomActivity: PF2eMobileSheet._onToggleKingdomActivity,
+      setKingdomActiveLeader: PF2eMobileSheet._onSetKingdomActiveLeader,
+      setKingdomActiveSettlement: PF2eMobileSheet._onSetKingdomActiveSettlement,
+      rollKingdomSkillCheck: PF2eMobileSheet._onRollKingdomSkillCheck,
+      performKingdomActivity: PF2eMobileSheet._onPerformKingdomActivity,
+      skipCollectTaxes: PF2eMobileSheet._onSkipCollectTaxes,
+      claimKingdomRefuge: PF2eMobileSheet._onClaimKingdomRefuge,
+      claimKingdomLandmark: PF2eMobileSheet._onClaimKingdomLandmark,
+      openConsumptionBreakdown: PF2eMobileSheet._onOpenConsumptionBreakdown,
+      inspectKingdomSettlement: PF2eMobileSheet._onInspectKingdomSettlement,
+      filterKingdomLevel: PF2eMobileSheet._onFilterKingdomLevel,
+      resolveKingdomEvent: PF2eMobileSheet._onResolveKingdomEvent,
+      updateKingdomField: PF2eMobileSheet._onUpdateKingdomField,
+      dispatchKingdomNativeAction: PF2eMobileSheet._onDispatchKingdomNativeAction
     }
   };
 
@@ -199,7 +238,10 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /** @override */
   _canRender(options) {
     if (!this.document) return false;
-    const hasPerm = game.user?.isGM || this.document.isOwner || this.document.testUserPermission(game.user, this.options.viewPermission ?? "LIMITED");
+    const hasPerm = game.user?.isGM
+      || this.document.type === "party"
+      || this.document.isOwner
+      || this.document.testUserPermission?.(game.user, this.options.viewPermission ?? "LIMITED");
     if (!hasPerm) return false;
     return true;
   }
@@ -289,7 +331,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
     if (!this.element._mobileActionChangeBound) {
       this.element.addEventListener("change", (event) => {
-        const actionEl = event.target?.closest?.("select[data-change-action], select[data-action], input[data-change-action], input[data-action]");
+        const actionEl = event.target?.closest?.("select[data-change-action], select[data-action], input[data-change-action], input[data-action], textarea[data-change-action], textarea[data-action]");
         if (!actionEl) return;
         const actionName = actionEl.dataset.changeAction || actionEl.dataset.action;
         let handler = this.options.actions?.[actionName] ?? this.constructor.DEFAULT_OPTIONS?.actions?.[actionName];
@@ -408,6 +450,14 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
 
     if (actor.type === "party") {
+      if (this._isKingdomMode) {
+        try {
+          await prepareKingdomContext(actor, this, context);
+        } catch (err) {
+          console.error("PF2e Mobile Compact | Error preparing kingdom context:", err);
+        }
+        return context;
+      }
       try {
         await preparePartyContext(actor, this, context);
       } catch (err) {
@@ -469,69 +519,21 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   }
 
   // --- Header Action Handlers ---
-
-  static async _onApplyDeltaHP(event, target) {
-    return onApplyDeltaHP(this, event, target);
-  }
-
-  static async _onSetDirectHP(event, target) {
-    return onSetDirectHP(this, event, target);
-  }
-
-  static async _onSetDirectTempHP(event, target) {
-    return onSetDirectTempHP(this, event, target);
-  }
-
-  static async _onRollPerceptionOrInitiative(event, target) {
-    return onRollPerceptionOrInitiative(this, event, target);
-  }
-
-  static async _onApplyDamage(event, target) {
-    return onApplyDamage(this, event, target);
-  }
-
-  static async _onApplyHeal(event, target) {
-    return onApplyHeal(this, event, target);
-  }
-
-  static async _onSetTempHP(event, target) {
-    return onSetTempHP(this, event, target);
-  }
-
-  static async _onAdjustTempHP(event, target) {
-    return onAdjustTempHP(this, event, target);
-  }
-
-  static async _onRollSave(event, target) {
-    return onRollSave(this, event, target);
-  }
-
-  static async _onRollPerception(event, target) {
-    return onRollPerception(this, event, target);
-  }
-
-  static async _onRollInitiative(event, target) {
-    return onRollInitiative(this, event, target);
-  }
-
-  static async _onSelectTarget(event, target) {
-    return onSelectTarget(this, event, target);
-  }
-
-  static async _onToggleRollMode(event, target) {
-    return onToggleRollMode(this, event, target);
-  }
-
-  static async _onToggleFullscreen(event, target) {
-    return onToggleFullscreen(this, event, target);
-  }
-
-  /**
-   * Action handler: scroll chat to the latest message.
-   */
-  static async _onScrollChatToBottom(event, target) {
-    this._scrollChatToBottom(true);
-  }
+  static async _onApplyDeltaHP(event, target) { return onApplyDeltaHP(this, event, target); }
+  static async _onSetDirectHP(event, target) { return onSetDirectHP(this, event, target); }
+  static async _onSetDirectTempHP(event, target) { return onSetDirectTempHP(this, event, target); }
+  static async _onRollPerceptionOrInitiative(event, target) { return onRollPerceptionOrInitiative(this, event, target); }
+  static async _onApplyDamage(event, target) { return onApplyDamage(this, event, target); }
+  static async _onApplyHeal(event, target) { return onApplyHeal(this, event, target); }
+  static async _onSetTempHP(event, target) { return onSetTempHP(this, event, target); }
+  static async _onAdjustTempHP(event, target) { return onAdjustTempHP(this, event, target); }
+  static async _onRollSave(event, target) { return onRollSave(this, event, target); }
+  static async _onRollPerception(event, target) { return onRollPerception(this, event, target); }
+  static async _onRollInitiative(event, target) { return onRollInitiative(this, event, target); }
+  static async _onSelectTarget(event, target) { return onSelectTarget(this, event, target); }
+  static async _onToggleRollMode(event, target) { return onToggleRollMode(this, event, target); }
+  static async _onToggleFullscreen(event, target) { return onToggleFullscreen(this, event, target); }
+  static async _onScrollChatToBottom() { this._scrollChatToBottom(true); }
 
   /**
    * Action handler: switch active tab.
@@ -566,15 +568,9 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
   }
 
-  /**
-   * Action handler: switch active character sheet to another owned character.
-   */
-  static async _onSwitchActor(event, target) {
-    return onSwitchActor(this, event, target);
-  }
+  static async _onSwitchActor(event, target) { return onSwitchActor(this, event, target); }
 
   // --- Target & Selection Prompts ---
-
   async _resolveTargetForAction(actionLabel) { return resolveTargetForAction(this, actionLabel); }
   async _promptTargetSelection(actionLabel) { return promptTargetSelection(this, actionLabel); }
   async _promptVariantSelection(actionLabel, variants) { return promptVariantSelection(this, actionLabel, variants); }
@@ -630,6 +626,26 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onOpenPartyStash(event, target) { return onOpenPartyStash(this, event, target); }
   static async _onSwitchToPartyMember(event, target) { return onSwitchToPartyMember(this, event, target); }
   static async _onTransferCoins(event, target) { return onTransferCoins(this, event, target); }
+
+  // --- Delegated Kingdom Handlers ---
+  static async _onOpenMobileKingdomSheet(event, target) { return onOpenMobileKingdomSheet(this, event, target); }
+  static async _onSwitchKingdomTurnSubTab(event, target) { return onSwitchKingdomTurnSubTab(this, event, target); }
+  static async _onSwitchKingdomSheetSubTab(event, target) { return onSwitchKingdomSheetSubTab(this, event, target); }
+  static _onToggleKingdomPhase(event, target) { return onToggleKingdomPhase(this, event, target); }
+  static _onToggleKingdomActivity(event, target) { return onToggleKingdomActivity(this, event, target); }
+  static async _onSetKingdomActiveLeader(event, target) { return onSetKingdomActiveLeader(this, event, target); }
+  static async _onSetKingdomActiveSettlement(event, target) { return onSetKingdomActiveSettlement(this, event, target); }
+  static async _onRollKingdomSkillCheck(event, target) { return onRollKingdomSkillCheck(this, event, target); }
+  static async _onPerformKingdomActivity(event, target) { return onPerformKingdomActivity(this, event, target); }
+  static async _onSkipCollectTaxes(event, target) { return onSkipCollectTaxes(this, event, target); }
+  static async _onClaimKingdomRefuge(event, target) { return onClaimKingdomRefuge(this, event, target); }
+  static async _onClaimKingdomLandmark(event, target) { return onClaimKingdomLandmark(this, event, target); }
+  static async _onOpenConsumptionBreakdown(event, target) { return onOpenConsumptionBreakdown(this, event, target); }
+  static async _onInspectKingdomSettlement(event, target) { return onInspectKingdomSettlement(this, event, target); }
+  static async _onFilterKingdomLevel(event, target) { return onFilterKingdomLevel(this, event, target); }
+  static async _onResolveKingdomEvent(event, target) { return onResolveKingdomEvent(this, event, target); }
+  static async _onUpdateKingdomField(event, target) { return onUpdateKingdomField(this, event, target); }
+  static async _onDispatchKingdomNativeAction(event, target) { return onDispatchKingdomNativeAction(this, event, target); }
 }
 
 // Backwards-compatibility re-exports

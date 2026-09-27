@@ -406,15 +406,25 @@ export function patchUserActiveTokens() {
  */
 export function ensureStylesheetElement() {
   let link = document.querySelector('link[href*="pf2e-mobile.css"]');
+  const moduleVersion = game.modules?.get("pf2e-mobile-compact")?.version ?? Date.now();
   if (!link) {
     link = document.createElement("link");
     link.id = "pf2e-mobile-compact-style";
     link.rel = "stylesheet";
     link.type = "text/css";
-    const moduleVersion = game.modules?.get("pf2e-mobile-compact")?.version ?? Date.now();
     link.href = `/modules/pf2e-mobile-compact/styles/pf2e-mobile.css?v=${moduleVersion}`;
     link.disabled = true;
     document.head.appendChild(link);
+  }
+  let kmLink = document.querySelector('link[href*="kingdom.css"]');
+  if (!kmLink) {
+    kmLink = document.createElement("link");
+    kmLink.id = "pf2e-mobile-compact-kingdom-style";
+    kmLink.rel = "stylesheet";
+    kmLink.type = "text/css";
+    kmLink.href = `/modules/pf2e-mobile-compact/styles/kingdom.css?v=${moduleVersion}`;
+    kmLink.disabled = true;
+    document.head.appendChild(kmLink);
   }
   return link;
 }
@@ -435,7 +445,7 @@ export function syncStylesheetState(activeSheet = null) {
   const shouldEnable = isMobile || hasRenderedMobileSheet;
 
   link.disabled = !shouldEnable;
-  document.querySelectorAll('link[href*="pf2e-mobile.css"]').forEach(l => {
+  document.querySelectorAll('link[href*="pf2e-mobile.css"], link[href*="kingdom.css"]').forEach(l => {
     l.disabled = !shouldEnable;
   });
 }
@@ -585,7 +595,12 @@ Hooks.once("init", async () => {
     "modules/pf2e-mobile-compact/templates/parts/inventory.hbs",
     "modules/pf2e-mobile-compact/templates/parts/party-overview.hbs",
     "modules/pf2e-mobile-compact/templates/parts/party-stash.hbs",
-    "modules/pf2e-mobile-compact/templates/parts/chat.hbs"
+    "modules/pf2e-mobile-compact/templates/parts/chat.hbs",
+    "modules/pf2e-mobile-compact/templates/kingdom/kingdom-turn.hbs",
+    "modules/pf2e-mobile-compact/templates/kingdom/kingdom-sheet-tab.hbs",
+    "modules/pf2e-mobile-compact/templates/kingdom/kingdom-settlements.hbs",
+    "modules/pf2e-mobile-compact/templates/kingdom/kingdom-trade.hbs",
+    "modules/pf2e-mobile-compact/templates/kingdom/kingdom-notes.hbs"
   ]);
 });
 
@@ -776,4 +791,82 @@ Hooks.on("canvasReady", () => {
     optimizeCanvasForMobile();
   }
 });
+
+// Intercept pf2e-kingmaker-tools ApplicationV2 windows on mobile:
+// 1. Keep the desktop KingdomSheet (.km-kingdom-sheet) hidden and route/sync to PF2eMobileSheet.
+// 2. Apply mobile compact styling and PhysicalDiceManager context to KingdomCheckDialog / StructureBrowser modals.
+Hooks.on("renderApplicationV2", (app, element) => {
+  const isMobile = shouldActivateMobile() || Boolean(document.querySelector(".pf2e-mobile-sheet"));
+  if (!isMobile || !element) return;
+
+  const appId = String(app?.id || "");
+  if (element.classList?.contains("km-kingdom-sheet") || appId.startsWith("kmKingdomSheet-")) {
+    element.classList.add("km-mobile-hidden-proxy");
+    element.style.setProperty("display", "none", "important");
+
+    const openMobileSheet = Array.from(foundry.applications?.instances?.values?.() ?? [])
+      .find((inst) => inst instanceof PF2eMobileSheet);
+    if (openMobileSheet) {
+      if (!openMobileSheet._isKingdomMode && !globalThis._initializingKingdomProxy) {
+        const partyActor = game.actors?.find?.((a) => a.type === "party" && appId.endsWith(a.uuid))
+          ?? game.actors?.party
+          ?? game.actors?.find?.((a) => a.type === "party");
+        if (partyActor && openMobileSheet.actor?.id !== partyActor.id) {
+          openMobileSheet.close({ animate: false }).then(() => {
+            if (!partyActor._mobileSheetInstance || !(partyActor._mobileSheetInstance instanceof PF2eMobileSheet)) {
+              partyActor._mobileSheetInstance = new PF2eMobileSheet({ document: partyActor });
+            }
+            partyActor._mobileSheetInstance._isKingdomMode = true;
+            partyActor._mobileSheetInstance._activeTab = "turn";
+            partyActor._mobileSheetInstance.render({ force: true });
+          });
+          return;
+        }
+        openMobileSheet._isKingdomMode = true;
+        openMobileSheet._activeTab = "turn";
+      }
+      if (openMobileSheet._isKingdomMode) {
+        clearTimeout(openMobileSheet._kmSyncTimer);
+        openMobileSheet._kmSyncTimer = setTimeout(() => {
+          if (openMobileSheet.rendered) {
+            openMobileSheet.render({ parts: ["header", "sheet"] });
+          }
+        }, 60);
+      }
+    }
+    return;
+  }
+
+  if (element.classList?.contains("km-dialog-form") || element.querySelector?.(".km-check-dialog")) {
+    element.classList.add("pf2e-mobile-km-dialog", "compact-theme");
+    const rollBtn = element.querySelector?.('button[data-action="roll"]');
+    if (rollBtn && !rollBtn.dataset.mobilePhysicalBound) {
+      rollBtn.dataset.mobilePhysicalBound = "true";
+      rollBtn.addEventListener("click", () => {
+        const openMobileSheet = Array.from(foundry.applications?.instances?.values?.() ?? [])
+          .find((inst) => inst instanceof PF2eMobileSheet);
+        const isPhys = openMobileSheet?.rollMode === "physical"
+          || localStorage.getItem("pf2e-mobile-compact.rollMode") === "physical";
+        if (isPhys) {
+          import("./rolls/physical-dice-interceptor.js").then(({ PhysicalDiceManager }) => {
+            PhysicalDiceManager.activeContext = {
+              title: openMobileSheet?._pendingKingdomRollTitle || app?.title || "Kingdom Check",
+              actor: openMobileSheet?.actor,
+              isPhysical: true
+            };
+            setTimeout(() => {
+              if (PhysicalDiceManager.activeContext?.isPhysical) {
+                PhysicalDiceManager.activeContext = null;
+              }
+              if (openMobileSheet?.rendered) {
+                openMobileSheet.render({ parts: ["header", "sheet"] });
+              }
+            }, 15000);
+          });
+        }
+      }, true);
+    }
+  }
+});
+
 

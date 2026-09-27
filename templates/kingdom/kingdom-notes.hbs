@@ -1,0 +1,15 @@
+<div class="km-notes-container">
+  <div class="km-card km-notes-card">
+    <div class="km-card-header">
+      <span><i class="fa-solid fa-book-open"></i> Public Kingdom Notes</span>
+    </div>
+    <div class="km-notes-body">
+      {{#if km.notesHtml}}
+        <div class="km-notes-content">{{{km.notesHtml}}}</div>
+      {{else}}
+        <p class="km-notes-empty">No public kingdom notes have been added yet.</p>
+      {{/if}}
+    </div>
+  </div>
+</div>
+

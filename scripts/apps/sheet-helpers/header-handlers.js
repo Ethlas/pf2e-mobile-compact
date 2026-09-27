@@ -429,19 +429,76 @@ export async function onToggleFullscreen(sheet, event, target) {
 }
 
 /**
- * Action handler: switch active character sheet to another owned character.
+ * Ensures we always retrieve or construct the PF2eMobileSheet instance for the target actor
+ * when switching actors from within the mobile sheet.
+ */
+function getMobileSheetForActor(actor, currentSheet) {
+  const SheetClass = currentSheet?.constructor;
+  if (actor._mobileSheetInstance && (!SheetClass || SheetClass === Object || actor._mobileSheetInstance instanceof SheetClass)) {
+    return actor._mobileSheetInstance;
+  }
+  if (SheetClass && SheetClass !== Object) {
+    if (actor.sheet && actor.sheet instanceof SheetClass) {
+      actor._mobileSheetInstance = actor.sheet;
+      return actor.sheet;
+    }
+    actor._mobileSheetInstance = new SheetClass({ document: actor });
+    return actor._mobileSheetInstance;
+  }
+  return actor.sheet;
+}
+
+/**
+ * Action handler: switch active character sheet to another owned character, Party Sheet, or Kingdom Sheet.
  * @param {object} sheet
  * @param {Event} event
  * @param {HTMLSelectElement} target
  */
 export async function onSwitchActor(sheet, event, target) {
-  const newActorId = target.value;
-  if (!newActorId || newActorId === sheet.actor.id) return;
+  const rawVal = target.value;
+  if (!rawVal) return;
+
+  if (rawVal.startsWith("kingdom:")) {
+    const partyId = rawVal.slice("kingdom:".length);
+    const partyActor = game.actors.get(partyId);
+    if (!partyActor) return;
+
+    if (sheet.actor.id === partyActor.id) {
+      sheet._isKingdomMode = true;
+      sheet._activeTab = "turn";
+      await sheet.render(sheet.rendered ? { force: true, parts: ["header", "sheet"] } : { force: true });
+      return;
+    }
+
+    await sheet.close({ animate: false });
+    const targetSheet = getMobileSheetForActor(partyActor, sheet);
+    targetSheet._isKingdomMode = true;
+    targetSheet._activeTab = "turn";
+    await targetSheet.render(targetSheet.rendered ? { force: true, parts: ["header", "sheet"] } : { force: true });
+    return;
+  }
+
+  const newActorId = rawVal;
+  if (newActorId === sheet.actor.id) {
+    if (sheet._isKingdomMode) {
+      sheet._isKingdomMode = false;
+      sheet._activeTab = sheet.actor.type === "party" ? "stash" : "actions";
+      await sheet.render(sheet.rendered ? { force: true, parts: ["header", "sheet"] } : { force: true });
+    }
+    return;
+  }
+
   const newActor = game.actors.get(newActorId);
   if (!newActor) return;
 
   console.log(`PF2e Mobile Compact | Switching character to ${newActor.name}`);
-  await sheet.close();
-  newActor.sheet.render({ force: true });
+  await sheet.close({ animate: false });
+  const targetSheet = getMobileSheetForActor(newActor, sheet);
+  targetSheet._isKingdomMode = false;
+  if (newActor.type === "party" && (!targetSheet._activeTab || targetSheet._activeTab === "turn")) {
+    targetSheet._activeTab = "stash";
+  }
+  await targetSheet.render(targetSheet.rendered ? { force: true, parts: ["header", "sheet"] } : { force: true });
 }
+
 

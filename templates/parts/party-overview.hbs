@@ -1,4 +1,13 @@
 <div class="tab-pane party-overview-tab" data-tab="overview">
+  {{#if hasKingdom}}
+  <div class="party-kingdom-banner">
+    <button type="button" class="open-kingdom-sheet-btn touch-target" data-action="openMobileKingdomSheet">
+      <span><i class="fa-solid fa-crown"></i> Open Kingdom Sheet (Mobile View)</span>
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
+  </div>
+  {{/if}}
+
   <!-- Party Overview Summary Cards -->
   <section class="party-summary-section">
     <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="party-competencies">
