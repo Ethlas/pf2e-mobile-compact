@@ -174,32 +174,18 @@ export function optimizeCanvasForMobile() {
     if (canvas.app.renderer) {
       canvas.app.renderer.resolution = 1;
     }
-    if (disableCanvas) {
-      if (canvas.app.stage) {
-        canvas.app.stage.renderable = false;
-        canvas.app.stage.interactiveChildren = false;
-      }
-      if (canvas.weather?.clear) {
-        canvas.weather.clear();
-      }
-      if (canvas.app.ticker) {
-        canvas.app.ticker.maxFPS = 15;
-        canvas.app.ticker.stop();
-      }
-      console.log("PF2e Mobile Compact | Canvas WebGL ticker paused & stage rendering suspended (disableCanvas=true).");
-    } else {
-      if (canvas.app.stage) {
-        canvas.app.stage.renderable = true;
-        canvas.app.stage.interactiveChildren = true;
-      }
-      if (canvas.app.ticker) {
-        canvas.app.ticker.maxFPS = 15;
-        if (!canvas.app.ticker.started) {
-          canvas.app.ticker.start();
-        }
-      }
-      console.log("PF2e Mobile Compact | Canvas kept active at 1x resolution / 15 FPS (disableCanvas=false).");
+    if (canvas.app.stage) {
+      canvas.app.stage.renderable = false;
+      canvas.app.stage.interactiveChildren = false;
     }
+    if (canvas.weather?.clear) {
+      canvas.weather.clear();
+    }
+    if (canvas.app.ticker) {
+      canvas.app.ticker.maxFPS = 15;
+      canvas.app.ticker.stop();
+    }
+    console.log(`PF2e Mobile Compact | Canvas WebGL ticker paused & stage rendering suspended for mobile GPU memory protection (disableCanvas=${disableCanvas}).`);
   } catch (err) {
     console.warn("PF2e Mobile Compact | optimizeCanvasForMobile warning:", err);
   }
@@ -579,12 +565,16 @@ Hooks.once("init", async () => {
 
   const isMobile = shouldActivateMobile();
   if (isMobile) {
-    if (isMobileCanvasDisabled()) {
-      // Tells core Foundry to skip initializing the WebGL stage entirely on mobile:
+    const disableCanvas = isMobileCanvasDisabled();
+    try {
       if (typeof CONFIG !== "undefined" && CONFIG.Canvas) {
-        CONFIG.Canvas.disabled = true;
+        CONFIG.Canvas.disabled = disableCanvas;
       }
-    }
+      localStorage.setItem("core.noCanvas", disableCanvas ? "true" : "false");
+      if (game.settings?.settings?.has?.("core.noCanvas")) {
+        await game.settings.set("core", "noCanvas", disableCanvas);
+      }
+    } catch {}
     document.body?.classList.add("pf2e-mobile-active");
     injectMobileViewportMeta();
     optimizeCanvasForMobile();

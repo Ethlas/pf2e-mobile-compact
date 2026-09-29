@@ -184,13 +184,21 @@ export function isMobileCanvasDisabled() {
 }
 
 /**
- * Applies the current mobile canvas state (enabled at 1x/15FPS by default, or paused if disableCanvas is true).
+ * Applies the current mobile canvas state.
+ * When `disableCanvas` is true, sets Foundry's native `core.noCanvas` setting (and `CONFIG.Canvas.disabled = true`)
+ * so Foundry v14 skips `Canvas#initialize()` and texture loading completely.
+ * When `disableCanvas` is false, allows `Canvas#initialize()` so `canvas.tokens` and PF2e system flanking
+ * exist in memory, while still pausing the background PIXI frame loop behind the full-screen mobile sheet
+ * to prevent mobile WebKit GPU out-of-memory crashes.
  */
 export function applyMobileCanvasState() {
   const disableCanvas = isMobileCanvasDisabled();
   if (typeof CONFIG !== "undefined" && CONFIG.Canvas) {
     CONFIG.Canvas.disabled = disableCanvas;
   }
+  try {
+    localStorage.setItem("core.noCanvas", disableCanvas ? "true" : "false");
+  } catch {}
   if (typeof document !== "undefined" && document.body) {
     document.body.classList.toggle("pf2e-canvas-disabled", disableCanvas);
   }
@@ -209,29 +217,16 @@ export function applyMobileCanvasState() {
     if (canvasObj.app.renderer) {
       canvasObj.app.renderer.resolution = 1;
     }
-    if (disableCanvas) {
-      if (canvasObj.app.stage) {
-        canvasObj.app.stage.renderable = false;
-        canvasObj.app.stage.interactiveChildren = false;
-      }
-      if (canvasObj.weather?.clear) {
-        canvasObj.weather.clear();
-      }
-      if (canvasObj.app.ticker) {
-        canvasObj.app.ticker.maxFPS = 15;
-        canvasObj.app.ticker.stop?.();
-      }
-    } else {
-      if (canvasObj.app.stage) {
-        canvasObj.app.stage.renderable = true;
-        canvasObj.app.stage.interactiveChildren = true;
-      }
-      if (canvasObj.app.ticker) {
-        canvasObj.app.ticker.maxFPS = 15;
-        if (!canvasObj.app.ticker.started) {
-          canvasObj.app.ticker.start?.();
-        }
-      }
+    if (canvasObj.app.stage) {
+      canvasObj.app.stage.renderable = false;
+      canvasObj.app.stage.interactiveChildren = false;
+    }
+    if (canvasObj.weather?.clear) {
+      canvasObj.weather.clear();
+    }
+    if (canvasObj.app.ticker) {
+      canvasObj.app.ticker.maxFPS = 15;
+      canvasObj.app.ticker.stop?.();
     }
   } catch (err) {
     console.warn("PF2e Mobile Compact | applyMobileCanvasState warning:", err);
@@ -239,7 +234,8 @@ export function applyMobileCanvasState() {
 }
 
 /**
- * Updates and persists the user's mobile canvas disable preference across sessions.
+ * Updates and persists the user's mobile canvas disable preference across sessions,
+ * synchronizing Foundry's native `core.noCanvas` setting so `Canvas#initialize()` is skipped when disabled.
  * @param {boolean} disabled
  * @returns {Promise<boolean>}
  */
@@ -250,6 +246,12 @@ export async function setMobileCanvasDisabled(disabled) {
   }
   try {
     localStorage.setItem("pf2e-mobile-compact.disableCanvas", nextState ? "true" : "false");
+    localStorage.setItem("core.noCanvas", nextState ? "true" : "false");
+  } catch {}
+  try {
+    if (game?.settings?.settings?.has?.("core.noCanvas")) {
+      await game.settings.set("core", "noCanvas", nextState);
+    }
   } catch {}
   try {
     if (game?.settings?.settings?.has?.("pf2e-mobile-compact.disableCanvas")) {
