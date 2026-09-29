@@ -36,7 +36,7 @@ import { onTransferStashItem, onSendToPartyStash, onOpenPartyStash, onSwitchToPa
 import { resolveTargetForAction, promptTargetSelection, promptVariantSelection, promptStatisticSelection, promptStrikeSelection } from "./sheet-helpers/sheet-prompts.js";
 import { onExecuteStrike, onExecuteDamage, onExecuteCritical, onExecuteAuxiliaryAction, onItemToChat, onUseAction, onRollActionCheck, onRollSkill, onToggleActionSummary } from "./sheet-helpers/actions-handlers.js";
 import { onUseConsumable, onApplyPoison, onDetachSubitem, onChangeCarryType, onToggleInventorySection, onConfigureRunes, onToggleInvested, onToggleEquipped } from "./sheet-helpers/inventory-handlers.js";
-import { onSwitchSpellSubTab, onToggleRankGroup, onOpenSpellPrepPicker, prepareSlot, onUnprepareSlot, onToggleSlotExpended, onResetDailySpells, onSaveSpellPreset, onApplySpellPreset, onDeleteSpellPreset, onOpenCompendiumPicker, onAdjustSlot, onAdjustFocus, onCastSpell, onToggleSignatureSpell, onRemoveSpell } from "./sheet-helpers/spells-handlers.js";
+import { onSwitchSpellSubTab, onToggleRankGroup, onOpenSpellPrepPicker, prepareSlot, onUnprepareSlot, onToggleSlotExpended, onResetDailySpells, onSaveSpellPreset, onApplySpellPreset, onDeleteSpellPreset, onOpenCompendiumPicker, onAdjustSlot, onAdjustFocus, onCastSpell, onRollSpellDamage, onToggleSignatureSpell, onRemoveSpell } from "./sheet-helpers/spells-handlers.js";
 import { onCastStaffSpell, onAdjustStaffCharges, onCastItemSpell, onOpenDailies } from "./sheet-helpers/activations-handlers.js";
 import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleFullscreen, onSwitchActor } from "./sheet-helpers/header-handlers.js";
 import { disableChatInputs, dockChatElement, restoreChatElement, scrollChatToBottom, setupScrollBottomListener, registerChatListener, unregisterChatListener, updateChatBadge } from "./sheet-helpers/chat-handler.js";
@@ -99,6 +99,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       toggleInvested: PF2eMobileSheet._onToggleInvested,
       toggleEquipped: PF2eMobileSheet._onToggleEquipped,
       castSpell: PF2eMobileSheet._onCastSpell,
+      rollSpellDamage: PF2eMobileSheet._onRollSpellDamage,
       switchActor: PF2eMobileSheet._onSwitchActor,
       toggleFullscreen: PF2eMobileSheet._onToggleFullscreen,
       switchActionSubTab: PF2eMobileSheet._onSwitchActionSubTab,
@@ -611,6 +612,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onAdjustSlot(event, target) { return onAdjustSlot(this, event, target); }
   static async _onAdjustFocus(event, target) { return onAdjustFocus(this, event, target); }
   static async _onCastSpell(event, target) { return onCastSpell(this, event, target); }
+  static async _onRollSpellDamage(event, target) { return onRollSpellDamage(this, event, target); }
   static async _onToggleSignatureSpell(event, target) { return onToggleSignatureSpell(this, event, target); }
   static async _onRemoveSpell(event, target) { return onRemoveSpell(this, event, target); }
 

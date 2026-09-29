@@ -1,6 +1,6 @@
 import { PhysicalDiceManager } from "../../rolls/physical-dice-interceptor.js";
 import { setTargetToken } from "../../tokens/token-adapter.js";
-import { resolveTargetForAction } from "./sheet-prompts.js";
+import { resolveTargetForAction, promptVariantSelection } from "./sheet-prompts.js";
 import { clamp, getGlyph, parseActionCostInfo } from "../../utils/sheet-utils.js";
 import { CompendiumPickerApp } from "../compendium-picker.js";
 
@@ -481,6 +481,151 @@ export async function onCastSpell(sheet, event, target) {
   }
 
   sheet.render({ parts: ["sheet"] });
+}
+
+/**
+ * Action handler: Roll damage (or healing) for a spell directly from its spell card
+ * without expending spell slots, focus points, innate uses, or staff/wand charges.
+ * Supports heightened ranks, overlay variants (e.g., 1/2/3-action Heal, Harm, Force Barrage),
+ * inline @Damage fallback, and Physical Dice interception.
+ * @param {object} sheet
+ * @param {Event} event
+ * @param {HTMLElement} target
+ */
+export async function onRollSpellDamage(sheet, event, target) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const actor = sheet.actor;
+  const itemId = target.dataset.itemId;
+  const entryId = target.dataset.entryId;
+  const rawRank = parseInt(target.dataset.rank, 10);
+
+  const entry = actor.spellcasting?.get(entryId);
+  const entryCollection = actor.spellcasting?.collections?.get(entryId);
+
+  let rawItem = entryCollection?.get(itemId)
+    ?? entry?.spells?.get(itemId)
+    ?? actor.items.get(itemId)
+    ?? sheet._activeStaffSpells?.find(s => (s.id || s._id) === itemId);
+
+  // If the item is a wand or scroll consumable, resolve its embedded spell document
+  let spell = rawItem;
+  if (rawItem && rawItem.type === "consumable") {
+    spell = entry?.spells?.contents?.[0] ?? null;
+    if (!spell && rawItem.system?.spell) {
+      const ItemClass = getDocumentClass?.("Item") ?? Item;
+      try {
+        spell = new ItemClass(foundry.utils.deepClone(rawItem.system.spell), { parent: actor });
+      } catch {
+        spell = null;
+      }
+    }
+  }
+
+  if (!spell) {
+    ui.notifications?.warn?.("Spell not found for damage roll.");
+    return;
+  }
+
+  const isCantrip = spell.isCantrip || rawRank === 0 || spell.system?.traits?.value?.includes("cantrip");
+  const defaultRank = isCantrip
+    ? Math.max(1, Math.ceil((actor.level || 1) / 2))
+    : (spell.rank ?? spell.system?.level?.value ?? 1);
+  const castRank = (!isNaN(rawRank) && rawRank > 0) ? rawRank : defaultRank;
+
+  // Check if the spell has multiple damage-bearing override overlays (e.g. Heal, Harm, Force Barrage)
+  let selectedOverlayId = null;
+  if (spell.overlays?.size > 0) {
+    const damageOverlays = [];
+    for (const [ovId, ov] of spell.overlays.entries()) {
+      const ovDmgs = Object.values(ov?.system?.damage ?? {}).filter(d => d && (d.formula || d.value));
+      const baseDmgs = Object.values(spell.system?.damage ?? {}).filter(d => d && (d.formula || d.value));
+      if (ovDmgs.length > 0 || (ov?.overlayType === "override" && baseDmgs.length > 0)) {
+        const costInfo = parseActionCostInfo(ov, null, { isSpell: true });
+        const actionCost = ov?.system?.time?.value || costInfo.castActions || "";
+        const formulaPreview = ovDmgs.map(d => d.formula || d.value).filter(Boolean).join(" + ");
+        const baseName = ov.name || (actionCost ? `${spell.name} (${actionCost}-Action)` : spell.name);
+        damageOverlays.push({
+          slug: ovId,
+          name: formulaPreview ? `${baseName} [${formulaPreview}]` : baseName,
+          glyph: costInfo.glyph || (actionCost ? String(actionCost) : "")
+        });
+      }
+    }
+    if (damageOverlays.length > 1) {
+      selectedOverlayId = await promptVariantSelection(sheet, `${spell.name} (Rank ${castRank} Damage)`, damageOverlays);
+      if (selectedOverlayId === false) return; // Cancelled
+    } else if (damageOverlays.length === 1) {
+      selectedOverlayId = damageOverlays[0].slug;
+    }
+  }
+
+  // Load heightened / overlay variant of the spell
+  let variantSpell = spell;
+  if (typeof spell.loadVariant === "function") {
+    try {
+      const loadOpts = { castRank };
+      if (selectedOverlayId) loadOpts.overlayIds = [selectedOverlayId];
+      variantSpell = spell.loadVariant(loadOpts) ?? spell;
+    } catch {
+      variantSpell = spell;
+    }
+  }
+  if (variantSpell === spell && castRank > 0 && spell.rank !== castRank && typeof spell.clone === "function") {
+    try {
+      variantSpell = spell.clone({ "system.location.heightenedLevel": castRank }, { keepId: true });
+    } catch {
+      variantSpell = spell;
+    }
+  }
+
+  // Target resolution
+  const targetToken = await resolveTargetForAction(sheet, `${spell.name} (Damage)`);
+  if (targetToken === false) return; // Cancelled by user
+
+  if (targetToken?.id) {
+    await setTargetToken(targetToken.id);
+  }
+
+  const hasSystemDamage = Boolean(variantSpell.hasDamage) || Object.values(variantSpell.system?.damage ?? {}).some(d => d && (d.formula || d.value));
+
+  await PhysicalDiceManager.withPhysicalMode({
+    title: `${spell.name} (Rank ${castRank})`,
+    subtitle: "Spell Damage Roll",
+    target: targetToken,
+    actor
+  }, async () => {
+    if (hasSystemDamage && typeof variantSpell.rollDamage === "function") {
+      await variantSpell.rollDamage(event);
+      return;
+    }
+
+    // Fallback: if the spell defines damage only via inline @Damage[...] links in its description
+    const cardEl = target.closest(".spell-card, .activation-item-card");
+    const inlineLinks = cardEl
+      ? Array.from(cardEl.querySelectorAll(".action-description-content a.inline-roll[data-formula], .action-description-content a[data-damage-roll], .action-description-content a[data-pf2-damage-roll]"))
+      : [];
+    if (inlineLinks.length === 1) {
+      inlineLinks[0].click();
+      return;
+    } else if (inlineLinks.length > 1) {
+      const linkOptions = inlineLinks.map((link, idx) => ({
+        slug: String(idx),
+        name: (link.textContent || link.dataset.formula || `Damage Option ${idx + 1}`).trim()
+      }));
+      const chosenIdx = await promptVariantSelection(sheet, `${spell.name} (Damage)`, linkOptions);
+      if (chosenIdx !== false && chosenIdx !== null) {
+        const link = inlineLinks[Number(chosenIdx)];
+        if (link) link.click();
+      }
+      return;
+    }
+
+    if (typeof variantSpell.rollDamage === "function") {
+      await variantSpell.rollDamage(event);
+    }
+  }, sheet.rollMode === "physical");
 }
 
 /**

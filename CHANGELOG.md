@@ -4,6 +4,24 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.28] - 2026-09-29
+
+### Repeatable Spell Damage Button Inside Spell Cards (`Dmg` / `Heal`)
+
+#### Added
+- **Spell Damage & Heightening Detection (`scripts/apps/sheet-helpers/context-spells.js`, `scripts/apps/sheet-helpers/context-activations.js`)**:
+  - Updated `formatSpell` to resolve the heightened spell variant (`spell.loadVariant({ castRank: effectiveCastRank })`) and enrich spell descriptions with heightened roll data.
+  - Added detection for `hasDamage`, `isHealingOnly`, `damageFormula`, and `effectiveCastRank` across `system.damage`, `spell.overlays`, and inline `@Damage[...]` tags.
+  - Updated `prepareActivationsContext` so Wands and Scrolls also resolve their embedded spell documents (`item.system.spell`) and pass `castRank` for damage detection.
+- **Repeatable Non-Consuming Spell Damage Handler (`scripts/apps/sheet-helpers/spells-handlers.js`, `scripts/apps/mobile-sheet.js`)**:
+  - Added `onRollSpellDamage` (`data-action="rollSpellDamage"`) to roll spell damage or healing at the spell's heightened rank using PF2e's native `variantSpell.rollDamage(event)` without expending spell slots, focus points, innate uses, or staff/wand charges.
+  - Added support for overlay variant selection (e.g., 1/2/3-action *Heal*, *Harm*, *Force Barrage*) via `promptVariantSelection`, inline `@Damage[...]` link fallback, and Physical Dice interception (`PhysicalDiceManager.withPhysicalMode`).
+- **Spell Card UI & Expended Slot Brightness (`templates/parts/spells.hbs`, `styles/pf2e-mobile.css`)**:
+  - Added a touch-friendly `Dmg` / `Heal` button directly in the `.action-btn-group` header of Spell Cards, Staff Spell Cards, Wand Cards, Scroll Cards, and Other Item Spell Cards, plus a full-width `Roll Damage (Rank X) · Formula` button inside the expanded `.action-summary` drawer.
+  - Updated `.spell-card.expended` styling so that only the expended spell title and disabled `Cast` button are dimmed while the `Dmg` and `Restore Slot` buttons remain at 100% brightness and contrast for multi-turn/sustained damage rolls.
+
+---
+
 ## [1.0.27] - 2026-09-28
 
 ### Spell Casting Action Counts (`Cast (1)`, `Cast (2)`, `Cast (3)`, `Cast (1-3)`) & Multi-Action Button Labels (`> 1` Action)
