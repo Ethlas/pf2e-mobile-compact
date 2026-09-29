@@ -49,7 +49,9 @@ export async function onExecuteStrike(sheet, event, target) {
     const isFlanked = originToken.isFlanking(targetToken, { reach });
     const isCanvasDisabled = !canvas?.ready || canvas?.app?.stage?.renderable === false;
     if (isFlanked && isCanvasDisabled) {
-      rollOptions.extraRollOptions = ["self:flanking", "target:flanked", "target:condition:off-guard"];
+      const flankOpts = ["self:flanking", "target:flanked", "target:condition:off-guard"];
+      rollOptions.options = flankOpts;
+      rollOptions.extraRollOptions = flankOpts;
     }
   }
 

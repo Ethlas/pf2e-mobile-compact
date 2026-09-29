@@ -373,7 +373,7 @@ export function computeTokenFlanking(attackerToken, flankee, context = {}) {
       const isAlly = (typeof buddyActor.isAllyOf === "function" && buddyActor.isAllyOf(thisActor))
         || (attDoc.isLinked && buddyActor.id === thisActor.id)
         || (attDoc.disposition !== undefined && tDoc.disposition === attDoc.disposition);
-      return isAlly && canTokenFlank(tDoc, flankee, context);
+      return isAlly && canTokenFlank(tDoc, flankee, { ...context, reach: undefined });
     });
 
   if (flankingBuddies.length === 0) return false;
@@ -715,7 +715,11 @@ export function getTargetableToken(tokenId) {
 
   if (!tokenDoc.object) {
     try {
-      tokenDoc.object = adapter;
+      Object.defineProperty(tokenDoc, "object", {
+        value: adapter,
+        configurable: true,
+        writable: true
+      });
     } catch {}
   }
 

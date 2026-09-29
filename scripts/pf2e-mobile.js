@@ -445,6 +445,43 @@ export function patchUserActiveTokens() {
     };
     UserClass.prototype._pf2eMobileActiveTokensPatched = true;
   }
+
+  const ActorClass = CONFIG.Actor?.documentClass ?? (typeof Actor !== "undefined" ? Actor : null);
+  if (ActorClass?.prototype && !ActorClass.prototype._pf2eMobileActiveTokensPatched) {
+    const origActorGetActiveTokens = ActorClass.prototype.getActiveTokens;
+    ActorClass.prototype.getActiveTokens = function (linked = false, document = false) {
+      const res = typeof origActorGetActiveTokens === "function"
+        ? origActorGetActiveTokens.call(this, linked, document)
+        : [];
+      if (Array.isArray(res) && res.length > 0) {
+        return res;
+      }
+
+      // Headless fallback when Canvas is disabled (!canvas.ready): resolve from active Scene and attach mobile adapter
+      if (typeof canvas === "undefined" || !canvas?.ready) {
+        try {
+          const scene = game.scenes?.current ?? game.scenes?.viewed ?? game.scenes?.active;
+          const tokensList = scene?.tokens?.contents ?? (scene?.tokens ? Array.from(scene.tokens) : []);
+          const matchingDocs = tokensList.filter(t => {
+            if (linked && !t.actorLink) return false;
+            return t.actorId === this.id || t.actor?.id === this.id;
+          });
+          if (matchingDocs.length === 0 && linked) {
+            const unlinked = tokensList.filter(t => t.actorId === this.id || t.actor?.id === this.id);
+            matchingDocs.push(...unlinked);
+          }
+          if (matchingDocs.length > 0) {
+            const adapters = matchingDocs.map(tDoc => getTargetableToken(tDoc.id)).filter(Boolean);
+            return document ? matchingDocs : adapters;
+          }
+        } catch (err) {
+          console.warn("PF2e Mobile Compact | Error resolving headless Actor.getActiveTokens:", err);
+        }
+      }
+      return res;
+    };
+    ActorClass.prototype._pf2eMobileActiveTokensPatched = true;
+  }
 }
 
 /**

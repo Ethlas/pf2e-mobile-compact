@@ -1130,6 +1130,64 @@ try {
   } else {
     logPass("[Issue #16 Canvas Toggle] Canvas is enabled by default (disableCanvas=false), sets CONFIG.Canvas.disabled=true when disabled, and persists user toggle state across sessions.");
   }
+
+  // 7. Headless No-Canvas TokenDocument.prototype.object Getter & Non-Recursive distanceTo Guard
+  const { getTargetableToken } = await import("./tokens/token-adapter.js");
+  class MockGetterTokenDoc {
+    constructor(data) {
+      Object.assign(this, data);
+    }
+    get object() {
+      return null; // Simulates Foundry v14 CanvasDocumentMixin getter when canvas.ready === false
+    }
+  }
+  const headlessScene = {
+    id: "scene-headless",
+    dimensions: { size: 100, distance: 5 },
+    grid: { size: 100, distance: 5 },
+    tokens: {
+      contents: [],
+      get(id) { return this.contents.find(t => t.id === id) ?? null; }
+    }
+  };
+  const hHeroDoc = new MockGetterTokenDoc({
+    id: "h-hero", name: "Hero", actorId: "a-hero", x: 0, y: 0, width: 1, height: 1,
+    _source: { x: 0, y: 0, width: 1, height: 1 }, parent: headlessScene,
+    actor: { id: "a-hero", isAllyOf: (o) => o?.id === "a-ally", hasCondition: () => false, system: { attributes: { hp: { value: 30 } } } }
+  });
+  const hEnemyDoc = new MockGetterTokenDoc({
+    id: "h-enemy", name: "Orc", actorId: "a-enemy", x: 100, y: 0, width: 1, height: 1,
+    _source: { x: 100, y: 0, width: 1, height: 1 }, parent: headlessScene,
+    actor: { id: "a-enemy", isAllyOf: () => false, hasCondition: () => false, system: { attributes: { hp: { value: 20 } } } }
+  });
+  const hAllyDoc = new MockGetterTokenDoc({
+    id: "h-ally", name: "Ally", actorId: "a-ally", x: 200, y: 0, width: 1, height: 1,
+    _source: { x: 200, y: 0, width: 1, height: 1 }, parent: headlessScene,
+    actor: { id: "a-ally", isAllyOf: (o) => o?.id === "a-hero", hasCondition: () => false, system: { attributes: { hp: { value: 25 } } } }
+  });
+  headlessScene.tokens.contents.push(hHeroDoc, hEnemyDoc, hAllyDoc);
+  globalThis.game.scenes.current = headlessScene;
+  globalThis.canvas = { ready: false, scene: null };
+
+  const heroAdapter = getTargetableToken("h-hero");
+  const enemyAdapter = getTargetableToken("h-enemy");
+  const tStart = performance.now();
+  for (let i = 0; i < 200; i++) {
+    heroAdapter.distanceTo(enemyAdapter);
+  }
+  const elapsedMs = performance.now() - tStart;
+
+  if (
+    !hHeroDoc.object ||
+    !hEnemyDoc.object ||
+    typeof hHeroDoc.object.isFlanking !== "function" ||
+    hHeroDoc.object.isFlanking(hEnemyDoc.object, { reach: 5 }) !== true ||
+    elapsedMs > 50
+  ) {
+    logFail(`[Issue #16 Headless Adapter & Performance] Failed: hHeroDoc.object=${Boolean(hHeroDoc.object)}, isFlanking=${hHeroDoc.object?.isFlanking?.(hEnemyDoc.object, { reach: 5 })}, 200x distanceTo=${elapsedMs.toFixed(2)}ms`);
+  } else {
+    logPass(`[Issue #16 Headless Adapter & Performance] Getter-only TokenDocument.object overridden via Object.defineProperty, headless isFlanking=true, and 200x distanceTo ran in ${elapsedMs.toFixed(2)}ms.`);
+  }
 } catch (err) {
   logFail(`Action Cost / Spell Damage / Issue #16 verification threw an error: ${err.stack || err.message}`);
 }
