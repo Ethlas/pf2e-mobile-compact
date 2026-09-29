@@ -1,6 +1,7 @@
-import { clamp, isIOSDevice } from "../../utils/sheet-utils.js";
+import { clamp, isIOSDevice, isMobileCanvasDisabled, setMobileCanvasDisabled } from "../../utils/sheet-utils.js";
 import { PhysicalDiceManager } from "../../rolls/physical-dice-interceptor.js";
 import { setTargetToken } from "../../tokens/token-adapter.js";
+import { promptMultiTargetSelection } from "./sheet-prompts.js";
 
 /**
  * Action handler: Apply delta damage (-) or heal (+) from the left-hand delta input.
@@ -333,6 +334,13 @@ export async function onRollInitiative(sheet, event, target) {
  */
 export async function onSelectTarget(sheet, event, target) {
   const tokenId = target.value;
+  if (tokenId === "__pick_multi__" || tokenId === "__multi__") {
+    await promptMultiTargetSelection(sheet, "Scene Targets", { includeSelf: true });
+    if (sheet?.rendered) {
+      sheet.render({ parts: ["header"] });
+    }
+    return;
+  }
   await setTargetToken(tokenId);
   if (sheet?.rendered) {
     sheet.render({ parts: ["header"] });
@@ -359,6 +367,60 @@ export async function onToggleRollMode(sheet, event, target) {
     } catch {}
     sheet.render({ parts: ["header"] });
   }
+}
+
+/**
+ * Action handler: toggle mobile WebGL canvas enabled/disabled state and persist preference.
+ * @param {object} sheet
+ * @param {Event} event
+ * @param {HTMLElement} target
+ */
+export async function onToggleCanvasMode(sheet, event, target) {
+  const currentlyDisabled = isMobileCanvasDisabled();
+  const nextDisabled = !currentlyDisabled;
+  const dialogTitle = nextDisabled ? "Disable Canvas (Battery Saver)?" : "Enable Canvas?";
+  const dialogBody = nextDisabled
+    ? "<p>Are you sure you want to <strong>disable the WebGL canvas</strong>?</p><p style=\"font-size:0.85rem;color:#aaa;\">This saves battery and GPU memory on mobile devices. Your choice will be saved for future sessions and the page will reload.</p>"
+    : "<p>Are you sure you want to <strong>enable the WebGL canvas</strong>?</p><p style=\"font-size:0.85rem;color:#aaa;\">This initializes the live Foundry canvas stage on mobile. Your choice will be saved for future sessions and the page will reload.</p>";
+
+  let confirmed = false;
+  if (foundry.applications?.api?.DialogV2?.confirm) {
+    confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: { title: dialogTitle },
+      classes: ["pf2e-mobile-target-dialog"],
+      content: dialogBody,
+      rejectClose: false,
+      modal: true
+    }).catch(() => false);
+  } else if (typeof Dialog?.confirm === "function") {
+    confirmed = await Dialog.confirm({
+      title: dialogTitle,
+      content: dialogBody
+    });
+  } else {
+    confirmed = window.confirm(
+      nextDisabled
+        ? "Disable the WebGL canvas (Battery Saver)? This will save your preference and reload the page."
+        : "Enable the WebGL canvas? This will save your preference and reload the page."
+    );
+  }
+
+  if (!confirmed) return;
+
+  await setMobileCanvasDisabled(nextDisabled);
+  if (nextDisabled) {
+    ui.notifications?.info?.("Canvas Disabled (Battery Saver). Reloading to unload WebGL stage...");
+  } else {
+    ui.notifications?.info?.("Canvas Enabled. Reloading to initialize WebGL stage...");
+  }
+  if (sheet?.rendered) {
+    sheet.render({ parts: ["header"] });
+  }
+  setTimeout(() => {
+    if (typeof window !== "undefined" && typeof window.location?.reload === "function") {
+      window.location.reload();
+    }
+  }, 250);
 }
 
 let iosFullscreenTipShown = false;

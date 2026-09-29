@@ -23,11 +23,11 @@ export async function onExecuteStrike(sheet, event, target) {
   const variant = strike.variants?.[variantIndex];
   if (!variant) return;
 
-  // Ensure origin token adapter is initialized on scene TokenDocument
-  getOriginToken(sheet.actor);
+  // Ensure origin token adapter is initialized and synchronized on scene TokenDocument
+  const originToken = getOriginToken(sheet.actor);
 
-  // Resolve target: use pre-selected target or prompt user
-  const targetToken = await resolveTargetForAction(sheet, `${strike.label} (${variant.label})`);
+  // Resolve target: use pre-selected target or prompt user (exclude Self for weapon Strikes)
+  const targetToken = await resolveTargetForAction(sheet, `${strike.label} (${variant.label})`, { includeSelf: false });
   if (targetToken === false) return; // User cancelled prompt
 
   // Ensure target is synchronized in Foundry user targets
@@ -39,9 +39,20 @@ export async function onExecuteStrike(sheet, event, target) {
     event,
     target: targetToken || undefined
   };
-  const originToken = getOriginToken(sheet.actor);
   if (originToken) {
-    rollOptions.token = originToken;
+    rollOptions.token = originToken.document ?? originToken;
+  }
+
+  // When running with canvas disabled or not ready, ensure flanking roll options are injected
+  if (originToken && targetToken && typeof originToken.isFlanking === "function") {
+    const reach = sheet.actor.getReach?.({ action: "attack", weapon: strike.item }) ?? 5;
+    const isFlanked = originToken.isFlanking(targetToken, { reach });
+    const isCanvasDisabled = !canvas?.ready || canvas?.app?.stage?.renderable === false;
+    if (isFlanked && isCanvasDisabled) {
+      const flankOpts = ["self:flanking", "target:flanked", "target:condition:off-guard"];
+      rollOptions.options = flankOpts;
+      rollOptions.extraRollOptions = flankOpts;
+    }
   }
 
   await PhysicalDiceManager.withPhysicalMode({
@@ -70,8 +81,8 @@ export async function onExecuteDamage(sheet, event, target) {
   // Ensure origin token adapter is initialized
   const originToken = getOriginToken(sheet.actor);
 
-  // Resolve target: use pre-selected target or prompt user
-  const targetToken = await resolveTargetForAction(sheet, `${strike.label} (Damage)`);
+  // Resolve target: use pre-selected target or prompt user (exclude Self for weapon Strikes)
+  const targetToken = await resolveTargetForAction(sheet, `${strike.label} (Damage)`, { includeSelf: false });
   if (targetToken === false) return; // User cancelled prompt
 
   if (targetToken?.id) {
@@ -79,7 +90,7 @@ export async function onExecuteDamage(sheet, event, target) {
   }
 
   const rollOptions = { event, target: targetToken || undefined };
-  if (originToken) rollOptions.token = originToken;
+  if (originToken) rollOptions.token = originToken.document ?? originToken;
 
   await PhysicalDiceManager.withPhysicalMode({
     title: `${strike.label}`,
@@ -107,8 +118,8 @@ export async function onExecuteCritical(sheet, event, target) {
   // Ensure origin token adapter is initialized
   const originToken = getOriginToken(sheet.actor);
 
-  // Resolve target: use pre-selected target or prompt user
-  const targetToken = await resolveTargetForAction(sheet, `${strike.label} (Critical)`);
+  // Resolve target: use pre-selected target or prompt user (exclude Self for weapon Strikes)
+  const targetToken = await resolveTargetForAction(sheet, `${strike.label} (Critical)`, { includeSelf: false });
   if (targetToken === false) return; // User cancelled prompt
 
   if (targetToken?.id) {
@@ -116,7 +127,7 @@ export async function onExecuteCritical(sheet, event, target) {
   }
 
   const rollOptions = { event, target: targetToken || undefined };
-  if (originToken) rollOptions.token = originToken;
+  if (originToken) rollOptions.token = originToken.document ?? originToken;
 
   await PhysicalDiceManager.withPhysicalMode({
     title: `${strike.label}`,

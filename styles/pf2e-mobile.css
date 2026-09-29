@@ -333,7 +333,8 @@ body.pf2e-mobile-active textarea {
   pointer-events: none;
 }.pf2e-mobile-sheet .header-controls-wrapper .header-roll-mode-select {
   max-width: 95px;
-}.pf2e-mobile-sheet .mobile-header-dashboard .btn-fullscreen {
+}.pf2e-mobile-sheet .mobile-header-dashboard .btn-fullscreen,
+.pf2e-mobile-sheet .mobile-header-dashboard .btn-canvas-toggle {
   min-width: 38px;
   width: 38px;
   min-height: 38px;
@@ -348,6 +349,12 @@ body.pf2e-mobile-active textarea {
   font-size: 0.95rem;
   padding: 0;
   cursor: pointer;
+}.pf2e-mobile-sheet .mobile-header-dashboard .btn-canvas-toggle.canvas-on {
+  color: #81c784;
+  border-color: rgba(129, 199, 132, 0.45);
+}.pf2e-mobile-sheet .mobile-header-dashboard .btn-canvas-toggle.canvas-off {
+  color: #9e9e9e;
+  border-color: #444;
   flex-shrink: 0;
 }.pf2e-mobile-sheet .mobile-header-dashboard .btn-fullscreen:active {
   background: #383838;

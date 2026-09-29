@@ -163,3 +163,103 @@ export function isIOSDevice() {
   return Boolean(isIOSUA || isIPadOS);
 }
 
+/**
+ * Returns whether the user has opted to disable the WebGL canvas on mobile.
+ * Defaults to false (Canvas Enabled) and persists across mobile sessions via
+ * localStorage and Foundry client settings.
+ * @returns {boolean}
+ */
+export function isMobileCanvasDisabled() {
+  try {
+    const stored = localStorage.getItem("pf2e-mobile-compact.disableCanvas");
+    if (stored === "true") return true;
+    if (stored === "false") return false;
+  } catch {}
+  try {
+    if (game?.settings?.settings?.has?.("pf2e-mobile-compact.disableCanvas")) {
+      return Boolean(game.settings.get("pf2e-mobile-compact", "disableCanvas"));
+    }
+  } catch {}
+  return false;
+}
+
+/**
+ * Applies the current mobile canvas state.
+ * When `disableCanvas` is true, sets Foundry's native `core.noCanvas` setting (and `CONFIG.Canvas.disabled = true`)
+ * so Foundry v14 skips `Canvas#initialize()` and texture loading completely.
+ * When `disableCanvas` is false, allows `Canvas#initialize()` so `canvas.tokens` and PF2e system flanking
+ * exist in memory, while still pausing the background PIXI frame loop behind the full-screen mobile sheet
+ * to prevent mobile WebKit GPU out-of-memory crashes.
+ */
+export function applyMobileCanvasState() {
+  const disableCanvas = isMobileCanvasDisabled();
+  if (typeof CONFIG !== "undefined" && CONFIG.Canvas) {
+    CONFIG.Canvas.disabled = disableCanvas;
+  }
+  try {
+    localStorage.setItem("core.noCanvas", disableCanvas ? "true" : "false");
+  } catch {}
+  if (typeof document !== "undefined" && document.body) {
+    document.body.classList.toggle("pf2e-canvas-disabled", disableCanvas);
+  }
+
+  try {
+    if (typeof PIXI !== "undefined") {
+      if (PIXI.settings) PIXI.settings.RESOLUTION = 1;
+      if (PIXI.Ticker?.shared) PIXI.Ticker.shared.maxFPS = 15;
+      if (PIXI.Ticker?.system) PIXI.Ticker.system.maxFPS = 15;
+    }
+  } catch {}
+
+  const canvasObj = typeof canvas !== "undefined" ? canvas : null;
+  if (!canvasObj?.app) return;
+  try {
+    if (canvasObj.app.renderer) {
+      canvasObj.app.renderer.resolution = 1;
+    }
+    if (canvasObj.app.stage) {
+      canvasObj.app.stage.renderable = false;
+      canvasObj.app.stage.interactiveChildren = false;
+    }
+    if (canvasObj.weather?.clear) {
+      canvasObj.weather.clear();
+    }
+    if (canvasObj.app.ticker) {
+      canvasObj.app.ticker.maxFPS = 15;
+      canvasObj.app.ticker.stop?.();
+    }
+  } catch (err) {
+    console.warn("PF2e Mobile Compact | applyMobileCanvasState warning:", err);
+  }
+}
+
+/**
+ * Updates and persists the user's mobile canvas disable preference across sessions,
+ * synchronizing Foundry's native `core.noCanvas` setting so `Canvas#initialize()` is skipped when disabled.
+ * @param {boolean} disabled
+ * @returns {Promise<boolean>}
+ */
+export async function setMobileCanvasDisabled(disabled) {
+  const nextState = Boolean(disabled);
+  if (typeof CONFIG !== "undefined" && CONFIG.Canvas) {
+    CONFIG.Canvas.disabled = nextState;
+  }
+  try {
+    localStorage.setItem("pf2e-mobile-compact.disableCanvas", nextState ? "true" : "false");
+    localStorage.setItem("core.noCanvas", nextState ? "true" : "false");
+  } catch {}
+  try {
+    if (game?.settings?.settings?.has?.("core.noCanvas")) {
+      await game.settings.set("core", "noCanvas", nextState);
+    }
+  } catch {}
+  try {
+    if (game?.settings?.settings?.has?.("pf2e-mobile-compact.disableCanvas")) {
+      await game.settings.set("pf2e-mobile-compact", "disableCanvas", nextState);
+    }
+  } catch {}
+  applyMobileCanvasState();
+  return nextState;
+}
+
+

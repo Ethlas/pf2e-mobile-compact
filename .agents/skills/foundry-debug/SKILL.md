@@ -11,7 +11,7 @@ This runbook guides debugging issues on the remote Foundry VTT server and diagno
 ## Remote Server Diagnostics
 
 > [!NOTE]
-> Authentication is handled via `$env:FOUNDRY_DEPLOY_PASSWORD` or SSH keys. Never hardcode plaintext passwords in repository files or skill runbooks.
+> Authentication and server address are handled via `$env:FOUNDRY_DEPLOY_SERVER` and `$env:FOUNDRY_DEPLOY_PASSWORD` or SSH keys. Never hardcode IP addresses or plaintext passwords in repository files or skill runbooks. If `$env:FOUNDRY_DEPLOY_SERVER` is empty, ask the user before running remote commands.
 
 Prepare credential arguments if using password authentication:
 ```powershell
@@ -21,20 +21,20 @@ $PwArgs = if ($env:FOUNDRY_DEPLOY_PASSWORD) { @("-pw", $env:FOUNDRY_DEPLOY_PASSW
 ### 1. Check Service Status & Logs
 Run plink commands to check PM2 status and recent output logs:
 ```powershell
-plink.exe -batch @PwArgs foundry@10.0.0.50 "pm2 status"
-plink.exe -batch @PwArgs foundry@10.0.0.50 "pm2 logs foundry --lines 50 --nostream"
+plink.exe -batch @PwArgs $env:FOUNDRY_DEPLOY_SERVER "pm2 status"
+plink.exe -batch @PwArgs $env:FOUNDRY_DEPLOY_SERVER "pm2 logs foundry --lines 50 --nostream"
 ```
 
 ### 2. Inspect Deployed Module Files
 Verify file contents or permissions on the remote filesystem:
 ```powershell
-plink.exe -batch @PwArgs foundry@10.0.0.50 "ls -la /mnt/exdisk/foundryvtt/foundrydata-v14/Data/modules/pf2e-mobile-compact"
+plink.exe -batch @PwArgs $env:FOUNDRY_DEPLOY_SERVER "ls -la /mnt/exdisk/foundryvtt/foundrydata-v14/Data/modules/pf2e-mobile-compact"
 ```
 
 ### 3. Check for Module JSON Integrity
 Verify `module.json` is valid JSON on remote:
 ```powershell
-plink.exe -batch @PwArgs foundry@10.0.0.50 "cat /mnt/exdisk/foundryvtt/foundrydata-v14/Data/modules/pf2e-mobile-compact/module.json | jq ."
+plink.exe -batch @PwArgs $env:FOUNDRY_DEPLOY_SERVER "cat /mnt/exdisk/foundryvtt/foundrydata-v14/Data/modules/pf2e-mobile-compact/module.json | jq ."
 ```
 
 ## Common Issues & Fixes

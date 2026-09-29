@@ -1,5 +1,6 @@
 import { hasKingdomData, getKingdomName } from "../../kingdom/kingdom-handlers.js";
-import { getTokenDistanceInfo } from "../../tokens/token-adapter.js";
+import { collectSceneCandidateTokens } from "./sheet-prompts.js";
+import { isMobileCanvasDisabled } from "../../utils/sheet-utils.js";
 
 /**
  * Prepares header dashboard data: HP, shield, defenses, initiative, targets, owned characters, and focus.
@@ -127,62 +128,27 @@ export function prepareHeaderContext(actor, sheet, context) {
     initiative: hasRolledInit ? combatant.initiative : null
   };
 
-  // Target Selection: Gather tokens from current scene (supports bypassed canvas)
-  const canvasObj = typeof canvas !== "undefined" ? canvas : null;
-  const scene = canvasObj?.scene ?? game.scenes?.viewed ?? game.scenes?.active;
-  const currentTargetId = Array.from(game.user?.targets ?? []).find(t => t.id)?.id ?? "";
+  // Target Selection: Gather tokens from current scene (includes Self and syncs _source positions on iOS)
+  const targetTokens = collectSceneCandidateTokens(actor, { includeSelf: true });
+  const selectedTargets = targetTokens.filter(t => t.selected);
+  const hasMultipleTargets = selectedTargets.length > 1;
 
-  let targetTokens = [];
-  if (canvasObj?.tokens?.placeables?.length) {
-    targetTokens = canvasObj.tokens.placeables
-      .filter(t => t.actor && t.actor.id !== actor.id && t.visible)
-      .map(t => {
-        const distInfo = getTokenDistanceInfo(actor, t);
-        const formattedName = distInfo ? `${t.name} (${distInfo.label})` : t.name;
-        return {
-          id: t.id,
-          rawName: t.name,
-          name: formattedName,
-          distance: distInfo?.distance ?? null,
-          distanceLabel: distInfo?.label ?? null,
-          displayName: formattedName,
-          selected: t.id === currentTargetId
-        };
-      });
-  } else if (scene?.tokens) {
-    targetTokens = scene.tokens.contents
-      .filter(t => {
-        if (!t.actor) return false;
-        if (t.actorId === actor.id) return false;
-        if (t.hidden && !game.user.isGM) return false;
-        return true;
-      })
-      .map(t => {
-        const distInfo = getTokenDistanceInfo(actor, t.id);
-        const formattedName = distInfo ? `${t.name} (${distInfo.label})` : t.name;
-        return {
-          id: t.id,
-          rawName: t.name,
-          name: formattedName,
-          distance: distInfo?.distance ?? null,
-          distanceLabel: distInfo?.label ?? null,
-          displayName: formattedName,
-          selected: t.id === currentTargetId
-        };
-      });
+  if (hasMultipleTargets) {
+    // When multiple targets are active, keep individual option.selected false so the __multi__ summary option is selected
+    for (const t of targetTokens) {
+      t.selectedInSingle = false;
+    }
+  } else {
+    for (const t of targetTokens) {
+      t.selectedInSingle = t.selected;
+    }
   }
 
-  targetTokens.sort((a, b) => {
-    if (a.distance !== null && b.distance !== null && a.distance !== b.distance) {
-      return a.distance - b.distance;
-    }
-    if (a.distance !== null && b.distance === null) return -1;
-    if (a.distance === null && b.distance !== null) return 1;
-    return (a.rawName || a.name || "").localeCompare(b.rawName || b.name || "");
-  });
-
   context.targets = targetTokens;
-  context.activeTarget = targetTokens.find(t => t.selected) ?? null;
+  context.activeTarget = selectedTargets[0] ?? null;
+  context.activeTargetCount = selectedTargets.length;
+  context.hasMultipleTargets = hasMultipleTargets;
+  context.multiTargetNames = selectedTargets.map(t => t.isSelf ? "Self" : t.rawName).join(", ");
 
   // Focus Pool
   const focusResource = system.resources?.focus;
@@ -190,5 +156,7 @@ export function prepareHeaderContext(actor, sheet, context) {
     value: focusResource?.value ?? 0,
     max: focusResource?.max ?? 0
   };
+
+  context.canvasDisabled = isMobileCanvasDisabled();
 }
 

@@ -4,6 +4,32 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.29] - 2026-09-29
+
+### Targeting Fixes: iOS Real-Time Distance Updates, AoE Multi-Targeting, Flanking Detection, Self-Targeting, & Persistent Canvas Toggle (Issue #16)
+
+#### Fixed & Added
+- **iOS / Mobile Real-Time Token Distance Synchronization & Tiny `5-10-5` Grid Steps (`scripts/tokens/token-adapter.js`, `scripts/apps/mobile-sheet.js`, `scripts/apps/sheet-helpers/context-header.js`)**:
+  - Fixed an issue on iPhone / iOS where paused canvas animations caused `tokenDoc.x`/`y` and `placeable.bounds`/`center` to freeze at pre-movement coordinates when tokens moved on the map.
+  - Added `syncTokenPosition(tokenOrDoc)`, `syncSceneTokenPositions(scene)`, and `getAuthoritativeTokenGeometry(tokenOrDoc)` to read authoritative database coordinates (`doc._source.x`, `doc._source.y`, `doc._source.elevation`), terminate stalled canvas animations via `foundry.canvas.animation.CanvasAnimation`, and immediately update `tokenDoc` and `placeable` positions.
+  - Snapped Tiny tokens (`width < 1` or `height < 1`) to the 5-ft grid square containing their center in `getAuthoritativeTokenGeometry()` and `measurePF2eTokenDistance()` so distances always step in 5-ft increments (`0, 5, 10, 15, 20, 25...`) using PF2e `5-10-5` diagonal rules and never produce non-5-ft sub-grid fractions (`23 ft`).
+- **Area of Effect (AoE), Heightened Multi-Target Spells, & Single-Target Narrowing (`scripts/apps/sheet-helpers/sheet-prompts.js`, `scripts/tokens/token-adapter.js`, `scripts/apps/sheet-helpers/spells-handlers.js`, `scripts/apps/sheet-helpers/activations-handlers.js`, `templates/parts/header.hbs`)**:
+  - Updated `isMultiTargetOrAreaSpell(spell, castRank)` to evaluate heightened spell variants (`spell.loadVariant({ castRank })` and `system.heightening.levels`) so spells that become multi-target when heightened (e.g., Rank 6 *Slow*, *Haste*, *Paralyze*) support multi-targeting, while guarding against false positives on strings like `"any 1 creature"` or `"any single ally"`.
+  - Updated `resolveTargetForAction(sheet, actionLabel, { includeSelf, allowMulti })` so that when a single-target action (`allowMulti: false`, such as a weapon Strike) is used while multiple targets (`game.user.targets.size > 1`) are selected, the user is prompted to narrow selection down to 1 target and unselect the others.
+  - Added `setTargetTokens(tokenIds)` in `token-adapter.js` using `{ user: game.user, releaseOthers: false, groupSelection: true }` to synchronize multiple targets simultaneously in `game.user.targets` and broadcast all target reticules to the TV/GM screen.
+- **Flanking Detection, Condition & Action Depletion Checks, & No-Canvas Fallback (`scripts/tokens/token-adapter.js`, `scripts/pf2e-mobile.js`, `scripts/apps/sheet-helpers/actions-handlers.js`)**:
+  - Delegated `placeable.isFlanking` and `placeable.canFlank` to PF2e's native canvas flanking (`TokenPF2e.prototype.isFlanking` / `canFlank`) whenever the canvas is active (`canvas?.ready`).
+  - When the canvas is disabled/headless, `computeTokenFlanking()`, `canTokenFlank()`, and `isActorAbleToFlank()` evaluate `attributes.flanking.canFlank`, static blocking conditions (`unconscious`, `dead`, `dying`, `0 HP`, `paralyzed`, `petrified`, `confused`, `controlled`, `fleeing`, `restrained`, `blinded`), and dynamic `stunned`/`slowed`/`quickened` action depletion (`Math.max(stunned, slowed) >= baseActions`, plus duration-based stun).
+  - Fixed headless `TokenDocument.prototype.object` getter override in `getTargetableToken()` using `Object.defineProperty(tokenDoc, "object", { value: adapter, configurable: true, writable: true })` and added an `Actor.prototype.getActiveTokens` headless fallback in `patchUserActiveTokens()` so Strike rolls invoke our module's `adapter.isFlanking` (`computeTokenFlanking`) when `core.noCanvas` is enabled.
+  - Eliminated recursive `placeable.distanceTo` calls in `measurePF2eTokenDistance()` and replaced global `CanvasAnimation` access with `foundry?.canvas?.animation?.CanvasAnimation`.
+- **Self-Targeting for Spells, Actions, & Header Selector (`scripts/tokens/token-adapter.js`, `scripts/apps/sheet-helpers/sheet-prompts.js`, `scripts/apps/sheet-helpers/context-header.js`)**:
+  - Updated `getTokenDistanceInfo()` and `collectSceneCandidateTokens()` to include the character's own token (`Self: <Name> (Self)`) in the header target dropdown, spell target prompts, and skill/action prompts (while excluding Self from weapon Strike prompts via `{ includeSelf: false }`).
+- **Mobile Canvas Active by Default + Persistent `core.noCanvas` & `CONFIG.Canvas.disabled` Toggle with Confirmation (`scripts/pf2e-mobile.js`, `scripts/utils/sheet-utils.js`, `scripts/apps/sheet-helpers/header-handlers.js`, `templates/parts/header.hbs`)**:
+  - Kept the WebGL canvas **enabled by default** on mobile (`disableCanvas = false`), synchronized Foundry v14's `core.noCanvas` setting (`localStorage` and `game.settings`) alongside `CONFIG.Canvas.disabled` when No-Canvas mode is toggled, and paused the background PIXI WebGL ticker (`canvas.app.ticker.stop()`, `stage.renderable = false`) while the full-screen mobile sheet is active.
+  - Added a `DialogV2.confirm` confirmation prompt on `onToggleCanvasMode` (`data-action="toggleCanvasMode"`) before toggling and reloading the session.
+
+---
+
 ## [1.0.28] - 2026-09-29
 
 ### Repeatable Spell Damage Button Inside Spell Cards (`Dmg` / `Heal`)

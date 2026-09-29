@@ -18,15 +18,21 @@
     <div class="header-controls-wrapper">
       {{#unless (or isParty isKingdom)}}
       <div class="header-target-group">
-        <select name="target-select" class="touch-target header-target-select" data-change-action="selectTarget" aria-label="Select Target" title="{{#if activeTarget}}Target: {{activeTarget.displayName}}{{else}}Target Token{{/if}}">
+        <select name="target-select" class="touch-target header-target-select" data-change-action="selectTarget" aria-label="Select Target" title="{{#if hasMultipleTargets}}Targets ({{activeTargetCount}}): {{multiTargetNames}}{{else if activeTarget}}Target: {{activeTarget.displayName}}{{else}}Target Token{{/if}}">
           <option value="">🎯 No Target</option>
+          <option value="__pick_multi__">🎯 Multi-Target Picker...</option>
+          {{#if hasMultipleTargets}}
+          <option value="__multi__" selected>🎯 {{activeTargetCount}} Targets ({{multiTargetNames}})</option>
+          {{/if}}
           {{#each targets}}
-          <option value="{{this.id}}" {{#if this.selected}}selected{{/if}}>
+          <option value="{{this.id}}" {{#if this.selectedInSingle}}selected{{/if}}>
             🎯 {{this.displayName}}
           </option>
           {{/each}}
         </select>
-        {{#if activeTarget.distanceLabel}}
+        {{#if hasMultipleTargets}}
+        <span class="header-target-distance-pill" title="Targets: {{multiTargetNames}}">({{activeTargetCount}})</span>
+        {{else if activeTarget.distanceLabel}}
         <span class="header-target-distance-pill" title="Distance to {{activeTarget.rawName}}">({{activeTarget.distanceLabel}})</span>
         {{/if}}
       </div>
@@ -36,6 +42,10 @@
         <option value="digital" {{#if (eq rollMode "digital")}}selected{{/if}}>🎲 Digital</option>
         <option value="physical" {{#if (eq rollMode "physical")}}selected{{/if}}>✋ Physical</option>
       </select>
+
+      <button type="button" class="touch-target btn-canvas-toggle {{#if canvasDisabled}}canvas-off{{else}}canvas-on{{/if}}" data-action="toggleCanvasMode" title="{{#if canvasDisabled}}Canvas Disabled (Tap to Enable Canvas){{else}}Canvas Enabled (Tap to Disable Canvas){{/if}}" aria-label="Toggle Canvas">
+        <i class="fas {{#if canvasDisabled}}fa-eye-slash{{else}}fa-map{{/if}}"></i>
+      </button>
 
       <button type="button" class="touch-target btn-fullscreen" data-action="toggleFullscreen" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">
         <i class="fas fa-expand"></i>

@@ -1,6 +1,6 @@
 import { PhysicalDiceManager } from "../../rolls/physical-dice-interceptor.js";
 import { setTargetToken } from "../../tokens/token-adapter.js";
-import { resolveTargetForAction, promptSpontaneousSlotSelection } from "./sheet-prompts.js";
+import { resolveTargetsForSpell, isMultiTargetOrAreaSpell, promptSpontaneousSlotSelection } from "./sheet-prompts.js";
 import { clamp } from "../../utils/sheet-utils.js";
 import { isItemSpellcastingEntry } from "./context-activations.js";
 
@@ -121,11 +121,12 @@ export async function onCastStaffSpell(sheet, event, target) {
   if (rank === 0 || spell.isCantrip) {
     let targetToken = null;
     const hasAttackTrait = spell.system?.traits?.value?.includes("attack") || spell.traits?.has?.("attack");
-    if (spell.system?.target?.value || spell.system?.range?.value || hasAttackTrait) {
-      targetToken = await resolveTargetForAction(sheet, `Cast ${spell.name}`);
+    const isMultiOrArea = isMultiTargetOrAreaSpell(spell);
+    if (spell.system?.target?.value || spell.system?.range?.value || hasAttackTrait || isMultiOrArea) {
+      targetToken = await resolveTargetsForSpell(sheet, spell, `Cast ${spell.name}`);
       if (targetToken === false) return; // Cancelled by user
     }
-    if (targetToken?.id) {
+    if (targetToken?.id && !isMultiOrArea) {
       await setTargetToken(targetToken.id);
     }
 
@@ -198,13 +199,15 @@ export async function onCastStaffSpell(sheet, event, target) {
 
   // 4. TARGET RESOLUTION (Only prompted after passing resource & slot selection checks)
   let targetToken = null;
+  const effectiveRank = selectedSpontSlot?.rank ?? rank;
   const hasAttackTrait = spell.system?.traits?.value?.includes("attack") || spell.traits?.has?.("attack");
-  if (spell.system?.target?.value || spell.system?.range?.value || hasAttackTrait) {
-    targetToken = await resolveTargetForAction(sheet, `Cast ${spell.name}`);
+  const isMultiOrArea = isMultiTargetOrAreaSpell(spell, effectiveRank);
+  if (spell.system?.target?.value || spell.system?.range?.value || hasAttackTrait || isMultiOrArea) {
+    targetToken = await resolveTargetsForSpell(sheet, spell, `Cast ${spell.name}`, { castRank: effectiveRank });
     if (targetToken === false) return; // Cancelled by user
   }
 
-  if (targetToken?.id) {
+  if (targetToken?.id && !isMultiOrArea) {
     await setTargetToken(targetToken.id);
   }
 
@@ -287,12 +290,14 @@ export async function onCastItemSpell(sheet, event, target) {
     return;
   }
 
-  // Target prompt
+  // Target prompt (supports AoE multi-target and Self)
+  const embeddedSpell = item.system?.spell ?? actor.spellcasting?.get(entryId)?.spells?.contents?.[0] ?? item;
   const spellName = item.system?.spell?.name ?? item.name;
-  const targetToken = await resolveTargetForAction(sheet, `Cast ${spellName}`);
+  const isMultiOrArea = isMultiTargetOrAreaSpell(embeddedSpell);
+  const targetToken = await resolveTargetsForSpell(sheet, embeddedSpell, `Cast ${spellName}`);
   if (targetToken === false) return; // Cancelled
 
-  if (targetToken?.id) {
+  if (targetToken?.id && !isMultiOrArea) {
     await setTargetToken(targetToken.id);
   }
 

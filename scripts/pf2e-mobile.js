@@ -112,11 +112,55 @@ export function setupKeepAlive() {
 }
 
 /**
- * Pauses PixiJS canvas WebGL render loop and clamps framebuffer resolution to 1x on mobile
- * to prevent iOS Safari WebKit GPUProcess / WebProcess out-of-memory crashes while keeping
- * Scene TokenDocuments and headless token geometry fully functional.
+ * Returns whether the user has opted to disable the WebGL canvas on mobile.
+ * Defaults to false (Canvas Enabled) and persists across mobile sessions via
+ * localStorage and Foundry client settings.
+ * @returns {boolean}
+ */
+export function isMobileCanvasDisabled() {
+  try {
+    const stored = localStorage.getItem("pf2e-mobile-compact.disableCanvas");
+    if (stored === "true") return true;
+    if (stored === "false") return false;
+  } catch {}
+  try {
+    if (game?.settings?.settings?.has?.("pf2e-mobile-compact.disableCanvas")) {
+      return Boolean(game.settings.get("pf2e-mobile-compact", "disableCanvas"));
+    }
+  } catch {}
+  return false;
+}
+
+/**
+ * Updates and persists the user's mobile canvas disable preference across sessions.
+ * @param {boolean} disabled
+ * @returns {Promise<boolean>}
+ */
+export async function setMobileCanvasDisabled(disabled) {
+  const nextState = Boolean(disabled);
+  try {
+    localStorage.setItem("pf2e-mobile-compact.disableCanvas", nextState ? "true" : "false");
+  } catch {}
+  try {
+    if (game?.settings?.settings?.has?.("pf2e-mobile-compact.disableCanvas")) {
+      await game.settings.set("pf2e-mobile-compact", "disableCanvas", nextState);
+    }
+  } catch {}
+  optimizeCanvasForMobile();
+  return nextState;
+}
+
+/**
+ * Optimizes PixiJS canvas WebGL resolution and framerate on mobile (1x resolution, 15 FPS).
+ * By default, keeps the canvas stage and ticker active so token animations, geometry, and flanking
+ * update natively. If the user enables the `disableCanvas` setting, suspends the ticker and stage rendering.
  */
 export function optimizeCanvasForMobile() {
+  const disableCanvas = isMobileCanvasDisabled();
+  if (typeof document !== "undefined" && document.body) {
+    document.body.classList.toggle("pf2e-canvas-disabled", disableCanvas);
+  }
+
   try {
     if (typeof PIXI !== "undefined") {
       if (PIXI.settings) PIXI.settings.RESOLUTION = 1;
@@ -141,7 +185,7 @@ export function optimizeCanvasForMobile() {
       canvas.app.ticker.maxFPS = 15;
       canvas.app.ticker.stop();
     }
-    console.log("PF2e Mobile Compact | Canvas WebGL ticker paused & stage rendering suspended for mobile GPU memory protection.");
+    console.log(`PF2e Mobile Compact | Canvas WebGL ticker paused & stage rendering suspended for mobile GPU memory protection (disableCanvas=${disableCanvas}).`);
   } catch (err) {
     console.warn("PF2e Mobile Compact | optimizeCanvasForMobile warning:", err);
   }
@@ -151,6 +195,9 @@ export function optimizeCanvasForMobile() {
  * Resumes PixiJS canvas rendering if mobile mode is deactivated on a desktop client.
  */
 export function resumeCanvasFromMobile() {
+  if (typeof document !== "undefined" && document.body) {
+    document.body.classList.remove("pf2e-canvas-disabled");
+  }
   if (!canvas?.app) return;
   try {
     if (canvas.app.stage) {
@@ -398,6 +445,43 @@ export function patchUserActiveTokens() {
     };
     UserClass.prototype._pf2eMobileActiveTokensPatched = true;
   }
+
+  const ActorClass = CONFIG.Actor?.documentClass ?? (typeof Actor !== "undefined" ? Actor : null);
+  if (ActorClass?.prototype && !ActorClass.prototype._pf2eMobileActiveTokensPatched) {
+    const origActorGetActiveTokens = ActorClass.prototype.getActiveTokens;
+    ActorClass.prototype.getActiveTokens = function (linked = false, document = false) {
+      const res = typeof origActorGetActiveTokens === "function"
+        ? origActorGetActiveTokens.call(this, linked, document)
+        : [];
+      if (Array.isArray(res) && res.length > 0) {
+        return res;
+      }
+
+      // Headless fallback when Canvas is disabled (!canvas.ready): resolve from active Scene and attach mobile adapter
+      if (typeof canvas === "undefined" || !canvas?.ready) {
+        try {
+          const scene = game.scenes?.current ?? game.scenes?.viewed ?? game.scenes?.active;
+          const tokensList = scene?.tokens?.contents ?? (scene?.tokens ? Array.from(scene.tokens) : []);
+          const matchingDocs = tokensList.filter(t => {
+            if (linked && !t.actorLink) return false;
+            return t.actorId === this.id || t.actor?.id === this.id;
+          });
+          if (matchingDocs.length === 0 && linked) {
+            const unlinked = tokensList.filter(t => t.actorId === this.id || t.actor?.id === this.id);
+            matchingDocs.push(...unlinked);
+          }
+          if (matchingDocs.length > 0) {
+            const adapters = matchingDocs.map(tDoc => getTargetableToken(tDoc.id)).filter(Boolean);
+            return document ? matchingDocs : adapters;
+          }
+        } catch (err) {
+          console.warn("PF2e Mobile Compact | Error resolving headless Actor.getActiveTokens:", err);
+        }
+      }
+      return res;
+    };
+    ActorClass.prototype._pf2eMobileActiveTokensPatched = true;
+  }
 }
 
 /**
@@ -479,7 +563,27 @@ Hooks.once("init", async () => {
     default: true
   });
 
-  // Client Setting: Default Roll Mode (Digital vs Physical Dice)
+  // Client Setting: Disable Canvas on Mobile (Persistent Battery Saver option, defaults to false so canvas stays enabled)
+  let initialDisableCanvas = false;
+  try {
+    initialDisableCanvas = localStorage.getItem("pf2e-mobile-compact.disableCanvas") === "true";
+  } catch {}
+  game.settings.register("pf2e-mobile-compact", "disableCanvas", {
+    name: "Disable Canvas on Mobile (Battery Saver)",
+    hint: "When enabled, tells Foundry to skip initializing the WebGL canvas stage on mobile devices (CONFIG.Canvas.disabled = true) to save battery and memory. Leave unchecked to keep the canvas active.",
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: initialDisableCanvas,
+    onChange: (val) => {
+      try {
+        localStorage.setItem("pf2e-mobile-compact.disableCanvas", val ? "true" : "false");
+      } catch {}
+      if (shouldActivateMobile()) {
+        window.location.reload();
+      }
+    }
+  });
   game.settings.register("pf2e-mobile-compact", "rollMode", {
     name: "Default Roll Mode",
     hint: "Controls whether rolls default to digital dice or manual physical table dice entry.",
@@ -498,6 +602,16 @@ Hooks.once("init", async () => {
 
   const isMobile = shouldActivateMobile();
   if (isMobile) {
+    const disableCanvas = isMobileCanvasDisabled();
+    try {
+      if (typeof CONFIG !== "undefined" && CONFIG.Canvas) {
+        CONFIG.Canvas.disabled = disableCanvas;
+      }
+      localStorage.setItem("core.noCanvas", disableCanvas ? "true" : "false");
+      if (game.settings?.settings?.has?.("core.noCanvas")) {
+        await game.settings.set("core", "noCanvas", disableCanvas);
+      }
+    } catch {}
     document.body?.classList.add("pf2e-mobile-active");
     injectMobileViewportMeta();
     optimizeCanvasForMobile();
