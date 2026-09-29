@@ -4,6 +4,24 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.27] - 2026-09-28
+
+### Spell Casting Action Counts (`Cast (1)`, `Cast (2)`, `Cast (3)`, `Cast (1-3)`) & Multi-Action Button Labels (`> 1` Action)
+
+#### Added
+- **Action Cost & Spell Time Parser (`scripts/utils/sheet-utils.js`)**:
+  - Added `normalizeActionCountString(raw)` and `parseActionCostInfo(itemOrSpell, fallbackCost, options)` and enhanced `getGlyph(actionCost, rawTime)` to parse PF2e spell casting times (`spell.system?.time?.value`), `actionCost`, and variable action ranges (`"1 to 3"` $\rightarrow$ `"1-3"`, `"1 to 2"` $\rightarrow$ `"1-2"`, `"2 to 3"` $\rightarrow$ `"2-3"`).
+  - Configured spells (`options.isSpell === true`) to default to `2` actions (`"2"`) whenever a specific 1–3 action count is not explicitly specified on the spell document.
+  - Configured non-spell actions to expose `multiActionLabel` (`"2"`, `"3"`, `"1-2"`, `"1-3"`, `"2-3"`) strictly when the action requires more than 1 action.
+- **Spell Cast Buttons & Activations (`scripts/apps/sheet-helpers/context-spells.js`, `scripts/apps/sheet-helpers/context-activations.js`, `scripts/apps/sheet-helpers/spells-handlers.js`, `templates/parts/spells.hbs`)**:
+  - Updated all `Cast` buttons across the main Spells Cast View and Activations sub-tab (Staves, Wands, Scrolls, and Other Item Spells) to display the action count next to `Cast` (`Cast (1)`, `Cast (2)`, `Cast (3)`, `Cast (1-3)`, `Cast (1-2)`, `Cast (2-3)`), defaulting to `Cast (2)`.
+  - Updated `onOpenSpellPrepPicker` to use `parseActionCostInfo` so variable-cost (`1-3`) and standard spells display accurate action glyphs in the Spell Preparation picker.
+- **Character & Skill Action Buttons (`scripts/apps/sheet-helpers/context-actions.js`, `templates/parts/actions.hbs`, `styles/pf2e-mobile.css`)**:
+  - Updated `Use`, `Roll`, and `Attack` buttons across Encounter Actions, Skill Actions, Exploration, and Downtime cards to append `({{act.multiActionLabel}})` when an action requires more than 1 action (`Use (2)`, `Roll (2)`, `Attack (2)`).
+  - Updated `.action-cost-glyph` CSS to support auto-width pill expansion (`min-width: 26px; width: auto; padding: 0 5px;`) for variable range glyphs (`1-3`).
+
+---
+
 ## [1.0.26] - 2026-09-27
 
 ### Real-Time Target Distance Display (`Name (distance)`)

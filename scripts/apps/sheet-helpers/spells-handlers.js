@@ -1,7 +1,7 @@
 import { PhysicalDiceManager } from "../../rolls/physical-dice-interceptor.js";
 import { setTargetToken } from "../../tokens/token-adapter.js";
 import { resolveTargetForAction } from "./sheet-prompts.js";
-import { clamp, getGlyph } from "../../utils/sheet-utils.js";
+import { clamp, getGlyph, parseActionCostInfo } from "../../utils/sheet-utils.js";
 import { CompendiumPickerApp } from "../compendium-picker.js";
 
 /**
@@ -109,7 +109,7 @@ export async function onOpenSpellPrepPicker(sheet, event, target) {
     id: s.id,
     name: s.name,
     img: s.img || "systems/pf2e/icons/default-icons/spell.svg",
-    glyph: getGlyph(s.system.actions) || (s.system.actions?.value ? String(s.system.actions.value) : ""),
+    glyph: parseActionCostInfo(s, null, { isSpell: true }).glyph,
     baseRank: s.rank ?? s.system.level?.value ?? 1,
     range: s.system.range?.value ?? "",
     target: s.system.target?.value ?? ""
