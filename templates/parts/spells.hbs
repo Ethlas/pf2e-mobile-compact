@@ -83,7 +83,7 @@
               <i class="fas fa-chevron-down action-expand-icon {{#if spell.isExpanded}}expanded{{/if}}"></i>
             </div>
 
-            <!-- Action Buttons: Chat, Restore, Cast -->
+            <!-- Action Buttons: Chat, Restore, Damage, Cast -->
             <div class="action-btn-group">
               <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{spell.id}}" data-rank="{{group.rank}}" title="Send to Chat">
                 <i class="fas fa-message"></i>
@@ -93,6 +93,19 @@
               <button type="button" class="touch-target btn-restore-slot" data-action="toggleSlotExpended" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="Restore Expended Slot">
                 <i class="fas fa-arrow-rotate-left"></i>
               </button>
+              {{/if}}
+
+              {{#if spell.hasDamage}}
+              <button type="button" class="touch-target btn-spell-damage {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}}: {{spell.damageFormula}}{{/if}}">
+                {{#if spell.isHealingOnly}}
+                  <i class="fas fa-heart-pulse"></i> Heal
+                {{else}}
+                  <i class="fas fa-burst"></i> Dmg
+                {{/if}}
+              </button>
+              {{/if}}
+
+              {{#if (and spell.isPrepared spell.isExpended)}}
               <button type="button" class="touch-target btn-cast disabled {{#if spell.isAttack}}btn-cast-attack{{/if}}" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="{{#if spell.cannotCastReason}}{{spell.cannotCastReason}}{{else}}Spell slot already expended{{/if}}">
                 {{#if spell.isAttack}}
                   <i class="fas fa-crosshairs"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}
@@ -169,6 +182,18 @@
             <div class="spell-heightened-notice">
               <i class="fas fa-arrow-up-right-dots"></i>
               <span>Heightened to <strong>Rank {{group.rank}}</strong> (Base: Rank {{spell.baseRank}})</span>
+            </div>
+            {{/if}}
+
+            {{#if spell.hasDamage}}
+            <div class="spell-damage-drawer-row">
+              <button type="button" class="touch-target btn-spell-damage btn-spell-damage-full {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}})">
+                {{#if spell.isHealingOnly}}
+                  <i class="fas fa-heart-pulse"></i> Roll Healing (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}} · {{spell.damageFormula}}{{/if}}
+                {{else}}
+                  <i class="fas fa-burst"></i> Roll Damage (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}} · {{spell.damageFormula}}{{/if}}
+                {{/if}}
+              </button>
             </div>
             {{/if}}
 
@@ -402,6 +427,16 @@
                     <i class="fas fa-message"></i>
                   </button>
 
+                  {{#if spell.hasDamage}}
+                  <button type="button" class="touch-target btn-spell-damage {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}}: {{spell.damageFormula}}{{/if}}">
+                    {{#if spell.isHealingOnly}}
+                      <i class="fas fa-heart-pulse"></i> Heal
+                    {{else}}
+                      <i class="fas fa-burst"></i> Dmg
+                    {{/if}}
+                  </button>
+                  {{/if}}
+
                   {{#if spell.isCantrip}}
                   <button type="button" class="touch-target btn-cast staff-btn-flex" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{@root.activations.staff.id}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="0" data-charge-cost="0" title="Cast Cantrip">
                     <i class="fas fa-wand-magic"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}
@@ -448,6 +483,17 @@
                     {{/each}}
                   </div>
                   {{/if}}
+                  {{#if spell.hasDamage}}
+                  <div class="spell-damage-drawer-row">
+                    <button type="button" class="touch-target btn-spell-damage btn-spell-damage-full {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}})">
+                      {{#if spell.isHealingOnly}}
+                        <i class="fas fa-heart-pulse"></i> Roll Healing (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}} · {{spell.damageFormula}}{{/if}}
+                      {{else}}
+                        <i class="fas fa-burst"></i> Roll Damage (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}} · {{spell.damageFormula}}{{/if}}
+                      {{/if}}
+                    </button>
+                  </div>
+                  {{/if}}
                   <div class="action-description-content">
                     {{{spell.description}}}
                   </div>
@@ -484,6 +530,15 @@
               <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{wand.id}}" title="Send to Chat">
                 <i class="fas fa-message"></i>
               </button>
+              {{#if wand.spell.hasDamage}}
+              <button type="button" class="touch-target btn-spell-damage {{#if wand.spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{wand.id}}" data-entry-id="{{wand.entryId}}" data-rank="{{wand.rank}}" title="Roll {{#if wand.spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{wand.name}} (Rank {{wand.rank}}){{#if wand.spell.damageFormula}}: {{wand.spell.damageFormula}}{{/if}}">
+                {{#if wand.spell.isHealingOnly}}
+                  <i class="fas fa-heart-pulse"></i> Heal
+                {{else}}
+                  <i class="fas fa-burst"></i> Dmg
+                {{/if}}
+              </button>
+              {{/if}}
               <button type="button" class="touch-target btn-cast btn-cast-item" data-action="castItemSpell" data-item-type="wand" data-item-id="{{wand.id}}" data-entry-id="{{wand.entryId}}" title="Cast from {{wand.name}}">
                 <i class="fas fa-wand-magic"></i> Cast{{#if wand.castActions}} ({{wand.castActions}}){{/if}}
               </button>
@@ -515,6 +570,15 @@
               <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{scroll.id}}" title="Send to Chat">
                 <i class="fas fa-message"></i>
               </button>
+              {{#if scroll.spell.hasDamage}}
+              <button type="button" class="touch-target btn-spell-damage {{#if scroll.spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{scroll.id}}" data-entry-id="{{scroll.entryId}}" data-rank="{{scroll.rank}}" title="Roll {{#if scroll.spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{scroll.name}} (Rank {{scroll.rank}}){{#if scroll.spell.damageFormula}}: {{scroll.spell.damageFormula}}{{/if}}">
+                {{#if scroll.spell.isHealingOnly}}
+                  <i class="fas fa-heart-pulse"></i> Heal
+                {{else}}
+                  <i class="fas fa-burst"></i> Dmg
+                {{/if}}
+              </button>
+              {{/if}}
               <button type="button" class="touch-target btn-cast btn-cast-item" data-action="castItemSpell" data-item-type="scroll" data-item-id="{{scroll.id}}" data-entry-id="{{scroll.entryId}}" title="Cast and consume 1 {{scroll.name}}">
                 <i class="fas fa-scroll"></i> Cast{{#if scroll.castActions}} ({{scroll.castActions}}){{/if}}
               </button>
@@ -542,6 +606,15 @@
               <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.spell.id}}" title="Send to Chat">
                 <i class="fas fa-message"></i>
               </button>
+              {{#if act.spell.hasDamage}}
+              <button type="button" class="touch-target btn-spell-damage {{#if act.spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{act.spell.id}}" data-entry-id="{{act.entryId}}" data-rank="{{act.spell.effectiveCastRank}}" title="Roll {{#if act.spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{act.spell.name}} (Rank {{act.spell.effectiveCastRank}}){{#if act.spell.damageFormula}}: {{act.spell.damageFormula}}{{/if}}">
+                {{#if act.spell.isHealingOnly}}
+                  <i class="fas fa-heart-pulse"></i> Heal
+                {{else}}
+                  <i class="fas fa-burst"></i> Dmg
+                {{/if}}
+              </button>
+              {{/if}}
               <button type="button" class="touch-target btn-cast btn-cast-item" data-action="castItemSpell" data-item-type="other" data-item-id="{{act.spell.id}}" data-entry-id="{{act.entryId}}" title="Cast {{act.spell.name}}">
                 <i class="fas fa-wand-magic"></i> Cast{{#if act.spell.castActions}} ({{act.spell.castActions}}){{/if}}
               </button>

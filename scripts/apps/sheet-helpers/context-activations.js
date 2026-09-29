@@ -372,9 +372,19 @@ export async function prepareActivationsContext(actor, sheet, context) {
     const entryId = `${wand.id}-casting`;
     const wandEntry = allEntries.find(e => e.id === entryId);
     let formattedSpell = null;
-    const spellDoc = wandEntry?.spells?.contents?.[0] ?? (spellData ? actor.items.get(spellData.id) : null);
+    let spellDoc = wandEntry?.spells?.contents?.[0] ?? (spellData?.id ? actor.items.get(spellData.id) : null);
+    if (!spellDoc && spellData) {
+      const ItemClass = getDocumentClass?.("Item") ?? Item;
+      try {
+        spellDoc = new ItemClass(foundry.utils.deepClone(spellData), { parent: actor });
+      } catch {
+        spellDoc = null;
+      }
+    }
+    const wandRank = wand.system?.level?.value ?? spellDoc?.rank ?? 1;
     if (spellDoc) {
       formattedSpell = await formatSpell(actor, sheet, spellDoc, entryId, {
+        castRank: wandRank,
         cardKey: `wand-${wand.id}-${spellDoc.id}`
       });
     }
@@ -385,12 +395,12 @@ export async function prepareActivationsContext(actor, sheet, context) {
       id: wand.id,
       name: wand.name,
       img: wand.img || "systems/pf2e/icons/default-icons/consumable.svg",
-      rank: wand.system?.level?.value ?? formattedSpell?.castRank ?? 1,
+      rank: wandRank,
       uses,
       isOvercharged,
       spell: formattedSpell,
       castActions: formattedSpell?.castActions || wandSpellCost.castActions || "2",
-      entryId: wandEntry?.id
+      entryId: wandEntry?.id ?? entryId
     });
   }
 
@@ -403,10 +413,21 @@ export async function prepareActivationsContext(actor, sheet, context) {
     const quantity = Number(scroll.system?.quantity ?? 1);
     const entryId = `${scroll.id}-casting`;
     const scrollEntry = allEntries.find(e => e.id === entryId);
-    const spellDoc = scrollEntry?.spells?.contents?.[0];
+    const scrollSpellData = scroll.system?.spell;
+    let spellDoc = scrollEntry?.spells?.contents?.[0] ?? (scrollSpellData?.id ? actor.items.get(scrollSpellData.id) : null);
+    if (!spellDoc && scrollSpellData) {
+      const ItemClass = getDocumentClass?.("Item") ?? Item;
+      try {
+        spellDoc = new ItemClass(foundry.utils.deepClone(scrollSpellData), { parent: actor });
+      } catch {
+        spellDoc = null;
+      }
+    }
+    const scrollRank = scroll.system?.level?.value ?? spellDoc?.rank ?? 1;
     let formattedSpell = null;
     if (spellDoc) {
       formattedSpell = await formatSpell(actor, sheet, spellDoc, entryId, {
+        castRank: scrollRank,
         cardKey: `scroll-${scroll.id}-${spellDoc.id}`
       });
     }
@@ -416,11 +437,11 @@ export async function prepareActivationsContext(actor, sheet, context) {
       id: scroll.id,
       name: scroll.name,
       img: scroll.img || "systems/pf2e/icons/default-icons/consumable.svg",
-      rank: scroll.system?.level?.value ?? formattedSpell?.castRank ?? 1,
+      rank: scrollRank,
       quantity,
       spell: formattedSpell,
       castActions: formattedSpell?.castActions || scrollSpellCost.castActions || "2",
-      entryId: scrollEntry?.id
+      entryId: scrollEntry?.id ?? entryId
     });
   }
 

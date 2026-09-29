@@ -15,33 +15,11 @@ import { isItemSpellcastingEntry } from "./context-activations.js";
  */
 export async function formatSpell(actor, sheet, spell, entryId, extra = {}) {
   const TextEditorClass = foundry.applications?.ux?.TextEditor ?? globalThis.TextEditor;
-  let rawDescription = spell.system?.description?.value ?? "";
-  let enrichedDescription = rawDescription;
-  if (rawDescription && typeof TextEditorClass?.enrichHTML === "function") {
-    try {
-      enrichedDescription = await TextEditorClass.enrichHTML(rawDescription, {
-        secrets: spell.isOwner,
-        rollData: actor.getRollData(),
-        async: true
-      });
-    } catch {
-      enrichedDescription = rawDescription;
-    }
-  }
-
   const traits = (spell.system?.traits?.value ?? spell.traits?.value ?? []).map(t => ({ label: String(t) }));
   const costInfo = parseActionCostInfo(spell, null, { isSpell: true });
   const glyph = costInfo.glyph;
   const castActions = costInfo.castActions || "2";
   const isAttack = traits.some(t => t.label.toLowerCase() === "attack") || spell.traits?.has?.("attack");
-
-  let defenseStr = "";
-  if (spell.system?.defense?.save?.statistic) {
-    const basic = spell.system.defense.save.basic ? "Basic " : "";
-    const stat = String(spell.system.defense.save.statistic);
-    const statName = stat.charAt(0).toUpperCase() + stat.slice(1);
-    defenseStr = `${basic}${statName} DC`;
-  }
 
   const entry = actor.spellcasting?.get(entryId);
   const isSpontaneous = extra.isSpontaneous ?? (entry?.isSpontaneous || entry?.system?.prepared?.value === "spontaneous");
@@ -51,6 +29,85 @@ export async function formatSpell(actor, sheet, spell, entryId, extra = {}) {
   const isRitual = spell.isRitual || traits.some(t => t.label.toLowerCase() === "ritual");
   const isSignature = !!(spell.system?.location?.signature || spell.isSignature);
   const canSignature = isSpontaneous && !isCantrip && !isFocus && !isRitual;
+
+  // Resolve effective heightened rank for damage & rollData
+  const defaultRank = isCantrip
+    ? Math.max(1, Math.ceil((actor.level || 1) / 2))
+    : (spell.rank ?? spell.system?.level?.value ?? 1);
+  const effectiveCastRank = (extra.castRank && extra.castRank > 0) ? extra.castRank : defaultRank;
+
+  let variantSpell = spell;
+  if (typeof spell.loadVariant === "function") {
+    try {
+      variantSpell = spell.loadVariant({ castRank: effectiveCastRank }) ?? spell;
+    } catch {
+      variantSpell = spell;
+    }
+  }
+  if (variantSpell === spell && effectiveCastRank > 0 && spell.rank !== effectiveCastRank && typeof spell.clone === "function") {
+    try {
+      variantSpell = spell.clone({ "system.location.heightenedLevel": effectiveCastRank }, { keepId: true });
+    } catch {
+      variantSpell = spell;
+    }
+  }
+
+  let rawDescription = variantSpell.system?.description?.value ?? spell.system?.description?.value ?? "";
+  let enrichedDescription = rawDescription;
+  if (rawDescription && typeof TextEditorClass?.enrichHTML === "function") {
+    try {
+      const rollData = typeof variantSpell.getRollData === "function"
+        ? variantSpell.getRollData()
+        : actor.getRollData();
+      enrichedDescription = await TextEditorClass.enrichHTML(rawDescription, {
+        secrets: spell.isOwner,
+        rollData,
+        async: true
+      });
+    } catch {
+      enrichedDescription = rawDescription;
+    }
+  }
+
+  // Detect spell damage / healing capabilities (system.damage, overlays, or inline @Damage tags)
+  const rawDamageMap = variantSpell.system?.damage ?? spell.system?.damage ?? {};
+  const damageEntries = Object.values(rawDamageMap).filter(d => d && (d.formula || d.value));
+
+  const overlayDamageEntries = [];
+  if (spell.overlays?.size > 0) {
+    for (const ov of spell.overlays.values()) {
+      const ovDmgs = Object.values(ov?.system?.damage ?? {}).filter(d => d && (d.formula || d.value));
+      if (ovDmgs.length > 0) {
+        overlayDamageEntries.push(...ovDmgs);
+      }
+    }
+  }
+
+  const hasInlineDamage = /@Damage\[([^\]]+)\]/i.test(rawDescription);
+  const hasSystemDamage = Boolean(variantSpell.hasDamage) || damageEntries.length > 0 || overlayDamageEntries.length > 0;
+  const hasDamage = hasSystemDamage || hasInlineDamage;
+
+  const activeDamageList = damageEntries.length > 0 ? damageEntries : overlayDamageEntries;
+  const formulaParts = activeDamageList
+    .map(d => String(d.formula || d.value || "").trim())
+    .filter(Boolean);
+  const damageFormula = formulaParts.length > 0 ? formulaParts.join(" + ") : "";
+
+  const isHealingOnly = activeDamageList.length > 0 && activeDamageList.every(d => {
+    const kinds = d.kinds ? Array.from(d.kinds) : [];
+    if (kinds.length > 0) {
+      return kinds.includes("healing") && !kinds.includes("damage");
+    }
+    return d.type === "vitality" && Boolean(spell.traits?.has?.("healing"));
+  });
+
+  let defenseStr = "";
+  if (spell.system?.defense?.save?.statistic) {
+    const basic = spell.system.defense.save.basic ? "Basic " : "";
+    const stat = String(spell.system.defense.save.statistic);
+    const statName = stat.charAt(0).toUpperCase() + stat.slice(1);
+    defenseStr = `${basic}${statName} DC`;
+  }
 
   let canCast = extra.canCast ?? true;
   let cannotCastReason = extra.cannotCastReason ?? "";
@@ -108,6 +165,11 @@ export async function formatSpell(actor, sheet, spell, entryId, extra = {}) {
     defense: defenseStr,
     traits,
     isAttack,
+    isCantrip,
+    hasDamage,
+    isHealingOnly,
+    damageFormula,
+    effectiveCastRank,
     isSignature,
     canSignature,
     canCast,

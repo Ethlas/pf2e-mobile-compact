@@ -813,8 +813,86 @@ try {
   } else {
     logPass("[Action Cost Labels] Spells resolve 1-3 actions (defaulting to '2' and normalizing '1 to 3' -> '1-3') next to Cast, and actions >1 display ({{act.multiActionLabel}}).");
   }
+
+  // Verify Repeatable Spell Damage Button (Issue #15)
+  const { onRollSpellDamage } = await import("./apps/sheet-helpers/spells-handlers.js");
+  let rolledDamageAtRank = null;
+  let slotExpendedMutated = false;
+  const mockFloatingFlame = {
+    id: "sp-floating-flame",
+    name: "Floating Flame",
+    rank: 2,
+    hasDamage: true,
+    system: {
+      time: { value: "2" },
+      level: { value: 2 },
+      damage: {
+        "0": { formula: "3d6", type: "fire", kinds: new Set(["damage"]) }
+      }
+    },
+    loadVariant({ castRank }) {
+      return {
+        ...this,
+        rank: castRank,
+        hasDamage: true,
+        system: {
+          ...this.system,
+          damage: {
+            "0": { formula: `${castRank + 1}d6`, type: "fire", kinds: new Set(["damage"]) }
+          }
+        },
+        rollDamage: async () => {
+          rolledDamageAtRank = castRank;
+        }
+      };
+    }
+  };
+  const testSpellActor = {
+    id: "char-spell-test",
+    level: 7,
+    getRollData: () => ({}),
+    items: new Map([["sp-floating-flame", mockFloatingFlame]]),
+    spellcasting: {
+      get: () => ({
+        id: "entry-prep",
+        isPrepared: true,
+        spells: new Map([["sp-floating-flame", mockFloatingFlame]]),
+        system: {
+          slots: {
+            slot4: { value: 0, max: 2, prepared: [{ id: "sp-floating-flame", expended: true }] }
+          }
+        },
+        update: async () => { slotExpendedMutated = true; }
+      })
+    }
+  };
+  const formattedFlameRank4 = await formatSpell(testSpellActor, {}, mockFloatingFlame, "entry-prep", {
+    isPrepared: true,
+    isExpended: true,
+    slotIndex: 0,
+    castRank: 4
+  });
+  await onRollSpellDamage(
+    { actor: testSpellActor, rollMode: "digital", render: () => {} },
+    { preventDefault() {}, stopPropagation() {} },
+    {
+      dataset: { itemId: "sp-floating-flame", entryId: "entry-prep", rank: "4", slotIndex: "0" },
+      closest: () => null
+    }
+  );
+  if (
+    !formattedFlameRank4.hasDamage ||
+    formattedFlameRank4.isHealingOnly ||
+    formattedFlameRank4.damageFormula !== "5d6" ||
+    rolledDamageAtRank !== 4 ||
+    slotExpendedMutated
+  ) {
+    logFail(`[Spell Damage Button] Failed verification: hasDamage=${formattedFlameRank4.hasDamage}, formula=${formattedFlameRank4.damageFormula}, rolledRank=${rolledDamageAtRank}, mutated=${slotExpendedMutated}`);
+  } else {
+    logPass("[Spell Damage Button] Damaging spells expose heightened damage button ('5d6' at Rank 4) and roll repeatable damage even when slot is expended without consuming slots.");
+  }
 } catch (err) {
-  logFail(`Action Cost verification threw an error: ${err.stack || err.message}`);
+  logFail(`Action Cost / Spell Damage verification threw an error: ${err.stack || err.message}`);
 }
 
 // 7. Foundry VTT AI Content Policy Compliance Audit (https://foundryvtt.com/article/ai-policy/)

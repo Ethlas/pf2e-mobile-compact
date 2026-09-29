@@ -1977,10 +1977,21 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   background: #1e1e1e;
   border: 1px solid #383838;
   transition: opacity 0.15s ease, background 0.15s ease;
+}.pf2e-mobile-sheet .spell-card .action-card-header {
+  flex-wrap: wrap;
+  gap: 6px;
+}.pf2e-mobile-sheet .spell-card .action-title-group {
+  min-width: 120px;
+  flex: 1 1 120px;
+}.pf2e-mobile-sheet .spell-card .action-btn-group {
+  margin-left: auto;
 }.pf2e-mobile-sheet .spell-card.expended {
-  opacity: 0.6;
   border-color: #4a2222;
   background: #1a1616;
+}.pf2e-mobile-sheet .spell-card.expended .action-title-group,
+.pf2e-mobile-sheet .spell-card.expended .spell-details,
+.pf2e-mobile-sheet .spell-card.expended .btn-cast.disabled {
+  opacity: 0.6;
 }.pf2e-mobile-sheet .spell-card.expended .action-name {
   text-decoration: line-through;
   color: #888;
@@ -2052,6 +2063,41 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }.pf2e-mobile-sheet .btn-restore-slot:active {
   background: #059669;
   color: #fff;
+}.pf2e-mobile-sheet .btn-spell-damage {
+  min-height: 38px;
+  height: 38px;
+  padding: 4px 10px;
+  background: #8e1b1b;
+  border: 1px solid #b71c1c;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+}.pf2e-mobile-sheet .btn-spell-damage:active {
+  background: #b71c1c;
+  transform: scale(0.98);
+}.pf2e-mobile-sheet .btn-spell-damage.btn-spell-heal {
+  background: #1b5e20;
+  border-color: #2e7d32;
+}.pf2e-mobile-sheet .btn-spell-damage.btn-spell-heal:active {
+  background: #2e7d32;
+}.pf2e-mobile-sheet .spell-damage-drawer-row {
+  margin-bottom: 10px;
+  display: flex;
+  width: 100%;
+}.pf2e-mobile-sheet .btn-spell-damage.btn-spell-damage-full {
+  width: 100%;
+  min-height: 42px;
+  height: 42px;
+  font-size: 0.88rem;
+  border-radius: 6px;
 }.pf2e-mobile-sheet .btn-cast {
   min-height: 38px;
   height: 38px;
