@@ -747,15 +747,15 @@ try {
   prepareHeaderContext(mockCharActor, mockCharSheetForTarget, targetCtxBefore);
 
   if (
-    targetCtxBefore.targets?.length !== 2 ||
-    targetCtxBefore.targets[0].displayName !== "Orc Brute (5)" ||
-    targetCtxBefore.targets[0].name !== "Orc Brute (5)" ||
-    targetCtxBefore.targets[1].displayName !== "Goblin Warrior (15)" ||
-    targetCtxBefore.targets[1].name !== "Goblin Warrior (15)"
+    targetCtxBefore.targets?.length !== 3 ||
+    targetCtxBefore.targets[0].displayName !== "Self: Valeros (Self)" ||
+    targetCtxBefore.targets[0].isSelf !== true ||
+    targetCtxBefore.targets[1].displayName !== "Orc Brute (5)" ||
+    targetCtxBefore.targets[2].displayName !== "Goblin Warrior (15)"
   ) {
-    logFail(`[Target Distance] Expected sorted targets ['Orc Brute (5)', 'Goblin Warrior (15)'], got: ${JSON.stringify(targetCtxBefore.targets?.map(t => t.displayName))}`);
+    logFail(`[Target Distance & Self] Expected sorted targets ['Self: Valeros (Self)', 'Orc Brute (5)', 'Goblin Warrior (15)'], got: ${JSON.stringify(targetCtxBefore.targets?.map(t => t.displayName))}`);
   } else {
-    logPass("[Target Distance] BaseGrid#measurePath calculates exact distances and sorts targets closest-first ('Orc Brute (5)', 'Goblin Warrior (15)').");
+    logPass("[Target Distance & Self] Includes Self ('Self: Valeros (Self)') and sorts scene targets closest-first ('Orc Brute (5)', 'Goblin Warrior (15)').");
   }
 
   await onSelectTarget(mockCharSheetForTarget, {}, { value: "tok-goblin" });
@@ -774,6 +774,56 @@ try {
     logFail(`[Target Distance] Selecting target failed to update activeTarget or header.hbs template bindings: ${JSON.stringify(targetCtxAfter.activeTarget)}`);
   } else {
     logPass("[Target Distance] Selecting target ('tok-goblin') updates activeTarget ('Goblin Warrior (15)'), triggers header re-render, and binds ({{activeTarget.distanceLabel}}) in header.hbs.");
+  }
+
+  // Test iOS paused-ticker _source movement update, AoE multi-targeting, and diagonal/opposite-side flanking
+  const { setTargetTokens, areTokensOnOppositeSides } = await import("../scripts/tokens/token-adapter.js");
+  const { isMultiTargetOrAreaSpell } = await import("../scripts/apps/sheet-helpers/sheet-prompts.js");
+
+  // 1) Simulate iOS paused ticker where tokGoblin._source.x moves from 300 -> 100 while tokGoblin.x stays frozen at 300
+  const tokGoblin = mockScene.tokens.get("tok-goblin");
+  globalThis.canvas.app = { ticker: { started: false } };
+  tokGoblin._source = { x: 100, y: 0, width: 1, height: 1, elevation: 0 };
+  const targetCtxMoved = {};
+  prepareHeaderContext(mockCharActor, mockCharSheetForTarget, targetCtxMoved);
+  const movedGoblin = targetCtxMoved.targets?.find(t => t.id === "tok-goblin");
+  if (movedGoblin?.distance !== 5 || movedGoblin?.displayName !== "Goblin Warrior (5)") {
+    logFail(`[iOS Distance Update] Expected tok-goblin distance to update from _source to 5 ('Goblin Warrior (5)') when ticker is stopped, got: ${JSON.stringify(movedGoblin)}`);
+  } else {
+    logPass("[iOS Distance Update] Synchronizes TokenDocument._source coordinates when PIXI.Ticker is paused on iPhone ('Goblin Warrior (15)' -> 'Goblin Warrior (5)').");
+  }
+
+  // 2) Test AoE / Multi-Target spell detection & setTargetTokens
+  const aoeFireball = { name: "Fireball", system: { area: { value: 20, type: "burst" }, range: { value: "500 feet" } } };
+  const multiElectricArc = { name: "Electric Arc", system: { target: { value: "1 or 2 creatures" }, range: { value: "30 feet" } } };
+  const singleHeal = { name: "Heal (1-Action)", system: { target: { value: "1 willing living creature or 1 undead creature" }, range: { value: "touch" } } };
+  await setTargetTokens(["tok-orc", "tok-goblin"]);
+  const multiTargetCtx = {};
+  prepareHeaderContext(mockCharActor, mockCharSheetForTarget, multiTargetCtx);
+  if (
+    !isMultiTargetOrAreaSpell(aoeFireball) ||
+    !isMultiTargetOrAreaSpell(multiElectricArc) ||
+    isMultiTargetOrAreaSpell(singleHeal) ||
+    !multiTargetCtx.hasMultipleTargets ||
+    multiTargetCtx.activeTargetCount !== 2
+  ) {
+    logFail("[AoE Multi-Targeting] Failed AoE/multi-target detection or multi-token setTargetTokens header state.");
+  } else {
+    logPass("[AoE Multi-Targeting] Detects AoE & multi-target spells ('Fireball', 'Electric Arc') and synchronizes multiple active targets in game.user.targets and header.");
+  }
+  await setTargetTokens(["tok-orc"]);
+
+  // 3) Test Opposite-Sides AND Diagonal (Corner-to-Corner) Flanking
+  const flankerTopLeft = { x: 0, y: 0, width: 1, height: 1, _source: { x: 0, y: 0, width: 1, height: 1 } };
+  const enemyCenter = { x: 100, y: 100, width: 1, height: 1, _source: { x: 100, y: 100, width: 1, height: 1 } };
+  const flankerBottomRight = { x: 200, y: 200, width: 1, height: 1, _source: { x: 200, y: 200, width: 1, height: 1 } };
+  const flankerTopRight = { x: 200, y: 0, width: 1, height: 1, _source: { x: 200, y: 0, width: 1, height: 1 } };
+  const isDiagonalFlanking = areTokensOnOppositeSides(flankerTopLeft, flankerBottomRight, enemyCenter);
+  const isNotFlankingSameSide = areTokensOnOppositeSides(flankerTopLeft, flankerTopRight, enemyCenter);
+  if (!isDiagonalFlanking || isNotFlankingSameSide) {
+    logFail(`[Flanking Geometry] Expected diagonal corner-to-corner flanking=true (${isDiagonalFlanking}) and same-side=false (${isNotFlankingSameSide}).`);
+  } else {
+    logPass("[Flanking Geometry] Accurately detects both opposite-side and diagonal corner-to-corner flanking while rejecting non-opposite positions.");
   }
 } catch (err) {
   logFail(`Kingdom Sheet / Target Distance verification threw an error: ${err.stack || err.message}`);
@@ -891,8 +941,197 @@ try {
   } else {
     logPass("[Spell Damage Button] Damaging spells expose heightened damage button ('5d6' at Rank 4) and roll repeatable damage even when slot is expended without consuming slots.");
   }
+
+  // Verify Issue #16: Distance on iOS, AoE / Heightened Multi-Target, Single-Target Enforcement, Flanking & Unconscious Check, Self-Targeting, and Persistent Canvas Toggle
+  const {
+    syncTokenPosition,
+    getTokenDistanceInfo,
+    computeTokenFlanking,
+    isActorAbleToFlank
+  } = await import("./tokens/token-adapter.js");
+  const {
+    isMultiTargetOrAreaSpell,
+    collectSceneCandidateTokens
+  } = await import("./apps/sheet-helpers/sheet-prompts.js");
+  const {
+    isMobileCanvasDisabled,
+    setMobileCanvasDisabled
+  } = await import("./utils/sheet-utils.js");
+
+  // 1. iOS Frozen Animation Distance Check
+  const testSceneDims = { dimensions: { size: 100, distance: 5 } };
+  const originTokenDoc = {
+    id: "tok-hero",
+    name: "Hero",
+    actorId: "actor-hero",
+    x: 0,
+    y: 0,
+    width: 1,
+    height: 1,
+    parent: testSceneDims,
+    _source: { x: 0, y: 0, width: 1, height: 1 },
+    actor: {
+      id: "actor-hero",
+      getActiveTokens: () => [originTokenDoc],
+      isAllyOf: (other) => other?.id === "actor-ally",
+      system: { attributes: { hp: { value: 30 } } }
+    }
+  };
+  const enemyTokenDoc = {
+    id: "tok-goblin-2",
+    name: "Goblin",
+    actorId: "actor-goblin",
+    x: 100, // Stale animated position (5 ft)
+    y: 0,
+    width: 1,
+    height: 1,
+    parent: testSceneDims,
+    _source: { x: 300, y: 0, width: 1, height: 1 }, // Authoritative updated server position (15 ft)
+    actor: { id: "actor-goblin", system: { attributes: { hp: { value: 20 } } } }
+  };
+  syncTokenPosition(enemyTokenDoc);
+  const distInfo = getTokenDistanceInfo(originTokenDoc.actor, enemyTokenDoc);
+  if (distInfo?.distance !== 15 || enemyTokenDoc.x !== 300) {
+    logFail(`[Issue #16 Distance] Expected distance=15 after _source sync, got ${distInfo?.distance}`);
+  } else {
+    logPass("[Issue #16 Distance] syncTokenPosition & getTokenDistanceInfo accurately read authoritative _source coordinates (15 ft).");
+  }
+
+  // 2. AoE & Heightened Multi-Target vs Ambiguous 'any 1 creature'
+  const singleAnySpell = { system: { target: { value: "any 1 creature" } } };
+  const singleAllySpell = { system: { target: { value: "any single ally" } } };
+  const heightenedSlowSpell = {
+    rank: 3,
+    system: {
+      target: { value: "1 creature" },
+      heightening: {
+        type: "fixed",
+        levels: {
+          6: { target: { value: "up to 10 creatures" } }
+        }
+      }
+    }
+  };
+  const aoeFireball = { system: { area: { value: 20, type: "burst" } } };
+  if (
+    isMultiTargetOrAreaSpell(singleAnySpell) !== false ||
+    isMultiTargetOrAreaSpell(singleAllySpell) !== false ||
+    isMultiTargetOrAreaSpell(heightenedSlowSpell, 3) !== false ||
+    isMultiTargetOrAreaSpell(heightenedSlowSpell, 6) !== true ||
+    isMultiTargetOrAreaSpell(aoeFireball) !== true
+  ) {
+    logFail("[Issue #16 Multi-Target Spell] Failed edge-case checks for 'any 1 creature', 'any single ally', or heightened Slow (Rank 3 vs Rank 6).");
+  } else {
+    logPass("[Issue #16 Multi-Target Spell] Correctly excludes 'any 1 creature'/'any single ally' and detects heightened multi-target spells (Slow Rank 6) & AoE spells.");
+  }
+
+  // 3. Flanking with Ally + Unconscious / Incapacitated Ally Check
+  const allyTokenDoc = {
+    id: "tok-ally",
+    actorId: "actor-ally",
+    x: 200,
+    y: 0,
+    width: 1,
+    height: 1,
+    _source: { x: 200, y: 0, width: 1, height: 1 },
+    actor: {
+      id: "actor-ally",
+      isAllyOf: (other) => other?.id === "actor-hero",
+      hasCondition: () => false,
+      conditions: { active: [] },
+      system: { attributes: { hp: { value: 25 } } }
+    }
+  };
+  // Position goblin at (100, 0) between hero at (0, 0) and ally at (200, 0)
+  enemyTokenDoc._source.x = 100;
+  syncTokenPosition(enemyTokenDoc);
+  const mockFlankScene = {
+    dimensions: { size: 100, distance: 5 },
+    tokens: { contents: [originTokenDoc, enemyTokenDoc, allyTokenDoc] }
+  };
+  originTokenDoc.parent = mockFlankScene;
+  enemyTokenDoc.parent = mockFlankScene;
+  allyTokenDoc.parent = mockFlankScene;
+
+  const flankedHealthy = computeTokenFlanking(originTokenDoc, enemyTokenDoc, { reach: 5 });
+  allyTokenDoc.actor.hasCondition = (slug) => slug === "unconscious";
+  const flankedWhenAllyUnconscious = computeTokenFlanking(originTokenDoc, enemyTokenDoc, { reach: 5 });
+
+  // Test controlled, fleeing, blinded, and stunned (Stunned 2 vs Stunned 3)
+  allyTokenDoc.actor.hasCondition = (slug) => slug === "controlled";
+  const flankedControlled = computeTokenFlanking(originTokenDoc, enemyTokenDoc, { reach: 5 });
+
+  allyTokenDoc.actor.hasCondition = (slug) => slug === "fleeing";
+  const flankedFleeing = computeTokenFlanking(originTokenDoc, enemyTokenDoc, { reach: 5 });
+
+  allyTokenDoc.actor.hasCondition = (slug) => slug === "blinded";
+  const flankedBlinded = computeTokenFlanking(originTokenDoc, enemyTokenDoc, { reach: 5 });
+
+  allyTokenDoc.actor.hasCondition = (slug) => slug === "stunned";
+  allyTokenDoc.actor.conditions = { active: [{ slug: "stunned", value: 2 }] };
+  const flankedStunned2 = computeTokenFlanking(originTokenDoc, enemyTokenDoc, { reach: 5 });
+
+  allyTokenDoc.actor.conditions = { active: [{ slug: "stunned", value: 3 }] };
+  const flankedStunned3 = computeTokenFlanking(originTokenDoc, enemyTokenDoc, { reach: 5 });
+
+  // Test Tiny creature (0.5 x 0.5 at sub-grid offset x=425, y=225 -> square (4, 2) -> 2 diagonals (15 ft) + 2 straight (10 ft) = 25 ft, never 23 ft)
+  const tinyTokenDoc = {
+    id: "tok-tiny-sprite",
+    name: "Sprite",
+    actorId: "actor-sprite",
+    x: 425,
+    y: 225,
+    width: 0.5,
+    height: 0.5,
+    parent: testSceneDims,
+    _source: { x: 425, y: 225, width: 0.5, height: 0.5 },
+    actor: { id: "actor-sprite" }
+  };
+  const tinyDistInfo = getTokenDistanceInfo(originTokenDoc.actor, tinyTokenDoc);
+
+  if (
+    !flankedHealthy ||
+    flankedWhenAllyUnconscious ||
+    flankedControlled ||
+    flankedFleeing ||
+    flankedBlinded ||
+    !flankedStunned2 ||
+    flankedStunned3 ||
+    tinyDistInfo?.distance !== 25
+  ) {
+    logFail(`[Issue #16 Flanking & Tiny Distance] Failed: healthy=${flankedHealthy}, unc=${flankedWhenAllyUnconscious}, ctrl=${flankedControlled}, flee=${flankedFleeing}, blind=${flankedBlinded}, stun2=${flankedStunned2}, stun3=${flankedStunned3}, tinyDist=${tinyDistInfo?.distance}`);
+  } else {
+    logPass("[Issue #16 Flanking & Tiny Distance] Tiny tokens snap to 5-ft grid steps with PF2e 5-10-5 diagonals (25 ft, never 23 ft); headless flanking allows Stunned 1-2 but blocks Stunned 3+, Controlled, Fleeing, Blinded, and Unconscious.");
+  }
+
+  // 4. Canvas Default Enabled & Persistent Setting Toggle (CONFIG.Canvas.disabled)
+  globalThis.CONFIG = { ...(globalThis.CONFIG || {}), Canvas: { disabled: false } };
+  const mockStorage = new Map();
+  globalThis.localStorage = {
+    getItem: (k) => mockStorage.get(k) ?? null,
+    setItem: (k, v) => mockStorage.set(k, String(v)),
+    removeItem: (k) => mockStorage.delete(k)
+  };
+  const defaultCanvasDisabled = isMobileCanvasDisabled();
+  await setMobileCanvasDisabled(true);
+  const afterDisable = isMobileCanvasDisabled();
+  const configDisabledWhenTrue = globalThis.CONFIG.Canvas.disabled;
+  await setMobileCanvasDisabled(false);
+  const afterReEnable = isMobileCanvasDisabled();
+  const configDisabledWhenFalse = globalThis.CONFIG.Canvas.disabled;
+  if (
+    defaultCanvasDisabled !== false ||
+    afterDisable !== true ||
+    configDisabledWhenTrue !== true ||
+    afterReEnable !== false ||
+    configDisabledWhenFalse !== false
+  ) {
+    logFail(`[Issue #16 Canvas Toggle] Expected default=false, afterDisable=true (CONFIG.Canvas.disabled=true), afterReEnable=false; got ${defaultCanvasDisabled}, ${afterDisable} (${configDisabledWhenTrue}), ${afterReEnable} (${configDisabledWhenFalse})`);
+  } else {
+    logPass("[Issue #16 Canvas Toggle] Canvas is enabled by default (disableCanvas=false), sets CONFIG.Canvas.disabled=true when disabled, and persists user toggle state across sessions.");
+  }
 } catch (err) {
-  logFail(`Action Cost / Spell Damage verification threw an error: ${err.stack || err.message}`);
+  logFail(`Action Cost / Spell Damage / Issue #16 verification threw an error: ${err.stack || err.message}`);
 }
 
 // 7. Foundry VTT AI Content Policy Compliance Audit (https://foundryvtt.com/article/ai-policy/)

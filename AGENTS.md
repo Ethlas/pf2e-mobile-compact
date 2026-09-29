@@ -63,7 +63,7 @@ Welcome to the **PF2e Mobile Sheet (Compact)** repository (`pf2e-mobile-compact`
 1. **Syntax & Quality Checks**:
    - Run `node scripts/verify.mjs` before pushing changes or deploying to verify JavaScript syntax, template rules, and touch targets.
 2. **Deployment**:
-   - Run `.\deploy.ps1` to sync to `foundry@10.0.0.50` only when explicitly authorized by the user for deployment.
+   - Run `.\deploy.ps1` to sync to the remote Foundry server (`$env:FOUNDRY_DEPLOY_SERVER`) only when explicitly authorized by the user for deployment.
 3. **Approval & Documentation Integrity**:
    - **NEVER commit or push to Git/GitHub without explicit user approval.**
    - **NEVER deploy without explicit user approval.**

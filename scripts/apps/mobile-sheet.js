@@ -3,7 +3,7 @@ const { ActorSheetV2 } = foundry.applications.sheets;
 import { CompendiumPickerApp } from "./compendium-picker.js";
 import { PhysicalDiceManager } from "../rolls/physical-dice-interceptor.js";
 import { clamp, getGlyph } from "../utils/sheet-utils.js";
-import { getTargetableToken, getOriginToken, setTargetToken, ensureTokenControlled } from "../tokens/token-adapter.js";
+import { getTargetableToken, getOriginToken, setTargetToken, setTargetTokens, ensureTokenControlled, syncSceneTokenPositions } from "../tokens/token-adapter.js";
 import { prepareHeaderContext } from "./sheet-helpers/context-header.js";
 import { preparePartyContext } from "./sheet-helpers/context-party.js";
 import {
@@ -38,7 +38,7 @@ import { onExecuteStrike, onExecuteDamage, onExecuteCritical, onExecuteAuxiliary
 import { onUseConsumable, onApplyPoison, onDetachSubitem, onChangeCarryType, onToggleInventorySection, onConfigureRunes, onToggleInvested, onToggleEquipped } from "./sheet-helpers/inventory-handlers.js";
 import { onSwitchSpellSubTab, onToggleRankGroup, onOpenSpellPrepPicker, prepareSlot, onUnprepareSlot, onToggleSlotExpended, onResetDailySpells, onSaveSpellPreset, onApplySpellPreset, onDeleteSpellPreset, onOpenCompendiumPicker, onAdjustSlot, onAdjustFocus, onCastSpell, onRollSpellDamage, onToggleSignatureSpell, onRemoveSpell } from "./sheet-helpers/spells-handlers.js";
 import { onCastStaffSpell, onAdjustStaffCharges, onCastItemSpell, onOpenDailies } from "./sheet-helpers/activations-handlers.js";
-import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleFullscreen, onSwitchActor } from "./sheet-helpers/header-handlers.js";
+import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleCanvasMode, onToggleFullscreen, onSwitchActor } from "./sheet-helpers/header-handlers.js";
 import { disableChatInputs, dockChatElement, restoreChatElement, scrollChatToBottom, setupScrollBottomListener, registerChatListener, unregisterChatListener, updateChatBadge } from "./sheet-helpers/chat-handler.js";
 
 /**
@@ -77,6 +77,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       rollInitiative: PF2eMobileSheet._onRollInitiative,
       selectTarget: PF2eMobileSheet._onSelectTarget,
       toggleRollMode: PF2eMobileSheet._onToggleRollMode,
+      toggleCanvasMode: PF2eMobileSheet._onToggleCanvasMode,
       switchTab: PF2eMobileSheet._onSwitchTab,
       scrollChatToBottom: PF2eMobileSheet._onScrollChatToBottom,
       openCompendiumPicker: PF2eMobileSheet._onOpenCompendiumPicker,
@@ -376,15 +377,24 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     if (this._sceneHookIds.length > 0) return;
 
     const onTokenChange = () => {
+      syncSceneTokenPositions();
       if (this.rendered) {
         this.render({ parts: ["header"] });
       }
+      clearTimeout(this._tokenMoveRefreshTimer);
+      this._tokenMoveRefreshTimer = setTimeout(() => {
+        syncSceneTokenPositions();
+        if (this.rendered) {
+          this.render({ parts: ["header"] });
+        }
+      }, 250);
     };
 
     this._sceneHookIds.push(
       { name: "createToken", id: Hooks.on("createToken", onTokenChange) },
       { name: "deleteToken", id: Hooks.on("deleteToken", onTokenChange) },
       { name: "updateToken", id: Hooks.on("updateToken", onTokenChange) },
+      { name: "moveToken", id: Hooks.on("moveToken", onTokenChange) },
       {
         name: "targetToken",
         id: Hooks.on("targetToken", (user) => {
@@ -407,6 +417,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
    * Unregisters real-time scene hooks when the sheet is closed.
    */
   _unregisterSceneListeners() {
+    clearTimeout(this._tokenMoveRefreshTimer);
     for (const hook of this._sceneHookIds) {
       Hooks.off(hook.name, hook.id);
     }
@@ -533,6 +544,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onRollInitiative(event, target) { return onRollInitiative(this, event, target); }
   static async _onSelectTarget(event, target) { return onSelectTarget(this, event, target); }
   static async _onToggleRollMode(event, target) { return onToggleRollMode(this, event, target); }
+  static async _onToggleCanvasMode(event, target) { return onToggleCanvasMode(this, event, target); }
   static async _onToggleFullscreen(event, target) { return onToggleFullscreen(this, event, target); }
   static async _onScrollChatToBottom() { this._scrollChatToBottom(true); }
 
