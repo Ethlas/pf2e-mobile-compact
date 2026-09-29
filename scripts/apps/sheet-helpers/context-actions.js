@@ -2,7 +2,7 @@
  * Context preparation helper for Strikes, Character Actions, Reactions,
  * Free actions, Skill actions, Exploration, and Downtime activities.
  */
-import { getGlyph } from "../../utils/sheet-utils.js";
+import { getGlyph, parseActionCostInfo } from "../../utils/sheet-utils.js";
 
 const PF2E_SKILL_SLUGS = new Set([
   "acrobatics",
@@ -218,14 +218,16 @@ export async function prepareActionsContext(actor, sheet, context) {
         }
       }
 
+      const costInfo = parseActionCostInfo(item, systemAction?.cost);
       const actionData = {
         id: item.id,
         name: item.name,
         slug: actionSlug,
         img: item.img || "systems/pf2e/icons/actions/Empty.webp",
-        glyph: getGlyph(actionCost),
-        actionCostType: actionCost?.type ?? "action",
-        actionCostValue: actionCost?.value ?? 1,
+        glyph: costInfo.glyph || getGlyph(actionCost),
+        actionCostType: costInfo.actionCostType,
+        actionCostValue: costInfo.actionCostValue,
+        multiActionLabel: (!isExploration && !isDowntime) ? costInfo.multiActionLabel : "",
         usable: isUsable,
         active: isEffectActive,
         isAttack,

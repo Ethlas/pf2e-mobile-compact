@@ -779,6 +779,44 @@ try {
   logFail(`Kingdom Sheet / Target Distance verification threw an error: ${err.stack || err.message}`);
 }
 
+// 6.7 Test Spell Action Cost (1-3, default 2) & Multi-Action Button Labels (> 1)
+try {
+  const { parseActionCostInfo } = await import("./utils/sheet-utils.js");
+  const { formatSpell } = await import("./apps/sheet-helpers/context-spells.js");
+
+  const spell1Cost = parseActionCostInfo({ type: "spell", system: { time: { value: "1" } } }, null, { isSpell: true });
+  const spellDefaultCost = parseActionCostInfo({ type: "spell", system: { time: { value: "" } } }, null, { isSpell: true });
+  const spellVarCost = parseActionCostInfo({ type: "spell", system: { time: { value: "1 to 3" } } }, null, { isSpell: true });
+  const action1Cost = parseActionCostInfo({ type: "action", actionCost: { type: "action", value: 1 } });
+  const action2Cost = parseActionCostInfo({ type: "action", actionCost: { type: "action", value: 2 } });
+  const formattedHeal = await formatSpell({ getRollData: () => ({}) }, {}, {
+    id: "spell-heal",
+    name: "Heal",
+    type: "spell",
+    system: { time: { value: "1 to 3" }, traits: { value: ["healing", "vitality"] } }
+  }, "entry-1");
+
+  const spellsTplText = fs.readFileSync(path.join(rootDir, "templates/parts/spells.hbs"), "utf8");
+  const actionsTplText = fs.readFileSync(path.join(rootDir, "templates/parts/actions.hbs"), "utf8");
+
+  if (
+    spell1Cost.castActions !== "1" ||
+    spellDefaultCost.castActions !== "2" ||
+    spellVarCost.castActions !== "1-3" ||
+    formattedHeal.castActions !== "1-3" ||
+    action1Cost.multiActionLabel !== "" ||
+    action2Cost.multiActionLabel !== "2" ||
+    !spellsTplText.includes("Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}") ||
+    !actionsTplText.includes("{{#if act.multiActionLabel}} ({{act.multiActionLabel}}){{/if}}")
+  ) {
+    logFail("[Action Cost Labels] Failed verification for spell castActions (1-3, default 2) or multi-action labels (>1).");
+  } else {
+    logPass("[Action Cost Labels] Spells resolve 1-3 actions (defaulting to '2' and normalizing '1 to 3' -> '1-3') next to Cast, and actions >1 display ({{act.multiActionLabel}}).");
+  }
+} catch (err) {
+  logFail(`Action Cost verification threw an error: ${err.stack || err.message}`);
+}
+
 // 7. Foundry VTT AI Content Policy Compliance Audit (https://foundryvtt.com/article/ai-policy/)
 console.log("\n--- 7. Foundry VTT AI Content Policy Compliance Audit ---");
 try {

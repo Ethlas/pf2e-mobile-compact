@@ -95,17 +95,17 @@
               </button>
               <button type="button" class="touch-target btn-cast disabled {{#if spell.isAttack}}btn-cast-attack{{/if}}" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="{{#if spell.cannotCastReason}}{{spell.cannotCastReason}}{{else}}Spell slot already expended{{/if}}">
                 {{#if spell.isAttack}}
-                  <i class="fas fa-crosshairs"></i> Cast
+                  <i class="fas fa-crosshairs"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}
                 {{else}}
-                  <i class="fas fa-wand-magic"></i> Cast
+                  <i class="fas fa-wand-magic"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}
                 {{/if}}
               </button>
               {{else}}
-              <button type="button" class="touch-target btn-cast {{#unless spell.canCast}}disabled{{/unless}} {{#if spell.isAttack}}btn-cast-attack{{/if}}" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="{{#if spell.canCast}}Cast {{spell.name}}{{else}}{{spell.cannotCastReason}}{{/if}}">
+              <button type="button" class="touch-target btn-cast {{#unless spell.canCast}}disabled{{/unless}} {{#if spell.isAttack}}btn-cast-attack{{/if}}" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="{{#if spell.canCast}}Cast {{spell.name}}{{#if spell.castActions}} ({{spell.castActions}} Actions){{/if}}{{else}}{{spell.cannotCastReason}}{{/if}}">
                 {{#if spell.isAttack}}
-                  <i class="fas fa-crosshairs"></i> Cast
+                  <i class="fas fa-crosshairs"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}
                 {{else}}
-                  <i class="fas fa-wand-magic"></i> Cast
+                  <i class="fas fa-wand-magic"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}
                 {{/if}}
               </button>
               {{/if}}
@@ -404,31 +404,31 @@
 
                   {{#if spell.isCantrip}}
                   <button type="button" class="touch-target btn-cast staff-btn-flex" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{@root.activations.staff.id}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="0" data-charge-cost="0" title="Cast Cantrip">
-                    <i class="fas fa-wand-magic"></i> Cast Cantrip
+                    <i class="fas fa-wand-magic"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}
                   </button>
                   {{else if spell.hasSpontaneousOption}}
                     {{#if spell.canCastCharges}}
                     <button type="button" class="touch-target btn-cast btn-staff-charges staff-btn-flex" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{@root.activations.staff.id}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-charge-cost="{{spell.chargeCost}}" title="Cast using {{spell.chargeCost}} staff charges">
-                      <i class="fas fa-bolt"></i> {{spell.chargeCost}} Chg
+                      <i class="fas fa-bolt"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}} · {{spell.chargeCost}} Chg
                     </button>
                     {{else}}
                     <button type="button" class="touch-target btn-cast btn-staff-charges staff-btn-flex disabled" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{@root.activations.staff.id}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-charge-cost="{{spell.chargeCost}}" title="{{#if spell.chargesDisabledReason}}{{spell.chargesDisabledReason}}{{else}}Not enough charges (requires {{spell.chargeCost}}){{/if}}">
-                      <i class="fas fa-bolt"></i> {{spell.chargeCost}} Chg
+                      <i class="fas fa-bolt"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}} · {{spell.chargeCost}} Chg
                     </button>
                     {{/if}}
 
                     {{#if spell.canCastSpontaneous}}
                     <button type="button" class="touch-target btn-cast btn-staff-spontaneous staff-btn-flex" data-action="castStaffSpell" data-cast-mode="spontaneous" data-staff-id="{{@root.activations.staff.id}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-charge-cost="1" title="Cast using 1 staff charge and 1 Rank {{group.rank}}+ spontaneous slot">
-                      <i class="fas fa-wand-magic-sparkles"></i> 1 Chg + Slot
+                      <i class="fas fa-wand-magic-sparkles"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}} · 1 Chg + Slot
                     </button>
                     {{else}}
                     <button type="button" class="touch-target btn-cast btn-staff-spontaneous staff-btn-flex disabled" data-action="castStaffSpell" data-cast-mode="spontaneous" data-staff-id="{{@root.activations.staff.id}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-charge-cost="1" title="{{#if spell.spontaneousDisabledReason}}{{spell.spontaneousDisabledReason}}{{else}}Not enough charges or slots (requires 1 charge + 1 Rank {{group.rank}}+ slot){{/if}}">
-                      <i class="fas fa-wand-magic-sparkles"></i> 1 Chg + Slot
+                      <i class="fas fa-wand-magic-sparkles"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}} · 1 Chg + Slot
                     </button>
                     {{/if}}
                   {{else}}
                   <button type="button" class="touch-target btn-cast staff-btn-flex {{#unless spell.canCastCharges}}disabled{{/unless}}" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{@root.activations.staff.id}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-charge-cost="{{spell.chargeCost}}" title="{{#if spell.canCastCharges}}Cast using {{spell.chargeCost}} staff charges{{else if spell.chargesDisabledReason}}{{spell.chargesDisabledReason}}{{else}}Not enough charges (requires {{spell.chargeCost}}){{/if}}">
-                    <i class="fas fa-bolt"></i> Cast ({{spell.chargeCost}} Chg)
+                    <i class="fas fa-bolt"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}} · {{spell.chargeCost}} Chg
                   </button>
                   {{/if}}
                 </div>
@@ -485,7 +485,7 @@
                 <i class="fas fa-message"></i>
               </button>
               <button type="button" class="touch-target btn-cast btn-cast-item" data-action="castItemSpell" data-item-type="wand" data-item-id="{{wand.id}}" data-entry-id="{{wand.entryId}}" title="Cast from {{wand.name}}">
-                <i class="fas fa-wand-magic"></i> Cast
+                <i class="fas fa-wand-magic"></i> Cast{{#if wand.castActions}} ({{wand.castActions}}){{/if}}
               </button>
             </div>
           </div>
@@ -516,7 +516,7 @@
                 <i class="fas fa-message"></i>
               </button>
               <button type="button" class="touch-target btn-cast btn-cast-item" data-action="castItemSpell" data-item-type="scroll" data-item-id="{{scroll.id}}" data-entry-id="{{scroll.entryId}}" title="Cast and consume 1 {{scroll.name}}">
-                <i class="fas fa-scroll"></i> Cast
+                <i class="fas fa-scroll"></i> Cast{{#if scroll.castActions}} ({{scroll.castActions}}){{/if}}
               </button>
             </div>
           </div>
@@ -543,7 +543,7 @@
                 <i class="fas fa-message"></i>
               </button>
               <button type="button" class="touch-target btn-cast btn-cast-item" data-action="castItemSpell" data-item-type="other" data-item-id="{{act.spell.id}}" data-entry-id="{{act.entryId}}" title="Cast {{act.spell.name}}">
-                <i class="fas fa-wand-magic"></i> Cast
+                <i class="fas fa-wand-magic"></i> Cast{{#if act.spell.castActions}} ({{act.spell.castActions}}){{/if}}
               </button>
             </div>
           </div>

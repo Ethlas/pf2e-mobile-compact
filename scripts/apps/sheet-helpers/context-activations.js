@@ -2,7 +2,7 @@
  * Context preparation helper for Item Activations (Staves, Wands, Scrolls, and Activated Item Spells).
  */
 import { formatSpell } from "./context-spells.js";
-import { clamp } from "../../utils/sheet-utils.js";
+import { clamp, parseActionCostInfo } from "../../utils/sheet-utils.js";
 
 /**
 /**
@@ -187,7 +187,7 @@ export async function prepareActivationsContext(actor, sheet, context) {
     }
 
     // Enrich staff item description
-    const TextEditorClass = foundry.applications?.ux?.TextEditor ?? TextEditor;
+    const TextEditorClass = foundry.applications?.ux?.TextEditor ?? globalThis.TextEditor;
     let rawStaffDesc = staffItem?.system?.description?.value ?? "";
     let enrichedStaffDesc = rawStaffDesc;
     if (rawStaffDesc && typeof TextEditorClass?.enrichHTML === "function") {
@@ -379,6 +379,8 @@ export async function prepareActivationsContext(actor, sheet, context) {
       });
     }
 
+    const wandSpellCost = parseActionCostInfo(spellDoc ?? spellData ?? wand, null, { isSpell: true });
+
     wands.push({
       id: wand.id,
       name: wand.name,
@@ -387,6 +389,7 @@ export async function prepareActivationsContext(actor, sheet, context) {
       uses,
       isOvercharged,
       spell: formattedSpell,
+      castActions: formattedSpell?.castActions || wandSpellCost.castActions || "2",
       entryId: wandEntry?.id
     });
   }
@@ -407,6 +410,7 @@ export async function prepareActivationsContext(actor, sheet, context) {
         cardKey: `scroll-${scroll.id}-${spellDoc.id}`
       });
     }
+    const scrollSpellCost = parseActionCostInfo(spellDoc ?? scroll.system?.spell ?? scroll, null, { isSpell: true });
 
     scrolls.push({
       id: scroll.id,
@@ -415,6 +419,7 @@ export async function prepareActivationsContext(actor, sheet, context) {
       rank: scroll.system?.level?.value ?? formattedSpell?.castRank ?? 1,
       quantity,
       spell: formattedSpell,
+      castActions: formattedSpell?.castActions || scrollSpellCost.castActions || "2",
       entryId: scrollEntry?.id
     });
   }

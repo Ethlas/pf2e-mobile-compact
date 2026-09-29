@@ -1123,9 +1123,14 @@ body.pf2e-mobile-active textarea {
   color: #ffb74d;
   font-weight: bold;
   border-radius: 4px;
-  width: 26px;
+  min-width: 26px;
+  width: auto;
   height: 26px;
-  font-size: 0.9rem;
+  padding: 0 5px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }.pf2e-mobile-sheet .glyph-reaction {
   color: #ef5350;
 }.pf2e-mobile-sheet .glyph-free {
@@ -1147,6 +1152,7 @@ body.pf2e-mobile-active textarea {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  white-space: nowrap;
 }.pf2e-mobile-sheet .btn-action-chat {
   background: #2b2b2b;
   border: 1px solid #444;
@@ -2059,6 +2065,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  white-space: nowrap;
   cursor: pointer;
   touch-action: manipulation;
 }.pf2e-mobile-sheet .btn-cast:active {

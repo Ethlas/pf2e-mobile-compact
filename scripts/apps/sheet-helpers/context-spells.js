@@ -1,7 +1,7 @@
 /**
  * Context preparation helper for Spells (Cast View and Preparation View).
  */
-import { getGlyph } from "../../utils/sheet-utils.js";
+import { parseActionCostInfo } from "../../utils/sheet-utils.js";
 import { isItemSpellcastingEntry } from "./context-activations.js";
 
 /**
@@ -14,7 +14,7 @@ import { isItemSpellcastingEntry } from "./context-activations.js";
  * @returns {Promise<object>}
  */
 export async function formatSpell(actor, sheet, spell, entryId, extra = {}) {
-  const TextEditorClass = foundry.applications?.ux?.TextEditor ?? TextEditor;
+  const TextEditorClass = foundry.applications?.ux?.TextEditor ?? globalThis.TextEditor;
   let rawDescription = spell.system?.description?.value ?? "";
   let enrichedDescription = rawDescription;
   if (rawDescription && typeof TextEditorClass?.enrichHTML === "function") {
@@ -30,8 +30,9 @@ export async function formatSpell(actor, sheet, spell, entryId, extra = {}) {
   }
 
   const traits = (spell.system?.traits?.value ?? spell.traits?.value ?? []).map(t => ({ label: String(t) }));
-  const actionCost = spell.actionCost ?? spell.system?.actions;
-  const glyph = getGlyph(actionCost);
+  const costInfo = parseActionCostInfo(spell, null, { isSpell: true });
+  const glyph = costInfo.glyph;
+  const castActions = costInfo.castActions || "2";
   const isAttack = traits.some(t => t.label.toLowerCase() === "attack") || spell.traits?.has?.("attack");
 
   let defenseStr = "";
@@ -97,8 +98,9 @@ export async function formatSpell(actor, sheet, spell, entryId, extra = {}) {
     entryId,
     name: spell.name,
     img: spell.img || "systems/pf2e/icons/default-icons/spell.svg",
-    glyph: glyph || (actionCost?.value ? String(actionCost.value) : ""),
-    actionCost: actionCost?.value ? `${actionCost.value} Actions` : "",
+    glyph,
+    castActions,
+    actionCost: castActions ? `${castActions} Actions` : "",
     range: spell.system.range?.value ?? "",
     target: spell.system.target?.value ?? "",
     area: spell.system.area?.value ? `${spell.system.area.value}ft ${spell.system.area.type ?? ""}` : "",
