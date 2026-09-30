@@ -18,7 +18,8 @@ export async function formatSpell(actor, sheet, spell, entryId, extra = {}) {
   const traits = (spell.system?.traits?.value ?? spell.traits?.value ?? []).map(t => ({ label: String(t) }));
   const costInfo = parseActionCostInfo(spell, null, { isSpell: true });
   const glyph = costInfo.glyph;
-  const castActions = costInfo.castActions || "2";
+  // Already "2" for spells without a clear action count; empty for reaction and free-action spells
+  const castActions = costInfo.castActions;
   const isAttack = traits.some(t => t.label.toLowerCase() === "attack") || spell.traits?.has?.("attack");
 
   const entry = actor.spellcasting?.get(entryId);

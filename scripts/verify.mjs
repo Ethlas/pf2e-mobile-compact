@@ -837,6 +837,7 @@ try {
   const spell1Cost = parseActionCostInfo({ type: "spell", system: { time: { value: "1" } } }, null, { isSpell: true });
   const spellDefaultCost = parseActionCostInfo({ type: "spell", system: { time: { value: "" } } }, null, { isSpell: true });
   const spellVarCost = parseActionCostInfo({ type: "spell", system: { time: { value: "1 to 3" } } }, null, { isSpell: true });
+  const spellReactionCost = parseActionCostInfo({ type: "spell", system: { time: { value: "reaction" } } }, null, { isSpell: true });
   const action1Cost = parseActionCostInfo({ type: "action", actionCost: { type: "action", value: 1 } });
   const action2Cost = parseActionCostInfo({ type: "action", actionCost: { type: "action", value: 2 } });
   const formattedHeal = await formatSpell({ getRollData: () => ({}) }, {}, {
@@ -845,6 +846,12 @@ try {
     type: "spell",
     system: { time: { value: "1 to 3" }, traits: { value: ["healing", "vitality"] } }
   }, "entry-1");
+  const formattedReactionSpell = await formatSpell({ getRollData: () => ({}) }, {}, {
+    id: "spell-hidebound",
+    name: "Hidebound",
+    type: "spell",
+    system: { time: { value: "reaction" }, traits: { value: ["concentrate", "manipulate"] } }
+  }, "entry-1");
 
 
   if (
@@ -852,12 +859,16 @@ try {
     spellDefaultCost.castActions !== "2" ||
     spellVarCost.castActions !== "1-3" ||
     formattedHeal.castActions !== "1-3" ||
+    spellReactionCost.glyph !== "R" ||
+    spellReactionCost.castActions !== "" ||
+    formattedReactionSpell.glyph !== "R" ||
+    formattedReactionSpell.castActions !== "" ||
     action1Cost.multiActionLabel !== "" ||
     action2Cost.multiActionLabel !== "2"
   ) {
     logFail("[Action Cost Labels] Failed verification for spell castActions (1-3, default 2) or multi-action labels (>1).");
   } else {
-    logPass("[Action Cost Labels] Spells resolve 1-3 actions (defaulting to '2' and normalizing '1 to 3' -> '1-3'), and actions >1 get a multi-action label ('2').");
+    logPass("[Action Cost Labels] Spells resolve 1-3 actions (defaulting to '2' and normalizing '1 to 3' -> '1-3'), reaction spells get glyph 'R' and no action count, and actions >1 get a multi-action label ('2').");
   }
 
   // Verify Repeatable Spell Damage Button (Issue #15)

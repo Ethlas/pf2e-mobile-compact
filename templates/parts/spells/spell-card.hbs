@@ -85,11 +85,9 @@
       {{/if}}
     </div>
 
-    {{#if (or spell.isCantrip spell.traits.length)}}
+    {{!-- Cantrips carry pf2e's "cantrip" trait, so no separate Cantrip badge is needed --}}
+    {{#if spell.traits.length}}
     <div class="action-traits staff-spell-traits">
-      {{#if spell.isCantrip}}
-      <span class="trait-badge">Cantrip</span>
-      {{/if}}
       {{#each spell.traits as |trait|}}
       <span class="trait-badge">{{trait.label}}</span>
       {{/each}}
