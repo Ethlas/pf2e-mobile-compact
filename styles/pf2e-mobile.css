@@ -196,7 +196,32 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   user-select: text;
 }.pf2e-mobile-sheet * {
   box-sizing: border-box;
-}/* ----------------------------------------- *//* Touch Targets & Universal Controls        *//* ----------------------------------------- */.pf2e-mobile-sheet [data-action],
+}
+
+/* ----------------------------------------- */
+/* Layout Utilities                          */
+/* ----------------------------------------- */
+/* Small Tailwind-style helpers for layout only; component classes keep the look.
+   Prefixed with "m-" so they cannot clash with Foundry, pf2e or other module classes. */
+.pf2e-mobile-sheet .m-flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.pf2e-mobile-sheet .m-flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.pf2e-mobile-sheet .m-align-baseline {
+  align-items: baseline;
+}
+
+.pf2e-mobile-sheet .m-align-center {
+  align-items: center;
+}
+
+/* ----------------------------------------- *//* Touch Targets & Universal Controls        *//* ----------------------------------------- */.pf2e-mobile-sheet [data-action],
 .pf2e-mobile-sheet [data-change-action],
 .pf2e-mobile-sheet .touch-target,
 .pf2e-mobile-sheet button,
@@ -1985,8 +2010,13 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border: 1px solid #383838;
   transition: opacity 0.15s ease, background 0.15s ease;
 }.pf2e-mobile-sheet .spell-card .action-card-header {
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
+}/* Whole spell line (name row + detail tags) is the tap target that toggles the drawer */
+.pf2e-mobile-sheet .spell-card-line {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }.pf2e-mobile-sheet .spell-card .action-title-group {
   min-width: 120px;
   flex: 1 1 120px;
@@ -2108,7 +2138,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }.pf2e-mobile-sheet .btn-cast {
   min-height: 38px;
   height: 38px;
-  padding: 4px 12px;
+  padding: 4px;
   background: #1565c0;
   border: 1px solid #1976d2;
   color: #fff;
@@ -2117,7 +2147,8 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  align-content: center;
   white-space: nowrap;
   cursor: pointer;
   touch-action: manipulation;
@@ -3171,60 +3202,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   background: #27272a;
   color: #a1a1aa;
   border-color: #3f3f46;
-}
-
-/* Staff Spell Card Stacked Mobile Layout */
-.pf2e-mobile-sheet .staff-spell-card {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 8px 10px;
-}
-
-.pf2e-mobile-sheet .staff-spell-header {
-  margin-bottom: 0;
-  width: 100%;
-}
-
-.pf2e-mobile-sheet .staff-spell-header .action-title-group {
-  width: 100%;
-  min-height: 38px;
-}
-
-.pf2e-mobile-sheet .staff-spell-header .action-name {
-  font-size: 0.98rem;
-  white-space: normal;
-  line-height: 1.25;
-  flex: 1;
-}
-
-.pf2e-mobile-sheet .staff-spell-header-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
-.pf2e-mobile-sheet .staff-spell-details {
-  margin: 0;
-}
-
-.pf2e-mobile-sheet .staff-spell-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-  margin-top: 2px;
-}
-
-.pf2e-mobile-sheet .staff-spell-actions .staff-btn-flex {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  min-height: 38px;
 }
 
 .pf2e-mobile-sheet .staff-spell-traits {

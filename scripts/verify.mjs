@@ -846,7 +846,6 @@ try {
     system: { time: { value: "1 to 3" }, traits: { value: ["healing", "vitality"] } }
   }, "entry-1");
 
-  const spellsTplText = fs.readFileSync(path.join(rootDir, "templates/parts/spells.hbs"), "utf8");
   const actionsTplText = fs.readFileSync(path.join(rootDir, "templates/parts/actions.hbs"), "utf8");
 
   if (
@@ -856,12 +855,11 @@ try {
     formattedHeal.castActions !== "1-3" ||
     action1Cost.multiActionLabel !== "" ||
     action2Cost.multiActionLabel !== "2" ||
-    !spellsTplText.includes("Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}") ||
     !actionsTplText.includes("{{#if act.multiActionLabel}} ({{act.multiActionLabel}}){{/if}}")
   ) {
     logFail("[Action Cost Labels] Failed verification for spell castActions (1-3, default 2) or multi-action labels (>1).");
   } else {
-    logPass("[Action Cost Labels] Spells resolve 1-3 actions (defaulting to '2' and normalizing '1 to 3' -> '1-3') next to Cast, and actions >1 display ({{act.multiActionLabel}}).");
+    logPass("[Action Cost Labels] Spells resolve 1-3 actions (defaulting to '2' and normalizing '1 to 3' -> '1-3'), and actions >1 display ({{act.multiActionLabel}}).");
   }
 
   // Verify Repeatable Spell Damage Button (Issue #15)

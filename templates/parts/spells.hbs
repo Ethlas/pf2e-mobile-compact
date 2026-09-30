@@ -72,163 +72,29 @@
       <!-- Spells in this Rank -->
       <div class="spell-list {{#if group.isCollapsed}}collapsed{{/if}}">
         {{#each group.spells as |spell|}}
-        <div class="action-card spell-card {{#if spell.isExpanded}}expanded{{/if}} {{#if spell.isExpended}}expended{{/if}}" data-item-id="{{#if spell.cardKey}}{{spell.cardKey}}{{else}}{{spell.id}}{{/if}}" data-entry-id="{{spell.entryId}}">
-          <div class="action-card-header">
-            <!-- Title & Expand Trigger -->
-            <div class="action-title-group touch-target" data-action="toggleActionSummary" data-item-id="{{#if spell.cardKey}}{{spell.cardKey}}{{else}}{{spell.id}}{{/if}}" title="{{spell.name}}">
-              {{#if spell.glyph}}
-              <span class="action-cost-glyph">{{spell.glyph}}</span>
-              {{/if}}
-              <span class="action-name"><strong>{{spell.name}}</strong></span>
-              <i class="fas fa-chevron-down action-expand-icon {{#if spell.isExpanded}}expanded{{/if}}"></i>
-            </div>
+        {{#> "modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs" spell=spell rank=group.rank showManageButtons=true}}
+<!--          <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{spell.id}}" data-rank="{{group.rank}}" title="Send to Chat">-->
+<!--            <i class="fas fa-message"></i>-->
+<!--          </button>-->
 
-            <!-- Action Buttons: Chat, Restore, Damage, Cast -->
-            <div class="action-btn-group">
-              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{spell.id}}" data-rank="{{group.rank}}" title="Send to Chat">
-                <i class="fas fa-message"></i>
-              </button>
+          {{#if (and spell.isPrepared spell.isExpended)}}
+          <button type="button" class="touch-target btn-restore-slot" data-action="toggleSlotExpended" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="Restore Expended Slot">
+            <i class="fas fa-arrow-rotate-left"></i>
+          </button>
+          {{/if}}
 
-              {{#if (and spell.isPrepared spell.isExpended)}}
-              <button type="button" class="touch-target btn-restore-slot" data-action="toggleSlotExpended" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="Restore Expended Slot">
-                <i class="fas fa-arrow-rotate-left"></i>
-              </button>
-              {{/if}}
+<!--          {{#if spell.hasDamage}}-->
+<!--          <button type="button" class="touch-target btn-spell-damage {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}}: {{spell.damageFormula}}{{/if}}">-->
+<!--            {{#if spell.isHealingOnly}}-->
+<!--              <i class="fas fa-heart-pulse"></i> Heal-->
+<!--            {{else}}-->
+<!--              <i class="fas fa-burst"></i> Dmg-->
+<!--            {{/if}}-->
+<!--          </button>-->
+<!--          {{/if}}-->
 
-              {{#if spell.hasDamage}}
-              <button type="button" class="touch-target btn-spell-damage {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}}: {{spell.damageFormula}}{{/if}}">
-                {{#if spell.isHealingOnly}}
-                  <i class="fas fa-heart-pulse"></i> Heal
-                {{else}}
-                  <i class="fas fa-burst"></i> Dmg
-                {{/if}}
-              </button>
-              {{/if}}
-
-              {{#if (and spell.isPrepared spell.isExpended)}}
-              <button type="button" class="touch-target btn-cast disabled {{#if spell.isAttack}}btn-cast-attack{{/if}}" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="{{#if spell.cannotCastReason}}{{spell.cannotCastReason}}{{else}}Spell slot already expended{{/if}}">
-                {{#if spell.isAttack}}
-                  <i class="fas fa-crosshairs"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}
-                {{else}}
-                  <i class="fas fa-wand-magic"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}
-                {{/if}}
-              </button>
-              {{else}}
-              <button type="button" class="touch-target btn-cast {{#unless spell.canCast}}disabled{{/unless}} {{#if spell.isAttack}}btn-cast-attack{{/if}}" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="{{#if spell.canCast}}Cast {{spell.name}}{{#if spell.castActions}} ({{spell.castActions}} Actions){{/if}}{{else}}{{spell.cannotCastReason}}{{/if}}">
-                {{#if spell.isAttack}}
-                  <i class="fas fa-crosshairs"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}
-                {{else}}
-                  <i class="fas fa-wand-magic"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}
-                {{/if}}
-              </button>
-              {{/if}}
-            </div>
-          </div>
-
-          <!-- One-Letter Source Badges + Quick Detail Tags (Under Spell Name, Always Visible) -->
-          <div class="spell-details">
-            {{#if spell.isFocus}}
-            <span class="spell-source-badge badge-focus badge-letter" title="Focus Spell">F</span>
-            {{else if spell.isInnate}}
-            <span class="spell-source-badge badge-innate badge-letter" title="Innate Spell">I</span>
-            {{else if spell.isPrepared}}
-            <span class="spell-source-badge badge-prepared badge-letter" title="Prepared Spell">P</span>
-            {{else if spell.isSpontaneous}}
-            <span class="spell-source-badge badge-spontaneous badge-letter" title="Spontaneous Spell">S</span>
-            {{/if}}
-
-            {{#if spell.isSignature}}
-            <span class="spell-source-badge badge-signature badge-letter" title="Signature Spell"><i class="fas fa-star"></i></span>
-            {{/if}}
-
-            {{#if spell.isExpended}}
-            <span class="spell-expended-badge">Exp</span>
-            {{/if}}
-
-            {{#if spell.range}}<span class="detail-tag"><i class="fas fa-ruler"></i> {{spell.range}}</span>{{/if}}
-            {{#if spell.target}}<span class="detail-tag"><i class="fas fa-crosshairs"></i> {{spell.target}}</span>{{/if}}
-            {{#if spell.area}}<span class="detail-tag"><i class="fas fa-expand"></i> {{spell.area}}</span>{{/if}}
-            {{#if spell.defense}}<span class="detail-tag"><i class="fas fa-shield-halved"></i> {{spell.defense}}</span>{{/if}}
-            {{#if spell.duration}}<span class="detail-tag"><i class="fas fa-clock"></i> {{spell.duration}}</span>{{/if}}
-          </div>
-
-          <!-- Expandable Details Drawer -->
-          <div class="action-summary {{#if spell.isExpanded}}expanded{{else}}collapsed{{/if}}">
-            <div class="expanded-spell-fullname">
-              <strong>{{spell.name}}</strong>
-              {{#if spell.isFocus}}
-              <span class="spell-source-badge badge-focus">Focus</span>
-              {{else if spell.isInnate}}
-              <span class="spell-source-badge badge-innate">Innate</span>
-              {{else if spell.isPrepared}}
-              <span class="spell-source-badge badge-prepared">Prepared</span>
-              {{else if spell.isSpontaneous}}
-              <span class="spell-source-badge badge-spontaneous">Spontaneous</span>
-              {{/if}}
-            </div>
-
-            {{#if (or spell.isCantrip spell.traits.length)}}
-            <div class="action-traits staff-spell-traits">
-              {{#if spell.isCantrip}}
-              <span class="trait-badge">Cantrip</span>
-              {{/if}}
-              {{#each spell.traits as |trait|}}
-              <span class="trait-badge">{{trait.label}}</span>
-              {{/each}}
-            </div>
-            {{/if}}
-
-            {{#if spell.isHeightened}}
-            <div class="spell-heightened-notice">
-              <i class="fas fa-arrow-up-right-dots"></i>
-              <span>Heightened to <strong>Rank {{group.rank}}</strong> (Base: Rank {{spell.baseRank}})</span>
-            </div>
-            {{/if}}
-
-            {{#if spell.hasDamage}}
-            <div class="spell-damage-drawer-row">
-              <button type="button" class="touch-target btn-spell-damage btn-spell-damage-full {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}})">
-                {{#if spell.isHealingOnly}}
-                  <i class="fas fa-heart-pulse"></i> Roll Healing (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}} · {{spell.damageFormula}}{{/if}}
-                {{else}}
-                  <i class="fas fa-burst"></i> Roll Damage (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}} · {{spell.damageFormula}}{{/if}}
-                {{/if}}
-              </button>
-            </div>
-            {{/if}}
-
-            <div class="action-description-content">
-              {{{spell.description}}}
-            </div>
-
-            <!-- Spell Actions Footer (Remove & Signature Toggle) -->
-            <div class="spell-drawer-footer">
-              {{#if spell.canSignature}}
-              <button
-                type="button"
-                class="touch-target btn-spell-action btn-toggle-signature {{#if spell.isSignature}}active{{/if}}"
-                data-action="toggleSignatureSpell"
-                data-item-id="{{spell.id}}"
-                title="{{#if spell.isSignature}}Remove Signature Spell{{else}}Make Signature Spell{{/if}}"
-              >
-                <i class="fas fa-star"></i>
-                <span>{{#if spell.isSignature}}Signature Spell{{else}}Set Signature{{/if}}</span>
-              </button>
-              {{/if}}
-
-              <button
-                type="button"
-                class="touch-target btn-spell-action btn-remove-spell"
-                data-action="removeSpell"
-                data-item-id="{{spell.id}}"
-                title="Remove {{spell.name}} from character"
-              >
-                <i class="fas fa-trash-can"></i>
-                <span>Remove Spell</span>
-              </button>
-            </div>
-          </div>
-        </div>
+          {{> "modules/pf2e-mobile-compact/templates/parts/spells/cast-button.hbs" spell=spell rank=group.rank}}
+        {{/"modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs"}}
         {{else}}
         <p class="empty-hint">No spells available for this rank.</p>
         {{/each}}
@@ -302,7 +168,7 @@
               <div class="slot-spell-info">
                 <span class="slot-spell-name"><strong>{{slot.spell.name}}</strong></span>
                 {{#if slot.spell.glyph}}
-                <span class="action-cost-glyph">{{slot.spell.glyph}}</span>
+                <span class="action-cost-glyph"><span class="action-glyph">{{slot.spell.glyph}}</span></span>
                 {{/if}}
                 {{#if slot.isExpended}}
                 <span class="spell-expended-badge">Expended</span>
@@ -388,117 +254,23 @@
 
             <div class="spell-list {{#if group.isCollapsed}}collapsed{{/if}}">
               {{#each group.spells as |spell|}}
-              <div class="action-card spell-card staff-spell-card {{#if spell.isExpanded}}expanded{{/if}}" data-item-id="{{spell.cardKey}}" data-entry-id="{{spell.entryId}}">
-                <!-- Row 1: Full-width Spell Title, Action Cost Glyph & Charge Badge -->
-                <div class="action-card-header staff-spell-header">
-                  <div class="action-title-group touch-target" data-action="toggleActionSummary" data-item-id="{{spell.cardKey}}" title="Toggle Description">
-                    {{#if spell.glyph}}
-                    <span class="action-cost-glyph">{{spell.glyph}}</span>
-                    {{/if}}
-                    <span class="action-name"><strong>{{spell.name}}</strong></span>
+              {{#> "modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs" spell=spell rank=group.rank showChargeCost=true}}
+                <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{spell.id}}" title="Send to Chat">
+                  <i class="fas fa-message"></i>
+                </button>
 
-                    <div class="staff-spell-header-right">
-                      {{#if spell.isCantrip}}
-                      <span class="spell-source-badge badge-cantrip">0 Chg</span>
-                      {{else if spell.canCastCharges}}
-                      <span class="spell-source-badge badge-charge-cost"><i class="fas fa-bolt"></i> {{spell.chargeCost}} Chg</span>
-                      {{else}}
-                      <span class="spell-source-badge badge-charge-cost badge-charge-insufficient" title="Insufficient charges (requires {{spell.chargeCost}})"><i class="fas fa-bolt"></i> {{spell.chargeCost}} Chg</span>
-                      {{/if}}
-                      <i class="fas fa-chevron-down action-expand-icon {{#if spell.isExpanded}}expanded{{/if}}"></i>
-                    </div>
-                  </div>
-                </div>
+<!--                {{#if spell.hasDamage}}-->
+<!--                <button type="button" class="touch-target btn-spell-damage {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}}: {{spell.damageFormula}}{{/if}}">-->
+<!--                  {{#if spell.isHealingOnly}}-->
+<!--                    <i class="fas fa-heart-pulse"></i> Heal-->
+<!--                  {{else}}-->
+<!--                    <i class="fas fa-burst"></i> Dmg-->
+<!--                  {{/if}}-->
+<!--                </button>-->
+<!--                {{/if}}-->
 
-                <!-- Row 2: Always-visible Quick Details (Range, Target, Size/Area, Save/Defense, Duration) -->
-                {{#if (or spell.range spell.target spell.area spell.defense spell.duration)}}
-                <div class="spell-details staff-spell-details">
-                  {{#if spell.range}}<span class="detail-tag"><i class="fas fa-ruler"></i> {{spell.range}}</span>{{/if}}
-                  {{#if spell.target}}<span class="detail-tag"><i class="fas fa-crosshairs"></i> {{spell.target}}</span>{{/if}}
-                  {{#if spell.area}}<span class="detail-tag"><i class="fas fa-expand"></i> {{spell.area}}</span>{{/if}}
-                  {{#if spell.defense}}<span class="detail-tag"><i class="fas fa-shield-halved"></i> {{spell.defense}}</span>{{/if}}
-                  {{#if spell.duration}}<span class="detail-tag"><i class="fas fa-clock"></i> {{spell.duration}}</span>{{/if}}
-                </div>
-                {{/if}}
-
-                <!-- Row 3: Cast & Action Buttons Underneath -->
-                <div class="action-btn-group staff-spell-actions">
-                  <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{spell.id}}" title="Send to Chat">
-                    <i class="fas fa-message"></i>
-                  </button>
-
-                  {{#if spell.hasDamage}}
-                  <button type="button" class="touch-target btn-spell-damage {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}}: {{spell.damageFormula}}{{/if}}">
-                    {{#if spell.isHealingOnly}}
-                      <i class="fas fa-heart-pulse"></i> Heal
-                    {{else}}
-                      <i class="fas fa-burst"></i> Dmg
-                    {{/if}}
-                  </button>
-                  {{/if}}
-
-                  {{#if spell.isCantrip}}
-                  <button type="button" class="touch-target btn-cast staff-btn-flex" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{@root.activations.staff.id}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="0" data-charge-cost="0" title="Cast Cantrip">
-                    <i class="fas fa-wand-magic"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}
-                  </button>
-                  {{else if spell.hasSpontaneousOption}}
-                    {{#if spell.canCastCharges}}
-                    <button type="button" class="touch-target btn-cast btn-staff-charges staff-btn-flex" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{@root.activations.staff.id}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-charge-cost="{{spell.chargeCost}}" title="Cast using {{spell.chargeCost}} staff charges">
-                      <i class="fas fa-bolt"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}} · {{spell.chargeCost}} Chg
-                    </button>
-                    {{else}}
-                    <button type="button" class="touch-target btn-cast btn-staff-charges staff-btn-flex disabled" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{@root.activations.staff.id}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-charge-cost="{{spell.chargeCost}}" title="{{#if spell.chargesDisabledReason}}{{spell.chargesDisabledReason}}{{else}}Not enough charges (requires {{spell.chargeCost}}){{/if}}">
-                      <i class="fas fa-bolt"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}} · {{spell.chargeCost}} Chg
-                    </button>
-                    {{/if}}
-
-                    {{#if spell.canCastSpontaneous}}
-                    <button type="button" class="touch-target btn-cast btn-staff-spontaneous staff-btn-flex" data-action="castStaffSpell" data-cast-mode="spontaneous" data-staff-id="{{@root.activations.staff.id}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-charge-cost="1" title="Cast using 1 staff charge and 1 Rank {{group.rank}}+ spontaneous slot">
-                      <i class="fas fa-wand-magic-sparkles"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}} · 1 Chg + Slot
-                    </button>
-                    {{else}}
-                    <button type="button" class="touch-target btn-cast btn-staff-spontaneous staff-btn-flex disabled" data-action="castStaffSpell" data-cast-mode="spontaneous" data-staff-id="{{@root.activations.staff.id}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-charge-cost="1" title="{{#if spell.spontaneousDisabledReason}}{{spell.spontaneousDisabledReason}}{{else}}Not enough charges or slots (requires 1 charge + 1 Rank {{group.rank}}+ slot){{/if}}">
-                      <i class="fas fa-wand-magic-sparkles"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}} · 1 Chg + Slot
-                    </button>
-                    {{/if}}
-                  {{else}}
-                  <button type="button" class="touch-target btn-cast staff-btn-flex {{#unless spell.canCastCharges}}disabled{{/unless}}" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{@root.activations.staff.id}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-charge-cost="{{spell.chargeCost}}" title="{{#if spell.canCastCharges}}Cast using {{spell.chargeCost}} staff charges{{else if spell.chargesDisabledReason}}{{spell.chargesDisabledReason}}{{else}}Not enough charges (requires {{spell.chargeCost}}){{/if}}">
-                    <i class="fas fa-bolt"></i> Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}} · {{spell.chargeCost}} Chg
-                  </button>
-                  {{/if}}
-                </div>
-
-                <!-- Expandable Summary (Full Title + Traits/Tags + Description) -->
-                <div class="action-summary {{#if spell.isExpanded}}expanded{{else}}collapsed{{/if}}">
-                  <div class="expanded-spell-fullname">
-                    <strong>{{spell.name}}</strong>
-                  </div>
-                  {{#if (or spell.isCantrip spell.traits.length)}}
-                  <div class="action-traits staff-spell-traits">
-                    {{#if spell.isCantrip}}
-                    <span class="trait-badge">Cantrip</span>
-                    {{/if}}
-                    {{#each spell.traits as |trait|}}
-                    <span class="trait-badge">{{trait.label}}</span>
-                    {{/each}}
-                  </div>
-                  {{/if}}
-                  {{#if spell.hasDamage}}
-                  <div class="spell-damage-drawer-row">
-                    <button type="button" class="touch-target btn-spell-damage btn-spell-damage-full {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}})">
-                      {{#if spell.isHealingOnly}}
-                        <i class="fas fa-heart-pulse"></i> Roll Healing (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}} · {{spell.damageFormula}}{{/if}}
-                      {{else}}
-                        <i class="fas fa-burst"></i> Roll Damage (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}} · {{spell.damageFormula}}{{/if}}
-                      {{/if}}
-                    </button>
-                  </div>
-                  {{/if}}
-                  <div class="action-description-content">
-                    {{{spell.description}}}
-                  </div>
-                </div>
-              </div>
+                {{> "modules/pf2e-mobile-compact/templates/parts/spells/staff-cast-buttons.hbs" spell=spell rank=group.rank staffId=@root.activations.staff.id}}
+              {{/"modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs"}}
               {{/each}}
             </div>
           </section>
@@ -615,7 +387,7 @@
                 {{/if}}
               </button>
               {{/if}}
-              <button type="button" class="touch-target btn-cast btn-cast-item" data-action="castItemSpell" data-item-type="other" data-item-id="{{act.spell.id}}" data-entry-id="{{act.entryId}}" title="Cast {{act.spell.name}}">
+              <button type="button" class="touch-target btn-cast btn-cast-item" data-action="castItemSpell" data-item-typeThe="other" data-item-id="{{act.spell.id}}" data-entry-id="{{act.entryId}}" title="Cast {{act.spell.name}}">
                 <i class="fas fa-wand-magic"></i> Cast{{#if act.spell.castActions}} ({{act.spell.castActions}}){{/if}}
               </button>
             </div>

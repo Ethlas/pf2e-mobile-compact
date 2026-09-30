@@ -4,6 +4,37 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [Unreleased]
+
+### Shared Spell Card & Cast Button Partials (`templates/parts/spells/`)
+
+#### Changed
+- **One template for a spell line (`templates/parts/spells/spell-card.hbs`, `templates/parts/spells.hbs`, `scripts/pf2e-mobile.js`)**:
+  - Moved the spell card markup (name row, source badges, detail tags, traits, heightened notice, damage row, description and Signature/Remove footer) out of `spells.hbs` into a new partial, `spells/spell-card.hbs`, registered in the `loadTemplates` list. Partials that make up the Spells tab live in the new `templates/parts/spells/` folder.
+  - Both the Spells list and the staff spell list now render through this partial as a Handlebars partial block (`{{#> ".../spells/spell-card.hbs" spell=spell rank=group.rank}}…{{/…}}`). The block content supplies the buttons next to the spell name, because those differ per list; everything else is written once.
+  - Parameters: `showManageButtons` shows the Signature/Remove footer (Spells list only); `showChargeCost` shows the staff charge-cost badge (staff list only).
+  - Design rationale: the card was copied between the Spells list and the staff list and the copies had drifted apart (for example, the traits block in the Spells list still carried the `staff-spell-traits` class). One partial keeps them consistent and gives upcoming layout changes a single place to edit.
+- **Cast buttons in their own partials (`templates/parts/spells/cast-button.hbs`, `templates/parts/spells/staff-cast-buttons.hbs`, `scripts/verify.mjs`)**:
+  - `cast-button.hbs` holds the Spells list Cast button (normal and expended-slot variants); `staff-cast-buttons.hbs` holds the staff Cast buttons (cantrip, full charge cost, and 1 charge + spontaneous slot). The staff id is passed in as `staffId` instead of being read from `@root`.
+  - Moving the buttons did not change the rendered output.
+- **Spells list Cast button shows only the cast icon (`templates/parts/spells/cast-button.hbs`, `scripts/verify.mjs`)**:
+  - Removed the "Cast (2)" text; the button shows the wand icon (crosshairs for attack spells). The action count stays in the tooltip.
+  - Removed the part of the `[Action Cost Labels]` check that required the "Cast (…)" text in the template. The checks on how action counts are parsed stay.
+- **Whole spell line toggles the details drawer (`templates/parts/spells/spell-card.hbs`, `styles/pf2e-mobile.css`)**:
+  - The name row and detail tags are wrapped in `.spell-card-line`, which carries `data-action="toggleActionSummary"`, so tapping anywhere on the line opens or closes the drawer instead of only the name. Buttons inside the line keep their own actions. Taps inside the open drawer no longer collapse it.
+  - `.action-title-group` is now a layout-only container (chevron, action glyph, name) without its own click handler.
+- **Layout utility classes (`styles/pf2e-mobile.css`)**:
+  - Added `.m-flex-row` (`display: flex; flex-direction: row`), `.m-flex-col` (`display: flex; flex-direction: column`) and `.m-align-baseline` (`align-items: baseline`), scoped to `.pf2e-mobile-sheet`. They handle layout only, so templates can use them instead of repeating flex rules in each component class. The `m-` prefix avoids clashes with Foundry's own `flexrow`/`flexcol` and other modules.
+- **pf2e action icons for spell action costs (`templates/parts/spells/spell-card.hbs`, `templates/parts/spells.hbs`, `templates/parts/spell-picker-dialog.hbs`)**:
+  - The action-cost badge on spell cards, preparation slots and the spell picker wraps the glyph in `<span class="action-glyph">`, pf2e's own class for its `Pathfinder2eActions` icon font, so `1`, `2`, `3`, `R` and `F` show as the official action icons. The font and class are loaded by the pf2e system at runtime; nothing is bundled.
+  - Ranges keep the module's format (`1-3`), which shows as two icons joined by a hyphen, because only the digits and letters are icons in that font. No Handlebars helper or mapping is needed.
+- **Staff spells use the same card layout as the Spells list (`templates/parts/spells.hbs`, `styles/pf2e-mobile.css`)**:
+  - Staff spell buttons now sit next to the spell name instead of on a row underneath, and the charge-cost badge moved from the name row into the detail tags row. The layout is intentionally left unpolished until the spell card design is reworked.
+  - Removed the now unused stacked staff layout CSS (`.staff-spell-card`, `.staff-spell-header*`, `.staff-spell-details`, `.staff-spell-actions`, `.staff-btn-flex`).
+  - The Spells list renders identically to before; this was checked by rendering every preview fixture in each sub-tab, collapsed and expanded, before and after the change and comparing the HTML.
+
+---
+
 ## [1.0.29] - 2026-09-29
 
 ### Targeting Fixes: iOS Real-Time Distance Updates, AoE Multi-Targeting, Flanking Detection, Self-Targeting, & Persistent Canvas Toggle (Issue #16)
