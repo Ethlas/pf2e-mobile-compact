@@ -75,15 +75,6 @@
         {{#> "modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs" spell=listSpell rank=group.rank showManageButtons=true}}
           {{!-- Slots can only use the card's parameters (spell, rank) and @root, see spell-card.hbs --}}
           {{#*inline "lineButtons"}}
-  <!--          {{#if spell.hasDamage}}-->
-  <!--          <button type="button" class="touch-target btn-spell-damage {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}}: {{spell.damageFormula}}{{/if}}">-->
-  <!--            {{#if spell.isHealingOnly}}-->
-  <!--              <i class="fas fa-heart-pulse"></i> Heal-->
-  <!--            {{else}}-->
-  <!--              <i class="fas fa-burst"></i> Dmg-->
-  <!--            {{/if}}-->
-  <!--          </button>-->
-  <!--          {{/if}}-->
 
             {{> "modules/pf2e-mobile-compact/templates/parts/spells/cast-button.hbs" spell=spell rank=rank}}
           {{/inline}}

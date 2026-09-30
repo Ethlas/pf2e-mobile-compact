@@ -22,3 +22,4 @@ deploy.ps1
 *.local.*
 scratch/
 
+dev/**
