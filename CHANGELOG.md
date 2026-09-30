@@ -47,6 +47,7 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
   - Focus points are shown as one flame per point (`.btn-focus-point`): lit for available points, dimmed for spent ones. Tapping a lit flame spends a point, tapping a dimmed one regains a point (same `adjustFocus` action with `data-delta` −1 / +1). `prepareHeaderContext()` adds `focus.points` (one `{ available }` entry per point) because Handlebars cannot loop over a number. Each flame is a 36px touch target, the same size as the slot −/+ buttons.
 
 #### Fixed
+- **Long spell names no longer push the Cast button off screen (`templates/parts/spells/spell-card.hbs`, `styles/pf2e-mobile.css`)**: the name/tags column of the spell line (`.spell-card-main`) and the name row (`.spell-card-title`) may now shrink below their content width (`min-width: 0`), and the button group keeps its size (`flex-shrink: 0`). A name that does not fit is cut off with an ellipsis; on an opened card it wraps.
 - **Folding staff rank groups and the focus group is remembered (`scripts/apps/sheet-helpers/spells-handlers.js`)**: `onToggleRankGroup` used `parseInt` on the group key, turning `"staff-2"` into `NaN`, so a folded staff rank group opened again on the next render. Numeric keys are still stored as numbers; other keys (`"focus"`, `"staff-2"`) are now stored as text, matching what the context builders look up.
 
 #### Changed

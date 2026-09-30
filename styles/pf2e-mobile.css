@@ -2054,6 +2054,23 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   padding: 2px 8px;
 }
 
+/* Long spell names must not push the buttons off screen: the name/tags column may shrink below
+   its content width (flex items default to min-width: auto), the name row stays inside it so the
+   name gets cut off with an ellipsis (.action-name), and the buttons keep their size. */
+.pf2e-mobile-sheet .spell-card-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pf2e-mobile-sheet .spell-card-title {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.pf2e-mobile-sheet .spell-card-line > .action-btn-group {
+  flex-shrink: 0;
+}
+
 /* The spell card has no chevron; the card itself shows that it opens.
    Tap feedback: lighten the card while its line is pressed, but not when a button on it is. */
 .pf2e-mobile-sheet .spell-card:has(.spell-card-line:active):not(:has(button:active)) {
