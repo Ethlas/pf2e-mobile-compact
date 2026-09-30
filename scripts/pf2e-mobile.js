@@ -709,6 +709,7 @@ Hooks.once("init", async () => {
     "modules/pf2e-mobile-compact/templates/parts/spells/staff-line-cast-button.hbs",
     "modules/pf2e-mobile-compact/templates/parts/spell-picker-dialog.hbs",
     "modules/pf2e-mobile-compact/templates/parts/actions.hbs",
+    "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs",
     "modules/pf2e-mobile-compact/templates/parts/skills.hbs",
     "modules/pf2e-mobile-compact/templates/parts/inventory.hbs",
     "modules/pf2e-mobile-compact/templates/parts/party-overview.hbs",

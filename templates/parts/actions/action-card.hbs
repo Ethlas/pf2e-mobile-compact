@@ -1,0 +1,69 @@
+{{!--
+  Action card: one character action (from feats, class features, skills, exploration or
+  downtime). Used by every section of the Actions tab except Attacks (strikes have their own layout).
+  Same structure as the spell card (spells/spell-card.hbs): the whole line (name row plus
+  traits / uses row) toggles the drawer, the quick buttons (Use, Roll / Attack) sit on the
+  line as icons, and the drawer holds Chat and the description.
+
+  Parameters (hash):
+    act        Action from prepareActionsContext() in context-actions.js
+    glyphType  "reaction" or "free" to always show that pf2e action icon, also when the
+               action itself has no glyph
+--}}
+<div class="action-card character-action-card {{#if act.isExpanded}}expanded{{/if}}" data-item-id="{{act.id}}">
+  <!-- Action line: tapping anywhere on it toggles the drawer; the buttons keep their own action -->
+  <div class="action-card-line m-flex-row" data-action="toggleActionSummary" data-item-id="{{act.id}}" title="{{act.name}}">
+    <div class="action-card-main m-flex-col m-align-baseline">
+      <div class="action-card-title m-flex-row m-align-center">
+        {{#if (eq glyphType "reaction")}}
+        <span class="action-cost-glyph glyph-reaction"><span class="action-glyph">R</span></span>
+        {{else if (eq glyphType "free")}}
+        <span class="action-cost-glyph glyph-free"><span class="action-glyph">F</span></span>
+        {{else if act.glyph}}
+        <span class="action-cost-glyph"><span class="action-glyph">{{act.glyph}}</span></span>
+        {{/if}}
+        <span class="action-name"><strong>{{act.name}}</strong></span>
+      </div>
+
+      {{#if (or act.traits.length act.frequency)}}
+      <div class="action-traits">
+        {{#each act.traits as |trait|}}
+        <span class="trait-badge">{{trait.label}}</span>
+        {{/each}}
+        {{!-- Actions with limited uses (pf2e "Frequency", e.g. once per day) show how many are left --}}
+        {{#if act.frequency}}
+        <span class="action-frequency">Uses: {{act.frequency.value}} / {{act.frequency.max}} {{act.frequency.per}}</span>
+        {{/if}}
+      </div>
+      {{/if}}
+    </div>
+
+    <!-- Quick buttons, icon only (the action cost is shown by the glyph) -->
+    <div class="action-btn-group">
+      {{#if act.usable}}
+      <button type="button" class="touch-target btn-action-use {{#if act.active}}active{{/if}}" data-action="useAction" data-item-id="{{act.id}}" title="{{#if act.active}}Deactivate {{act.name}}{{else}}Use {{act.name}}{{/if}}">
+        {{#if act.active}}<i class="fas fa-toggle-on"></i>{{else}}<i class="fas fa-play"></i>{{/if}}
+      </button>
+      {{/if}}
+      {{#if act.hasRoll}}
+      <button type="button" class="touch-target btn-action-roll {{#if act.isAttack}}btn-action-attack{{/if}}" data-action="rollActionCheck" data-item-id="{{act.id}}" data-action-slug="{{act.slug}}" title="{{#if act.isAttack}}Attack{{else}}Roll Check{{/if}}">
+        {{#if act.isAttack}}<i class="fas fa-crosshairs"></i>{{else}}<i class="fas fa-dice-d20"></i>{{/if}}
+      </button>
+      {{/if}}
+    </div>
+  </div>
+
+  <!-- Expandable drawer: Chat, then the description -->
+  <div class="action-summary {{#if act.isExpanded}}expanded{{else}}collapsed{{/if}}">
+    <div class="action-drawer-primary-row m-flex-row">
+      <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
+        <i class="fas fa-message"></i>
+      </button>
+    </div>
+    {{#if act.description}}
+    <div class="action-description-content">
+      {{{act.description}}}
+    </div>
+    {{/if}}
+  </div>
+</div>

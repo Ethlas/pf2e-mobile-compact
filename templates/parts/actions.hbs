@@ -91,58 +91,7 @@
       <h3 class="section-title"><i class="fas fa-bolt"></i> Actions</h3>
       <div class="character-actions-list">
         {{#each characterActions.actions as |act|}}
-        <div class="action-card character-action-card {{#if act.isExpanded}}expanded{{/if}}" data-item-id="{{act.id}}">
-          <div class="action-card-header">
-            <div class="action-title-group touch-target" data-action="toggleActionSummary" data-item-id="{{act.id}}" title="Toggle Description">
-              <span class="action-cost-glyph">{{act.glyph}}</span>
-              <span class="action-name"><strong>{{act.name}}</strong></span>
-              {{#if act.description}}
-              <i class="fas fa-chevron-down action-expand-icon {{#if act.isExpanded}}expanded{{/if}}"></i>
-              {{/if}}
-            </div>
-            <div class="action-btn-group">
-              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
-                <i class="fas fa-message"></i>
-              </button>
-              {{#if act.usable}}
-              <button type="button" class="touch-target btn-action-use {{#if act.active}}active{{/if}}" data-action="useAction" data-item-id="{{act.id}}" title="{{#if act.active}}Deactivate{{else}}Use Action{{/if}}">
-                {{#if act.active}}Active{{else}}Use{{#if act.multiActionLabel}} ({{act.multiActionLabel}}){{/if}}{{/if}}
-              </button>
-              {{/if}}
-              {{#if act.hasRoll}}
-              <button type="button" class="touch-target btn-action-roll {{#if act.isAttack}}btn-action-attack{{/if}}" data-action="rollActionCheck" data-item-id="{{act.id}}" data-action-slug="{{act.slug}}" title="{{#if act.isAttack}}Attack{{else}}Roll Check{{/if}}">
-                {{#if act.isAttack}}
-                  <i class="fas fa-crosshairs"></i> Attack{{#if act.multiActionLabel}} ({{act.multiActionLabel}}){{/if}}
-                {{else}}
-                  <i class="fas fa-dice-d20"></i> Roll{{#if act.multiActionLabel}} ({{act.multiActionLabel}}){{/if}}
-                {{/if}}
-              </button>
-              {{/if}}
-            </div>
-          </div>
-
-          {{#if act.traits.length}}
-          <div class="action-traits">
-            {{#each act.traits as |trait|}}
-            <span class="trait-badge">{{trait.label}}</span>
-            {{/each}}
-          </div>
-          {{/if}}
-
-          {{#if act.frequency}}
-          <div class="action-frequency">
-            <span>Uses: {{act.frequency.value}} / {{act.frequency.max}} {{act.frequency.per}}</span>
-          </div>
-          {{/if}}
-
-          {{#if act.description}}
-          <div class="action-summary {{#if act.isExpanded}}expanded{{else}}collapsed{{/if}}">
-            <div class="action-description-content">
-              {{{act.description}}}
-            </div>
-          </div>
-          {{/if}}
-        </div>
+        {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act}}
         {{/each}}
       </div>
     </section>
@@ -154,52 +103,7 @@
       <h3 class="section-title"><i class="fas fa-rotate-left"></i> Reactions</h3>
       <div class="character-actions-list">
         {{#each characterActions.reactions as |act|}}
-        <div class="action-card character-action-card {{#if act.isExpanded}}expanded{{/if}}" data-item-id="{{act.id}}">
-          <div class="action-card-header">
-            <div class="action-title-group touch-target" data-action="toggleActionSummary" data-item-id="{{act.id}}" title="Toggle Description">
-              <span class="action-cost-glyph glyph-reaction">⬢</span>
-              <span class="action-name"><strong>{{act.name}}</strong></span>
-              {{#if act.description}}
-              <i class="fas fa-chevron-down action-expand-icon {{#if act.isExpanded}}expanded{{/if}}"></i>
-              {{/if}}
-            </div>
-            <div class="action-btn-group">
-              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
-                <i class="fas fa-message"></i>
-              </button>
-              {{#if act.usable}}
-              <button type="button" class="touch-target btn-action-use {{#if act.active}}active{{/if}}" data-action="useAction" data-item-id="{{act.id}}" title="{{#if act.active}}Deactivate{{else}}Use Reaction{{/if}}">
-                {{#if act.active}}Active{{else}}Use{{/if}}
-              </button>
-              {{/if}}
-              {{#if act.hasRoll}}
-              <button type="button" class="touch-target btn-action-roll {{#if act.isAttack}}btn-action-attack{{/if}}" data-action="rollActionCheck" data-item-id="{{act.id}}" data-action-slug="{{act.slug}}" title="{{#if act.isAttack}}Attack{{else}}Roll Check{{/if}}">
-                {{#if act.isAttack}}
-                  <i class="fas fa-crosshairs"></i> Attack
-                {{else}}
-                  <i class="fas fa-dice-d20"></i> Roll
-                {{/if}}
-              </button>
-              {{/if}}
-            </div>
-          </div>
-
-          {{#if act.traits.length}}
-          <div class="action-traits">
-            {{#each act.traits as |trait|}}
-            <span class="trait-badge">{{trait.label}}</span>
-            {{/each}}
-          </div>
-          {{/if}}
-
-          {{#if act.description}}
-          <div class="action-summary {{#if act.isExpanded}}expanded{{else}}collapsed{{/if}}">
-            <div class="action-description-content">
-              {{{act.description}}}
-            </div>
-          </div>
-          {{/if}}
-        </div>
+        {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act glyphType="reaction"}}
         {{/each}}
       </div>
     </section>
@@ -211,52 +115,7 @@
       <h3 class="section-title"><i class="far fa-circle"></i> Free Actions</h3>
       <div class="character-actions-list">
         {{#each characterActions.free as |act|}}
-        <div class="action-card character-action-card {{#if act.isExpanded}}expanded{{/if}}" data-item-id="{{act.id}}">
-          <div class="action-card-header">
-            <div class="action-title-group touch-target" data-action="toggleActionSummary" data-item-id="{{act.id}}" title="Toggle Description">
-              <span class="action-cost-glyph glyph-free">◇</span>
-              <span class="action-name"><strong>{{act.name}}</strong></span>
-              {{#if act.description}}
-              <i class="fas fa-chevron-down action-expand-icon {{#if act.isExpanded}}expanded{{/if}}"></i>
-              {{/if}}
-            </div>
-            <div class="action-btn-group">
-              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
-                <i class="fas fa-message"></i>
-              </button>
-              {{#if act.usable}}
-              <button type="button" class="touch-target btn-action-use {{#if act.active}}active{{/if}}" data-action="useAction" data-item-id="{{act.id}}" title="{{#if act.active}}Deactivate{{else}}Use Action{{/if}}">
-                {{#if act.active}}Active{{else}}Use{{/if}}
-              </button>
-              {{/if}}
-              {{#if act.hasRoll}}
-              <button type="button" class="touch-target btn-action-roll {{#if act.isAttack}}btn-action-attack{{/if}}" data-action="rollActionCheck" data-item-id="{{act.id}}" data-action-slug="{{act.slug}}" title="{{#if act.isAttack}}Attack{{else}}Roll Check{{/if}}">
-                {{#if act.isAttack}}
-                  <i class="fas fa-crosshairs"></i> Attack
-                {{else}}
-                  <i class="fas fa-dice-d20"></i> Roll
-                {{/if}}
-              </button>
-              {{/if}}
-            </div>
-          </div>
-
-          {{#if act.traits.length}}
-          <div class="action-traits">
-            {{#each act.traits as |trait|}}
-            <span class="trait-badge">{{trait.label}}</span>
-            {{/each}}
-          </div>
-          {{/if}}
-
-          {{#if act.description}}
-          <div class="action-summary {{#if act.isExpanded}}expanded{{else}}collapsed{{/if}}">
-            <div class="action-description-content">
-              {{{act.description}}}
-            </div>
-          </div>
-          {{/if}}
-        </div>
+        {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act glyphType="free"}}
         {{/each}}
       </div>
     </section>
@@ -268,54 +127,7 @@
       <h3 class="section-title"><i class="fas fa-book-sparkles"></i> Skill Actions</h3>
       <div class="character-actions-list">
         {{#each characterActions.skillActions as |act|}}
-        <div class="action-card character-action-card {{#if act.isExpanded}}expanded{{/if}}" data-item-id="{{act.id}}">
-          <div class="action-card-header">
-            <div class="action-title-group touch-target" data-action="toggleActionSummary" data-item-id="{{act.id}}" title="Toggle Description">
-              {{#if act.glyph}}
-              <span class="action-cost-glyph">{{act.glyph}}</span>
-              {{/if}}
-              <span class="action-name"><strong>{{act.name}}</strong></span>
-              {{#if act.description}}
-              <i class="fas fa-chevron-down action-expand-icon {{#if act.isExpanded}}expanded{{/if}}"></i>
-              {{/if}}
-            </div>
-            <div class="action-btn-group">
-              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
-                <i class="fas fa-message"></i>
-              </button>
-              {{#if act.usable}}
-              <button type="button" class="touch-target btn-action-use {{#if act.active}}active{{/if}}" data-action="useAction" data-item-id="{{act.id}}" title="{{#if act.active}}Deactivate{{else}}Use Action{{/if}}">
-                {{#if act.active}}Active{{else}}Use{{#if act.multiActionLabel}} ({{act.multiActionLabel}}){{/if}}{{/if}}
-              </button>
-              {{/if}}
-              {{#if act.hasRoll}}
-              <button type="button" class="touch-target btn-action-roll {{#if act.isAttack}}btn-action-attack{{/if}}" data-action="rollActionCheck" data-item-id="{{act.id}}" data-action-slug="{{act.slug}}" title="{{#if act.isAttack}}Attack{{else}}Roll Check{{/if}}">
-                {{#if act.isAttack}}
-                  <i class="fas fa-crosshairs"></i> Attack{{#if act.multiActionLabel}} ({{act.multiActionLabel}}){{/if}}
-                {{else}}
-                  <i class="fas fa-dice-d20"></i> Roll{{#if act.multiActionLabel}} ({{act.multiActionLabel}}){{/if}}
-                {{/if}}
-              </button>
-              {{/if}}
-            </div>
-          </div>
-
-          {{#if act.traits.length}}
-          <div class="action-traits">
-            {{#each act.traits as |trait|}}
-            <span class="trait-badge">{{trait.label}}</span>
-            {{/each}}
-          </div>
-          {{/if}}
-
-          {{#if act.description}}
-          <div class="action-summary {{#if act.isExpanded}}expanded{{else}}collapsed{{/if}}">
-            <div class="action-description-content">
-              {{{act.description}}}
-            </div>
-          </div>
-          {{/if}}
-        </div>
+        {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act}}
         {{/each}}
       </div>
     </section>
@@ -327,54 +139,7 @@
       <h3 class="section-title"><i class="fas fa-compass"></i> Exploration Activities</h3>
       <div class="character-actions-list">
         {{#each characterActions.exploration as |act|}}
-        <div class="action-card character-action-card {{#if act.isExpanded}}expanded{{/if}}" data-item-id="{{act.id}}">
-          <div class="action-card-header">
-            <div class="action-title-group touch-target" data-action="toggleActionSummary" data-item-id="{{act.id}}" title="Toggle Description">
-              {{#if act.glyph}}
-              <span class="action-cost-glyph">{{act.glyph}}</span>
-              {{/if}}
-              <span class="action-name"><strong>{{act.name}}</strong></span>
-              {{#if act.description}}
-              <i class="fas fa-chevron-down action-expand-icon {{#if act.isExpanded}}expanded{{/if}}"></i>
-              {{/if}}
-            </div>
-            <div class="action-btn-group">
-              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
-                <i class="fas fa-message"></i>
-              </button>
-              {{#if act.usable}}
-              <button type="button" class="touch-target btn-action-use {{#if act.active}}active{{/if}}" data-action="useAction" data-item-id="{{act.id}}" title="{{#if act.active}}Deactivate{{else}}Use Activity{{/if}}">
-                {{#if act.active}}Active{{else}}Use{{/if}}
-              </button>
-              {{/if}}
-              {{#if act.hasRoll}}
-              <button type="button" class="touch-target btn-action-roll {{#if act.isAttack}}btn-action-attack{{/if}}" data-action="rollActionCheck" data-item-id="{{act.id}}" data-action-slug="{{act.slug}}" title="{{#if act.isAttack}}Attack{{else}}Roll Check{{/if}}">
-                {{#if act.isAttack}}
-                  <i class="fas fa-crosshairs"></i> Attack
-                {{else}}
-                  <i class="fas fa-dice-d20"></i> Roll
-                {{/if}}
-              </button>
-              {{/if}}
-            </div>
-          </div>
-
-          {{#if act.traits.length}}
-          <div class="action-traits">
-            {{#each act.traits as |trait|}}
-            <span class="trait-badge">{{trait.label}}</span>
-            {{/each}}
-          </div>
-          {{/if}}
-
-          {{#if act.description}}
-          <div class="action-summary {{#if act.isExpanded}}expanded{{else}}collapsed{{/if}}">
-            <div class="action-description-content">
-              {{{act.description}}}
-            </div>
-          </div>
-          {{/if}}
-        </div>
+        {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act}}
         {{else}}
         <p class="empty-hint">No exploration activities configured on this character.</p>
         {{/each}}
@@ -387,54 +152,7 @@
       <h3 class="section-title"><i class="fas fa-campground"></i> Downtime Activities</h3>
       <div class="character-actions-list">
         {{#each characterActions.downtime as |act|}}
-        <div class="action-card character-action-card {{#if act.isExpanded}}expanded{{/if}}" data-item-id="{{act.id}}">
-          <div class="action-card-header">
-            <div class="action-title-group touch-target" data-action="toggleActionSummary" data-item-id="{{act.id}}" title="Toggle Description">
-              {{#if act.glyph}}
-              <span class="action-cost-glyph">{{act.glyph}}</span>
-              {{/if}}
-              <span class="action-name"><strong>{{act.name}}</strong></span>
-              {{#if act.description}}
-              <i class="fas fa-chevron-down action-expand-icon {{#if act.isExpanded}}expanded{{/if}}"></i>
-              {{/if}}
-            </div>
-            <div class="action-btn-group">
-              <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
-                <i class="fas fa-message"></i>
-              </button>
-              {{#if act.usable}}
-              <button type="button" class="touch-target btn-action-use {{#if act.active}}active{{/if}}" data-action="useAction" data-item-id="{{act.id}}" title="{{#if act.active}}Deactivate{{else}}Use Activity{{/if}}">
-                {{#if act.active}}Active{{else}}Use{{/if}}
-              </button>
-              {{/if}}
-              {{#if act.hasRoll}}
-              <button type="button" class="touch-target btn-action-roll {{#if act.isAttack}}btn-action-attack{{/if}}" data-action="rollActionCheck" data-item-id="{{act.id}}" data-action-slug="{{act.slug}}" title="{{#if act.isAttack}}Attack{{else}}Roll Check{{/if}}">
-                {{#if act.isAttack}}
-                  <i class="fas fa-crosshairs"></i> Attack
-                {{else}}
-                  <i class="fas fa-dice-d20"></i> Roll
-                {{/if}}
-              </button>
-              {{/if}}
-            </div>
-          </div>
-
-          {{#if act.traits.length}}
-          <div class="action-traits">
-            {{#each act.traits as |trait|}}
-            <span class="trait-badge">{{trait.label}}</span>
-            {{/each}}
-          </div>
-          {{/if}}
-
-          {{#if act.description}}
-          <div class="action-summary {{#if act.isExpanded}}expanded{{else}}collapsed{{/if}}">
-            <div class="action-description-content">
-              {{{act.description}}}
-            </div>
-          </div>
-          {{/if}}
-        </div>
+        {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act}}
         {{else}}
         <p class="empty-hint">No downtime activities configured on this character.</p>
         {{/each}}

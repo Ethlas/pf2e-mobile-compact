@@ -6,6 +6,22 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Shared Action Card Partial (`templates/parts/actions/`)
+
+#### Changed
+- **One template for an action card (`templates/parts/actions/action-card.hbs`, `templates/parts/actions.hbs`, `scripts/pf2e-mobile.js`, `scripts/verify.mjs`)**:
+  - The Actions, Reactions, Free Actions, Skill Actions, Exploration and Downtime sections each had their own copy of the action card. The card now lives in `actions/action-card.hbs` and each section renders it with one line; `actions.hbs` went from 444 to 162 lines. Strikes (Attacks) keep their own layout.
+  - The copies differed in three ways. Two are now parameters: `glyphType` ("reaction" / "free" shows the fixed ⬢ / ◇ symbol) and `showActionCount` (adds the action count to Use / Roll, as in Actions and Skill Actions).
+  - Rendered output is unchanged, checked by rendering three real character exports in every Actions sub-tab, collapsed and expanded, before and after. The `[Action Cost Labels]` check in `verify.mjs` now reads the Use / Roll label from the partial.
+- **Actions tab gets the spell card look (`templates/parts/actions/action-card.hbs`, `templates/parts/actions.hbs`, `styles/pf2e-mobile.css`, `scripts/verify.mjs`)**:
+  - Action cards follow the spell card structure: the whole line (name row plus a second row with traits and "Uses") toggles the drawer, without a chevron; the card lightens while pressed and gets an orange top edge when open; long names are cut off with an ellipsis instead of pushing the buttons off screen.
+  - Use and Roll / Attack are icon-only on the line (▶ / toggle when active, d20, crosshairs); the action cost is shown by the glyph, so the `showActionCount` parameter was removed. Chat moved into the drawer, which is now always present.
+  - The glyph uses the pf2e action icon font; reactions and free actions show the real reaction / free-action icons instead of ⬢ / ◇.
+  - Each Actions tab section (Attacks, Actions, Reactions, Free Actions, Skill Actions, Exploration, Downtime) is a frame like the spell rank groups, with its title inside, and the cards are raised rows. Strike cards keep their own layout and only get the raised card look. The sections do not fold: they have no fold state, so folding would add code rather than remove it.
+  - The CSS reuses the spell rules through combined selectors (for example `.spell-card-line, .action-card-line`); only the section title, icon-only buttons, traits row and strike padding needed their own rules.
+  - Removed the part of the `[Action Cost Labels]` check that required the "(2)" text on the Use / Roll buttons; the checks on how action counts are parsed stay.
+- **"Uses: x / y" shown in every Actions section (`templates/parts/actions/action-card.hbs`)**: the line for actions with limited uses (pf2e's Frequency, e.g. once per day) was only shown in Actions, Reactions and Free Actions. It is now also shown in Skill Actions, Exploration and Downtime when an activity has a limit; nothing changes for activities without one.
+
 ### Shared Spell Card & Cast Button Partials (`templates/parts/spells/`)
 
 #### Changed
