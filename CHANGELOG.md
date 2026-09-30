@@ -6,6 +6,12 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Strike Action Icon (`templates/parts/actions.hbs`)
+
+#### Changed
+- **Strike glyph is an icon**: the action cost on strike cards in Attacks was shown as the plain letter "A" (pf2e's glyph for one action). It now uses the pf2e action icon font, like the spell and action cards, so it shows the one-action icon.
+- **Ready weapons are marked (`scripts/apps/sheet-helpers/context-actions.js`, `templates/parts/actions.hbs`, `styles/pf2e-mobile.css`)**: strike cards whose weapon is ready to strike get a green left border, the same green as the Held / Equipped badges on the Gear tab. "Ready" is pf2e's own `strike.ready`: the weapon is held in enough hands, or it is a worn thrown weapon and a hand is free.
+
 ### Shared Item Card Partial & Gear Tab Look (`templates/parts/inventory/`)
 
 #### Changed

@@ -2050,6 +2050,9 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }.pf2e-mobile-sheet .strike-card {
   /* Strikes keep their own layout, which needs inner padding (the other cards pad their line) */
   padding: 10px;
+}.pf2e-mobile-sheet .strike-card.ready {
+  /* Weapon ready to strike (held, per pf2e's strike.ready): same green as the Gear tab's Held / Equipped badges */
+  border-left: 2px solid #4caf50;
 }.pf2e-mobile-sheet .spell-card .action-card-header {
   flex-wrap: nowrap;
   gap: 6px;

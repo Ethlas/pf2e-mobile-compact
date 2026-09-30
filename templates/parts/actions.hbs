@@ -18,24 +18,27 @@
       <h3 class="section-title"><i class="fas fa-fist-raised"></i> Attacks</h3>
       <div class="m-group-list strikes-list">
         {{#each strikes as |strike index|}}
-        <div class="action-card m-card strike-card">
+        <div class="action-card m-card strike-card {{#if strike.ready}}ready{{/if}}">
           <!-- Strike Header: Weapon Image, Name, Glyph, Traits, Badge -->
           <div class="strike-card-header">
             <img class="strike-img" src="{{strike.img}}" alt="{{strike.label}}" />
             <div class="strike-title-group">
               <div class="strike-name-row">
-                <span class="action-cost-glyph">{{strike.glyph}}</span>
+                <span class="action-cost-glyph"><span class="action-glyph">{{strike.glyph}}</span></span>
                 <span class="action-name"><strong>{{strike.label}}</strong></span>
               </div>
               {{#if strike.traits.length}}
               <div class="action-traits strike-traits">
                 {{#each strike.traits as |trait|}}
-                <span class="trait-badge">{{trait.label}}</span>
+                  <span class="trait-badge">{{trait.label}}</span>
                 {{/each}}
+                {{#if strike.isMelee}}<span class="trait-badge">Melee</span>{{/if}}
+                {{#if strike.isThrown}}<span class="trait-badge">Thrown</span>{{/if}}
+                {{#if strike.isRanged}}<span class="trait-badge">Ranged</span>{{/if}}
+                {{#if strike.rangeIncrement}}<span class="trait-badge">{{strike.rangeIncrement}} ft</span>{{/if}}
               </div>
               {{/if}}
             </div>
-            <span class="action-type-badge">{{strike.type}}</span>
           </div>
 
           <!-- MAP Variants at the TOP (Prominent attack row) -->
@@ -68,9 +71,9 @@
             {{#each strike.auxiliaryActions as |aux|}}
             <button type="button" class="touch-target aux-action-btn" data-action="executeAuxiliaryAction" data-strike-index="{{index}}" data-aux-index="{{aux.index}}" title="{{aux.label}}">
               {{#if aux.glyph}}
-              <span class="aux-glyph">{{aux.glyph}}</span>
+                <span class="aux-glyph"><span class="action-glyph">{{aux.glyph}}</span></span>
               {{/if}}
-              <span class="aux-label">{{aux.label}}</span>
+                <span class="aux-label">{{aux.label}}</span>
               {{#if aux.annotation}}
               <span class="aux-annotation">({{aux.annotation}})</span>
               {{/if}}

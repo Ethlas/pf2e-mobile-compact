@@ -132,7 +132,12 @@ export async function prepareActionsContext(actor, sheet, context) {
         : (action.damageFormula ?? "Damage"),
       traits,
       auxiliaryActions: auxActions,
-      hasAuxiliary: auxActions.length > 0
+      hasAuxiliary: auxActions.length > 0,
+      isRanged: !!item?.isRanged,
+      isMelee: !!item?.isMelee,
+      isThrown: !!item?.isThrown,
+      rangeIncrement: item?.range?.increment ?? null,
+      ready: action.ready
     };
   });
 
