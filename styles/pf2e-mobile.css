@@ -1151,10 +1151,8 @@ body.pf2e-mobile-active textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #333;
   color: #ffb74d;
-  font-weight: bold;
-  border-radius: 4px;
+  /*border-radius: 4px;*/
   min-width: 26px;
   width: auto;
   height: 26px;
@@ -2008,7 +2006,8 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }/* Spell Card Details & Status */.pf2e-mobile-sheet .spell-card {
   background: #1e1e1e;
   border: 1px solid #383838;
-  transition: opacity 0.15s ease, background 0.15s ease;
+  transition: opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  padding: 0;
 }.pf2e-mobile-sheet .spell-card .action-card-header {
   flex-wrap: nowrap;
   gap: 6px;
@@ -2017,6 +2016,32 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  padding: 10px;
+}
+
+/* The spell card has no chevron; the card itself shows that it opens.
+   Tap feedback: lighten the card while its line is pressed, but not when a button on it is. */
+.pf2e-mobile-sheet .spell-card:has(.spell-card-line:active):not(:has(button:active)) {
+  background: #2a2a2a;
+}
+
+/* Row of extra buttons in the opened drawer (restore slot, staff cast options) */
+.pf2e-mobile-sheet .spell-drawer-actions {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+/* Hide the row when the caller supplied no buttons (it may still contain whitespace, so :empty is not enough) */
+.pf2e-mobile-sheet .spell-drawer-actions:not(:has(*)) {
+  display: none;
+}
+
+/* Open state: orange-tinted border that continues the drawer's orange accent */
+.pf2e-mobile-sheet .spell-card.expanded {
+  border-color: rgba(255, 183, 77, 0.55);
+  background: #232323;
 }.pf2e-mobile-sheet .spell-card .action-title-group {
   min-width: 120px;
   flex: 1 1 120px;
@@ -2125,12 +2150,18 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-color: #2e7d32;
 }.pf2e-mobile-sheet .btn-spell-damage.btn-spell-heal:active {
   background: #2e7d32;
-}.pf2e-mobile-sheet .spell-damage-drawer-row {
+}/* Drawer row: Chat (fixed width) + damage/healing button (fills the rest) */
+.pf2e-mobile-sheet .spell-drawer-primary-row {
   margin-bottom: 10px;
-  display: flex;
   width: 100%;
+  gap: 6px;
+  align-items: stretch;
+}.pf2e-mobile-sheet .spell-drawer-primary-row .btn-action-chat {
+  flex: 0 0 auto;
+  height: 42px;
 }.pf2e-mobile-sheet .btn-spell-damage.btn-spell-damage-full {
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   min-height: 42px;
   height: 42px;
   font-size: 0.88rem;

@@ -1,0 +1,19 @@
+{{!--
+  Cast button on the line of a staff spell.
+  With only one way to cast (a cantrip, or no spontaneous slots of this rank or higher)
+  it is that cast button from staff-cast-buttons.hbs. With two ways (full charge cost,
+  or 1 charge + a spell slot) it opens the card's drawer, where both options are shown.
+  A popup to choose between them may replace the drawer later.
+
+  Parameters (hash):
+    spell    Formatted staff spell (formatSpell() plus the staff charge fields)
+    rank     Rank of the staff rank group the spell is listed under
+    staffId  Id of the staff item
+--}}
+{{#if (or spell.isCantrip (not spell.hasSpontaneousOption))}}
+{{> "modules/pf2e-mobile-compact/templates/parts/spells/staff-cast-buttons.hbs" spell=spell rank=rank staffId=staffId}}
+{{else}}
+<button type="button" class="touch-target btn-cast" data-action="toggleActionSummary" data-item-id="{{spell.cardKey}}" title="Choose how to cast {{spell.name}}: staff charges, or 1 charge + a spell slot">
+  <i class="fas fa-bolt"></i>&nbsp; / &nbsp;<i class="fas fa-wand-magic-sparkles"></i>
+</button>
+{{/if}}

@@ -71,29 +71,30 @@
 
       <!-- Spells in this Rank -->
       <div class="spell-list {{#if group.isCollapsed}}collapsed{{/if}}">
-        {{#each group.spells as |spell|}}
-        {{#> "modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs" spell=spell rank=group.rank showManageButtons=true}}
-<!--          <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{spell.id}}" data-rank="{{group.rank}}" title="Send to Chat">-->
-<!--            <i class="fas fa-message"></i>-->
-<!--          </button>-->
+        {{#each group.spells as |listSpell|}}
+        {{#> "modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs" spell=listSpell rank=group.rank showManageButtons=true}}
+          {{!-- Slots can only use the card's parameters (spell, rank) and @root, see spell-card.hbs --}}
+          {{#*inline "lineButtons"}}
+  <!--          {{#if spell.hasDamage}}-->
+  <!--          <button type="button" class="touch-target btn-spell-damage {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}}: {{spell.damageFormula}}{{/if}}">-->
+  <!--            {{#if spell.isHealingOnly}}-->
+  <!--              <i class="fas fa-heart-pulse"></i> Heal-->
+  <!--            {{else}}-->
+  <!--              <i class="fas fa-burst"></i> Dmg-->
+  <!--            {{/if}}-->
+  <!--          </button>-->
+  <!--          {{/if}}-->
 
-          {{#if (and spell.isPrepared spell.isExpended)}}
-          <button type="button" class="touch-target btn-restore-slot" data-action="toggleSlotExpended" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="Restore Expended Slot">
-            <i class="fas fa-arrow-rotate-left"></i>
-          </button>
-          {{/if}}
+            {{> "modules/pf2e-mobile-compact/templates/parts/spells/cast-button.hbs" spell=spell rank=rank}}
+          {{/inline}}
 
-<!--          {{#if spell.hasDamage}}-->
-<!--          <button type="button" class="touch-target btn-spell-damage {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}}: {{spell.damageFormula}}{{/if}}">-->
-<!--            {{#if spell.isHealingOnly}}-->
-<!--              <i class="fas fa-heart-pulse"></i> Heal-->
-<!--            {{else}}-->
-<!--              <i class="fas fa-burst"></i> Dmg-->
-<!--            {{/if}}-->
-<!--          </button>-->
-<!--          {{/if}}-->
-
-          {{> "modules/pf2e-mobile-compact/templates/parts/spells/cast-button.hbs" spell=spell rank=group.rank}}
+          {{#*inline "drawerButtons"}}
+            {{#if (and spell.isPrepared spell.isExpended)}}
+            <button type="button" class="touch-target btn-restore-slot" data-action="toggleSlotExpended" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="Restore Expended Slot">
+              <i class="fas fa-arrow-rotate-left"></i>
+            </button>
+            {{/if}}
+          {{/inline}}
         {{/"modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs"}}
         {{else}}
         <p class="empty-hint">No spells available for this rank.</p>
@@ -253,23 +254,29 @@
             </div>
 
             <div class="spell-list {{#if group.isCollapsed}}collapsed{{/if}}">
-              {{#each group.spells as |spell|}}
-              {{#> "modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs" spell=spell rank=group.rank showChargeCost=true}}
-                <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{spell.id}}" title="Send to Chat">
-                  <i class="fas fa-message"></i>
-                </button>
+              {{#each group.spells as |staffSpell|}}
+              {{#> "modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs" spell=staffSpell rank=group.rank showChargeCost=true}}
+                {{!-- Slots can only use the card's parameters (spell, rank) and @root, see spell-card.hbs --}}
+                {{#*inline "lineButtons"}}
+  <!--                {{#if spell.hasDamage}}-->
+  <!--                <button type="button" class="touch-target btn-spell-damage {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}}: {{spell.damageFormula}}{{/if}}">-->
+  <!--                  {{#if spell.isHealingOnly}}-->
+  <!--                    <i class="fas fa-heart-pulse"></i> Heal-->
+  <!--                  {{else}}-->
+  <!--                    <i class="fas fa-burst"></i> Dmg-->
+  <!--                  {{/if}}-->
+  <!--                </button>-->
+  <!--                {{/if}}-->
 
-<!--                {{#if spell.hasDamage}}-->
-<!--                <button type="button" class="touch-target btn-spell-damage {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{group.rank}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}}: {{spell.damageFormula}}{{/if}}">-->
-<!--                  {{#if spell.isHealingOnly}}-->
-<!--                    <i class="fas fa-heart-pulse"></i> Heal-->
-<!--                  {{else}}-->
-<!--                    <i class="fas fa-burst"></i> Dmg-->
-<!--                  {{/if}}-->
-<!--                </button>-->
-<!--                {{/if}}-->
+                  {{> "modules/pf2e-mobile-compact/templates/parts/spells/staff-line-cast-button.hbs" spell=spell rank=rank staffId=@root.activations.staff.id}}
+                {{/inline}}
 
-                {{> "modules/pf2e-mobile-compact/templates/parts/spells/staff-cast-buttons.hbs" spell=spell rank=group.rank staffId=@root.activations.staff.id}}
+                {{#*inline "drawerButtons"}}
+                  {{!-- Both ways to cast; only shown when there are two (see staff-line-cast-button.hbs) --}}
+                  {{#if (and spell.hasSpontaneousOption (not spell.isCantrip))}}
+                  {{> "modules/pf2e-mobile-compact/templates/parts/spells/staff-cast-buttons.hbs" spell=spell rank=rank staffId=@root.activations.staff.id}}
+                  {{/if}}
+                {{/inline}}
               {{/"modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs"}}
               {{/each}}
             </div>

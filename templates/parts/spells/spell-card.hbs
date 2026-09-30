@@ -1,7 +1,11 @@
 {{!--
   Spell card: one spell line with its quick-detail tags and expandable details drawer.
-  Rendered as a partial block from spells.hbs; the block content supplies the buttons
-  shown next to the spell name, because those differ per place (spell list, staff).
+  Rendered as a partial block from spells.hbs. The caller fills two named slots with
+  inline partials, because the buttons differ per place (spell list, staff):
+    lineButtons    buttons next to the spell name (the quick Cast button)
+    drawerButtons  extra buttons in the opened drawer (restore slot, staff cast options)
+  Inside those slots only the parameters below and @root are available; block parameters
+  of the caller's each-loop (as |x|) are not, and must not be named "spell".
 
   Parameters (hash):
     spell              Formatted spell from formatSpell() in context-spells.js
@@ -16,7 +20,6 @@
     <div class="m-flex-col m-align-baseline">
       <!-- Title (layout only; the whole line is the tap target) -->
       <div class="m-flex-row m-align-center">
-        <i class="fas fa-chevron-down action-expand-icon {{#if spell.isExpanded}}expanded{{/if}}"></i>
         {{#if spell.isFocus}}
           <span class="spell-source-badge badge-focus badge-letter" title="Focus Spell">F</span>
         {{else if spell.isInnate}}
@@ -34,7 +37,7 @@
 
       </div>
 
-      <!-- Action Buttons (supplied by the caller) -->
+      <!-- Source badges + quick detail tags (under the spell name, always visible) -->
       <div class="spell-details">
         {{#if spell.isSignature}}
           <span class="spell-source-badge badge-signature badge-letter" title="Signature Spell"><i class="fas fa-star"></i></span>
@@ -61,11 +64,10 @@
         {{#if spell.duration}}<span class="detail-tag"><i class="fas fa-clock"></i> {{spell.duration}}</span>{{/if}}
       </div>
     </div>
+    <!-- Line buttons (supplied by the caller through the "lineButtons" slot) -->
     <div class="action-btn-group">
-      {{> @partial-block}}
+      {{#> lineButtons}}{{/lineButtons}}
     </div>
-
-    <!-- One-Letter Source Badges + Quick Detail Tags (Under Spell Name, Always Visible) -->
   </div>
 
   <!-- Expandable Details Drawer -->
@@ -106,8 +108,13 @@
     </div>
     {{/if}}
 
-    {{#if spell.hasDamage}}
-    <div class="spell-damage-drawer-row">
+    <!-- Chat is always shown; the damage/healing button, when the spell has one, fills the rest of the row -->
+    <div class="spell-drawer-primary-row m-flex-row">
+      <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{spell.id}}" data-rank="{{rank}}" title="Send to Chat">
+        <i class="fas fa-message"></i>
+      </button>
+
+      {{#if spell.hasDamage}}
       <button type="button" class="touch-target btn-spell-damage btn-spell-damage-full {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}})">
         {{#if spell.isHealingOnly}}
           <i class="fas fa-heart-pulse"></i> Roll Healing (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}} · {{spell.damageFormula}}{{/if}}
@@ -115,8 +122,13 @@
           <i class="fas fa-burst"></i> Roll Damage (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}} · {{spell.damageFormula}}{{/if}}
         {{/if}}
       </button>
+      {{/if}}
     </div>
-    {{/if}}
+
+    <!-- Drawer buttons (supplied by the caller through the "drawerButtons" slot) -->
+    <div class="spell-drawer-actions m-flex-row">
+      {{#> drawerButtons}}{{/drawerButtons}}
+    </div>
 
     <div class="action-description-content">
       {{{spell.description}}}
