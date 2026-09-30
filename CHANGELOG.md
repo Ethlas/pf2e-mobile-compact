@@ -6,6 +6,26 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Shared Item Card Partial & Gear Tab Look (`templates/parts/inventory/`)
+
+#### Changed
+- **One template for an item card (`templates/parts/inventory/item-card.hbs`, `templates/parts/inventory.hbs`, `scripts/pf2e-mobile.js`)**:
+  - Consumables, Weapons, Armor & Shields and Other Gear each had their own copy of the item card. The card now lives in `inventory/item-card.hbs`, rendered as a partial block; `inventory.hbs` went from 295 to 195 lines. Each section fills the named slots `badges`, `lineButtons` and `drawerButtons` with inline partials; `showQuantity` and `showBulk` cover the other differences. The card itself adds Send to Stash.
+  - As with the spell card, the slots can only use the card's parameters and `@root` (`../partyStash` became `@root.partyStash`), and the loops no longer name their item `item`.
+  - Before the look changed below, the refactor was checked to render identically for three real character exports, with and without a party stash, collapsed and expanded.
+- **Gear tab gets the shared look (`templates/parts/inventory/item-card.hbs`, `templates/parts/inventory.hbs`, `styles/pf2e-mobile.css`)**:
+  - The four sections are `.m-group` frames (they keep folding and their fold chevron) and the items are `.m-card` rows. The whole line (image, name, badge row) toggles the drawer, without a chevron; long names are cut off with an ellipsis.
+  - Use / Apply and the status badges (carry state, equipped, invested) stay on the line. Runes, Clean and Send to Stash moved into the drawer, above the description. The bulk is shown as a badge in the badge row.
+  - The section title rule is now shared (`.m-group > .section-title`) by the Actions and Gear tabs. The Spells and Actions tabs were measured before and after and are unchanged.
+
+### Shared Group & Card Classes (`m-group`, `m-card`)
+
+#### Changed
+- **One set of classes for the shared look (`styles/pf2e-mobile.css`, `templates/parts/spells/spell-card.hbs`, `templates/parts/spells.hbs`, `templates/parts/actions/action-card.hbs`, `templates/parts/actions.hbs`)**:
+  - The Spells and Actions tabs shared their look through pairs of class names (`.spell-card-line, .action-card-line`, ...). They now use one set of `m-` classes: `.m-group` (padded frame: spell rank groups, Actions sections), `.m-group-list` (its list of cards), `.m-card` (raised card: spell, action and strike cards), `.m-card-line` (tappable line), `.m-card-main` / `.m-card-title` (name column and name row) and `.m-drawer-row` (Chat + damage row in the drawer). The CSS section starts with a comment listing them.
+  - Tab-specific class names stay where JavaScript uses them (`.spell-list`, `.spell-rank-group`, `.spell-card`, `.strike-card`) or for tab-specific details; the old line/column/row names were replaced. The old `.character-actions-list`, `.character-action-card` and `.character-action-card.expanded` rules, and the strike card's own background and border, were removed because the shared rules cover them.
+  - The look is unchanged: the position, size and computed style of every element (6422 elements in six views across both tabs) were measured in the preview before and after and are identical.
+
 ### Shared Action Card Partial (`templates/parts/actions/`)
 
 #### Changed

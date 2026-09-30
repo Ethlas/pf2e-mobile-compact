@@ -42,7 +42,7 @@
   <!-- ======================================================== -->
   <div class="spells-cast-view">
     {{#each spellRanks as |group|}}
-    <section class="spell-rank-group" data-rank="{{group.rank}}">
+    <section class="m-group spell-rank-group" data-rank="{{group.rank}}">
       <!-- Collapsible Rank Header -->
       <div class="spell-rank-header touch-target" data-action="toggleRankGroup" data-rank="{{group.rank}}" title="Toggle {{group.label}}">
         <div class="rank-header-left">
@@ -80,7 +80,7 @@
       </div>
 
       <!-- Spells in this Rank -->
-      <div class="spell-list {{#if group.isCollapsed}}collapsed{{/if}}">
+      <div class="m-group-list spell-list {{#if group.isCollapsed}}collapsed{{/if}}">
         {{#each group.spells as |listSpell|}}
         {{!-- The rank comes from the spell (castRank): the Focus Spells group has no single rank --}}
         {{#> "modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs" spell=listSpell rank=listSpell.castRank showManageButtons=true}}
@@ -246,7 +246,7 @@
             <i class="fas fa-wand-magic-sparkles"></i> <span>Staff Spells ({{activations.staff.spellCount}})</span>
           </div>
           {{#each activations.staff.ranks as |group|}}
-          <section class="spell-rank-group staff-rank-group" data-rank="{{group.rank}}">
+          <section class="m-group spell-rank-group staff-rank-group" data-rank="{{group.rank}}">
             <div class="spell-rank-header touch-target" data-action="toggleRankGroup" data-rank="staff-{{group.rank}}" title="Toggle {{group.label}}">
               <div class="rank-header-left">
                 <i class="fas fa-chevron-down rank-expand-icon {{#if group.isCollapsed}}collapsed{{/if}}"></i>
@@ -255,7 +255,7 @@
               </div>
             </div>
 
-            <div class="spell-list {{#if group.isCollapsed}}collapsed{{/if}}">
+            <div class="m-group-list spell-list {{#if group.isCollapsed}}collapsed{{/if}}">
               {{#each group.spells as |staffSpell|}}
               {{#> "modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs" spell=staffSpell rank=group.rank showChargeCost=true}}
                 {{!-- Slots can only use the card's parameters (spell, rank) and @root, see spell-card.hbs --}}

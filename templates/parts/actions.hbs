@@ -14,11 +14,11 @@
 
   {{#if (eq actionSubTab "encounter")}}
     <!-- 1. Strikes & Attacks Section -->
-    <section class="actions-section">
+    <section class="m-group actions-section">
       <h3 class="section-title"><i class="fas fa-fist-raised"></i> Attacks</h3>
-      <div class="strikes-list">
+      <div class="m-group-list strikes-list">
         {{#each strikes as |strike index|}}
-        <div class="action-card strike-card">
+        <div class="action-card m-card strike-card">
           <!-- Strike Header: Weapon Image, Name, Glyph, Traits, Badge -->
           <div class="strike-card-header">
             <img class="strike-img" src="{{strike.img}}" alt="{{strike.label}}" />
@@ -87,9 +87,9 @@
 
     <!-- 2. Actions (from feats etc.) -->
     {{#if characterActions.actions.length}}
-    <section class="actions-section">
+    <section class="m-group actions-section">
       <h3 class="section-title"><i class="fas fa-bolt"></i> Actions</h3>
-      <div class="character-actions-list">
+      <div class="m-group-list character-actions-list">
         {{#each characterActions.actions as |act|}}
         {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act}}
         {{/each}}
@@ -99,9 +99,9 @@
 
     <!-- 3. Reactions -->
     {{#if characterActions.reactions.length}}
-    <section class="actions-section">
+    <section class="m-group actions-section">
       <h3 class="section-title"><i class="fas fa-rotate-left"></i> Reactions</h3>
-      <div class="character-actions-list">
+      <div class="m-group-list character-actions-list">
         {{#each characterActions.reactions as |act|}}
         {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act glyphType="reaction"}}
         {{/each}}
@@ -111,9 +111,9 @@
 
     <!-- 4. Free Actions -->
     {{#if characterActions.free.length}}
-    <section class="actions-section">
+    <section class="m-group actions-section">
       <h3 class="section-title"><i class="far fa-circle"></i> Free Actions</h3>
-      <div class="character-actions-list">
+      <div class="m-group-list character-actions-list">
         {{#each characterActions.free as |act|}}
         {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act glyphType="free"}}
         {{/each}}
@@ -123,9 +123,9 @@
 
     <!-- 5. Skill actions (those that are possible because of skills) -->
     {{#if characterActions.skillActions.length}}
-    <section class="actions-section skill-actions-section">
+    <section class="m-group actions-section skill-actions-section">
       <h3 class="section-title"><i class="fas fa-book-sparkles"></i> Skill Actions</h3>
-      <div class="character-actions-list">
+      <div class="m-group-list character-actions-list">
         {{#each characterActions.skillActions as |act|}}
         {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act}}
         {{/each}}
@@ -135,9 +135,9 @@
 
   {{else if (eq actionSubTab "exploration")}}
     <!-- Exploration Activities Tab -->
-    <section class="actions-section">
+    <section class="m-group actions-section">
       <h3 class="section-title"><i class="fas fa-compass"></i> Exploration Activities</h3>
-      <div class="character-actions-list">
+      <div class="m-group-list character-actions-list">
         {{#each characterActions.exploration as |act|}}
         {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act}}
         {{else}}
@@ -148,9 +148,9 @@
 
   {{else if (eq actionSubTab "downtime")}}
     <!-- Downtime Activities Tab -->
-    <section class="actions-section">
+    <section class="m-group actions-section">
       <h3 class="section-title"><i class="fas fa-campground"></i> Downtime Activities</h3>
-      <div class="character-actions-list">
+      <div class="m-group-list character-actions-list">
         {{#each characterActions.downtime as |act|}}
         {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act}}
         {{else}}

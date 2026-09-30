@@ -13,13 +13,13 @@
     showManageButtons  Show the Set Signature / Remove Spell footer in the drawer
     showChargeCost     Show the staff charge-cost badge (staff spells, from context-activations.js)
 --}}
-<div class="action-card spell-card {{#if spell.isExpanded}}expanded{{/if}} {{#if spell.isExpended}}expended{{/if}}" data-item-id="{{#if spell.cardKey}}{{spell.cardKey}}{{else}}{{spell.id}}{{/if}}" data-entry-id="{{spell.entryId}}">
+<div class="action-card m-card spell-card {{#if spell.isExpanded}}expanded{{/if}} {{#if spell.isExpended}}expended{{/if}}" data-item-id="{{#if spell.cardKey}}{{spell.cardKey}}{{else}}{{spell.id}}{{/if}}" data-entry-id="{{spell.entryId}}">
   <!-- Spell line: tapping anywhere on the name row or detail tags toggles the drawer.
        The buttons inside keep their own data-action, which takes precedence. -->
-  <div class="spell-card-line m-flex-row" data-action="toggleActionSummary" data-item-id="{{#if spell.cardKey}}{{spell.cardKey}}{{else}}{{spell.id}}{{/if}}" title="{{spell.name}}">
-    <div class="spell-card-main m-flex-col m-align-baseline">
+  <div class="m-card-line m-flex-row" data-action="toggleActionSummary" data-item-id="{{#if spell.cardKey}}{{spell.cardKey}}{{else}}{{spell.id}}{{/if}}" title="{{spell.name}}">
+    <div class="m-card-main m-flex-col m-align-baseline">
       <!-- Title (layout only; the whole line is the tap target) -->
-      <div class="spell-card-title m-flex-row m-align-center">
+      <div class="m-card-title m-flex-row m-align-center">
         {{#if spell.isFocus}}
           <span class="spell-source-badge badge-focus badge-letter" title="Focus Spell">F</span>
         {{else if spell.isInnate}}
@@ -109,7 +109,7 @@
     {{/if}}
 
     <!-- Chat is always shown; the damage/healing button, when the spell has one, fills the rest of the row -->
-    <div class="spell-drawer-primary-row m-flex-row">
+    <div class="m-drawer-row m-flex-row">
       <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{spell.id}}" data-rank="{{rank}}" title="Send to Chat">
         <i class="fas fa-message"></i>
       </button>
