@@ -27,7 +27,10 @@ export async function onSwitchSpellSubTab(sheet, event, target) {
 export function onToggleRankGroup(sheet, event, target) {
   if (event.target?.closest?.(".slot-counter")) return;
   event.preventDefault();
-  const rank = parseInt(target.dataset.rank, 10);
+  // Numeric ranks ("0"-"10") are stored as numbers, other group keys ("focus", "staff-2") as text,
+  // matching the keys the context builders look up in _collapsedRankGroups.
+  const rawRank = String(target.dataset.rank ?? "");
+  const rank = /^\d+$/.test(rawRank) ? parseInt(rawRank, 10) : rawRank;
   const groupEl = target.closest(".spell-rank-group");
   if (!groupEl) return;
 

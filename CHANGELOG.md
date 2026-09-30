@@ -39,6 +39,17 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 - **Rank groups frame their spells (`styles/pf2e-mobile.css`)**:
   - Each rank group (`.spell-rank-group`, in the Spells list and inside the staff) is a padded frame with a 2px border and rounded corners. The rank header (title, count, slots) sits inside the frame without its own bar, and the spells are separate raised rows with a small gap between them inside the frame: only a light top border (`1px solid rgba(255, 255, 255, 0.25)`, other sides `0`) plus a soft drop shadow, on a background slightly lighter than the frame. Rank groups can still be folded.
   - Because only the top border has a width, an open spell shows an orange top edge and an expended spell a red top edge (with its red-tinted background). The "No spells available for this rank." hint sits inside the frame.
+- **Focus spells in their own group above the Cantrips (`scripts/apps/sheet-helpers/context-spells.js`, `templates/parts/spells.hbs`)**:
+  - `prepareSpellsContext()` collects focus spells into a "Focus Spells" group (`rank: "focus"`) that is placed first in `spellRanks`, instead of in the rank they are heightened to. Each spell keeps its `castRank`, so heightening, damage and casting use the correct rank; the group only appears when there are focus spells.
+  - The spell card now gets its rank from the spell (`rank=listSpell.castRank`) instead of from the group, since the focus group has no single rank. For all rank groups this is the same value (checked by rendering every preview fixture before and after).
+  - The rank header tooltip reads "Toggle {{group.label}}" (for example "Toggle Focus Spells", "Toggle Rank 1").
+  - The focus point counter moved from the action bar above the spells into the Focus Spells header, in the place where rank groups show their slots. A focus pool without focus spells cannot be used, so the action bar no longer shows it at all; the unused `.focus-pool-tracker` / `.focus-buttons` CSS was removed.
+  - Focus points are shown as one flame per point (`.btn-focus-point`): lit for available points, dimmed for spent ones. Tapping a lit flame spends a point, tapping a dimmed one regains a point (same `adjustFocus` action with `data-delta` −1 / +1). `prepareHeaderContext()` adds `focus.points` (one `{ available }` entry per point) because Handlebars cannot loop over a number. Each flame is a 36px touch target, the same size as the slot −/+ buttons.
+
+#### Fixed
+- **Folding staff rank groups and the focus group is remembered (`scripts/apps/sheet-helpers/spells-handlers.js`)**: `onToggleRankGroup` used `parseInt` on the group key, turning `"staff-2"` into `NaN`, so a folded staff rank group opened again on the next render. Numeric keys are still stored as numbers; other keys (`"focus"`, `"staff-2"`) are now stored as text, matching what the context builders look up.
+
+#### Changed
 - **Staff spells use the same card layout as the Spells list (`templates/parts/spells.hbs`, `styles/pf2e-mobile.css`)**:
   - Staff spell buttons now sit next to the spell name instead of on a row underneath, and the charge-cost badge moved from the name row into the detail tags row. The layout is intentionally left unpolished until the spell card design is reworked.
   - Removed the now unused stacked staff layout CSS (`.staff-spell-card`, `.staff-spell-header*`, `.staff-spell-details`, `.staff-spell-actions`, `.staff-btn-flex`).

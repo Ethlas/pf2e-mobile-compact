@@ -207,6 +207,19 @@ export async function prepareSpellsContext(actor, sheet, context) {
     entryId: null
   }));
 
+  // Focus spells get their own group, shown above the Cantrips. Each spell keeps the rank it is
+  // cast at (castRank), so heightening and damage stay correct; the group itself has no rank,
+  // so its collapse key is the string "focus" instead of a number.
+  const focusGroup = {
+    rank: "focus",
+    label: "Focus Spells",
+    isCollapsed: sheet._collapsedRankGroups?.has("focus"),
+    spells: [],
+    hasSlots: false,
+    slots: { value: 0, max: 0 },
+    entryId: null
+  };
+
   for (const entry of entries) {
     const entryId = entry.id;
     const isPrepared = entry.isPrepared || entry.system?.prepared?.value === "prepared";
@@ -355,7 +368,8 @@ export async function prepareSpellsContext(actor, sheet, context) {
               castRank: targetRank,
               cardKey: `${spell.id}-${targetRank}`
             });
-            rankBuckets[targetRank].spells.push(formatted);
+            const group = isFocusSpell ? focusGroup : rankBuckets[targetRank];
+            group.spells.push(formatted);
           }
         }
       }
@@ -363,12 +377,15 @@ export async function prepareSpellsContext(actor, sheet, context) {
   }
 
   const sortByName = (a, b) => a.name.localeCompare(b.name);
-  for (const b of rankBuckets) {
+  for (const b of [focusGroup, ...rankBuckets]) {
     b.spells.sort(sortByName);
   }
 
-  // Filter rankBuckets: keep ranks that have spells OR slots with max > 0
-  context.spellRanks = rankBuckets.filter(b => b.spells.length > 0 || (b.hasSlots && b.slots.max > 0)).map(b => ({
+  // Filter rankBuckets: keep ranks that have spells OR slots with max > 0.
+  // The focus group (if it has spells) comes first, above the Cantrips.
+  const visibleGroups = rankBuckets.filter(b => b.spells.length > 0 || (b.hasSlots && b.slots.max > 0));
+  if (focusGroup.spells.length > 0) visibleGroups.unshift(focusGroup);
+  context.spellRanks = visibleGroups.map(b => ({
     ...b,
     spellCount: b.spells.length
   }));

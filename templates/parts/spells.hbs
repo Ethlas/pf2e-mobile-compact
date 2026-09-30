@@ -21,7 +21,7 @@
   </div>
   {{/if}}
 
-  <!-- Action Bar: Add Spell from SRD, Daily Prep Reset, Dailies & Focus Tracker -->
+  <!-- Action Bar: Add Spell from SRD, Daily Prep Reset, Dailies (focus points are in the Focus Spells header) -->
   <div class="tab-action-bar">
     <button type="button" class="touch-target btn-primary" data-action="openCompendiumPicker" data-type="spells">
       <i class="fas fa-plus"></i> Add Spell
@@ -34,15 +34,6 @@
       <i class="fas fa-sun"></i> Dailies
     </button>
     {{/if}}
-    {{#if focus.max}}
-    <div class="focus-pool-tracker">
-      <span>Focus: <strong>{{focus.value}} / {{focus.max}}</strong></span>
-      <div class="focus-buttons">
-        <button type="button" class="touch-target" data-action="adjustFocus" data-delta="-1" title="Spend Focus Point">-1</button>
-        <button type="button" class="touch-target" data-action="adjustFocus" data-delta="1" title="Regain Focus Point">+1</button>
-      </div>
-    </div>
-    {{/if}}
   </div>
 
   {{#if (or (eq spellSubTab "spells") (and (not (eq spellSubTab "preparation")) (not (eq spellSubTab "activations"))))}}
@@ -53,7 +44,7 @@
     {{#each spellRanks as |group|}}
     <section class="spell-rank-group" data-rank="{{group.rank}}">
       <!-- Collapsible Rank Header -->
-      <div class="spell-rank-header touch-target" data-action="toggleRankGroup" data-rank="{{group.rank}}" title="Toggle Rank {{group.label}}">
+      <div class="spell-rank-header touch-target" data-action="toggleRankGroup" data-rank="{{group.rank}}" title="Toggle {{group.label}}">
         <div class="rank-header-left">
           <i class="fas fa-chevron-down rank-expand-icon {{#if group.isCollapsed}}collapsed{{/if}}"></i>
           <h3 class="rank-title">{{group.label}}</h3>
@@ -67,12 +58,32 @@
           <button type="button" class="touch-target btn-slot-adjust" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="1" title="Increase Slot">+</button>
         </div>
         {{/if}}
+
+        {{!-- Focus points in the Focus Spells header, in the place where rank groups show their slots:
+              one flame per point. Tapping an available (lit) flame spends a point, tapping a spent
+              (dimmed) one regains a point. --}}
+        {{#if (and (eq group.rank "focus") @root.focus.max)}}
+        <div class="slot-counter focus-counter" title="Focus Points: {{@root.focus.value}} / {{@root.focus.max}}">
+          {{#each @root.focus.points as |point|}}
+          {{#if point.available}}
+          <button type="button" class="btn-focus-point" data-action="adjustFocus" data-delta="-1" title="Spend a Focus Point" aria-label="Focus Point available, tap to spend">
+            <i class="fas fa-fire"></i>
+          </button>
+          {{else}}
+          <button type="button" class="btn-focus-point spent" data-action="adjustFocus" data-delta="1" title="Regain a Focus Point" aria-label="Focus Point spent, tap to regain">
+            <i class="fas fa-fire"></i>
+          </button>
+          {{/if}}
+          {{/each}}
+        </div>
+        {{/if}}
       </div>
 
       <!-- Spells in this Rank -->
       <div class="spell-list {{#if group.isCollapsed}}collapsed{{/if}}">
         {{#each group.spells as |listSpell|}}
-        {{#> "modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs" spell=listSpell rank=group.rank showManageButtons=true}}
+        {{!-- The rank comes from the spell (castRank): the Focus Spells group has no single rank --}}
+        {{#> "modules/pf2e-mobile-compact/templates/parts/spells/spell-card.hbs" spell=listSpell rank=listSpell.castRank showManageButtons=true}}
           {{!-- Slots can only use the card's parameters (spell, rank) and @root, see spell-card.hbs --}}
           {{#*inline "lineButtons"}}
 
