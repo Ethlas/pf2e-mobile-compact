@@ -231,11 +231,14 @@ export async function prepareSpellsContext(actor, sheet, context) {
     const systemData = entry.system ?? {};
     const spells = entry.spells?.contents ?? [];
 
-    // Update slot trackers for ranks 0-10
+    // Update slot trackers for ranks 0-10.
+    // Only spontaneous and flexible entries spend slots by count (slots.slotN.value). Prepared entries
+    // mark the prepared spell itself as expended, which the spell cards already show.
+    const usesSlotCount = isSpontaneous || Boolean(entry.isFlexible);
     for (let r = 0; r <= 10; r++) {
       const slotKey = `slot${r}`;
       const slotData = systemData.slots?.[slotKey];
-      if (slotData && slotData.max > 0) {
+      if (usesSlotCount && slotData && slotData.max > 0) {
         const bucket = rankBuckets[r];
         bucket.hasSlots = true;
         bucket.slots.value = Math.max(bucket.slots.value, slotData.value ?? 0);
