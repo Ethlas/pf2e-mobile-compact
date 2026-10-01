@@ -4,6 +4,28 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [Unreleased]
+
+### Header Settings Menu & Shared Header Control Styles
+
+#### Changed
+- **Cog menu for roll mode, canvas and fullscreen (`templates/parts/header.hbs`, `scripts/apps/sheet-helpers/header-handlers.js`, `scripts/apps/mobile-sheet.js`)**:
+  - The roll mode select and the canvas and fullscreen buttons moved into a small popover under a new cog button (`toggleHeaderMenu`). This leaves more room in the top row for the character name and the target select.
+  - Using any of the three closes the popover again (`closeHeaderMenu`). The open state lives only in the DOM, so a header re-render also closes it.
+- **Shared header control styles (`styles/pf2e-mobile.css`)**:
+  - The per-control rules (`.btn-canvas-toggle`, `.btn-fullscreen`, `.header-roll-mode-select`, and the duplicated `.actor-switcher` / `.header-target-select` styling) are replaced by two shared classes: `.header-select` for dropdowns and `.header-btn` for square icon buttons, with `.header-btn.active` for the "canvas on" state.
+  - `.btn-fullscreen` stays on the fullscreen button only as the hook the fullscreen icon sync looks up.
+  - The name now takes the space left after the target select (max 140px, up from 125px), instead of being capped at 42% of the row.
+
+### Digital/Physical Roll Mode Remembered Across Reloads
+
+#### Fixed
+- **Roll mode persistence (`scripts/utils/sheet-utils.js`, `scripts/apps/sheet-helpers/header-handlers.js`, `scripts/apps/mobile-sheet.js`, `scripts/rolls/physical-dice-interceptor.js`, `scripts/pf2e-mobile.js`)**:
+  - The Digital/Physical choice reset to Digital on every reload. The `ready` hook removed `localStorage["pf2e-mobile-compact.rollMode"]`, which is the same key Foundry uses to store the client-scope `rollMode` setting, so the setting was wiped as well.
+  - The mode is now stored only in the client setting, through new `getStoredRollMode()` / `setStoredRollMode()` helpers. The extra raw localStorage writes and reads are gone; they also never matched, because Foundry stores the value JSON-encoded (`"physical"` with quotes).
+
+---
+
 ## [1.0.29] - 2026-09-29
 
 ### Targeting Fixes: iOS Real-Time Distance Updates, AoE Multi-Targeting, Flanking Detection, Self-Targeting, & Persistent Canvas Toggle (Issue #16)

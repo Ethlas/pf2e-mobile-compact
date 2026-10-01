@@ -1,45 +1,130 @@
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
-import { CompendiumPickerApp } from "./compendium-picker.js";
-import { PhysicalDiceManager } from "../rolls/physical-dice-interceptor.js";
-import { clamp, getGlyph } from "../utils/sheet-utils.js";
-import { getTargetableToken, getOriginToken, setTargetToken, setTargetTokens, ensureTokenControlled, syncSceneTokenPositions } from "../tokens/token-adapter.js";
-import { prepareHeaderContext } from "./sheet-helpers/context-header.js";
-import { preparePartyContext } from "./sheet-helpers/context-party.js";
+import {clamp, getGlyph, getStoredRollMode} from '../utils/sheet-utils.js';
 import {
-  prepareKingdomContext,
+  ensureTokenControlled,
+  getOriginToken,
+  getTargetableToken,
+  setTargetToken,
+  syncSceneTokenPositions
+} from '../tokens/token-adapter.js';
+import {prepareHeaderContext} from './sheet-helpers/context-header.js';
+import {preparePartyContext} from './sheet-helpers/context-party.js';
+import {
+  onClaimKingdomLandmark,
+  onClaimKingdomRefuge,
+  onDispatchKingdomNativeAction,
+  onFilterKingdomLevel,
+  onInspectKingdomSettlement,
+  onOpenConsumptionBreakdown,
   onOpenMobileKingdomSheet,
-  onSwitchKingdomTurnSubTab,
-  onSwitchKingdomSheetSubTab,
-  onToggleKingdomPhase,
-  onToggleKingdomActivity,
+  onPerformKingdomActivity,
+  onResolveKingdomEvent,
+  onRollKingdomSkillCheck,
   onSetKingdomActiveLeader,
   onSetKingdomActiveSettlement,
-  onRollKingdomSkillCheck,
-  onPerformKingdomActivity,
   onSkipCollectTaxes,
-  onClaimKingdomRefuge,
-  onClaimKingdomLandmark,
-  onOpenConsumptionBreakdown,
-  onInspectKingdomSettlement,
-  onFilterKingdomLevel,
-  onResolveKingdomEvent,
+  onSwitchKingdomSheetSubTab,
+  onSwitchKingdomTurnSubTab,
+  onToggleKingdomActivity,
+  onToggleKingdomPhase,
   onUpdateKingdomField,
-  onDispatchKingdomNativeAction
-} from "../kingdom/kingdom-handlers.js";
-import { prepareActionsContext } from "./sheet-helpers/context-actions.js";
-import { prepareSkillsContext } from "./sheet-helpers/context-skills.js";
-import { prepareInventoryContext } from "./sheet-helpers/context-inventory.js";
-import { prepareSpellsContext, formatSpell } from "./sheet-helpers/context-spells.js";
-import { prepareActivationsContext } from "./sheet-helpers/context-activations.js";
-import { onTransferStashItem, onSendToPartyStash, onOpenPartyStash, onSwitchToPartyMember, onTransferCoins } from "./sheet-helpers/party-handlers.js";
-import { resolveTargetForAction, promptTargetSelection, promptVariantSelection, promptStatisticSelection, promptStrikeSelection } from "./sheet-helpers/sheet-prompts.js";
-import { onExecuteStrike, onExecuteDamage, onExecuteCritical, onExecuteAuxiliaryAction, onItemToChat, onUseAction, onRollActionCheck, onRollSkill, onToggleActionSummary } from "./sheet-helpers/actions-handlers.js";
-import { onUseConsumable, onApplyPoison, onDetachSubitem, onChangeCarryType, onToggleInventorySection, onConfigureRunes, onToggleInvested, onToggleEquipped } from "./sheet-helpers/inventory-handlers.js";
-import { onSwitchSpellSubTab, onToggleRankGroup, onOpenSpellPrepPicker, prepareSlot, onUnprepareSlot, onToggleSlotExpended, onResetDailySpells, onSaveSpellPreset, onApplySpellPreset, onDeleteSpellPreset, onOpenCompendiumPicker, onAdjustSlot, onAdjustFocus, onCastSpell, onRollSpellDamage, onToggleSignatureSpell, onRemoveSpell } from "./sheet-helpers/spells-handlers.js";
-import { onCastStaffSpell, onAdjustStaffCharges, onCastItemSpell, onOpenDailies } from "./sheet-helpers/activations-handlers.js";
-import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleCanvasMode, onToggleFullscreen, onSwitchActor } from "./sheet-helpers/header-handlers.js";
-import { disableChatInputs, dockChatElement, restoreChatElement, scrollChatToBottom, setupScrollBottomListener, registerChatListener, unregisterChatListener, updateChatBadge } from "./sheet-helpers/chat-handler.js";
+  prepareKingdomContext
+} from '../kingdom/kingdom-handlers.js';
+import {prepareActionsContext} from './sheet-helpers/context-actions.js';
+import {prepareSkillsContext} from './sheet-helpers/context-skills.js';
+import {prepareInventoryContext} from './sheet-helpers/context-inventory.js';
+import {formatSpell, prepareSpellsContext} from './sheet-helpers/context-spells.js';
+import {prepareActivationsContext} from './sheet-helpers/context-activations.js';
+import {
+  onOpenPartyStash,
+  onSendToPartyStash,
+  onSwitchToPartyMember,
+  onTransferCoins,
+  onTransferStashItem
+} from './sheet-helpers/party-handlers.js';
+import {
+  promptStatisticSelection,
+  promptStrikeSelection,
+  promptTargetSelection,
+  promptVariantSelection,
+  resolveTargetForAction
+} from './sheet-helpers/sheet-prompts.js';
+import {
+  onExecuteAuxiliaryAction,
+  onExecuteCritical,
+  onExecuteDamage,
+  onExecuteStrike,
+  onItemToChat,
+  onRollActionCheck,
+  onRollSkill,
+  onToggleActionSummary,
+  onUseAction
+} from './sheet-helpers/actions-handlers.js';
+import {
+  onApplyPoison,
+  onChangeCarryType,
+  onConfigureRunes,
+  onDetachSubitem,
+  onToggleEquipped,
+  onToggleInventorySection,
+  onToggleInvested,
+  onUseConsumable
+} from './sheet-helpers/inventory-handlers.js';
+import {
+  onAdjustFocus,
+  onAdjustSlot,
+  onApplySpellPreset,
+  onCastSpell,
+  onDeleteSpellPreset,
+  onOpenCompendiumPicker,
+  onOpenSpellPrepPicker,
+  onRemoveSpell,
+  onResetDailySpells,
+  onRollSpellDamage,
+  onSaveSpellPreset,
+  onSwitchSpellSubTab,
+  onToggleRankGroup,
+  onToggleSignatureSpell,
+  onToggleSlotExpended,
+  onUnprepareSlot,
+  prepareSlot
+} from './sheet-helpers/spells-handlers.js';
+import {
+  onAdjustStaffCharges,
+  onCastItemSpell,
+  onCastStaffSpell,
+  onOpenDailies
+} from './sheet-helpers/activations-handlers.js';
+import {
+  onAdjustTempHP,
+  onApplyDamage,
+  onApplyDeltaHP,
+  onApplyHeal,
+  onRollInitiative,
+  onRollPerception,
+  onRollPerceptionOrInitiative,
+  onRollSave,
+  onSelectTarget,
+  onSetDirectHP,
+  onSetDirectTempHP,
+  onSetTempHP,
+  onSwitchActor,
+  onToggleCanvasMode,
+  onToggleFullscreen,
+  onToggleHeaderMenu,
+  onToggleRollMode
+} from './sheet-helpers/header-handlers.js';
+import {
+  disableChatInputs,
+  dockChatElement,
+  registerChatListener,
+  restoreChatElement,
+  scrollChatToBottom,
+  setupScrollBottomListener,
+  unregisterChatListener,
+  updateChatBadge
+} from './sheet-helpers/chat-handler.js';
 
 /**
  * Mobile-optimized compact character sheet application subclassing Foundry VTT's modern ActorSheetV2.
@@ -77,6 +162,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       rollInitiative: PF2eMobileSheet._onRollInitiative,
       selectTarget: PF2eMobileSheet._onSelectTarget,
       toggleRollMode: PF2eMobileSheet._onToggleRollMode,
+      toggleHeaderMenu: PF2eMobileSheet._onToggleHeaderMenu,
       toggleCanvasMode: PF2eMobileSheet._onToggleCanvasMode,
       switchTab: PF2eMobileSheet._onSwitchTab,
       scrollChatToBottom: PF2eMobileSheet._onScrollChatToBottom,
@@ -442,15 +528,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     context.actor = actor;
     context.activeTab = this._activeTab;
     context.actionSubTab = this._actionSubTab;
-    try {
-      const savedMode = localStorage.getItem("pf2e-mobile-compact.rollMode");
-      if (savedMode === "physical" || savedMode === "digital") {
-        this._rollMode = savedMode;
-      } else if (game.settings?.settings?.has?.("pf2e-mobile-compact.rollMode")) {
-        const settingMode = game.settings.get("pf2e-mobile-compact", "rollMode");
-        if (settingMode) this._rollMode = settingMode;
-      }
-    } catch {}
+    this._rollMode = getStoredRollMode();
     context.rollMode = this._rollMode;
     context.isPhysicalRollMode = this._rollMode === "physical";
     context.unreadChatCount = this._unreadChatCount;
@@ -544,6 +622,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onRollInitiative(event, target) { return onRollInitiative(this, event, target); }
   static async _onSelectTarget(event, target) { return onSelectTarget(this, event, target); }
   static async _onToggleRollMode(event, target) { return onToggleRollMode(this, event, target); }
+  static _onToggleHeaderMenu(event, target) { return onToggleHeaderMenu(this, event, target); }
   static async _onToggleCanvasMode(event, target) { return onToggleCanvasMode(this, event, target); }
   static async _onToggleFullscreen(event, target) { return onToggleFullscreen(this, event, target); }
   static async _onScrollChatToBottom() { this._scrollChatToBottom(true); }

@@ -3,7 +3,7 @@
   <div class="header-top-row">
     <div class="actor-identity-wrapper">
       {{#if hasMultipleCharacters}}
-      <select class="actor-switcher touch-target" data-change-action="switchActor" title="Switch Character / Party / Kingdom" aria-label="Switch Character">
+      <select class="touch-target header-select actor-switcher" data-change-action="switchActor" title="Switch Character / Party / Kingdom" aria-label="Switch Character">
         {{#each ownedCharacters as |char|}}
         <option value="{{char.id}}" {{#if char.selected}}selected{{/if}}>
           {{char.name}}
@@ -18,7 +18,7 @@
     <div class="header-controls-wrapper">
       {{#unless (or isParty isKingdom)}}
       <div class="header-target-group">
-        <select name="target-select" class="touch-target header-target-select" data-change-action="selectTarget" aria-label="Select Target" title="{{#if hasMultipleTargets}}Targets ({{activeTargetCount}}): {{multiTargetNames}}{{else if activeTarget}}Target: {{activeTarget.displayName}}{{else}}Target Token{{/if}}">
+        <select name="target-select" class="touch-target header-select header-target-select" data-change-action="selectTarget" aria-label="Select Target" title="{{#if hasMultipleTargets}}Targets ({{activeTargetCount}}): {{multiTargetNames}}{{else if activeTarget}}Target: {{activeTarget.displayName}}{{else}}Target Token{{/if}}">
           <option value="">🎯 No Target</option>
           <option value="__pick_multi__">🎯 Multi-Target Picker...</option>
           {{#if hasMultipleTargets}}
@@ -38,18 +38,27 @@
       </div>
       {{/unless}}
 
-      <select name="roll-mode" class="touch-target header-roll-mode-select" data-change-action="toggleRollMode" aria-label="Roll Mode" title="Roll Mode">
-        <option value="digital" {{#if (eq rollMode "digital")}}selected{{/if}}>🎲 Digital</option>
-        <option value="physical" {{#if (eq rollMode "physical")}}selected{{/if}}>✋ Physical</option>
-      </select>
+      <!-- Settings menu: the cog shows the roll mode, canvas and fullscreen controls in a small
+           popover. Using any of them closes it again (closeHeaderMenu in header-handlers.js). -->
+      <div class="header-menu">
+        <button type="button" class="touch-target header-btn header-menu-toggle" data-action="toggleHeaderMenu" title="Settings" aria-label="Settings" aria-expanded="false">
+          <i class="fas fa-cog"></i>
+        </button>
+        <div class="header-menu-panel">
+          <select name="roll-mode" class="touch-target header-select" data-change-action="toggleRollMode" aria-label="Roll Mode" title="Roll Mode">
+            <option value="digital" {{#if (eq rollMode "digital")}}selected{{/if}}>🎲</option>
+            <option value="physical" {{#if (eq rollMode "physical")}}selected{{/if}}>✋</option>
+          </select>
 
-      <button type="button" class="touch-target btn-canvas-toggle {{#if canvasDisabled}}canvas-off{{else}}canvas-on{{/if}}" data-action="toggleCanvasMode" title="{{#if canvasDisabled}}Canvas Disabled (Tap to Enable Canvas){{else}}Canvas Enabled (Tap to Disable Canvas){{/if}}" aria-label="Toggle Canvas">
-        <i class="fas {{#if canvasDisabled}}fa-eye-slash{{else}}fa-map{{/if}}"></i>
-      </button>
+          <button type="button" class="touch-target header-btn {{#unless canvasDisabled}}active{{/unless}}" data-action="toggleCanvasMode" title="{{#if canvasDisabled}}Canvas Disabled (Tap to Enable Canvas){{else}}Canvas Enabled (Tap to Disable Canvas){{/if}}" aria-label="Toggle Canvas">
+            <i class="fas {{#if canvasDisabled}}fa-eye-slash{{else}}fa-map{{/if}}"></i>
+          </button>
 
-      <button type="button" class="touch-target btn-fullscreen" data-action="toggleFullscreen" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">
-        <i class="fas fa-expand"></i>
-      </button>
+          <button type="button" class="touch-target header-btn btn-fullscreen" data-action="toggleFullscreen" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">
+            <i class="fas fa-expand"></i>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 

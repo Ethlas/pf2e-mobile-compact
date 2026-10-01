@@ -1,4 +1,4 @@
-import { clamp, isIOSDevice, isMobileCanvasDisabled, setMobileCanvasDisabled } from "../../utils/sheet-utils.js";
+import { clamp, isIOSDevice, isMobileCanvasDisabled, setMobileCanvasDisabled, setStoredRollMode } from "../../utils/sheet-utils.js";
 import { PhysicalDiceManager } from "../../rolls/physical-dice-interceptor.js";
 import { setTargetToken } from "../../tokens/token-adapter.js";
 import { promptMultiTargetSelection } from "./sheet-prompts.js";
@@ -348,23 +348,42 @@ export async function onSelectTarget(sheet, event, target) {
 }
 
 /**
+ * Action handler: open or close the header settings menu (cog button).
+ * The open state lives only in the DOM, so any header re-render closes the menu again.
+ * @param {object} sheet
+ * @param {Event} event
+ * @param {HTMLElement} target
+ */
+export function onToggleHeaderMenu(sheet, event, target) {
+  const menu = target?.closest?.(".header-menu");
+  if (!menu) return;
+  const open = menu.classList.toggle("open");
+  target.setAttribute("aria-expanded", String(open));
+}
+
+/**
+ * Closes the header settings menu. Called by the controls inside it once they are used.
+ * @param {object} sheet
+ */
+export function closeHeaderMenu(sheet) {
+  const menu = sheet?.element?.querySelector?.(".header-menu.open");
+  if (!menu) return;
+  menu.classList.remove("open");
+  menu.querySelector(".header-menu-toggle")?.setAttribute("aria-expanded", "false");
+}
+
+/**
  * Action handler: toggle digital vs physical roll mode.
  * @param {object} sheet
  * @param {Event} event
  * @param {HTMLSelectElement} target
  */
 export async function onToggleRollMode(sheet, event, target) {
+  closeHeaderMenu(sheet);
   const newMode = target.value;
   if (newMode === "digital" || newMode === "physical") {
     sheet._rollMode = newMode;
-    try {
-      localStorage.setItem("pf2e-mobile-compact.rollMode", newMode);
-    } catch {}
-    try {
-      if (game.settings?.settings?.has?.("pf2e-mobile-compact.rollMode")) {
-        await game.settings.set("pf2e-mobile-compact", "rollMode", newMode);
-      }
-    } catch {}
+    await setStoredRollMode(newMode);
     sheet.render({ parts: ["header"] });
   }
 }
@@ -376,6 +395,7 @@ export async function onToggleRollMode(sheet, event, target) {
  * @param {HTMLElement} target
  */
 export async function onToggleCanvasMode(sheet, event, target) {
+  closeHeaderMenu(sheet);
   const currentlyDisabled = isMobileCanvasDisabled();
   const nextDisabled = !currentlyDisabled;
   const dialogTitle = nextDisabled ? "Disable Canvas (Battery Saver)?" : "Enable Canvas?";
@@ -433,6 +453,7 @@ let iosFullscreenTipShown = false;
  * @param {HTMLElement} target
  */
 export async function onToggleFullscreen(sheet, event, target) {
+  closeHeaderMenu(sheet);
   const sheetEl = target?.closest?.(".pf2e-mobile-sheet") ?? sheet?.element;
   const isCurrentlyFs = !!(
     document.fullscreenElement ||

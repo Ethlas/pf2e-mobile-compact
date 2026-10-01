@@ -3,7 +3,7 @@
  */
 import { PF2eMobileSheet } from "./apps/mobile-sheet.js";
 import { setupPhysicalDiceInterceptor } from "./rolls/physical-dice-interceptor.js";
-import { isMobileDevice, isIOSDevice } from "./utils/sheet-utils.js";
+import { isMobileDevice, isIOSDevice, getStoredRollMode } from "./utils/sheet-utils.js";
 import { migrateActorPropertyRunes } from "./apps/sheet-helpers/rune-handlers.js";
 
 export { isMobileDevice, isIOSDevice };
@@ -744,11 +744,6 @@ export function activateMobileEnvironment() {
 }
 
 Hooks.once("ready", () => {
-  // Clear cached rollMode on login to guarantee a fresh, non-stale session state
-  try {
-    localStorage.removeItem("pf2e-mobile-compact.rollMode");
-  } catch {}
-
   syncStylesheetState();
 
   if (shouldActivateMobile()) {
@@ -960,7 +955,7 @@ Hooks.on("renderApplicationV2", (app, element) => {
         const openMobileSheet = Array.from(foundry.applications?.instances?.values?.() ?? [])
           .find((inst) => inst instanceof PF2eMobileSheet);
         const isPhys = openMobileSheet?.rollMode === "physical"
-          || localStorage.getItem("pf2e-mobile-compact.rollMode") === "physical";
+          || getStoredRollMode() === "physical";
         if (isPhys) {
           import("./rolls/physical-dice-interceptor.js").then(({ PhysicalDiceManager }) => {
             PhysicalDiceManager.activeContext = {
