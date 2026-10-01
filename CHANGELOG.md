@@ -6,6 +6,33 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Header Settings Menu & Shared Header Control Styles
+
+#### Changed
+- **Cog menu for canvas and fullscreen (`templates/parts/header.hbs`, `scripts/apps/sheet-helpers/header-handlers.js`, `scripts/apps/mobile-sheet.js`)**:
+  - The canvas and fullscreen buttons moved into a small popover under a new cog button (`toggleHeaderMenu`). This leaves more room in the top row for the character name and the target select.
+  - Using either of them closes the popover again (`closeHeaderMenu`). The open state lives only in the DOM, so a header re-render also closes it.
+- **Roll mode toggle button (`templates/parts/header.hbs`, `scripts/apps/sheet-helpers/header-handlers.js`)**:
+  - The 🎲 / ✋ roll mode select is replaced by a button next to the cog. It shows two dice (`fa-dice`) with a small corner icon for who rolls: a light blue chip (`fa-microchip`) for digital, a yellow hand (`fa-hand`) for your own dice.
+  - Only the corner icon is coloured, with its own colour per mode, so neither mode looks like an "off" state.
+  - One tap switches modes; `onToggleRollMode` now flips the saved mode instead of reading a select value.
+- **Shared header control styles (`styles/pf2e-mobile.css`)**:
+  - The per-control rules (`.btn-canvas-toggle`, `.btn-fullscreen`, `.header-roll-mode-select`, and the duplicated `.actor-switcher` / `.header-target-select` styling) are replaced by two shared classes: `.header-select` for dropdowns and `.header-btn` for square icon buttons, with `.header-btn.active` for the "canvas on" state. `.header-btn-badge` places a small corner icon on a header button.
+  - `.btn-fullscreen` stays on the fullscreen button only as the hook the fullscreen icon sync looks up.
+  - The top row is now a CSS grid (name | target | roll mode | cog; `.header-controls-wrapper` uses `display: contents`). The character switcher and the target select share the remaining space 2:3 (`2fr 3fr`), so there is no gap between them.
+  - With the earlier nested flex layout, Firefox (also on Android) squeezed the target select to a sliver.
+  - Without the character switcher, the plain name only takes the room its text needs and the target select gets the rest. On Party and Kingdom (no target select) the name spans both columns.
+- **Range in the target dropdown (`templates/parts/header.hbs`)**:
+  - Target options read `🎯 15ft Goblin Warrior` instead of `🎯 Goblin Warrior (15)`. The range comes first, so it stays visible when the select cuts off a long name.
+  - The separate range pill next to the select is removed. Your own token keeps its `Self: … (Self)` text.
+
+### Digital/Physical Roll Mode Remembered Across Reloads
+
+#### Fixed
+- **Roll mode persistence (`scripts/utils/sheet-utils.js`, `scripts/apps/sheet-helpers/header-handlers.js`, `scripts/apps/mobile-sheet.js`, `scripts/rolls/physical-dice-interceptor.js`, `scripts/pf2e-mobile.js`)**:
+  - The Digital/Physical choice reset to Digital on every reload. The `ready` hook removed `localStorage["pf2e-mobile-compact.rollMode"]`, which is the same key Foundry uses to store the client-scope `rollMode` setting, so the setting was wiped as well.
+  - The mode is now stored only in the client setting, through new `getStoredRollMode()` / `setStoredRollMode()` helpers. The extra raw localStorage writes and reads are gone; they also never matched, because Foundry stores the value JSON-encoded (`"physical"` with quotes).
+
 ### Slot Counter Only for Spontaneous Casters (`scripts/apps/sheet-helpers/context-spells.js`)
 
 #### Fixed

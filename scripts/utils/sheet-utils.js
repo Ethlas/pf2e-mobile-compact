@@ -170,6 +170,34 @@ export function isIOSDevice() {
 }
 
 /**
+ * Returns the saved Digital/Physical roll mode for this browser.
+ * Stored only in the client-scope setting "pf2e-mobile-compact.rollMode"; Foundry keeps
+ * client settings in localStorage itself, so the choice survives reloads and logins.
+ * @returns {"digital"|"physical"}
+ */
+export function getStoredRollMode() {
+  try {
+    if (globalThis.game?.settings?.settings?.has?.("pf2e-mobile-compact.rollMode")) {
+      return game.settings.get("pf2e-mobile-compact", "rollMode") === "physical" ? "physical" : "digital";
+    }
+  } catch {}
+  return "digital";
+}
+
+/**
+ * Saves the Digital/Physical roll mode for this browser (see getStoredRollMode).
+ * @param {"digital"|"physical"} mode
+ * @returns {Promise<void>}
+ */
+export async function setStoredRollMode(mode) {
+  try {
+    if (globalThis.game?.settings?.settings?.has?.("pf2e-mobile-compact.rollMode")) {
+      await game.settings.set("pf2e-mobile-compact", "rollMode", mode);
+    }
+  } catch {}
+}
+
+/**
  * Returns whether the user has opted to disable the WebGL canvas on mobile.
  * Defaults to false (Canvas Enabled) and persists across mobile sessions via
  * localStorage and Foundry client settings.

@@ -1,5 +1,5 @@
 import { PhysicalDiceDialog } from "../apps/physical-dice-dialog.js";
-import { isMobileDevice } from "../utils/sheet-utils.js";
+import { isMobileDevice, getStoredRollMode } from "../utils/sheet-utils.js";
 
 /**
  * Custom error thrown when a user cancels the physical dice entry dialog.
@@ -63,7 +63,7 @@ export class PhysicalDiceManager {
 
   /**
    * Checks whether Physical Dice mode is currently active for this client.
-   * Scans explicit context override, localStorage, and client game setting.
+   * Checks the explicit context override, then the saved roll mode setting.
    * Only intercepts when executing on a mobile phone / mobile context.
    * @returns {boolean}
    */
@@ -72,19 +72,7 @@ export class PhysicalDiceManager {
     if (this.activeContext?.isPhysical === false) return false;
     if (this.activeContext?.isPhysical === true) return true;
 
-    try {
-      if (typeof localStorage !== "undefined" && localStorage.getItem("pf2e-mobile-compact.rollMode") === "physical") {
-        return true;
-      }
-    } catch {}
-
-    try {
-      if (game.settings?.settings?.has?.("pf2e-mobile-compact.rollMode")) {
-        return game.settings.get("pf2e-mobile-compact", "rollMode") === "physical";
-      }
-    } catch {}
-
-    return false;
+    return getStoredRollMode() === "physical";
   }
 
   /**

@@ -2,7 +2,7 @@ const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
 import { CompendiumPickerApp } from "./compendium-picker.js";
 import { PhysicalDiceManager } from "../rolls/physical-dice-interceptor.js";
-import { clamp, getGlyph } from "../utils/sheet-utils.js";
+import { clamp, getGlyph, getStoredRollMode } from "../utils/sheet-utils.js";
 import { getTargetableToken, getOriginToken, setTargetToken, setTargetTokens, ensureTokenControlled, syncSceneTokenPositions } from "../tokens/token-adapter.js";
 import { prepareHeaderContext } from "./sheet-helpers/context-header.js";
 import { preparePartyContext } from "./sheet-helpers/context-party.js";
@@ -38,7 +38,7 @@ import { onExecuteStrike, onExecuteDamage, onExecuteCritical, onExecuteAuxiliary
 import { onUseConsumable, onApplyPoison, onDetachSubitem, onChangeCarryType, onToggleInventorySection, onConfigureRunes, onToggleInvested, onToggleEquipped } from "./sheet-helpers/inventory-handlers.js";
 import { onSwitchSpellSubTab, onToggleRankGroup, onOpenSpellPrepPicker, prepareSlot, onUnprepareSlot, onToggleSlotExpended, onResetDailySpells, onSaveSpellPreset, onApplySpellPreset, onDeleteSpellPreset, onOpenCompendiumPicker, onAdjustSlot, onAdjustFocus, onCastSpell, onRollSpellDamage, onToggleSignatureSpell, onRemoveSpell } from "./sheet-helpers/spells-handlers.js";
 import { onCastStaffSpell, onAdjustStaffCharges, onCastItemSpell, onOpenDailies } from "./sheet-helpers/activations-handlers.js";
-import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleCanvasMode, onToggleFullscreen, onSwitchActor } from "./sheet-helpers/header-handlers.js";
+import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleHeaderMenu, onToggleCanvasMode, onToggleFullscreen, onSwitchActor } from "./sheet-helpers/header-handlers.js";
 import { disableChatInputs, dockChatElement, restoreChatElement, scrollChatToBottom, setupScrollBottomListener, registerChatListener, unregisterChatListener, updateChatBadge } from "./sheet-helpers/chat-handler.js";
 
 /**
@@ -77,6 +77,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       rollInitiative: PF2eMobileSheet._onRollInitiative,
       selectTarget: PF2eMobileSheet._onSelectTarget,
       toggleRollMode: PF2eMobileSheet._onToggleRollMode,
+      toggleHeaderMenu: PF2eMobileSheet._onToggleHeaderMenu,
       toggleCanvasMode: PF2eMobileSheet._onToggleCanvasMode,
       switchTab: PF2eMobileSheet._onSwitchTab,
       scrollChatToBottom: PF2eMobileSheet._onScrollChatToBottom,
@@ -442,15 +443,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     context.actor = actor;
     context.activeTab = this._activeTab;
     context.actionSubTab = this._actionSubTab;
-    try {
-      const savedMode = localStorage.getItem("pf2e-mobile-compact.rollMode");
-      if (savedMode === "physical" || savedMode === "digital") {
-        this._rollMode = savedMode;
-      } else if (game.settings?.settings?.has?.("pf2e-mobile-compact.rollMode")) {
-        const settingMode = game.settings.get("pf2e-mobile-compact", "rollMode");
-        if (settingMode) this._rollMode = settingMode;
-      }
-    } catch {}
+    this._rollMode = getStoredRollMode();
     context.rollMode = this._rollMode;
     context.isPhysicalRollMode = this._rollMode === "physical";
     context.unreadChatCount = this._unreadChatCount;
@@ -544,6 +537,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onRollInitiative(event, target) { return onRollInitiative(this, event, target); }
   static async _onSelectTarget(event, target) { return onSelectTarget(this, event, target); }
   static async _onToggleRollMode(event, target) { return onToggleRollMode(this, event, target); }
+  static _onToggleHeaderMenu(event, target) { return onToggleHeaderMenu(this, event, target); }
   static async _onToggleCanvasMode(event, target) { return onToggleCanvasMode(this, event, target); }
   static async _onToggleFullscreen(event, target) { return onToggleFullscreen(this, event, target); }
   static async _onScrollChatToBottom() { this._scrollChatToBottom(true); }

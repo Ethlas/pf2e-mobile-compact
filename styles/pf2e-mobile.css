@@ -285,55 +285,33 @@ body.pf2e-mobile-active textarea {
   flex-direction: column;
   gap: 6px;
   flex-shrink: 0;
-}/* Row 1: Identity & Controls Toolbar */.pf2e-mobile-sheet .header-top-row {
-  display: flex;
-  justify-content: space-between;
+}
+/* Row 1: Identity & Controls Toolbar */
+.pf2e-mobile-sheet .header-top-row {
+  /* Grid instead of nested flex: name | target | roll mode | cog. Firefox and Chrome resolved the nested flex sizes
+     of the two selects differently (Firefox squeezed the target select to a sliver). */
+  display: grid;
+  grid-template-columns: minmax(80px, 2fr) minmax(0, 3fr) auto auto;
   align-items: center;
   gap: 4px;
   width: 100%;
-}.pf2e-mobile-sheet .actor-identity-wrapper {
-  flex: 1 1 auto;
+}
+/* A plain name without the switcher only takes the room its text needs; the target gets the rest */
+.pf2e-mobile-sheet .header-top-row:has(.actor-name) {
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr) auto auto;
+}
+.pf2e-mobile-sheet .actor-identity-wrapper {
+  grid-column: 1;
   min-width: 0;
-  max-width: 42%;
   overflow: hidden;
-}.pf2e-mobile-sheet .actor-switcher {
-  width: 100%;
+}
+/* Party and Kingdom have no target select: the name takes its column as well */
+.pf2e-mobile-sheet .header-top-row:not(:has(.header-target-group)) .actor-identity-wrapper {
+  grid-column: 1 / 3;
+}
+/* Shared header controls: .header-select for dropdowns, .header-btn for square icon buttons */.pf2e-mobile-sheet .mobile-header-dashboard .header-select {
   min-height: 38px;
   height: 38px;
-  font-weight: bold;
-  font-size: 0.95rem;
-  font-size: 16px;
-  background: #222;
-  color: #fff;
-  border: 1px solid #444;
-  border-radius: 4px;
-  padding: 2px 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}.pf2e-mobile-sheet .actor-name {
-  font-weight: bold;
-  font-size: 1rem;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: block;
-  line-height: 38px;
-}.pf2e-mobile-sheet .header-controls-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 0 0 auto;
-}.pf2e-mobile-sheet .header-controls-wrapper .header-target-group {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}.pf2e-mobile-sheet .header-controls-wrapper .header-target-select,
-.pf2e-mobile-sheet .header-controls-wrapper .header-roll-mode-select {
-  min-height: 38px;
-  height: 38px;
-  font-size: 0.85rem;
   font-size: 16px;
   background: #222;
   color: #ddd;
@@ -343,23 +321,10 @@ body.pf2e-mobile-active textarea {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}.pf2e-mobile-sheet .header-controls-wrapper .header-target-select {
-  max-width: 125px;
-}.pf2e-mobile-sheet .header-controls-wrapper .header-target-distance-pill {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #ffb74d;
-  background: rgba(255, 152, 0, 0.14);
-  border: 1px solid rgba(255, 152, 0, 0.35);
-  border-radius: 4px;
-  padding: 2px 5px;
-  line-height: 1.2;
-  white-space: nowrap;
-  pointer-events: none;
-}.pf2e-mobile-sheet .header-controls-wrapper .header-roll-mode-select {
-  max-width: 95px;
-}.pf2e-mobile-sheet .mobile-header-dashboard .btn-fullscreen,
-.pf2e-mobile-sheet .mobile-header-dashboard .btn-canvas-toggle {
+}
+.pf2e-mobile-sheet .mobile-header-dashboard .header-btn {
+  position: relative;
+  flex-shrink: 0;
   min-width: 38px;
   width: 38px;
   min-height: 38px;
@@ -374,17 +339,72 @@ body.pf2e-mobile-active textarea {
   font-size: 0.95rem;
   padding: 0;
   cursor: pointer;
-}.pf2e-mobile-sheet .mobile-header-dashboard .btn-canvas-toggle.canvas-on {
+}.pf2e-mobile-sheet .mobile-header-dashboard .header-btn.active {
   color: #81c784;
   border-color: rgba(129, 199, 132, 0.45);
-}.pf2e-mobile-sheet .mobile-header-dashboard .btn-canvas-toggle.canvas-off {
-  color: #9e9e9e;
-  border-color: #444;
-  flex-shrink: 0;
-}.pf2e-mobile-sheet .mobile-header-dashboard .btn-fullscreen:active {
+}.pf2e-mobile-sheet .mobile-header-dashboard .header-btn:active {
   background: #383838;
   border-color: #90caf9;
   color: #90caf9;
+}.pf2e-mobile-sheet .actor-switcher {
+  width: 100%;
+  font-weight: bold;
+  color: #fff;
+}.pf2e-mobile-sheet .actor-name {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  line-height: 38px;
+}.pf2e-mobile-sheet .header-controls-wrapper {
+  /* Its children (target select, cog menu) take part in the header-top-row grid directly */
+  display: contents;
+}.pf2e-mobile-sheet .header-controls-wrapper .header-target-group {
+  grid-column: 2;
+  display: flex;
+  min-width: 0;
+}/* Roll mode toggle, between the target select and the cog */.pf2e-mobile-sheet .header-controls-wrapper > .header-btn {
+  grid-column: 3;
+}.pf2e-mobile-sheet .header-controls-wrapper .header-target-select {
+  width: 100%;
+  min-width: 0;
+}/* Settings menu: the cog opens a small popover under it with roll mode, canvas and fullscreen */
+.pf2e-mobile-sheet .header-menu {
+  position: relative;
+  grid-column: 4;
+}.pf2e-mobile-sheet .header-menu-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 50;
+  gap: 4px;
+  padding: 4px;
+  background: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}.pf2e-mobile-sheet .header-menu.open .header-menu-panel {
+  display: flex;
+}.pf2e-mobile-sheet .mobile-header-dashboard .header-menu.open .header-menu-toggle {
+  color: #90caf9;
+  border-color: #90caf9;
+}/* Small corner icon on a header button (the chip or hand on the roll mode die) */.pf2e-mobile-sheet .header-btn-badge {
+  position: absolute;
+  right: 5px;
+  bottom: 4px;
+  font-size: 0.75rem;
+  line-height: 1;
+  pointer-events: none;
+  /* Outline in the button colour, so the icon stays readable where it overlaps the main icon */
+  text-shadow: 0 0 2px #242424, 0 0 2px #242424, 0 0 2px #242424;
+}/* Roll mode colours: each mode has its own colour, so neither looks like an "off" state */.pf2e-mobile-sheet .header-btn-badge .fa-microchip {
+  color: #4fc3f7;
+}.pf2e-mobile-sheet .header-btn-badge .fa-hand {
+  color: #ffca28;
 }/* Row 2: Consolidated HP & Temp HP Streamlined Controls */.pf2e-mobile-sheet .header-hp-row {
   display: flex;
   align-items: center;
