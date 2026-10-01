@@ -399,7 +399,8 @@ export async function prepareActivationsContext(actor, sheet, context) {
       uses,
       isOvercharged,
       spell: formattedSpell,
-      castActions: formattedSpell?.castActions || wandSpellCost.castActions || "2",
+      // The spell's own count (empty for reactions / free actions); "2" only when there is no spell
+      castActions: formattedSpell ? formattedSpell.castActions : (wandSpellCost.castActions || "2"),
       entryId: wandEntry?.id ?? entryId
     });
   }
@@ -440,7 +441,7 @@ export async function prepareActivationsContext(actor, sheet, context) {
       rank: scrollRank,
       quantity,
       spell: formattedSpell,
-      castActions: formattedSpell?.castActions || scrollSpellCost.castActions || "2",
+      castActions: formattedSpell ? formattedSpell.castActions : (scrollSpellCost.castActions || "2"),
       entryId: scrollEntry?.id ?? entryId
     });
   }

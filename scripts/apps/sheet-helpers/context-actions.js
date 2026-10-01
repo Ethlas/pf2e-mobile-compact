@@ -2,7 +2,7 @@
  * Context preparation helper for Strikes, Character Actions, Reactions,
  * Free actions, Skill actions, Exploration, and Downtime activities.
  */
-import { getGlyph, parseActionCostInfo } from "../../utils/sheet-utils.js";
+import { getGlyph, parseActionCostInfo, PROFICIENCY_RANK_LETTERS, PROFICIENCY_RANK_NAMES } from "../../utils/sheet-utils.js";
 
 const PF2E_SKILL_SLUGS = new Set([
   "acrobatics",
@@ -74,6 +74,51 @@ const KNOWN_SKILL_ACTION_NAMES = new Set([
 ]);
 
 /**
+ * Resolves the skill an action rolls and the character's proficiency in it, for the
+ * skill label on the card and the Skill Actions sort order.
+ * pf2e's action registry names the skill (`statistic`), either one slug ("stealth") or a
+ * list the player chooses from when rolling (Recall Knowledge). For a list, the label reads
+ * "Multiple" and the rank is the character's best rank among the options.
+ * @param {Actor} actor
+ * @param {string|string[]|null|undefined} statistic  Skill slug(s), e.g. from game.pf2e.actions
+ * @returns {{ label: string, options: string, rank: number, rankLetter: string, rankName: string }|null}
+ *   null when the action names no skill the character has
+ */
+export function getActionSkillInfo(actor, statistic) {
+  const slugs = (Array.isArray(statistic) ? statistic : [statistic]).filter(s => typeof s === "string" && s);
+  const stats = slugs
+    .map(slug => actor?.getStatistic?.(slug) ?? actor?.skills?.[slug] ?? null)
+    .filter(Boolean);
+  if (!stats.length) return null;
+
+  const i18n = globalThis.game?.i18n;
+  const localize = (text) => i18n?.localize?.(text) ?? text;
+  const rank = Math.max(...stats.map(stat => (typeof stat.rank === "number" ? stat.rank : 0)));
+  const labels = stats.map(stat => localize(stat.label ?? stat.slug ?? ""));
+  return {
+    label: stats.length > 1 ? "Multiple" : labels[0],
+    options: labels.join(", "),
+    rank,
+    rankLetter: PROFICIENCY_RANK_LETTERS[rank] ?? "U",
+    rankName: i18n ? localize(`PF2E.ProficiencyLevel${rank}`) : (PROFICIENCY_RANK_NAMES[rank] ?? "")
+  };
+}
+
+/**
+ * Sort order of the Skill Actions section: actions from feats first (the character's own
+ * build, e.g. Battle Medicine), then by proficiency in the action's skill (best first;
+ * actions without a skill last), then by name.
+ * @param {{ name: string, fromFeat: boolean, skill: { rank: number }|null }} a
+ * @param {{ name: string, fromFeat: boolean, skill: { rank: number }|null }} b
+ * @returns {number}
+ */
+export function compareSkillActions(a, b) {
+  return (Number(b.fromFeat) - Number(a.fromFeat))
+    || ((b.skill?.rank ?? -1) - (a.skill?.rank ?? -1))
+    || a.name.localeCompare(b.name);
+}
+
+/**
  * Prepares strikes and categorized character actions for the Actions tab.
  * @param {Actor} actor
  * @param {object} sheet
@@ -132,7 +177,12 @@ export async function prepareActionsContext(actor, sheet, context) {
         : (action.damageFormula ?? "Damage"),
       traits,
       auxiliaryActions: auxActions,
-      hasAuxiliary: auxActions.length > 0
+      hasAuxiliary: auxActions.length > 0,
+      isRanged: !!item?.isRanged,
+      isMelee: !!item?.isMelee,
+      isThrown: !!item?.isThrown,
+      rangeIncrement: item?.range?.increment ?? null,
+      ready: action.ready
     };
   });
 
@@ -218,6 +268,11 @@ export async function prepareActionsContext(actor, sheet, context) {
         }
       }
 
+      // Skill label and sort data (Skill Actions only). An action "comes from a feat" when it is a
+      // feat itself (skill feats with an action cost) or was granted by one (pf2e sets item.grantedBy).
+      const skill = isSkillAction ? getActionSkillInfo(actor, systemAction?.statistic ?? item.system?.statistic) : null;
+      const fromFeat = item.type === "feat" || item.grantedBy?.type === "feat";
+
       const costInfo = parseActionCostInfo(item, systemAction?.cost);
       const actionData = {
         id: item.id,
@@ -239,7 +294,9 @@ export async function prepareActionsContext(actor, sheet, context) {
           per: item.system.frequency.per ?? ""
         } : null,
         description: enrichedDescription || rawDescription,
-        isExpanded: Boolean(sheet._expandedActionIds?.has(item.id) || sheet._expandedActionIds?.has(actionSlug))
+        isExpanded: Boolean(sheet._expandedActionIds?.has(item.id) || sheet._expandedActionIds?.has(actionSlug)),
+        skill,
+        fromFeat
       };
 
       if (isDowntime) {
@@ -264,7 +321,7 @@ export async function prepareActionsContext(actor, sheet, context) {
   encounterActions.sort(sortByName);
   encounterReactions.sort(sortByName);
   encounterFree.sort(sortByName);
-  skillActions.sort(sortByName);
+  skillActions.sort(compareSkillActions);
   explorationActions.sort(sortByName);
   downtimeActions.sort(sortByName);
 

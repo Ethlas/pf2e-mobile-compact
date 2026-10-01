@@ -1,0 +1,55 @@
+{{!--
+  Item card: one inventory item on the Gear tab (consumable, weapon, armor / shield, other gear).
+  Same structure as the spell and action cards (shared m-card classes): the whole line (image,
+  name, badge row) toggles the drawer; quick buttons sit on the line; the drawer holds the
+  less frequent buttons and the description.
+  Rendered as a partial block from inventory.hbs. The caller fills named slots with inline
+  partials, because they differ per section:
+    badges         the badge row under the name (category, carry state, runes, invested, ...)
+    lineButtons    buttons on the line (Use / Apply)
+    drawerButtons  buttons in the drawer (Runes, Clean); the card adds Send to Stash
+  Inside those slots only the parameters below and @root are available; block parameters of the
+  caller's each-loop (as |x|) are not, and must not be named "item".
+
+  Parameters (hash):
+    item          Item from prepareInventoryContext() in context-inventory.js
+    showQuantity  Show the quantity after the name, e.g. "(x2)"
+    showBulk      Show the item's bulk as a badge
+--}}
+<div class="action-card m-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
+  <!-- Item line: tapping anywhere on it toggles the drawer; buttons and badge buttons keep their own action -->
+  <div class="m-card-line m-flex-row" data-action="toggleActionSummary" data-item-id="{{item.id}}" title="{{item.name}}">
+    <img class="item-img" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
+    <div class="m-card-main m-flex-col m-align-baseline">
+      <div class="m-card-title m-flex-row m-align-center">
+        <span class="action-name item-name"><strong>{{item.name}}</strong>{{#if showQuantity}} (x{{item.quantity}}){{/if}}</span>
+      </div>
+      <div class="item-badges">
+        {{#> badges}}{{/badges}}
+        {{#if showBulk}}
+        <span class="item-badge bulk-badge">Bulk: {{item.bulk}}</span>
+        {{/if}}
+      </div>
+    </div>
+    <div class="action-btn-group">
+      {{#> lineButtons}}{{/lineButtons}}
+    </div>
+  </div>
+
+  <!-- Expandable drawer: the less frequent buttons, then the description -->
+  <div class="action-summary item-summary {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
+    <div class="m-drawer-row m-flex-row">
+      {{#> drawerButtons}}{{/drawerButtons}}
+      {{#if @root.partyStash}}
+      <button type="button" class="touch-target btn-send-stash" data-action="sendToPartyStash" data-item-id="{{item.id}}" title="Send to Party Stash">
+        <i class="fas fa-box-archive"></i>
+      </button>
+      {{/if}}
+    </div>
+    {{#if item.description}}
+    <div class="action-description-content">
+      {{{item.description}}}
+    </div>
+    {{/if}}
+  </div>
+</div>

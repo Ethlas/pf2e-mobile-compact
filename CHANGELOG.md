@@ -4,6 +4,122 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [Unreleased]
+
+### Slot Counter Only for Spontaneous Casters (`scripts/apps/sheet-helpers/context-spells.js`)
+
+#### Fixed
+- **Prepared casters no longer show a "Slots x / y" counter in the Cast view**: the counter and its +/- buttons showed pf2e's `slots.slotN.value`, which pf2e only uses for spontaneous and flexible casting. Casting a prepared spell marks that prepared spell as expended instead (shown on the spell card) and never changes the value, so prepared casters saw a counter stuck at its old number (e.g. "2 / 2") whose buttons did nothing useful. The counter now only counts spontaneous and flexible entries. For a prepared caster a rank group shows once a spell is prepared at that rank; the Preparation view is unchanged.
+
+### Chat on the Line for Actions Without Use or Roll (`templates/parts/actions/action-card.hbs`)
+
+#### Changed
+- **Chat button moves to the line when an action has no other button (`templates/parts/actions/action-card.hbs`, `styles/pf2e-mobile.css`)**: actions with neither Use (self effect, frequency, crafting) nor Roll (a check) had no button on the line, e.g. Anoint Ally or Command Undead. For those, posting the card to chat is the action (the chat card shows the description and any effect link to drag onto an ally), so Chat now sits on the line as an icon button and the drawer only holds the description. Actions with Use or Roll keep Chat in the drawer.
+
+### Skill Actions: Skill Label & Sort Order (`scripts/apps/sheet-helpers/context-actions.js`)
+
+#### Changed
+- **Skill label on skill action cards (`scripts/apps/sheet-helpers/context-actions.js`, `templates/parts/actions/action-card.hbs`, `styles/pf2e-mobile.css`)**: each card in Skill Actions shows the skill it rolls and the character's proficiency in it, e.g. "M Stealth", with the rank letter in the Skills tab colors. The skill comes from pf2e's action registry (`game.pf2e.actions`, `statistic`) or the item's own `system.statistic`. Actions with a choice of skills (Recall Knowledge) read "Multiple" with the best rank among the options; the tooltip lists them.
+- **Skill Actions sort order (`scripts/apps/sheet-helpers/context-actions.js`)**: the section was sorted by name. It now lists actions from feats first (skill feats with an action cost, or actions a feat granted, per pf2e's `item.grantedBy`), then by proficiency in the action's skill (best first, actions without a skill last), then by name. The other sections still sort by name.
+- **Shared proficiency constants (`scripts/utils/sheet-utils.js`, `scripts/apps/sheet-helpers/context-skills.js`)**: the rank letters and names (U / T / E / M / L) moved from `context-skills.js` to `sheet-utils.js`, so the Skills tab and the skill labels use the same list.
+- **`scripts/verify.mjs`**: new `[Skill Action Labels]` check for the skill lookup (single skill, choice of skills, no skill) and the sort order.
+
+### Strike Action Icon (`templates/parts/actions.hbs`)
+
+#### Changed
+- **Strike glyph is an icon**: the action cost on strike cards in Attacks was shown as the plain letter "A" (pf2e's glyph for one action). It now uses the pf2e action icon font, like the spell and action cards, so it shows the one-action icon.
+- **Ready weapons are marked (`scripts/apps/sheet-helpers/context-actions.js`, `templates/parts/actions.hbs`, `styles/pf2e-mobile.css`)**: strike cards whose weapon is ready to strike get a green left border, the same green as the Held / Equipped badges on the Gear tab. "Ready" is pf2e's own `strike.ready`: the weapon is held in enough hands, or it is a worn thrown weapon and a hand is free.
+
+### Shared Item Card Partial & Gear Tab Look (`templates/parts/inventory/`)
+
+#### Changed
+- **One template for an item card (`templates/parts/inventory/item-card.hbs`, `templates/parts/inventory.hbs`, `scripts/pf2e-mobile.js`)**:
+  - Consumables, Weapons, Armor & Shields and Other Gear each had their own copy of the item card. The card now lives in `inventory/item-card.hbs`, rendered as a partial block; `inventory.hbs` went from 295 to 195 lines. Each section fills the named slots `badges`, `lineButtons` and `drawerButtons` with inline partials; `showQuantity` and `showBulk` cover the other differences. The card itself adds Send to Stash.
+  - As with the spell card, the slots can only use the card's parameters and `@root` (`../partyStash` became `@root.partyStash`), and the loops no longer name their item `item`.
+  - Before the look changed below, the refactor was checked to render identically for three real character exports, with and without a party stash, collapsed and expanded.
+- **Gear tab gets the shared look (`templates/parts/inventory/item-card.hbs`, `templates/parts/inventory.hbs`, `styles/pf2e-mobile.css`)**:
+  - The four sections are `.m-group` frames (they keep folding and their fold chevron) and the items are `.m-card` rows. The whole line (image, name, badge row) toggles the drawer, without a chevron; long names are cut off with an ellipsis.
+  - Use / Apply and the status badges (carry state, equipped, invested) stay on the line. Runes, Clean and Send to Stash moved into the drawer, above the description. The bulk is shown as a badge in the badge row.
+  - The section title rule is now shared (`.m-group > .section-title`) by the Actions and Gear tabs. The Spells and Actions tabs were measured before and after and are unchanged.
+
+### Shared Group & Card Classes (`m-group`, `m-card`)
+
+#### Changed
+- **One set of classes for the shared look (`styles/pf2e-mobile.css`, `templates/parts/spells/spell-card.hbs`, `templates/parts/spells.hbs`, `templates/parts/actions/action-card.hbs`, `templates/parts/actions.hbs`)**:
+  - The Spells and Actions tabs shared their look through pairs of class names (`.spell-card-line, .action-card-line`, ...). They now use one set of `m-` classes: `.m-group` (padded frame: spell rank groups, Actions sections), `.m-group-list` (its list of cards), `.m-card` (raised card: spell, action and strike cards), `.m-card-line` (tappable line), `.m-card-main` / `.m-card-title` (name column and name row) and `.m-drawer-row` (Chat + damage row in the drawer). The CSS section starts with a comment listing them.
+  - Tab-specific class names stay where JavaScript uses them (`.spell-list`, `.spell-rank-group`, `.spell-card`, `.strike-card`) or for tab-specific details; the old line/column/row names were replaced. The old `.character-actions-list`, `.character-action-card` and `.character-action-card.expanded` rules, and the strike card's own background and border, were removed because the shared rules cover them.
+  - The look is unchanged: the position, size and computed style of every element (6422 elements in six views across both tabs) were measured in the preview before and after and are identical.
+
+### Shared Action Card Partial (`templates/parts/actions/`)
+
+#### Changed
+- **One template for an action card (`templates/parts/actions/action-card.hbs`, `templates/parts/actions.hbs`, `scripts/pf2e-mobile.js`, `scripts/verify.mjs`)**:
+  - The Actions, Reactions, Free Actions, Skill Actions, Exploration and Downtime sections each had their own copy of the action card. The card now lives in `actions/action-card.hbs` and each section renders it with one line; `actions.hbs` went from 444 to 162 lines. Strikes (Attacks) keep their own layout.
+  - The copies differed in three ways. Two are now parameters: `glyphType` ("reaction" / "free" shows the fixed ⬢ / ◇ symbol) and `showActionCount` (adds the action count to Use / Roll, as in Actions and Skill Actions).
+  - Rendered output is unchanged, checked by rendering three real character exports in every Actions sub-tab, collapsed and expanded, before and after. The `[Action Cost Labels]` check in `verify.mjs` now reads the Use / Roll label from the partial.
+- **Actions tab gets the spell card look (`templates/parts/actions/action-card.hbs`, `templates/parts/actions.hbs`, `styles/pf2e-mobile.css`, `scripts/verify.mjs`)**:
+  - Action cards follow the spell card structure: the whole line (name row plus a second row with traits and "Uses") toggles the drawer, without a chevron; the card lightens while pressed and gets an orange top edge when open; long names are cut off with an ellipsis instead of pushing the buttons off screen.
+  - Use and Roll / Attack are icon-only on the line (▶ / toggle when active, d20, crosshairs); the action cost is shown by the glyph, so the `showActionCount` parameter was removed. Chat moved into the drawer, which is now always present.
+  - The glyph uses the pf2e action icon font; reactions and free actions show the real reaction / free-action icons instead of ⬢ / ◇.
+  - Each Actions tab section (Attacks, Actions, Reactions, Free Actions, Skill Actions, Exploration, Downtime) is a frame like the spell rank groups, with its title inside, and the cards are raised rows. Strike cards keep their own layout and only get the raised card look. The sections do not fold: they have no fold state, so folding would add code rather than remove it.
+  - The CSS reuses the spell rules through combined selectors (for example `.spell-card-line, .action-card-line`); only the section title, icon-only buttons, traits row and strike padding needed their own rules.
+  - Removed the part of the `[Action Cost Labels]` check that required the "(2)" text on the Use / Roll buttons; the checks on how action counts are parsed stay.
+- **"Uses: x / y" shown in every Actions section (`templates/parts/actions/action-card.hbs`)**: the line for actions with limited uses (pf2e's Frequency, e.g. once per day) was only shown in Actions, Reactions and Free Actions. It is now also shown in Skill Actions, Exploration and Downtime when an activity has a limit; nothing changes for activities without one.
+
+### Shared Spell Card & Cast Button Partials (`templates/parts/spells/`)
+
+#### Changed
+- **One template for a spell line (`templates/parts/spells/spell-card.hbs`, `templates/parts/spells.hbs`, `scripts/pf2e-mobile.js`)**:
+  - Moved the spell card markup (name row, source badges, detail tags, traits, heightened notice, damage row, description and Signature/Remove footer) out of `spells.hbs` into a new partial, `spells/spell-card.hbs`, registered in the `loadTemplates` list. Partials that make up the Spells tab live in the new `templates/parts/spells/` folder.
+  - Both the Spells list and the staff spell list now render through this partial as a Handlebars partial block (`{{#> ".../spells/spell-card.hbs" spell=spell rank=group.rank}}…{{/…}}`). The block content supplies the buttons next to the spell name, because those differ per list; everything else is written once.
+  - Parameters: `showManageButtons` shows the Signature/Remove footer (Spells list only); `showChargeCost` shows the staff charge-cost badge (staff list only).
+  - Design rationale: the card was copied between the Spells list and the staff list and the copies had drifted apart (for example, the traits block in the Spells list still carried the `staff-spell-traits` class). One partial keeps them consistent and gives upcoming layout changes a single place to edit.
+- **Cast buttons in their own partials (`templates/parts/spells/cast-button.hbs`, `templates/parts/spells/staff-cast-buttons.hbs`, `scripts/verify.mjs`)**:
+  - `cast-button.hbs` holds the Spells list Cast button (normal and expended-slot variants); `staff-cast-buttons.hbs` holds the staff Cast buttons (cantrip, full charge cost, and 1 charge + spontaneous slot). The staff id is passed in as `staffId` instead of being read from `@root`.
+  - Moving the buttons did not change the rendered output.
+- **Spells list Cast button shows only the cast icon (`templates/parts/spells/cast-button.hbs`, `scripts/verify.mjs`)**:
+  - Removed the "Cast (2)" text; the button shows the wand icon (crosshairs for attack spells). The action count stays in the tooltip.
+  - Removed the part of the `[Action Cost Labels]` check that required the "Cast (…)" text in the template. The checks on how action counts are parsed stay.
+- **Whole spell line toggles the details drawer (`templates/parts/spells/spell-card.hbs`, `styles/pf2e-mobile.css`)**:
+  - The name row and detail tags are wrapped in `.spell-card-line`, which carries `data-action="toggleActionSummary"`, so tapping anywhere on the line opens or closes the drawer instead of only the name. Buttons inside the line keep their own actions. Taps inside the open drawer no longer collapse it.
+  - The title part of the line is layout only (badges, action glyph, name) without its own click handler.
+  - Removed the chevron from the spell line: on a two-row tap target it looked out of place. Instead the card shows its state: it lightens while its line is pressed (not when a button on it is pressed, using `:has(.spell-card-line:active):not(:has(button:active))`), and an open card gets an orange-tinted border and a slightly lighter background, continuing the drawer's orange accent.
+- **Layout utility classes (`styles/pf2e-mobile.css`)**:
+  - Added `.m-flex-row` (`display: flex; flex-direction: row`), `.m-flex-col` (`display: flex; flex-direction: column`) and `.m-align-baseline` (`align-items: baseline`), scoped to `.pf2e-mobile-sheet`. They handle layout only, so templates can use them instead of repeating flex rules in each component class. The `m-` prefix avoids clashes with Foundry's own `flexrow`/`flexcol` and other modules.
+- **pf2e action icons for spell action costs (`templates/parts/spells/spell-card.hbs`, `templates/parts/spells.hbs`, `templates/parts/spell-picker-dialog.hbs`)**:
+  - The action-cost badge on spell cards, preparation slots and the spell picker wraps the glyph in `<span class="action-glyph">`, pf2e's own class for its `Pathfinder2eActions` icon font, so `1`, `2`, `3`, `R` and `F` show as the official action icons. The font and class are loaded by the pf2e system at runtime; nothing is bundled.
+  - Ranges keep the module's format (`1-3`), which shows as two icons joined by a hyphen, because only the digits and letters are icons in that font. No Handlebars helper or mapping is needed.
+- **Line and drawer button slots; secondary buttons moved into the drawer (`templates/parts/spells/spell-card.hbs`, `templates/parts/spells.hbs`, `templates/parts/spells/staff-line-cast-button.hbs`, `styles/pf2e-mobile.css`, `scripts/pf2e-mobile.js`)**:
+  - `spell-card.hbs` now has two named slots that the caller fills with inline partials: `lineButtons` (next to the spell name) and `drawerButtons` (a new `.spell-drawer-actions` row in the opened drawer). This replaces the single `@partial-block` slot, because the drawer content also differs per list.
+  - Spells list: the line only has the Cast button; Restore Expended Slot moved into the drawer.
+  - Chat is part of the card itself, in a drawer row (`.spell-drawer-primary-row`, formerly `.spell-damage-drawer-row`) that is always shown: the Chat button first, then the Roll Damage / Roll Healing button (when the spell has one) filling the remaining width. Chat now also passes `data-rank` for staff spells, so a heightened staff spell is posted to chat at the rank of its group.
+  - The `.spell-drawer-actions` row is hidden when the caller supplies no buttons (`:not(:has(*))`, since the slot may still contain whitespace).
+  - Staff list: when a spell can be cast in two ways (full charge cost, or 1 charge + a spontaneous slot), the line button opens the drawer, where both options are shown. With only one way (cantrips, or no spontaneous slots of that rank or higher) the line button casts directly. This logic lives in the new `staff-line-cast-button.hbs`; a popup to choose may replace the drawer later.
+  - Handlebars limitation: inline partials cannot see the block parameters of the surrounding each-loop, and a block parameter with the same name as the card's `spell` parameter crashes rendering. The loops therefore use `listSpell` / `staffSpell` and pass them in as `spell`; the slots use only `spell`, `rank` and `@root`.
+- **Rank groups frame their spells (`styles/pf2e-mobile.css`)**:
+  - Each rank group (`.spell-rank-group`, in the Spells list and inside the staff) is a padded frame with a 2px border and rounded corners. The rank header (title, count, slots) sits inside the frame without its own bar, and the spells are separate raised rows with a small gap between them inside the frame: only a light top border (`1px solid rgba(255, 255, 255, 0.25)`, other sides `0`) plus a soft drop shadow, on a background slightly lighter than the frame. Rank groups can still be folded.
+  - Because only the top border has a width, an open spell shows an orange top edge and an expended spell a red top edge (with its red-tinted background). The "No spells available for this rank." hint sits inside the frame.
+- **Focus spells in their own group above the Cantrips (`scripts/apps/sheet-helpers/context-spells.js`, `templates/parts/spells.hbs`)**:
+  - `prepareSpellsContext()` collects focus spells into a "Focus Spells" group (`rank: "focus"`) that is placed first in `spellRanks`, instead of in the rank they are heightened to. Each spell keeps its `castRank`, so heightening, damage and casting use the correct rank; the group only appears when there are focus spells.
+  - The spell card now gets its rank from the spell (`rank=listSpell.castRank`) instead of from the group, since the focus group has no single rank. For all rank groups this is the same value (checked by rendering every preview fixture before and after).
+  - The rank header tooltip reads "Toggle {{group.label}}" (for example "Toggle Focus Spells", "Toggle Rank 1").
+  - The focus point counter moved from the action bar above the spells into the Focus Spells header, in the place where rank groups show their slots. A focus pool without focus spells cannot be used, so the action bar no longer shows it at all; the unused `.focus-pool-tracker` / `.focus-buttons` CSS was removed.
+  - Focus points are shown as one flame per point (`.btn-focus-point`): lit for available points, dimmed for spent ones. Tapping a lit flame spends a point, tapping a dimmed one regains a point (same `adjustFocus` action with `data-delta` −1 / +1). `prepareHeaderContext()` adds `focus.points` (one `{ available }` entry per point) because Handlebars cannot loop over a number. Each flame is a 36px touch target, the same size as the slot −/+ buttons.
+
+#### Fixed
+- **Reaction and free-action spells no longer count as 2 actions (`scripts/utils/sheet-utils.js`, `scripts/apps/sheet-helpers/context-spells.js`, `scripts/apps/sheet-helpers/context-activations.js`, `scripts/verify.mjs`)**: `parseActionCostInfo()` only gave reactions and free actions an empty action count for non-spells, so spells such as Hidebound got `castActions: "2"` (tooltip "Cast Hidebound (2 Actions)"). Spells now get an empty count too (the glyph stays "R" / "F"), `formatSpell()` no longer turns an empty count back into "2", and wands / scrolls use their spell's own count. `verify.mjs` checks a reaction spell.
+- **"Cantrip" shown twice on cantrip spells (`templates/parts/spells/spell-card.hbs`)**: the drawer added its own Cantrip badge next to pf2e's "cantrip" trait. The extra badge was removed; all cantrips in the test data carry the trait.
+- **Long spell names no longer push the Cast button off screen (`templates/parts/spells/spell-card.hbs`, `styles/pf2e-mobile.css`)**: the name/tags column of the spell line (`.spell-card-main`) and the name row (`.spell-card-title`) may now shrink below their content width (`min-width: 0`), and the button group keeps its size (`flex-shrink: 0`). A name that does not fit is cut off with an ellipsis; on an opened card it wraps.
+- **Folding staff rank groups and the focus group is remembered (`scripts/apps/sheet-helpers/spells-handlers.js`)**: `onToggleRankGroup` used `parseInt` on the group key, turning `"staff-2"` into `NaN`, so a folded staff rank group opened again on the next render. Numeric keys are still stored as numbers; other keys (`"focus"`, `"staff-2"`) are now stored as text, matching what the context builders look up.
+
+#### Changed
+- **Staff spells use the same card layout as the Spells list (`templates/parts/spells.hbs`, `styles/pf2e-mobile.css`)**:
+  - Staff spell buttons now sit next to the spell name instead of on a row underneath, and the charge-cost badge moved from the name row into the detail tags row. The layout is intentionally left unpolished until the spell card design is reworked.
+  - Removed the now unused stacked staff layout CSS (`.staff-spell-card`, `.staff-spell-header*`, `.staff-spell-details`, `.staff-spell-actions`, `.staff-btn-flex`).
+  - The Spells list renders identically to before; this was checked by rendering every preview fixture in each sub-tab, collapsed and expanded, before and after the change and comparing the HTML.
+
+---
+
 ## [1.0.29] - 2026-09-29
 
 ### Targeting Fixes: iOS Real-Time Distance Updates, AoE Multi-Targeting, Flanking Detection, Self-Targeting, & Persistent Canvas Toggle (Issue #16)
