@@ -11,6 +11,10 @@
  */
 export const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
 
+/** Proficiency rank letters and English names, indexed by pf2e rank (0 untrained - 4 legendary). */
+export const PROFICIENCY_RANK_LETTERS = ["U", "T", "E", "M", "L"];
+export const PROFICIENCY_RANK_NAMES = ["Untrained", "Trained", "Expert", "Master", "Legendary"];
+
 /**
  * Normalizes a PF2e action count or spell casting time string into a compact 1-3 action representation.
  * Examples:

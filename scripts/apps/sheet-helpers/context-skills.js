@@ -1,9 +1,7 @@
 /**
  * Context preparation helper for Core and Lore Skills.
  */
-
-const PROFICIENCY_RANK_LETTERS = ["U", "T", "E", "M", "L"];
-const PROFICIENCY_RANK_NAMES = ["Untrained", "Trained", "Expert", "Master", "Legendary"];
+import { PROFICIENCY_RANK_LETTERS, PROFICIENCY_RANK_NAMES } from "../../utils/sheet-utils.js";
 
 /**
  * Prepares skills context from actor statistics.

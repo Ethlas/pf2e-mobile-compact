@@ -829,6 +829,43 @@ try {
   logFail(`Kingdom Sheet / Target Distance verification threw an error: ${err.stack || err.message}`);
 }
 
+// 6.6b Test Skill Action labels (skill + proficiency) and sort order (feats first, then best rank, then name)
+try {
+  const { getActionSkillInfo, compareSkillActions } = await import("./apps/sheet-helpers/context-actions.js");
+  const skills = {
+    stealth: { slug: "stealth", label: "Stealth", rank: 3 },
+    medicine: { slug: "medicine", label: "Medicine", rank: 1 },
+    arcana: { slug: "arcana", label: "Arcana", rank: 2 },
+    occultism: { slug: "occultism", label: "Occultism", rank: 0 }
+  };
+  const actor = { getStatistic: (slug) => skills[slug] ?? null };
+
+  const hide = getActionSkillInfo(actor, "stealth");
+  const recall = getActionSkillInfo(actor, ["arcana", "occultism", "unknown-skill"]);
+  const none = getActionSkillInfo(actor, undefined);
+
+  const order = [
+    { name: "Hide", fromFeat: false, skill: hide },
+    { name: "Treat Wounds", fromFeat: false, skill: getActionSkillInfo(actor, "medicine") },
+    { name: "Battle Medicine", fromFeat: true, skill: getActionSkillInfo(actor, "medicine") },
+    { name: "Aid", fromFeat: false, skill: null },
+    { name: "Sneak", fromFeat: false, skill: hide }
+  ].sort(compareSkillActions).map(a => a.name).join(",");
+
+  if (
+    hide?.label !== "Stealth" || hide.rank !== 3 || hide.rankLetter !== "M" || hide.rankName !== "Master" ||
+    recall?.label !== "Multiple" || recall.rank !== 2 || recall.options !== "Arcana, Occultism" ||
+    none !== null ||
+    order !== "Battle Medicine,Hide,Sneak,Treat Wounds,Aid"
+  ) {
+    logFail(`[Skill Action Labels] Unexpected skill info or sort order (order: ${order}).`);
+  } else {
+    logPass("[Skill Action Labels] Skill actions get their skill and rank (best rank for a choice of skills, 'Multiple'), and sort feats first, then best rank, then name.");
+  }
+} catch (err) {
+  logFail(`Skill Action Labels verification threw an error: ${err.stack || err.message}`);
+}
+
 // 6.7 Test Spell Action Cost (1-3, default 2) & Multi-Action Button Labels (> 1)
 try {
   const { parseActionCostInfo } = await import("./utils/sheet-utils.js");

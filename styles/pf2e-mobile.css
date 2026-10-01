@@ -1202,6 +1202,19 @@ body.pf2e-mobile-active textarea {
   padding: 1px 5px;
   border-radius: 3px;
   text-transform: capitalize;
+}.pf2e-mobile-sheet .action-skill {
+  /* Skill label on skill action cards: rank letter (Skills tab colors) + skill name */
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #ddd;
+}.pf2e-mobile-sheet .action-skill .skill-rank-badge {
+  width: 16px;
+  height: 16px;
+  font-size: 0.65rem;
+  border-radius: 3px;
 }.pf2e-mobile-sheet .action-frequency {
   font-size: 0.75rem;
   color: #81d4fa;
@@ -2081,9 +2094,10 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   flex-shrink: 0;
 }
 
-/* Action card only: Use / Roll buttons are icon-only; traits and uses form the line's second row */
+/* Action card only: Use / Roll (or Chat) buttons are icon-only; traits and uses form the line's second row */
 .pf2e-mobile-sheet .m-card-line .btn-action-use,
-.pf2e-mobile-sheet .m-card-line .btn-action-roll {
+.pf2e-mobile-sheet .m-card-line .btn-action-roll,
+.pf2e-mobile-sheet .m-card-line .btn-action-chat {
   justify-content: center;
   font-size: 1rem;
 }

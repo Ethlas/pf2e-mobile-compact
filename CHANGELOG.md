@@ -6,6 +6,19 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Chat on the Line for Actions Without Use or Roll (`templates/parts/actions/action-card.hbs`)
+
+#### Changed
+- **Chat button moves to the line when an action has no other button (`templates/parts/actions/action-card.hbs`, `styles/pf2e-mobile.css`)**: actions with neither Use (self effect, frequency, crafting) nor Roll (a check) had no button on the line, e.g. Anoint Ally or Command Undead. For those, posting the card to chat is the action (the chat card shows the description and any effect link to drag onto an ally), so Chat now sits on the line as an icon button and the drawer only holds the description. Actions with Use or Roll keep Chat in the drawer.
+
+### Skill Actions: Skill Label & Sort Order (`scripts/apps/sheet-helpers/context-actions.js`)
+
+#### Changed
+- **Skill label on skill action cards (`scripts/apps/sheet-helpers/context-actions.js`, `templates/parts/actions/action-card.hbs`, `styles/pf2e-mobile.css`)**: each card in Skill Actions shows the skill it rolls and the character's proficiency in it, e.g. "M Stealth", with the rank letter in the Skills tab colors. The skill comes from pf2e's action registry (`game.pf2e.actions`, `statistic`) or the item's own `system.statistic`. Actions with a choice of skills (Recall Knowledge) read "Multiple" with the best rank among the options; the tooltip lists them.
+- **Skill Actions sort order (`scripts/apps/sheet-helpers/context-actions.js`)**: the section was sorted by name. It now lists actions from feats first (skill feats with an action cost, or actions a feat granted, per pf2e's `item.grantedBy`), then by proficiency in the action's skill (best first, actions without a skill last), then by name. The other sections still sort by name.
+- **Shared proficiency constants (`scripts/utils/sheet-utils.js`, `scripts/apps/sheet-helpers/context-skills.js`)**: the rank letters and names (U / T / E / M / L) moved from `context-skills.js` to `sheet-utils.js`, so the Skills tab and the skill labels use the same list.
+- **`scripts/verify.mjs`**: new `[Skill Action Labels]` check for the skill lookup (single skill, choice of skills, no skill) and the sort order.
+
 ### Strike Action Icon (`templates/parts/actions.hbs`)
 
 #### Changed

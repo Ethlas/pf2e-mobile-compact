@@ -3,7 +3,8 @@
   downtime). Used by every section of the Actions tab except Attacks (strikes have their own layout).
   Same structure as the spell card (spells/spell-card.hbs): the whole line (name row plus
   traits / uses row) toggles the drawer, the quick buttons (Use, Roll / Attack) sit on the
-  line as icons, and the drawer holds Chat and the description.
+  line as icons, and the drawer holds Chat and the description. Actions with neither Use nor
+  Roll have Chat on the line instead.
 
   Parameters (hash):
     act        Action from prepareActionsContext() in context-actions.js
@@ -25,8 +26,12 @@
         <span class="action-name"><strong>{{act.name}}</strong></span>
       </div>
 
-      {{#if (or act.traits.length act.frequency)}}
+      {{#if (or act.skill act.traits.length act.frequency)}}
       <div class="action-traits">
+        {{!-- Skill actions: the skill they roll and the character's proficiency in it --}}
+        {{#if act.skill}}
+        <span class="action-skill" title="{{act.skill.options}} ({{act.skill.rankName}})"><span class="skill-rank-badge rank-{{act.skill.rank}}">{{act.skill.rankLetter}}</span>{{act.skill.label}}</span>
+        {{/if}}
         {{#each act.traits as |trait|}}
         <span class="trait-badge">{{trait.label}}</span>
         {{/each}}
@@ -50,15 +55,24 @@
         {{#if act.isAttack}}<i class="fas fa-crosshairs"></i>{{else}}<i class="fas fa-dice-d20"></i>{{/if}}
       </button>
       {{/if}}
-    </div>
-  </div>
-
-  <!-- Expandable drawer: Chat, then the description -->
-  <div class="action-summary {{#if act.isExpanded}}expanded{{else}}collapsed{{/if}}">
-    <div class="m-drawer-row m-flex-row">
+      {{!-- Actions without Use or Roll (e.g. Anoint Ally, whose effect goes on an ally) get Chat on the
+            line instead of in the drawer: posting the card is their action, and the chat card links the effect --}}
+      {{#unless (or act.usable act.hasRoll)}}
       <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
         <i class="fas fa-message"></i>
       </button>
+      {{/unless}}
+    </div>
+  </div>
+
+  <!-- Expandable drawer: Chat (unless it is on the line), then the description -->
+  <div class="action-summary {{#if act.isExpanded}}expanded{{else}}collapsed{{/if}}">
+    <div class="m-drawer-row m-flex-row">
+      {{#if (or act.usable act.hasRoll)}}
+      <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
+        <i class="fas fa-message"></i>
+      </button>
+      {{/if}}
     </div>
     {{#if act.description}}
     <div class="action-description-content">
