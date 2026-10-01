@@ -18,7 +18,8 @@ export async function formatSpell(actor, sheet, spell, entryId, extra = {}) {
   const traits = (spell.system?.traits?.value ?? spell.traits?.value ?? []).map(t => ({ label: String(t) }));
   const costInfo = parseActionCostInfo(spell, null, { isSpell: true });
   const glyph = costInfo.glyph;
-  const castActions = costInfo.castActions || "2";
+  // Already "2" for spells without a clear action count; empty for reaction and free-action spells
+  const castActions = costInfo.castActions;
   const isAttack = traits.some(t => t.label.toLowerCase() === "attack") || spell.traits?.has?.("attack");
 
   const entry = actor.spellcasting?.get(entryId);
@@ -207,6 +208,19 @@ export async function prepareSpellsContext(actor, sheet, context) {
     entryId: null
   }));
 
+  // Focus spells get their own group, shown above the Cantrips. Each spell keeps the rank it is
+  // cast at (castRank), so heightening and damage stay correct; the group itself has no rank,
+  // so its collapse key is the string "focus" instead of a number.
+  const focusGroup = {
+    rank: "focus",
+    label: "Focus Spells",
+    isCollapsed: sheet._collapsedRankGroups?.has("focus"),
+    spells: [],
+    hasSlots: false,
+    slots: { value: 0, max: 0 },
+    entryId: null
+  };
+
   for (const entry of entries) {
     const entryId = entry.id;
     const isPrepared = entry.isPrepared || entry.system?.prepared?.value === "prepared";
@@ -217,11 +231,14 @@ export async function prepareSpellsContext(actor, sheet, context) {
     const systemData = entry.system ?? {};
     const spells = entry.spells?.contents ?? [];
 
-    // Update slot trackers for ranks 0-10
+    // Update slot trackers for ranks 0-10.
+    // Only spontaneous and flexible entries spend slots by count (slots.slotN.value). Prepared entries
+    // mark the prepared spell itself as expended, which the spell cards already show.
+    const usesSlotCount = isSpontaneous || Boolean(entry.isFlexible);
     for (let r = 0; r <= 10; r++) {
       const slotKey = `slot${r}`;
       const slotData = systemData.slots?.[slotKey];
-      if (slotData && slotData.max > 0) {
+      if (usesSlotCount && slotData && slotData.max > 0) {
         const bucket = rankBuckets[r];
         bucket.hasSlots = true;
         bucket.slots.value = Math.max(bucket.slots.value, slotData.value ?? 0);
@@ -355,7 +372,8 @@ export async function prepareSpellsContext(actor, sheet, context) {
               castRank: targetRank,
               cardKey: `${spell.id}-${targetRank}`
             });
-            rankBuckets[targetRank].spells.push(formatted);
+            const group = isFocusSpell ? focusGroup : rankBuckets[targetRank];
+            group.spells.push(formatted);
           }
         }
       }
@@ -363,12 +381,15 @@ export async function prepareSpellsContext(actor, sheet, context) {
   }
 
   const sortByName = (a, b) => a.name.localeCompare(b.name);
-  for (const b of rankBuckets) {
+  for (const b of [focusGroup, ...rankBuckets]) {
     b.spells.sort(sortByName);
   }
 
-  // Filter rankBuckets: keep ranks that have spells OR slots with max > 0
-  context.spellRanks = rankBuckets.filter(b => b.spells.length > 0 || (b.hasSlots && b.slots.max > 0)).map(b => ({
+  // Filter rankBuckets: keep ranks that have spells OR slots with max > 0.
+  // The focus group (if it has spells) comes first, above the Cantrips.
+  const visibleGroups = rankBuckets.filter(b => b.spells.length > 0 || (b.hasSlots && b.slots.max > 0));
+  if (focusGroup.spells.length > 0) visibleGroups.unshift(focusGroup);
+  context.spellRanks = visibleGroups.map(b => ({
     ...b,
     spellCount: b.spells.length
   }));

@@ -152,9 +152,14 @@ export function prepareHeaderContext(actor, sheet, context) {
 
   // Focus Pool
   const focusResource = system.resources?.focus;
+  const focusValue = focusResource?.value ?? 0;
+  const focusMax = focusResource?.max ?? 0;
   context.focus = {
-    value: focusResource?.value ?? 0,
-    max: focusResource?.max ?? 0
+    value: focusValue,
+    max: focusMax,
+    // One entry per point in the pool, for the flame icons in the Focus Spells header:
+    // the first `value` points are still available, the rest are spent.
+    points: Array.from({ length: Math.max(0, focusMax) }, (_, i) => ({ available: i < focusValue }))
   };
 
   context.canvasDisabled = isMobileCanvasDisabled();

@@ -1,0 +1,26 @@
+{{!--
+  Cast button for a spell in the Spells list (data-action="castSpell").
+  A prepared spell whose slot is expended always gets a disabled button;
+  otherwise the button is disabled when formatSpell() sets canCast to false.
+
+  Parameters (hash):
+    spell  Formatted spell from formatSpell() in context-spells.js
+    rank   Rank of the group the spell is listed under
+--}}
+{{#if (and spell.isPrepared spell.isExpended)}}
+<button type="button" class="touch-target btn-cast disabled {{#if spell.isAttack}}btn-cast-attack{{/if}}" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="{{#if spell.cannotCastReason}}{{spell.cannotCastReason}}{{else}}Spell slot already expended{{/if}}">
+  {{#if spell.isAttack}}
+    <i class="fas fa-crosshairs"></i>
+  {{else}}
+    <i class="fas fa-wand-magic-sparkles"></i>
+  {{/if}}
+</button>
+{{else}}
+<button type="button" class="touch-target btn-cast {{#unless spell.canCast}}disabled{{/unless}} {{#if spell.isAttack}}btn-cast-attack{{/if}}" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="{{#if spell.canCast}}Cast {{spell.name}}{{#if spell.castActions}} ({{spell.castActions}} Actions){{/if}}{{else}}{{spell.cannotCastReason}}{{/if}}">
+  {{#if spell.isAttack}}
+    <i class="fas fa-crosshairs"></i>
+  {{else}}
+    <i class="fas fa-wand-magic-sparkles"></i>
+  {{/if}}
+</button>
+{{/if}}

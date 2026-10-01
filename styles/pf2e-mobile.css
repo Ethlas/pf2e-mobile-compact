@@ -196,7 +196,32 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   user-select: text;
 }.pf2e-mobile-sheet * {
   box-sizing: border-box;
-}/* ----------------------------------------- *//* Touch Targets & Universal Controls        *//* ----------------------------------------- */.pf2e-mobile-sheet [data-action],
+}
+
+/* ----------------------------------------- */
+/* Layout Utilities                          */
+/* ----------------------------------------- */
+/* Small Tailwind-style helpers for layout only; component classes keep the look.
+   Prefixed with "m-" so they cannot clash with Foundry, pf2e or other module classes. */
+.pf2e-mobile-sheet .m-flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.pf2e-mobile-sheet .m-flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.pf2e-mobile-sheet .m-align-baseline {
+  align-items: baseline;
+}
+
+.pf2e-mobile-sheet .m-align-center {
+  align-items: center;
+}
+
+/* ----------------------------------------- *//* Touch Targets & Universal Controls        *//* ----------------------------------------- */.pf2e-mobile-sheet [data-action],
 .pf2e-mobile-sheet [data-change-action],
 .pf2e-mobile-sheet .touch-target,
 .pf2e-mobile-sheet button,
@@ -641,16 +666,6 @@ body.pf2e-mobile-active textarea {
   align-items: center;
   margin-bottom: 12px;
   gap: 8px;
-}.pf2e-mobile-sheet .focus-pool-tracker {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}.pf2e-mobile-sheet .focus-buttons {
-  display: flex;
-  gap: 4px;
-}.pf2e-mobile-sheet .focus-buttons button {
-  min-width: 40px;
-  height: 40px;
 }/* ----------------------------------------- *//* Bottom Navigation Bar                     *//* ----------------------------------------- */.pf2e-mobile-sheet .mobile-bottom-nav {
   position: relative;
   flex: 0 0 auto;
@@ -975,12 +990,10 @@ body.pf2e-mobile-active textarea {
   border-radius: 6px;
   padding: 10px;
   margin-bottom: 10px;
-}/* Strike Card Layout */.pf2e-mobile-sheet .strike-card {
+}/* Strike Card Layout (the raised card look comes from .m-card) */.pf2e-mobile-sheet .strike-card {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: #1e1e1e;
-  border: 1px solid #383838;
 }.pf2e-mobile-sheet .strike-card-header {
   display: flex;
   align-items: center;
@@ -1106,15 +1119,6 @@ body.pf2e-mobile-active textarea {
   border-radius: 4px;
   text-transform: uppercase;
   color: #bbb;
-}/* Character Action Cards */.pf2e-mobile-sheet .character-actions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}.pf2e-mobile-sheet .character-action-card {
-  background: #1e1e1e;
-  border: 1px solid #383838;
-  border-radius: 6px;
-  padding: 8px 10px;
 }.pf2e-mobile-sheet .action-title-group {
   display: flex;
   align-items: center;
@@ -1138,18 +1142,13 @@ body.pf2e-mobile-active textarea {
 .pf2e-mobile-sheet .action-expand-icon.expanded {
   transform: rotate(180deg);
   color: #ffb74d;
-}.pf2e-mobile-sheet .character-action-card.expanded {
-  border-color: #555;
-  background: #232323;
 }.pf2e-mobile-sheet .action-cost-glyph,
 .spell-picker-dialog .action-cost-glyph {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #333;
   color: #ffb74d;
-  font-weight: bold;
-  border-radius: 4px;
+  /*border-radius: 4px;*/
   min-width: 26px;
   width: auto;
   height: 26px;
@@ -1223,6 +1222,19 @@ body.pf2e-mobile-active textarea {
   padding: 1px 5px;
   border-radius: 3px;
   text-transform: capitalize;
+}.pf2e-mobile-sheet .action-skill {
+  /* Skill label on skill action cards: rank letter (Skills tab colors) + skill name */
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #ddd;
+}.pf2e-mobile-sheet .action-skill .skill-rank-badge {
+  width: 16px;
+  height: 16px;
+  font-size: 0.65rem;
+  border-radius: 3px;
 }.pf2e-mobile-sheet .action-frequency {
   font-size: 0.75rem;
   color: #81d4fa;
@@ -1356,7 +1368,8 @@ body.pf2e-mobile-active textarea {
 }
 .pf2e-mobile-sheet .lore-skills-section {
   margin-top: 14px;
-}/* ----------------------------------------- *//* Spells Tab & Slots                        *//* ----------------------------------------- */.pf2e-mobile-sheet .spell-rank-group {
+}/* ----------------------------------------- *//* Spells Tab & Slots                        *//* ----------------------------------------- */
+.pf2e-mobile-sheet .spell-rank-group {
   margin-bottom: 16px;
 }.pf2e-mobile-sheet .spell-rank-header {
   display: flex;
@@ -1924,17 +1937,27 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   font-weight: 700;
   line-height: 1;
 }
-/* Collapsible Rank Groups */
-.pf2e-mobile-sheet .spell-rank-group {
-  margin-bottom: 10px;
+/* Shared groups and cards (m- classes, used by the Spells and Actions tabs):
+   .m-group       a padded frame holding a header/title and a list of cards
+                  (spell rank groups, Actions tab sections)
+   .m-group-list  the list of cards inside a group
+   .m-card        a raised card (spell, action, strike); .m-card-line is its tappable line,
+                  .m-card-main / .m-card-title its name column and name row,
+                  .m-drawer-row the Chat (+ damage) row in its drawer */
+.pf2e-mobile-sheet .m-group {
+  margin-bottom: 12px;
+  padding: 4px 8px 8px;
+  background: #1a1a1a;
+  border: 2px solid #3a3a3a;
+  border-radius: 10px;
 }.pf2e-mobile-sheet .spell-rank-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   min-height: 44px;
-  padding: 8px 12px;
-  background: #202020;
-  border: 1px solid #353535;
+  padding: 4px 4px;
+  background: transparent;
+  border: none;
   border-radius: 6px;
   cursor: pointer;
   user-select: none;
@@ -1993,20 +2016,164 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   background: #3a3a3a;
   border-color: #ffb74d;
   color: #ffb74d;
-}.pf2e-mobile-sheet .spell-list {
-  margin-top: 6px;
+}
+
+/* Focus points as flame icons in the Focus Spells header: lit = available, dimmed = spent.
+   Each flame is a 36px transparent touch target, the same size as the slot -/+ buttons. */
+.pf2e-mobile-sheet .focus-counter {
+  gap: 0;
+}
+
+.pf2e-mobile-sheet .btn-focus-point {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: #ff8a3d;
+  font-size: 1.25rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color 0.15s ease, transform 0.1s ease;
+}
+
+.pf2e-mobile-sheet .btn-focus-point.spent {
+  color: #4a4a4a;
+}
+
+.pf2e-mobile-sheet .btn-focus-point:active {
+  background: transparent;
+  transform: scale(0.9);
+}.pf2e-mobile-sheet .m-group-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  margin-top: 4px;
+}.pf2e-mobile-sheet .m-group-list > .empty-hint {
+  margin: 0;
+  padding: 4px;
+}
+
+/* Section titles (Actions and Gear tabs) sit inside the frame, like a rank header */
+.pf2e-mobile-sheet .m-group > .section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  margin: 0 4px;
+  padding: 0;
+  border-bottom: none;
+  background: transparent;
 }.pf2e-mobile-sheet .spell-list.collapsed {
   display: none !important;
-}/* Spell Card Details & Status */.pf2e-mobile-sheet .spell-card {
-  background: #1e1e1e;
-  border: 1px solid #383838;
-  transition: opacity 0.15s ease, background 0.15s ease;
+}/* Spell Card Details & Status: a spell is a raised row inside its rank frame:
+   a light top edge plus a soft drop shadow, slightly lighter than the frame behind it.
+   Only the top border has a width, so the open (orange) and expended (red) border colours
+   show as a coloured top edge. Used by spell, action and strike cards. */
+.pf2e-mobile-sheet .m-card {
+  background: #222;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6), 0 1px 1px rgba(0, 0, 0, 0.4);
+  margin: 0;
+  overflow: hidden;
+  transition: opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  padding: 0;
+}.pf2e-mobile-sheet .strike-card {
+  /* Strikes keep their own layout, which needs inner padding (the other cards pad their line) */
+  padding: 10px;
+}.pf2e-mobile-sheet .strike-card.ready {
+  /* Weapon ready to strike (held, per pf2e's strike.ready): same green as the Gear tab's Held / Equipped badges */
+  border-left: 2px solid #4caf50;
 }.pf2e-mobile-sheet .spell-card .action-card-header {
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
+}/* Whole spell line (name row + detail tags) is the tap target that toggles the drawer */
+.pf2e-mobile-sheet .m-card-line {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  padding: 2px 8px;
+}
+
+/* Long spell names must not push the buttons off screen: the name/tags column may shrink below
+   its content width (flex items default to min-width: auto), the name row stays inside it so the
+   name gets cut off with an ellipsis (.action-name), and the buttons keep their size. */
+.pf2e-mobile-sheet .m-card-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pf2e-mobile-sheet .m-card-title {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.pf2e-mobile-sheet .m-card-line > .action-btn-group {
+  flex-shrink: 0;
+}
+
+/* Action card only: Use / Roll (or Chat) buttons are icon-only; traits and uses form the line's second row */
+.pf2e-mobile-sheet .m-card-line .btn-action-use,
+.pf2e-mobile-sheet .m-card-line .btn-action-roll,
+.pf2e-mobile-sheet .m-card-line .btn-action-chat {
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.pf2e-mobile-sheet .m-card-line .action-traits {
+  align-items: center;
+  margin: 2px 0 4px;
+}
+
+.pf2e-mobile-sheet .m-card-line .action-frequency {
+  margin: 0;
+}
+
+/* Item card only (Gear tab): image on the left of the line, badge row under the name */
+.pf2e-mobile-sheet .inventory-item-card .m-card-line {
+  align-items: center;
+  gap: 8px;
+}
+
+.pf2e-mobile-sheet .m-card-line .item-badges {
+  margin: 2px 0 4px;
+}
+
+.pf2e-mobile-sheet .item-badge.bulk-badge {
+  color: #aaa;
+  border: 1px solid #555;
+}
+
+/* Hide a drawer button row that has no buttons (Gear items without Runes / Clean / Stash) */
+.pf2e-mobile-sheet .m-drawer-row:not(:has(*)) {
+  display: none;
+}
+
+/* The spell card has no chevron; the card itself shows that it opens.
+   Tap feedback: lighten the card while its line is pressed, but not when a button on it is. */
+.pf2e-mobile-sheet .m-card:has(.m-card-line:active):not(:has(button:active)) {
+  background: #2a2a2a;
+}
+
+/* Row of extra buttons in the opened drawer (restore slot, staff cast options) */
+.pf2e-mobile-sheet .spell-drawer-actions {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+/* Hide the row when the caller supplied no buttons (it may still contain whitespace, so :empty is not enough) */
+.pf2e-mobile-sheet .spell-drawer-actions:not(:has(*)) {
+  display: none;
+}
+
+/* Open state: orange-tinted border that continues the drawer's orange accent */
+.pf2e-mobile-sheet .m-card.expanded {
+  border-color: rgba(255, 183, 77, 0.55);
+  background: #242424;
 }.pf2e-mobile-sheet .spell-card .action-title-group {
   min-width: 120px;
   flex: 1 1 120px;
@@ -2115,20 +2282,24 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-color: #2e7d32;
 }.pf2e-mobile-sheet .btn-spell-damage.btn-spell-heal:active {
   background: #2e7d32;
-}.pf2e-mobile-sheet .spell-damage-drawer-row {
+}/* Drawer row: Chat (fixed width) + damage/healing button (fills the rest) */
+.pf2e-mobile-sheet .m-drawer-row {
   margin-bottom: 10px;
-  display: flex;
   width: 100%;
+  gap: 6px;
+  align-items: stretch;
+}.pf2e-mobile-sheet .m-drawer-row .btn-action-chat {
+  flex: 0 0 auto;
+  height: 42px;
 }.pf2e-mobile-sheet .btn-spell-damage.btn-spell-damage-full {
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   min-height: 42px;
   height: 42px;
   font-size: 0.88rem;
   border-radius: 6px;
-}.pf2e-mobile-sheet .btn-cast {
-  min-height: 38px;
-  height: 38px;
-  padding: 4px 12px;
+}
+.pf2e-mobile-sheet .btn-cast {
   background: #1565c0;
   border: 1px solid #1976d2;
   color: #fff;
@@ -2137,11 +2308,23 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  align-content: center;
   white-space: nowrap;
   cursor: pointer;
   touch-action: manipulation;
-}.pf2e-mobile-sheet .btn-cast:active {
+}
+.pf2e-mobile-sheet .action-btn-group .btn-cast {
+  min-height: 100%;
+  padding: 4px;
+}
+
+.pf2e-mobile-sheet .spell-drawer-actions .btn-cast {
+  min-height: 38px;
+  height: 38px;
+  padding: 4px;
+}
+.pf2e-mobile-sheet .btn-cast:active {
   background: #1976d2;
 }.pf2e-mobile-sheet .btn-cast.btn-cast-attack {
   background: #b71c1c;
@@ -3191,60 +3374,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   background: #27272a;
   color: #a1a1aa;
   border-color: #3f3f46;
-}
-
-/* Staff Spell Card Stacked Mobile Layout */
-.pf2e-mobile-sheet .staff-spell-card {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 8px 10px;
-}
-
-.pf2e-mobile-sheet .staff-spell-header {
-  margin-bottom: 0;
-  width: 100%;
-}
-
-.pf2e-mobile-sheet .staff-spell-header .action-title-group {
-  width: 100%;
-  min-height: 38px;
-}
-
-.pf2e-mobile-sheet .staff-spell-header .action-name {
-  font-size: 0.98rem;
-  white-space: normal;
-  line-height: 1.25;
-  flex: 1;
-}
-
-.pf2e-mobile-sheet .staff-spell-header-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
-.pf2e-mobile-sheet .staff-spell-details {
-  margin: 0;
-}
-
-.pf2e-mobile-sheet .staff-spell-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-  margin-top: 2px;
-}
-
-.pf2e-mobile-sheet .staff-spell-actions .staff-btn-flex {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  min-height: 38px;
 }
 
 .pf2e-mobile-sheet .staff-spell-traits {

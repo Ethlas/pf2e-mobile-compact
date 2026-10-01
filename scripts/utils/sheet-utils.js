@@ -11,6 +11,10 @@
  */
 export const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
 
+/** Proficiency rank letters and English names, indexed by pf2e rank (0 untrained - 4 legendary). */
+export const PROFICIENCY_RANK_LETTERS = ["U", "T", "E", "M", "L"];
+export const PROFICIENCY_RANK_NAMES = ["Untrained", "Trained", "Expert", "Master", "Legendary"];
+
 /**
  * Normalizes a PF2e action count or spell casting time string into a compact 1-3 action representation.
  * Examples:
@@ -76,6 +80,8 @@ export function getGlyph(actionCost, rawTime = "") {
 /**
  * Extracts normalized action cost metadata for spells (1-3 actions, including ranges like 1-3,
  * defaulting to 2 actions for spells) and character/skill actions (highlighting multi-action costs > 1).
+ * Reactions and free actions (spells included) get glyph "R" / "F" and an empty castActions,
+ * because they have no action count.
  * @param {object} itemOrSpell
  * @param {object|string|number} [fallbackCost]
  * @param {object} [options]
@@ -107,10 +113,10 @@ export function parseActionCostInfo(itemOrSpell, fallbackCost = null, options = 
     ? "reaction"
     : (timeLower === "free" || actionCost?.type === "free" ? "free" : (actionCost?.type ?? "action"));
 
-  if (costType === "reaction" && !isSpell) {
+  if (costType === "reaction") {
     return { glyph: "R", castActions: "", multiActionLabel: "", actionCostType: "reaction", actionCostValue: 0 };
   }
-  if (costType === "free" && !isSpell) {
+  if (costType === "free") {
     return { glyph: "F", castActions: "", multiActionLabel: "", actionCostType: "free", actionCostValue: 0 };
   }
 

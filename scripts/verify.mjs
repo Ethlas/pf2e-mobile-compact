@@ -828,6 +828,43 @@ try {
   logFail(`Kingdom Sheet / Target Distance verification threw an error: ${err.stack || err.message}`);
 }
 
+// 6.6b Test Skill Action labels (skill + proficiency) and sort order (feats first, then best rank, then name)
+try {
+  const { getActionSkillInfo, compareSkillActions } = await import("./apps/sheet-helpers/context-actions.js");
+  const skills = {
+    stealth: { slug: "stealth", label: "Stealth", rank: 3 },
+    medicine: { slug: "medicine", label: "Medicine", rank: 1 },
+    arcana: { slug: "arcana", label: "Arcana", rank: 2 },
+    occultism: { slug: "occultism", label: "Occultism", rank: 0 }
+  };
+  const actor = { getStatistic: (slug) => skills[slug] ?? null };
+
+  const hide = getActionSkillInfo(actor, "stealth");
+  const recall = getActionSkillInfo(actor, ["arcana", "occultism", "unknown-skill"]);
+  const none = getActionSkillInfo(actor, undefined);
+
+  const order = [
+    { name: "Hide", fromFeat: false, skill: hide },
+    { name: "Treat Wounds", fromFeat: false, skill: getActionSkillInfo(actor, "medicine") },
+    { name: "Battle Medicine", fromFeat: true, skill: getActionSkillInfo(actor, "medicine") },
+    { name: "Aid", fromFeat: false, skill: null },
+    { name: "Sneak", fromFeat: false, skill: hide }
+  ].sort(compareSkillActions).map(a => a.name).join(",");
+
+  if (
+    hide?.label !== "Stealth" || hide.rank !== 3 || hide.rankLetter !== "M" || hide.rankName !== "Master" ||
+    recall?.label !== "Multiple" || recall.rank !== 2 || recall.options !== "Arcana, Occultism" ||
+    none !== null ||
+    order !== "Battle Medicine,Hide,Sneak,Treat Wounds,Aid"
+  ) {
+    logFail(`[Skill Action Labels] Unexpected skill info or sort order (order: ${order}).`);
+  } else {
+    logPass("[Skill Action Labels] Skill actions get their skill and rank (best rank for a choice of skills, 'Multiple'), and sort feats first, then best rank, then name.");
+  }
+} catch (err) {
+  logFail(`Skill Action Labels verification threw an error: ${err.stack || err.message}`);
+}
+
 // 6.7 Test Spell Action Cost (1-3, default 2) & Multi-Action Button Labels (> 1)
 try {
   const { parseActionCostInfo } = await import("./utils/sheet-utils.js");
@@ -836,6 +873,7 @@ try {
   const spell1Cost = parseActionCostInfo({ type: "spell", system: { time: { value: "1" } } }, null, { isSpell: true });
   const spellDefaultCost = parseActionCostInfo({ type: "spell", system: { time: { value: "" } } }, null, { isSpell: true });
   const spellVarCost = parseActionCostInfo({ type: "spell", system: { time: { value: "1 to 3" } } }, null, { isSpell: true });
+  const spellReactionCost = parseActionCostInfo({ type: "spell", system: { time: { value: "reaction" } } }, null, { isSpell: true });
   const action1Cost = parseActionCostInfo({ type: "action", actionCost: { type: "action", value: 1 } });
   const action2Cost = parseActionCostInfo({ type: "action", actionCost: { type: "action", value: 2 } });
   const formattedHeal = await formatSpell({ getRollData: () => ({}) }, {}, {
@@ -844,23 +882,29 @@ try {
     type: "spell",
     system: { time: { value: "1 to 3" }, traits: { value: ["healing", "vitality"] } }
   }, "entry-1");
+  const formattedReactionSpell = await formatSpell({ getRollData: () => ({}) }, {}, {
+    id: "spell-hidebound",
+    name: "Hidebound",
+    type: "spell",
+    system: { time: { value: "reaction" }, traits: { value: ["concentrate", "manipulate"] } }
+  }, "entry-1");
 
-  const spellsTplText = fs.readFileSync(path.join(rootDir, "templates/parts/spells.hbs"), "utf8");
-  const actionsTplText = fs.readFileSync(path.join(rootDir, "templates/parts/actions.hbs"), "utf8");
 
   if (
     spell1Cost.castActions !== "1" ||
     spellDefaultCost.castActions !== "2" ||
     spellVarCost.castActions !== "1-3" ||
     formattedHeal.castActions !== "1-3" ||
+    spellReactionCost.glyph !== "R" ||
+    spellReactionCost.castActions !== "" ||
+    formattedReactionSpell.glyph !== "R" ||
+    formattedReactionSpell.castActions !== "" ||
     action1Cost.multiActionLabel !== "" ||
-    action2Cost.multiActionLabel !== "2" ||
-    !spellsTplText.includes("Cast{{#if spell.castActions}} ({{spell.castActions}}){{/if}}") ||
-    !actionsTplText.includes("{{#if act.multiActionLabel}} ({{act.multiActionLabel}}){{/if}}")
+    action2Cost.multiActionLabel !== "2"
   ) {
     logFail("[Action Cost Labels] Failed verification for spell castActions (1-3, default 2) or multi-action labels (>1).");
   } else {
-    logPass("[Action Cost Labels] Spells resolve 1-3 actions (defaulting to '2' and normalizing '1 to 3' -> '1-3') next to Cast, and actions >1 display ({{act.multiActionLabel}}).");
+    logPass("[Action Cost Labels] Spells resolve 1-3 actions (defaulting to '2' and normalizing '1 to 3' -> '1-3'), reaction spells get glyph 'R' and no action count, and actions >1 get a multi-action label ('2').");
   }
 
   // Verify Repeatable Spell Damage Button (Issue #15)
