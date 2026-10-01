@@ -768,12 +768,11 @@ try {
     targetCtxAfter.activeTarget?.id !== "tok-goblin" ||
     targetCtxAfter.activeTarget?.displayName !== "Goblin Warrior (15)" ||
     targetCtxAfter.activeTarget?.distanceLabel !== "15" ||
-    !headerTplText.includes("{{this.displayName}}") ||
-    !headerTplText.includes("({{activeTarget.distanceLabel}})")
+    !headerTplText.includes("{{this.distanceLabel}}ft {{/if}}{{this.rawName}}")
   ) {
     logFail(`[Target Distance] Selecting target failed to update activeTarget or header.hbs template bindings: ${JSON.stringify(targetCtxAfter.activeTarget)}`);
   } else {
-    logPass("[Target Distance] Selecting target ('tok-goblin') updates activeTarget ('Goblin Warrior (15)'), triggers header re-render, and binds ({{activeTarget.distanceLabel}}) in header.hbs.");
+    logPass("[Target Distance] Selecting target ('tok-goblin') updates activeTarget ('Goblin Warrior (15)'), triggers header re-render, and header.hbs shows the range first in the option ('🎯 15ft Goblin Warrior').");
   }
 
   // Test iOS paused-ticker _source movement update, AoE multi-targeting, and diagonal/opposite-side flanking

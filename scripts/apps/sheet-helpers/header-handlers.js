@@ -1,4 +1,4 @@
-import { clamp, isIOSDevice, isMobileCanvasDisabled, setMobileCanvasDisabled, setStoredRollMode } from "../../utils/sheet-utils.js";
+import { clamp, isIOSDevice, isMobileCanvasDisabled, setMobileCanvasDisabled, getStoredRollMode, setStoredRollMode } from "../../utils/sheet-utils.js";
 import { PhysicalDiceManager } from "../../rolls/physical-dice-interceptor.js";
 import { setTargetToken } from "../../tokens/token-adapter.js";
 import { promptMultiTargetSelection } from "./sheet-prompts.js";
@@ -373,19 +373,17 @@ export function closeHeaderMenu(sheet) {
 }
 
 /**
- * Action handler: toggle digital vs physical roll mode.
+ * Action handler: the roll mode button in the header switches between digital and physical (manual) dice.
  * @param {object} sheet
  * @param {Event} event
- * @param {HTMLSelectElement} target
+ * @param {HTMLElement} target
  */
 export async function onToggleRollMode(sheet, event, target) {
   closeHeaderMenu(sheet);
-  const newMode = target.value;
-  if (newMode === "digital" || newMode === "physical") {
-    sheet._rollMode = newMode;
-    await setStoredRollMode(newMode);
-    sheet.render({ parts: ["header"] });
-  }
+  const newMode = getStoredRollMode() === "physical" ? "digital" : "physical";
+  sheet._rollMode = newMode;
+  await setStoredRollMode(newMode);
+  sheet.render({ parts: ["header"] });
 }
 
 /**

@@ -25,31 +25,29 @@
           <option value="__multi__" selected>🎯 {{activeTargetCount}} Targets ({{multiTargetNames}})</option>
           {{/if}}
           {{#each targets}}
+          {{!-- Range first ("15ft Goblin"), so it stays visible when the select cuts off a long name --}}
           <option value="{{this.id}}" {{#if this.selectedInSingle}}selected{{/if}}>
-            🎯 {{this.displayName}}
+            🎯 {{#if this.isSelf}}{{this.displayName}}{{else}}{{#if this.distanceLabel}}{{this.distanceLabel}}ft {{/if}}{{this.rawName}}{{/if}}
           </option>
           {{/each}}
         </select>
-        {{#if hasMultipleTargets}}
-        <span class="header-target-distance-pill" title="Targets: {{multiTargetNames}}">({{activeTargetCount}})</span>
-        {{else if activeTarget.distanceLabel}}
-        <span class="header-target-distance-pill" title="Distance to {{activeTarget.rawName}}">({{activeTarget.distanceLabel}})</span>
-        {{/if}}
       </div>
       {{/unless}}
 
-      <!-- Settings menu: the cog shows the roll mode, canvas and fullscreen controls in a small
-           popover. Using any of them closes it again (closeHeaderMenu in header-handlers.js). -->
+      <!-- Roll mode toggle: a die with a small coloured corner icon for who rolls it
+           (blue chip = digital, yellow hand = your own dice). -->
+      <button type="button" class="touch-target header-btn" data-action="toggleRollMode" title="{{#if isPhysicalRollMode}}Manual dice: you roll and enter the result (tap for digital){{else}}Digital dice (tap for manual){{/if}}" aria-label="Toggle Roll Mode">
+        <i class="fas fa-dice"></i>
+        <span class="header-btn-badge"><i class="fas {{#if isPhysicalRollMode}}fa-hand{{else}}fa-microchip{{/if}}"></i></span>
+      </button>
+
+      <!-- Settings menu: the cog shows the canvas and fullscreen controls in a small popover.
+           Using either of them closes it again (closeHeaderMenu in header-handlers.js). -->
       <div class="header-menu">
         <button type="button" class="touch-target header-btn header-menu-toggle" data-action="toggleHeaderMenu" title="Settings" aria-label="Settings" aria-expanded="false">
           <i class="fas fa-cog"></i>
         </button>
         <div class="header-menu-panel">
-          <select name="roll-mode" class="touch-target header-select" data-change-action="toggleRollMode" aria-label="Roll Mode" title="Roll Mode">
-            <option value="digital" {{#if (eq rollMode "digital")}}selected{{/if}}>🎲</option>
-            <option value="physical" {{#if (eq rollMode "physical")}}selected{{/if}}>✋</option>
-          </select>
-
           <button type="button" class="touch-target header-btn {{#unless canvasDisabled}}active{{/unless}}" data-action="toggleCanvasMode" title="{{#if canvasDisabled}}Canvas Disabled (Tap to Enable Canvas){{else}}Canvas Enabled (Tap to Disable Canvas){{/if}}" aria-label="Toggle Canvas">
             <i class="fas {{#if canvasDisabled}}fa-eye-slash{{else}}fa-map{{/if}}"></i>
           </button>
