@@ -401,10 +401,12 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   height: 38px;
   border-radius: 4px;
 }
-/* Badges: the shape every badge shares. Layout (m-inline-flex etc.), text size (m-text-*) and colour
-   (m-color-*) come from utilities, a role colour from the Badge Tones rules or the badge's own rule.
-   m-badge-neutral is the look of badges without a role colour. */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-badge {
+/* Badges: a badge takes one of these. m-badge is the shape every badge shares; its colour comes from the
+   Badge Tones rules or the badge's own rule. m-badge-neutral is the same badge with the neutral look of
+   badges without a role colour. Layout (m-inline-flex etc.), text size (m-text-*) and text colour
+   (m-color-*) come from utilities. */
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-badge,
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-badge-neutral {
   padding: 2px 6px;
   border-radius: 4px;
 }

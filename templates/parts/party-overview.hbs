@@ -20,7 +20,7 @@
         <div class="competency-title m-text-md m-bold m-color-accent"><i class="fas fa-language"></i> Known Languages</div>
         <div class="m-flex-row m-wrap m-gap-4">
           {{#each partyLanguages as |lang|}}
-          <span class="competency-pill m-badge m-badge-neutral m-text-sm m-color-normal" title="Speakers: {{#each lang.speakers}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}">
+          <span class="competency-pill m-badge-neutral m-text-sm m-color-normal" title="Speakers: {{#each lang.speakers}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}">
             {{lang.label}}{{#if (gt lang.speakers.length 1)}} <small>({{lang.speakers.length}})</small>{{/if}}
           </span>
           {{else}}
@@ -34,7 +34,7 @@
         <div class="competency-title m-text-md m-bold m-color-accent"><i class="fas fa-dice-d20"></i> Best Party Modifiers</div>
         <div class="m-flex-row m-wrap m-gap-4">
           {{#each partySkills as |sk|}}
-          <span class="competency-pill skill-pill m-badge m-badge-neutral m-text-sm m-color-normal" title="{{sk.member}} (+{{sk.mod}})">
+          <span class="competency-pill skill-pill m-badge-neutral m-text-sm m-color-normal" title="{{sk.member}} (+{{sk.mod}})">
             <strong>{{sk.label}}</strong> +{{sk.mod}} <small>({{sk.member}})</small>
           </span>
           {{/each}}
@@ -46,7 +46,7 @@
         <div class="competency-title m-text-md m-bold m-color-accent"><i class="fas fa-brain"></i> Recall Knowledge</div>
         <div class="m-flex-row m-wrap m-gap-4">
           {{#each partyRecallKnowledge as |rk|}}
-          <span class="competency-pill rk-pill m-badge m-badge-neutral m-text-sm m-color-normal" title="{{rk.member}} (+{{rk.mod}})">
+          <span class="competency-pill rk-pill m-badge-neutral m-text-sm m-color-normal" title="{{rk.member}} (+{{rk.mod}})">
             <strong>{{rk.label}}</strong> +{{rk.mod}} <small>({{rk.member}})</small>
           </span>
           {{/each}}
@@ -96,11 +96,11 @@
 
         <!-- Defenses Strip -->
         <div class="member-defenses-strip m-flex-row m-wrap m-gap-4">
-          <span class="defense-badge ac m-badge m-badge-neutral m-text-sm m-color-normal" title="Armor Class"><strong>AC</strong> {{member.ac}}</span>
-          <span class="defense-badge save m-badge m-badge-neutral m-text-sm m-color-normal" title="Fortitude Save"><strong>Fort</strong> +{{member.saves.fortitude}}</span>
-          <span class="defense-badge save m-badge m-badge-neutral m-text-sm m-color-normal" title="Reflex Save"><strong>Ref</strong> +{{member.saves.reflex}}</span>
-          <span class="defense-badge save m-badge m-badge-neutral m-text-sm m-color-normal" title="Will Save"><strong>Will</strong> +{{member.saves.will}}</span>
-          <span class="defense-badge perc m-badge m-badge-neutral m-text-sm m-color-normal" title="Perception"><strong>Perc</strong> +{{member.perception}}</span>
+          <span class="defense-badge ac m-badge-neutral m-text-sm m-color-normal" title="Armor Class"><strong>AC</strong> {{member.ac}}</span>
+          <span class="defense-badge save m-badge-neutral m-text-sm m-color-normal" title="Fortitude Save"><strong>Fort</strong> +{{member.saves.fortitude}}</span>
+          <span class="defense-badge save m-badge-neutral m-text-sm m-color-normal" title="Reflex Save"><strong>Ref</strong> +{{member.saves.reflex}}</span>
+          <span class="defense-badge save m-badge-neutral m-text-sm m-color-normal" title="Will Save"><strong>Will</strong> +{{member.saves.will}}</span>
+          <span class="defense-badge perc m-badge-neutral m-text-sm m-color-normal" title="Perception"><strong>Perc</strong> +{{member.perception}}</span>
         </div>
 
         <!-- Senses & Key Skills Row -->

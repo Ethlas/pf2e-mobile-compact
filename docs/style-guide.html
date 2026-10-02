@@ -67,7 +67,7 @@
   <ul class="sg-rules">
     <li>Use a palette variable (<code>--m-*</code>) for every background, border and text colour. Need a colour that is not here? Add it to the Colour Palette block and to this page, instead of writing a hex value in a component rule.</li>
     <li>Layout and text size/weight in templates use the <code>m-*</code> utilities (flex, gap, truncate, <code>m-text-*</code>, <code>m-medium</code>/<code>m-semibold</code>/<code>m-bold</code>, <code>m-color-*</code>). Component rules keep only how something looks.</li>
-    <li>Every badge takes <code>m-badge</code> (its shape); badges without a role colour also take <code>m-badge-neutral</code>. Size and colour of the text come from <code>m-text-*</code> and <code>m-color-*</code>. Badges and soft buttons of a role use that role's tone; solid action buttons use its <code>-solid</code> shades. Add a new badge's selector to the tone rule at the end of the stylesheet.</li>
+    <li>Every badge takes one badge class: <code>m-badge</code> (the shape), or <code>m-badge-neutral</code> (the same shape with the neutral look) for badges without a role colour. Size and colour of the text come from <code>m-text-*</code> and <code>m-color-*</code>. Badges and soft buttons of a role use that role's tone; solid action buttons use its <code>-solid</code> shades. Add a new badge's selector to the tone rule at the end of the stylesheet.</li>
     <li>Damage types, proficiency ranks and character tags use pf2e's colours; the role colours follow Foundry's.</li>
     <li>When you add or change a variable, utility, component or colour role, update this page in the same change.</li>
   </ul>
@@ -165,8 +165,8 @@
   <h3>Party and header</h3>
   <div class="sg-grid">
     <div class="sg-item"><div class="sg-sample"><span class="coin-pill pp m-badge">1 pp</span><span class="coin-pill gp m-badge">120 gp</span><span class="coin-pill sp m-badge">4 sp</span><span class="coin-pill cp m-badge">9 cp</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="defense-badge ac m-badge m-badge-neutral">AC 22</span><span class="defense-badge save m-badge m-badge-neutral">Fort +12</span><span class="defense-badge perc m-badge m-badge-neutral">Perc +10</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="competency-pill skill-pill m-badge m-badge-neutral">Athletics +13</span><span class="competency-pill rk-pill m-badge m-badge-neutral">Arcana +12</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="defense-badge ac m-badge-neutral">AC 22</span><span class="defense-badge save m-badge-neutral">Fort +12</span><span class="defense-badge perc m-badge-neutral">Perc +10</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="competency-pill skill-pill m-badge-neutral">Athletics +13</span><span class="competency-pill rk-pill m-badge-neutral">Arcana +12</span></div></div>
     <div class="sg-item"><div class="sg-sample"><span class="hero-points-badge m-badge">2 hero</span></div></div>
     <div class="sg-item"><div class="sg-sample mobile-header-dashboard" style="position: static; padding: 4px; border: 0;"><div class="hp-direct-group hp-healthy m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0"><span class="hp-label">HP</span> <input type="text" class="hp-current-input" value="40"></div></div></div>
     <div class="sg-item"><div class="sg-sample mobile-header-dashboard" style="position: static; padding: 4px; border: 0;"><div class="hp-direct-group hp-warning m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0"><span class="hp-label">HP</span> <input type="text" class="hp-current-input" value="25"></div></div></div>
@@ -222,7 +222,7 @@
     </div></div>
     <div class="sg-item"><div class="sg-sample" style="display: block;"><div class="m-panel" style="padding: 8px 10px;">m-panel: flat panel</div></div></div>
     <div class="sg-item"><div class="sg-sample"><button class="touch-target m-compact">m-compact (38px)</button> <button class="touch-target">default (48px)</button></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="m-badge m-badge-neutral m-text-sm">m-badge m-badge-neutral</span> <span class="m-badge m-text-sm" style="background: var(--m-info-bg); border: 1px solid var(--m-info-border); color: var(--m-info-text);">m-badge + a tone</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-badge-neutral m-text-sm">m-badge-neutral</span> <span class="m-badge m-text-sm" style="background: var(--m-info-bg); border: 1px solid var(--m-info-border); color: var(--m-info-text);">m-badge + a tone</span></div></div>
   </div>
 
   <h2>Utility classes</h2>
