@@ -571,6 +571,17 @@ try {
     logPass("[Header] hasActiveEffects is false without effects and true with an active effect (lightning badge on the Character overview button).");
   }
 
+  // HP colour state: the header and the party overview switch at the same thresholds (getHpState)
+  const { getHpState } = await import("../scripts/utils/sheet-utils.js");
+  const hpStates = [[60, 60], [31, 60], [30, 60], [16, 60], [15, 60], [0, 60], [5, 0]].map(([v, m]) => getHpState(v, m).state).join(",");
+  const hpHeaderCtx = {};
+  prepareHeaderContext({ ...mockCharActor, system: { ...mockCharActor.system, attributes: { ...mockCharActor.system?.attributes, hp: { value: 10, max: 60, temp: 0 } } } }, { _isKingdomMode: false }, hpHeaderCtx);
+  if (hpStates !== "healthy,healthy,warning,warning,danger,danger,healthy" || hpHeaderCtx.hp?.state !== "danger") {
+    logFail(`[Header] HP state should be healthy above 50%, warning at 50% or less, danger at 25% or less: ${hpStates}; header 10/60 = ${hpHeaderCtx.hp?.state}`);
+  } else {
+    logPass("[Header] HP is coloured healthy / warning (50% or less) / danger (25% or less), with the same thresholds as the party overview.");
+  }
+
   const mockCharSheet = {
     actor: mockCharActor,
     _isKingdomMode: false,

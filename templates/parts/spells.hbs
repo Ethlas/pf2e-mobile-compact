@@ -53,7 +53,7 @@
 
         {{#if group.hasSlots}}
         <div class="slot-counter">
-          <span>Slots: <strong>{{group.slots.value}} / {{group.slots.max}}</strong></span>
+          <span title="Spell slots"><strong>{{group.slots.value}} / {{group.slots.max}}</strong></span>
           <button type="button" class="touch-target btn-slot-adjust m-flex-row m-align-center m-justify-center" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="-1" title="Decrease Slot">-</button>
           <button type="button" class="touch-target btn-slot-adjust m-flex-row m-align-center m-justify-center" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="1" title="Increase Slot">+</button>
         </div>

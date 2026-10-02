@@ -16,6 +16,19 @@ export const PROFICIENCY_RANK_LETTERS = ["U", "T", "E", "M", "L"];
 export const PROFICIENCY_RANK_NAMES = ["Untrained", "Trained", "Expert", "Master", "Legendary"];
 
 /**
+ * Health state for colouring HP: "danger" at 25% or less, "warning" at 50% or less, otherwise "healthy".
+ * Used by the party overview's HP bars and the character header's HP, so both switch at the same points.
+ * @param {number} value Current HP
+ * @param {number} max Maximum HP
+ * @returns {{percent: number, state: "healthy"|"warning"|"danger"}}
+ */
+export function getHpState(value, max) {
+  const percent = clamp(Math.round(((value ?? 0) / Math.max(max ?? 1, 1)) * 100), 0, 100);
+  const state = percent <= 25 ? "danger" : percent <= 50 ? "warning" : "healthy";
+  return { percent, state };
+}
+
+/**
  * Normalizes a PF2e action count or spell casting time string into a compact 1-3 action representation.
  * Examples:
  * - "1", "2", "3", 2 -> "1", "2", "3"

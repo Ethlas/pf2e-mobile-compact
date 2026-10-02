@@ -6,6 +6,21 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Accent Colours from Foundry and pf2e (`styles/pf2e-mobile.css`, `scripts/utils/sheet-utils.js`, `templates/parts/header.hbs`)
+
+#### Changed
+- **Role colours linked to Foundry**: new variables `--m-accent` (Foundry's `--color-warm-1`) and `--m-hue-info`, `--m-hue-success`, `--m-hue-danger`, `--m-hue-warning` (Foundry's `--color-level-*` status colours), with Foundry's values as fallback outside Foundry. Purple and cyan have no Foundry equivalent and keep the sheet's own hue. In Foundry's sci-fi theme the accent follows Foundry's blue.
+- **One formula per kind of element**: from each hue the palette mixes (CSS `color-mix`) a badge tone (`--m-<role>-bg`, `-border`, `-text`: dark background, mid border, light text) and a solid button (`--m-<role>-solid`, `-solid-active`). Every badge and button of one role now has exactly the same shades, instead of 5–10 near-identical variants per colour from two palettes (Material and Tailwind).
+  - Primary blue: Cast, Use, Roll (was indigo), Transfer, primary and dice dialog submit. Danger red: Strike, Damage, Cast (attack), Roll (attack). Success green: Use (active), Add gear, Apply poison, Consume, Heal. Warning orange: Send to party stash, encumbered.
+  - Badge tones: prepared, preparing and preset buttons, categories, MAP, invested, wand uses (blue); equipped, held, innate, restore, save, poison, resistance (green); expended, not held, remove, delete, weakness (red); signature, spontaneous, uses, containers, in combat, perception (orange); focus, runes, immunity (purple); heightened, shield (cyan).
+  - The accent `#ffb74d` (section titles, glyphs, the active tab, opened card edges, focus rings) became `--m-accent`; the "your character" edge in the party overview and the strike ready edge use the accent and the green badge border.
+- **pf2e's own colours**: damage type badges use pf2e's `--color-border-<type>` (slashing, piercing and bludgeoning share pf2e's physical grey; cold keeps its blue; vitality is a radiant glowing yellow; void is pf2e's near-black with purple text; spirit is light blue; force, which shared spirit's rule, gets pf2e's force purple). Size and trait tags use pf2e's `--color-bg-size`, `--color-bg-trait` and `--color-border-trait`. The rank badges already read pf2e's proficiency colours; their fallbacks now match pf2e's values.
+- **Staff, charges and slots**: the staff card and drawer get a quieter wood tone, the staff name and drawer headings the accent, and the description block no longer has its own background. Gold (`--m-charge-*`) marks charges: the Cast with charges button, the charges count and the charge cost. Verdigris (`--m-slot-*`) marks spell slots: the slot count in rank headers (now just "2 / 3" in slightly larger numbers, without the "Slots:" label; the tooltip says "Spell slots"), the − / + signs and the slot numbers in Preparation. The charge + slot button runs from gold to verdigris, since it costs both. Hero points and the HP change input use the gold, temp HP the cyan.
+- **Header HP coloured by health (`getHpState()` in `scripts/utils/sheet-utils.js`)**: the HP in the header is green, orange at 50% or less and red at 25% or less, like the HP bars in the party overview. Both now use the same helper, so the thresholds cannot drift apart.
+- **Shield block switched on** looks pressed in (darker blue, inner shadow, thicker light border) instead of turning green.
+- Left as they were: coin colours, the other chat damage buttons, Critical, Runes, Dailies, Daily reset, Detach, the roll mode badges and the expended spell card tint.
+- Design rationale: the sheet used 186 coloured values, many near-duplicates from two palettes. Basing the roles on Foundry's status colours and the semantic badges on pf2e's colours makes the sheet match the rest of Foundry, and the palette variables give one place to tune it. Layout was compared before and after in the dev preview: the only element that moved is the staff description block, which lost its border.
+
 ### Grey Palette Variables (`styles/pf2e-mobile.css`)
 
 #### Changed

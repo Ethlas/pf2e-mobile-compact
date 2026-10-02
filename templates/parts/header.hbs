@@ -106,7 +106,7 @@
     </div>
 
     <!-- Current & Max HP with Direct Edit -->
-    <div class="hp-direct-group m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0">
+    <div class="hp-direct-group hp-{{hp.state}} m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0">
       <span class="hp-label">HP</span>
       <div class="m-flex-row m-align-center m-gap-2">
         <input type="text" class="hp-current-input" data-change-action="setDirectHP" value="{{hp.value}}" title="Current HP (type number to set, or +/- to change)" aria-label="Current HP" />
