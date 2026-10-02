@@ -3902,10 +3902,115 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 /* ----------------------------------------- */
 /* Character Overview (header user button)   */
 /* ----------------------------------------- */
-/* Label / value rows: identity, speeds, senses, languages, defense details */
+/* Identity title: name on the left, class and level on the right */
+.pf2e-mobile-sheet .character-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pf2e-mobile-sheet .character-title-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pf2e-mobile-sheet .character-title-class {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+}
+
+/* Tags: size and creature traits (like pf2e's sheet), senses, languages, IWR */
+.pf2e-mobile-sheet .character-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 2px 4px 8px;
+  padding: 0;
+  list-style: none;
+}
+
+/* margin: 0 overrides Foundry's list typography (li margin-bottom, none on the last one); the gap spaces the tags */
+.pf2e-mobile-sheet .character-tag {
+  margin: 0;
+  padding: 2px 8px;
+  border: 1px solid #4a4a4a;
+  border-radius: 4px;
+  background: #2a2a2a;
+  font-size: 0.78rem;
+  color: #e0e0e0;
+}
+
+.pf2e-mobile-sheet .character-tag-size,
+.pf2e-mobile-sheet .character-tag-trait {
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.pf2e-mobile-sheet .character-tag-size {
+  border-color: #3f7a45;
+  background: #2e5d34;
+  color: #fff;
+}
+
+.pf2e-mobile-sheet .character-tag-trait {
+  border-color: #8a3030;
+  background: #5c1a1a;
+  color: #fff;
+}
+
+.pf2e-mobile-sheet .character-tag-weakness {
+  border-color: #8a3030;
+  color: #ef9a9a;
+}
+
+.pf2e-mobile-sheet .character-tag-resistance {
+  border-color: #3f7a45;
+  color: #a5d6a7;
+}
+
+/* Ancestry, heritage, background, deity: two columns, small label above the value */
+.pf2e-mobile-sheet .character-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  margin: 4px 4px 2px;
+}
+
+.pf2e-mobile-sheet .character-details dt {
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #999;
+}
+
+.pf2e-mobile-sheet .character-details dd {
+  margin: 0;
+  color: #e0e0e0;
+  overflow-wrap: anywhere;
+}
+
+/* Headers inside the Attributes frame: Speeds, Senses, Languages, Defenses */
+.pf2e-mobile-sheet .character-subtitle {
+  margin: 12px 4px 6px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #333;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #ffb74d;
+}
+
+/* Label / value rows: defense details */
 .pf2e-mobile-sheet .character-facts {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
   gap: 4px 10px;
   margin: 4px 4px 2px;
 }
@@ -3918,6 +4023,47 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 .pf2e-mobile-sheet .character-facts dd {
   margin: 0;
   color: #e0e0e0;
+}
+
+.pf2e-mobile-sheet .character-facts .character-tags {
+  margin: 0;
+}
+
+/* Speeds: land, swim, climb, fly, burrow in five columns, label above the value (like pf2e's sheet) */
+.pf2e-mobile-sheet .character-speeds {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin: 4px 4px 2px;
+}
+
+.pf2e-mobile-sheet .character-speed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pf2e-mobile-sheet .character-speed-label {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.pf2e-mobile-sheet .character-speed-value {
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+/* A speed the character doesn't have: dimmed dash */
+.pf2e-mobile-sheet .character-speed-none .character-speed-value {
+  font-weight: normal;
+  color: #666;
+}
+
+.pf2e-mobile-sheet .character-speed-value small {
+  font-size: 0.7rem;
+  font-weight: normal;
+  color: #999;
 }
 
 /* The six attribute modifiers in one row (two rows of three on narrow screens) */
@@ -3961,27 +4107,46 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   display: none;
 }
 
-/* Feat row: level | name | Send to Chat. Tapping the row opens the description drawer under it. */
+/* Feat or effect row: level badge or effect icon | name (and remaining duration), like the action and spell cards.
+   Tapping the row opens the drawer with Send to Chat and the description. */
 .pf2e-mobile-sheet .character-item-line {
   align-items: center;
   gap: 8px;
+  min-height: 44px;
 }
 
 .pf2e-mobile-sheet .character-item > .action-summary {
   margin: 0 8px 8px;
 }
 
-.pf2e-mobile-sheet .character-item-line .action-name {
+.pf2e-mobile-sheet .character-item-text {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   min-width: 0;
 }
 
 .pf2e-mobile-sheet .character-item-level {
   flex-shrink: 0;
-  min-width: 20px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 4px;
+  border: 1px solid #444;
+  border-radius: 11px;
+  background: #2a2a2a;
+  font-size: 0.75rem;
+  line-height: 20px;
   text-align: center;
-  font-size: 0.8rem;
-  color: #999;
+  color: #bbb;
+}
+
+.pf2e-mobile-sheet .character-item-img {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  object-fit: cover;
 }
 
 /* Feats granted by the feat above (e.g. a dedication's free feat), indented under it */
@@ -3990,11 +4155,8 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-top: 1px solid #2c2c2c;
 }
 
-/* Effect row: remaining duration between the name and Send to Chat */
+/* Effect row: remaining duration under the name */
 .pf2e-mobile-sheet .character-item-remaining {
-  flex-shrink: 0;
-  max-width: 40%;
   font-size: 0.75rem;
   color: #999;
-  text-align: right;
 }

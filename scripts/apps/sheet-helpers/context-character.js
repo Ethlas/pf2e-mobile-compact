@@ -8,6 +8,9 @@
 
 const ATTRIBUTE_KEYS = ["str", "dex", "con", "int", "wis", "cha"];
 
+// The speed types pf2e's own character tab always lists, in its order (the list is private to its sheet)
+const SPEED_TYPES = ["land", "swim", "climb", "fly", "burrow"];
+
 /**
  * Localizes a key when Foundry's i18n is available, otherwise returns the key unchanged.
  * @param {string} key
@@ -19,10 +22,11 @@ function localize(key) {
 }
 
 /**
- * Ancestry, heritage, background, class, level, deity and size. Values that don't apply (e.g. no deity)
- * are null; the template decides labels, order and which rows to show.
+ * Ancestry, heritage, background, class, level, deity, size and the creature traits pf2e shows as tags
+ * (e.g. "Gnome", "Humanoid"). Values that don't apply (e.g. no deity) are null; the template decides labels,
+ * order and which rows to show.
  * @param {Actor} actor
- * @returns {{ancestry: ?string, heritage: ?string, background: ?string, className: ?string, level: ?number, deity: ?string, size: ?string}}
+ * @returns {{ancestry: ?string, heritage: ?string, background: ?string, className: ?string, level: ?number, deity: ?string, size: ?string, traits: string[]}}
  */
 function buildIdentity(actor) {
   const size = actor.size ?? actor.system?.traits?.size?.value;
@@ -33,7 +37,8 @@ function buildIdentity(actor) {
     className: actor.class?.name ?? null,
     level: actor.level ?? actor.system?.details?.level?.value ?? null,
     deity: actor.deity?.name ?? null,
-    size: size ? localize(globalThis.CONFIG?.PF2E?.actorSizes?.[size] ?? size) : null
+    size: size ? localize(globalThis.CONFIG?.PF2E?.actorSizes?.[size] ?? size) : null,
+    traits: (actor.system?.traits?.value ?? []).map(slug => localize(globalThis.CONFIG?.PF2E?.creatureTraits?.[slug] ?? slug))
   };
 }
 
@@ -51,25 +56,35 @@ function buildAttributes(actor) {
 }
 
 /**
- * Movement speeds with their pf2e labels ("Land Speed", "Swim Speed", ...).
+ * pf2e's short label for a speed type ("Land", "Swim"), or the type itself when that string doesn't exist.
+ * @param {string} type
+ * @returns {string}
+ */
+function speedTypeLabel(type) {
+  const name = `${type.charAt(0).toUpperCase()}${type.slice(1)}`;
+  const key = `PF2E.Actor.Speed.Type.${name}`;
+  const label = localize(key);
+  return label !== key ? label : name;
+}
+
+/**
+ * Land, swim, climb, fly and burrow speed, like pf2e's character tab: every type is listed, with
+ * value null when the character doesn't have that speed. Labels are pf2e's PF2E.Actor.Speed.Type strings.
  * pf2e 8 keeps SpeedStatistics in actor.movement.speeds; older versions use system.attributes.speed.
- * The derived travel speed is left out.
  * @param {Actor} actor
- * @returns {{label: string, value: number}[]}
+ * @returns {{type: string, label: string, value: ?number}[]}
  */
 function buildSpeeds(actor) {
   const speeds = actor.movement?.speeds ?? actor.system?.movement?.speeds;
-  if (speeds) {
-    return Object.entries(speeds)
-      .filter(([type, speed]) => speed && type !== "travel")
-      .map(([type, speed]) => ({ label: speed.label ?? type, value: speed.value ?? 0 }));
-  }
   const legacy = actor.system?.attributes?.speed;
-  if (!legacy) return [];
-  return [
-    { label: "Speed", value: legacy.total ?? legacy.value ?? 0 },
-    ...(legacy.otherSpeeds ?? []).map(s => ({ label: s.label ?? s.type, value: s.total ?? s.value ?? 0 }))
-  ];
+  const valueOf = (type) => {
+    if (speeds) return speeds[type]?.value || null;
+    if (!legacy) return null;
+    if (type === "land") return legacy.total ?? legacy.value ?? null;
+    const other = (legacy.otherSpeeds ?? []).find(s => s.type === type);
+    return other ? (other.total ?? other.value ?? null) : null;
+  };
+  return SPEED_TYPES.map(type => ({ type, label: speedTypeLabel(type), value: valueOf(type) }));
 }
 
 /**
@@ -167,6 +182,7 @@ function buildEffects(actor, sheet) {
     return {
       id: item.id,
       name: item.name,
+      img: item.img ?? null,
       badge: badge ? (badge.labels?.[badge.value - 1] ?? badge.label ?? badge.value ?? null) : null,
       remaining: item.type === "effect" ? remainingDurationLabel(item) : null,
       isExpanded,

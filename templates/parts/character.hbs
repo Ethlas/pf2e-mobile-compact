@@ -1,43 +1,66 @@
 {{!--
   Character overview: opened with the user button next to the name in the header (not a footer tab).
   Data comes from prepareCharacterContext() in sheet-helpers/context-character.js.
-  Effects are listed like pf2e's effects panel; feats in pf2e's own groups, with granted feats
-  indented under the feat that grants them.
+  Order: who the character is (name, class, traits, ancestry ...), what is affecting them now (effects),
+  their numbers (attributes, speeds, senses, languages, defenses), and last the long list of feats in
+  pf2e's own groups, with granted feats indented under the feat that grants them.
 --}}
 {{!-- One feat or effect: tapping the line opens its description drawer (toggleItemDescription,
-      character-handlers.js), which is filled on the first tap. Send to Chat keeps its own action.
-      Feats show their level in front of the name; effects show their badge value and remaining duration. --}}
+      character-handlers.js), which is filled on the first tap. Send to Chat is inside the drawer, like the
+      action cards. Feats show their level in front of the name; effects show their pf2e icon, badge value
+      and remaining duration. --}}
 {{#*inline "itemLine"}}
 <div class="character-item {{#if isChild}}character-item-child{{/if}} {{#if entry.isExpanded}}expanded{{/if}}" data-item-id="{{entry.id}}">
   <div class="m-card-line m-flex-row character-item-line" data-action="toggleItemDescription" title="{{entry.name}}">
-    {{#unless isEffect}}<span class="character-item-level">{{entry.level}}</span>{{/unless}}
-    <span class="action-name">{{#if isChild}}{{entry.name}}{{else}}<strong>{{entry.name}}</strong>{{/if}}{{#if entry.badge}} {{entry.badge}}{{/if}}</span>
-    {{#if entry.remaining}}<span class="character-item-remaining">{{entry.remaining}}</span>{{/if}}
-    <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{entry.id}}" title="Send to Chat">
-      <i class="fas fa-message"></i>
-    </button>
+    {{#if isEffect}}
+    {{#if entry.img}}<img class="character-item-img" src="{{entry.img}}" alt="">{{/if}}
+    {{else}}
+    <span class="character-item-level">{{entry.level}}</span>
+    {{/if}}
+    <span class="action-name character-item-text">
+      <span class="character-item-name">{{#if isChild}}{{entry.name}}{{else}}<strong>{{entry.name}}</strong>{{/if}}{{#if entry.badge}} {{entry.badge}}{{/if}}</span>
+      {{#if entry.remaining}}<span class="character-item-remaining">{{entry.remaining}}</span>{{/if}}
+    </span>
   </div>
   <div class="action-summary {{#if entry.isExpanded}}expanded{{else}}collapsed{{/if}}">
+    <div class="m-drawer-row m-flex-row">
+      <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{entry.id}}" title="Send to Chat">
+        <i class="fas fa-message"></i> Chat
+      </button>
+    </div>
     <div class="action-description-content">{{{entry.description}}}</div>
     <em class="character-item-no-description">No description.</em>
   </div>
 </div>
 {{/inline}}
+{{!-- A list of short labels (traits, senses, languages, IWR) as tags --}}
+{{#*inline "tagList"}}
+<ul class="character-tags">
+  {{#each tags as |tag|}}<li class="character-tag {{../tagClass}}">{{tag}}</li>{{/each}}
+</ul>
+{{/inline}}
 <div class="tab-pane character-tab" data-tab="character">
-  <!-- Identity: ancestry, heritage, background, class & level, deity, size -->
-  <section class="m-group actions-section">
-    <h3 class="section-title"><i class="fas fa-user"></i> {{actor.name}}</h3>
-    <dl class="character-facts">
-      {{#with character.identity as |id|}}
-      {{#if id.ancestry}}<dt>Ancestry</dt><dd>{{id.ancestry}}</dd>{{/if}}
-      {{#if id.heritage}}<dt>Heritage</dt><dd>{{id.heritage}}</dd>{{/if}}
-      {{#if id.background}}<dt>Background</dt><dd>{{id.background}}</dd>{{/if}}
-      {{#if id.className}}<dt>Class</dt><dd>{{id.className}} {{id.level}}</dd>{{/if}}
-      {{#if id.deity}}<dt>Deity</dt><dd>{{id.deity}}</dd>{{/if}}
-      {{#if id.size}}<dt>Size</dt><dd>{{id.size}}</dd>{{/if}}
-      {{/with}}
+  <!-- Identity: name with class and level, traits, then ancestry, heritage, background and deity in two columns -->
+  {{#with character.identity as |id|}}
+  <section class="m-group actions-section character-identity">
+    <h3 class="section-title character-title">
+      <span class="character-title-name"><i class="fas fa-user"></i> {{@root.actor.name}}</span>
+      {{#if id.className}}<span class="character-title-class">{{id.className}} {{id.level}}</span>{{/if}}
+    </h3>
+    {{#if (or id.size id.traits.length)}}
+    <ul class="character-tags">
+      {{#if id.size}}<li class="character-tag character-tag-size">{{id.size}}</li>{{/if}}
+      {{#each id.traits as |trait|}}<li class="character-tag character-tag-trait">{{trait}}</li>{{/each}}
+    </ul>
+    {{/if}}
+    <dl class="character-details">
+      {{#if id.ancestry}}<div><dt>Ancestry</dt><dd>{{id.ancestry}}</dd></div>{{/if}}
+      {{#if id.heritage}}<div><dt>Heritage</dt><dd>{{id.heritage}}</dd></div>{{/if}}
+      {{#if id.background}}<div><dt>Background</dt><dd>{{id.background}}</dd></div>{{/if}}
+      {{#if id.deity}}<div><dt>Deity</dt><dd>{{id.deity}}</dd></div>{{/if}}
     </dl>
   </section>
+  {{/with}}
 
   <!-- Effects: afflictions, conditions and effects, like pf2e's effects panel -->
   {{#if character.effects.length}}
@@ -53,8 +76,8 @@
   </section>
   {{/if}}
 
-  <!-- Attributes, speeds, senses, languages -->
-  <section class="m-group actions-section">
+  <!-- Attributes, speeds, senses, languages and the defense details not already in the header (class DC, IWR) -->
+  <section class="m-group actions-section character-stats">
     <h3 class="section-title"><i class="fas fa-dumbbell"></i> Attributes</h3>
     <div class="character-attributes">
       {{#each character.attributes as |attr|}}
@@ -64,36 +87,38 @@
       </div>
       {{/each}}
     </div>
-    <dl class="character-facts">
-      {{#if character.speeds.length}}
-      <dt>Speed</dt><dd>{{#each character.speeds as |speed|}}{{#unless @first}}, {{/unless}}{{speed.label}} {{speed.value}} ft{{/each}}</dd>
-      {{/if}}
-      {{#if character.senses.length}}
-      <dt>Senses</dt><dd>{{#each character.senses as |sense|}}{{#unless @first}}, {{/unless}}{{sense}}{{/each}}</dd>
-      {{/if}}
-      {{#if character.languages.length}}
-      <dt>Languages</dt><dd>{{#each character.languages as |language|}}{{#unless @first}}, {{/unless}}{{language}}{{/each}}</dd>
-      {{/if}}
-    </dl>
-  </section>
 
-  <!-- Defense details not already in the header: IWR and class DC -->
-  <section class="m-group actions-section">
-    <h3 class="section-title"><i class="fas fa-shield-halved"></i> Defenses</h3>
+    <h4 class="character-subtitle"><i class="fas fa-person-running"></i> Speeds</h4>
+    <div class="character-speeds">
+      {{#each character.speeds as |speed|}}
+      <div class="character-speed {{#unless speed.value}}character-speed-none{{/unless}}">
+        <span class="character-speed-label">{{speed.label}}</span>
+        <span class="character-speed-value">{{#if speed.value}}{{speed.value}} <small>ft</small>{{else}}&mdash;{{/if}}</span>
+      </div>
+      {{/each}}
+    </div>
+
+    {{#if character.senses.length}}
+    <h4 class="character-subtitle"><i class="fas fa-eye"></i> Senses</h4>
+    {{> tagList tags=character.senses}}
+    {{/if}}
+
+    {{#if character.languages.length}}
+    <h4 class="character-subtitle"><i class="fas fa-language"></i> Languages</h4>
+    {{> tagList tags=character.languages}}
+    {{/if}}
+
+    {{#with character.defenses as |def|}}
+    {{#if (or def.classDC def.immunities.length def.weaknesses.length def.resistances.length)}}
+    <h4 class="character-subtitle"><i class="fas fa-shield-halved"></i> Defenses</h4>
     <dl class="character-facts">
-      {{#if character.defenses.classDC}}
-      <dt>Class DC</dt><dd>{{character.defenses.classDC}}</dd>
-      {{/if}}
-      {{#if character.defenses.immunities.length}}
-      <dt>Immunities</dt><dd>{{#each character.defenses.immunities as |entry|}}{{#unless @first}}, {{/unless}}{{entry}}{{/each}}</dd>
-      {{/if}}
-      {{#if character.defenses.weaknesses.length}}
-      <dt>Weaknesses</dt><dd>{{#each character.defenses.weaknesses as |entry|}}{{#unless @first}}, {{/unless}}{{entry}}{{/each}}</dd>
-      {{/if}}
-      {{#if character.defenses.resistances.length}}
-      <dt>Resistances</dt><dd>{{#each character.defenses.resistances as |entry|}}{{#unless @first}}, {{/unless}}{{entry}}{{/each}}</dd>
-      {{/if}}
+      {{#if def.classDC}}<dt>Class DC</dt><dd>{{def.classDC}}</dd>{{/if}}
+      {{#if def.immunities.length}}<dt>Immunities</dt><dd>{{> tagList tags=def.immunities}}</dd>{{/if}}
+      {{#if def.weaknesses.length}}<dt>Weaknesses</dt><dd>{{> tagList tags=def.weaknesses tagClass="character-tag-weakness"}}</dd>{{/if}}
+      {{#if def.resistances.length}}<dt>Resistances</dt><dd>{{> tagList tags=def.resistances tagClass="character-tag-resistance"}}</dd>{{/if}}
     </dl>
+    {{/if}}
+    {{/with}}
   </section>
 
   <!-- Feats & features, one frame per pf2e feat group -->

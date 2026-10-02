@@ -1283,7 +1283,7 @@ try {
     c.featGroups[0].feats.length !== 1 ||
     c.featGroups[1].feats[0].children[0]?.name !== "Deity's Domain" ||
     c.attributes.find(a => a.key === "str")?.mod !== 4 ||
-    c.speeds.map(s => s.label).join(",") !== "Land Speed" ||
+    c.speeds.map(s => `${s.type}:${s.value}`).join(",") !== "land:25,swim:null,climb:null,fly:null,burrow:null" ||
     c.defenses.classDC !== 21 ||
     c.defenses.resistances[0] !== "Fire 5" ||
     c.identity.className !== "Fighter" ||
@@ -1292,7 +1292,7 @@ try {
   ) {
     logFail(`[Character Overview] Unexpected context: ${JSON.stringify(c)} (closed: ${JSON.stringify(closedCtx.character)})`);
   } else {
-    logPass("[Character Overview] Context only builds while open, keeps pf2e's feat group order, skips empty slots and groups, nests granted feats, and drops the travel speed.");
+    logPass("[Character Overview] Context only builds while open, keeps pf2e's feat group order, skips empty slots and groups, nests granted feats, and lists land, swim, climb, fly and burrow speed (null when missing, no travel speed).");
   }
 
   // Feat descriptions: nothing is enriched when the overview opens; the first tap enriches one feat
