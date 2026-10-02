@@ -33,7 +33,7 @@
         <span class="action-skill m-inline-flex m-align-center m-gap-4" title="{{act.skill.options}} ({{act.skill.rankName}})"><span class="skill-rank-badge rank-{{act.skill.rank}} m-text-xs m-bold m-inline-flex m-align-center m-justify-center m-shrink-0">{{act.skill.rankLetter}}</span>{{act.skill.label}}</span>
         {{/if}}
         {{#each act.traits as |trait|}}
-        <span class="trait-badge m-text-xs m-color-soft">{{trait.label}}</span>
+        <span class="trait-badge m-badge m-badge-neutral m-text-xs m-color-soft">{{trait.label}}</span>
         {{/each}}
         {{!-- Actions with limited uses (pf2e "Frequency", e.g. once per day) show how many are left --}}
         {{#if act.frequency}}

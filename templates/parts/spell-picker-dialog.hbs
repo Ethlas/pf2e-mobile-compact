@@ -20,9 +20,9 @@
           {{/if}}
         </div>
         <div class="spell-item-meta m-flex-row m-wrap m-gap-4">
-          <span class="detail-tag">Base Rank {{spell.baseRank}}</span>
-          {{#if spell.range}}<span class="detail-tag">Range: {{spell.range}}</span>{{/if}}
-          {{#if spell.target}}<span class="detail-tag">Target: {{spell.target}}</span>{{/if}}
+          <span class="detail-tag m-badge">Base Rank {{spell.baseRank}}</span>
+          {{#if spell.range}}<span class="detail-tag m-badge">Range: {{spell.range}}</span>{{/if}}
+          {{#if spell.target}}<span class="detail-tag m-badge">Target: {{spell.target}}</span>{{/if}}
         </div>
       </div>
       <button type="button" class="touch-target btn-select-spell m-inline-flex m-align-center m-gap-4 m-shrink-0 m-text-md m-semibold" data-action="confirmPrepareSpell" data-item-id="{{spell.id}}">

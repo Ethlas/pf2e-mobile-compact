@@ -30,12 +30,12 @@
               {{#if strike.traits.length}}
               <div class="action-traits m-flex-row m-wrap m-gap-4">
                 {{#each strike.traits as |trait|}}
-                  <span class="trait-badge m-text-xs m-color-soft">{{trait.label}}</span>
+                  <span class="trait-badge m-badge m-badge-neutral m-text-xs m-color-soft">{{trait.label}}</span>
                 {{/each}}
-                {{#if strike.isMelee}}<span class="trait-badge m-text-xs m-color-soft">Melee</span>{{/if}}
-                {{#if strike.isThrown}}<span class="trait-badge m-text-xs m-color-soft">Thrown</span>{{/if}}
-                {{#if strike.isRanged}}<span class="trait-badge m-text-xs m-color-soft">Ranged</span>{{/if}}
-                {{#if strike.rangeIncrement}}<span class="trait-badge m-text-xs m-color-soft">{{strike.rangeIncrement}} ft</span>{{/if}}
+                {{#if strike.isMelee}}<span class="trait-badge m-badge m-badge-neutral m-text-xs m-color-soft">Melee</span>{{/if}}
+                {{#if strike.isThrown}}<span class="trait-badge m-badge m-badge-neutral m-text-xs m-color-soft">Thrown</span>{{/if}}
+                {{#if strike.isRanged}}<span class="trait-badge m-badge m-badge-neutral m-text-xs m-color-soft">Ranged</span>{{/if}}
+                {{#if strike.rangeIncrement}}<span class="trait-badge m-badge m-badge-neutral m-text-xs m-color-soft">{{strike.rangeIncrement}} ft</span>{{/if}}
               </div>
               {{/if}}
             </div>

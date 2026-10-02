@@ -11,9 +11,9 @@
           <h3 class="staged-name m-truncate m-color-strong">{{staged.name}}</h3>
           <span class="m-flex-row m-wrap m-align-center m-gap-6 m-text-sm">
             {{#if staged.isCantrip}}
-              <span class="staged-badge badge-cantrip m-bold">Cantrip</span>
+              <span class="staged-badge badge-cantrip m-badge m-bold">Cantrip</span>
             {{else}}
-              <span class="staged-badge badge-rank m-bold">Base Rank {{staged.baseRank}}</span>
+              <span class="staged-badge badge-rank m-badge m-bold">Base Rank {{staged.baseRank}}</span>
             {{/if}}
             <span class="staged-traditions"><i class="fas fa-hat-wizard"></i> {{staged.traditionsLabel}}</span>
           </span>

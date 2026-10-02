@@ -401,6 +401,17 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   height: 38px;
   border-radius: 4px;
 }
+/* Badges: the shape every badge shares. Layout (m-inline-flex etc.), text size (m-text-*) and colour
+   (m-color-*) come from utilities, a role colour from the Badge Tones rules or the badge's own rule.
+   m-badge-neutral is the look of badges without a role colour. */
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-badge-neutral {
+  background: var(--m-surface-3);
+  border: 1px solid var(--m-border);
+}
 
 /* Text sizes: the sheet's type scale (in rem). Like m-compact they come after the 48px / 16px button and input
    defaults above, so a button can take a smaller size. Inputs and selects keep 16px (iOS zooms in on smaller
@@ -1110,10 +1121,6 @@ body.pf2e-mobile-active textarea {
 }.pf2e-mobile-sheet .action-traits {
   margin-top: 6px;
 }.pf2e-mobile-sheet .action-traits .trait-badge {
-  background: var(--m-surface-3);
-  border: 1px solid var(--m-border);
-  padding: 1px 5px;
-  border-radius: 3px;
   text-transform: capitalize;
 }.pf2e-mobile-sheet .action-skill {
   /* Skill label on skill action cards: rank letter (Skills tab colors) + skill name */
@@ -1245,16 +1252,12 @@ body.pf2e-mobile-active textarea {
 }
 .pf2e-mobile-sheet .detail-tag {
   background: var(--m-surface-1);
-  padding: 2px 6px;
-  border-radius: 3px;
 }/* ----------------------------------------- *//* Inventory & Bulk                          *//* ----------------------------------------- */.pf2e-mobile-sheet .inventory-status-bar {
   background: var(--m-surface-2);
   padding: 8px 12px;
   border-radius: 6px;
   margin-bottom: 12px;
 }.pf2e-mobile-sheet .encumbered-badge {
-  padding: 2px 6px;
-  border-radius: 4px;
   font-size: 0.75rem;
   font-weight: bold;
   margin-left: 6px;
@@ -1272,8 +1275,6 @@ body.pf2e-mobile-active textarea {
 }.pf2e-mobile-sheet .item-title-row:hover .item-name {
   color: var(--m-accent);
 }.pf2e-mobile-sheet .item-badge {
-  padding: 2px 6px;
-  border-radius: 4px;
   line-height: 1.2;
 }.pf2e-mobile-sheet .item-badge.poison-badge {
   font-weight: 600;
@@ -1360,8 +1361,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   margin-top: 2px;
 }.pf2e-mobile-sheet .physical-target-badge {
   display: inline-block;
-  background: var(--m-surface-3);
-  border: 1px solid var(--m-border);
   border-radius: 4px;
   padding: 3px 8px;
   margin-top: 6px;
@@ -1735,8 +1734,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }.pf2e-mobile-sheet .spell-source-badge {
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  padding: 2px 6px;
-  border-radius: 4px;
   white-space: nowrap;
 }.pf2e-mobile-sheet .spell-source-badge.badge-signature {
   padding: 2px 5px;
@@ -1744,8 +1741,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }.pf2e-mobile-sheet .spell-expended-badge {
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  padding: 2px 6px;
-  border-radius: 4px;
   white-space: nowrap;
 }.pf2e-mobile-sheet .btn-restore-slot {
   min-width: 38px;
@@ -1814,8 +1809,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   font-size: 0.7rem;
   background: var(--m-surface-1);
   border: 1px solid var(--m-border-subtle);
-  border-radius: 3px;
-  padding: 2px 5px;
   color: var(--m-text-muted);
 }/* Heightened Notice in Expanded Drawer */.pf2e-mobile-sheet .spell-heightened-notice {
   padding: 8px 12px;
@@ -2009,8 +2002,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   font-size: 0.7rem;
   background: var(--m-surface-0);
   border: 1px solid var(--m-border-subtle);
-  border-radius: 3px;
-  padding: 1px 4px;
   color: var(--m-text-muted);
 }.spell-picker-dialog .btn-select-spell {
   min-height: 38px;
@@ -2178,8 +2169,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   margin: 0;
   font-size: 1.15rem;
 }.compendium-picker .staged-badge {
-  padding: 2px 6px;
-  border-radius: 4px;
 }.compendium-picker .badge-cantrip {
   background: #1e3a5f;
   color: #bfdbfe;
@@ -2288,8 +2277,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }
 
 .pf2e-mobile-sheet .staff-spells-badge {
-  padding: 2px 6px;
-  border-radius: 4px;
   background: var(--m-surface-3);
   border: 1px solid #52525b;
 }
@@ -2340,8 +2327,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }
 
 .pf2e-mobile-sheet .equipped-badge {
-  padding: 2px 6px;
-  border-radius: 4px;
 }
 
 /* Staff Charges Tracker */
@@ -2491,13 +2476,9 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }
 
 .pf2e-mobile-sheet .wand-uses-badge {
-  padding: 2px 6px;
-  border-radius: 4px;
 }
 
 .pf2e-mobile-sheet .quantity-badge {
-  padding: 2px 6px;
-  border-radius: 4px;
   background: #1c1917;
   border: 1px solid #57534e;
 }
@@ -2549,10 +2530,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }
 
 .pf2e-mobile-sheet .competency-pill {
-  background: var(--m-surface-3);
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid var(--m-border);
 }
 
 /* Party Member Tactical Cards */
@@ -2576,8 +2553,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 .pf2e-mobile-sheet .hero-points-badge {
   color: var(--m-gold-text);
   background: var(--m-gold-bg);
-  padding: 1px 5px;
-  border-radius: 4px;
   border: 1px solid var(--m-gold-border);
 }
 
@@ -2631,10 +2606,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }
 
 .pf2e-mobile-sheet .defense-badge {
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--m-surface-3);
-  border: 1px solid var(--m-border);
 }
 
 .pf2e-mobile-sheet .defense-badge.ac {
@@ -2658,8 +2629,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 
 .pf2e-mobile-sheet .mini-skill-pill {
   background: var(--m-surface-3);
-  padding: 1px 4px;
-  border-radius: 3px;
   border: 1px solid var(--m-border-subtle);
   margin-left: 3px;
 }
@@ -2675,8 +2644,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }
 
 .pf2e-mobile-sheet .coin-pill {
-  padding: 2px 6px;
-  border-radius: 4px;
 }
 
 .pf2e-mobile-sheet .coin-pill.pp {
@@ -2758,9 +2725,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 .pf2e-mobile-sheet .character-tag {
   margin: 0;
   padding: 2px 8px;
-  border: 1px solid var(--m-border);
   border-radius: 4px;
-  background: var(--m-surface-3);
   text-transform: capitalize;
 }
 

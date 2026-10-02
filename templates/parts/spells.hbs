@@ -174,7 +174,7 @@
                 <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base m-color-accent"><span class="action-glyph">{{slot.spell.glyph}}</span></span>
                 {{/if}}
                 {{#if slot.isExpended}}
-                <span class="spell-expended-badge m-text-2xs m-bold">Expended</span>
+                <span class="spell-expended-badge m-badge m-text-2xs m-bold">Expended</span>
                 {{/if}}
               </div>
               <div class="slot-actions m-flex-row m-gap-4 m-shrink-0">
@@ -210,11 +210,11 @@
           <div class="staff-title-row m-flex-row m-wrap m-align-center m-justify-between m-gap-6">
             <h3 class="staff-name m-truncate m-text-xl m-bold m-color-accent">{{activations.staff.name}}</h3>
             {{#if activations.staff.isEquipped}}
-            <span class="equipped-badge badge-held m-inline-flex m-align-center m-gap-4 m-text-xs m-semibold"><i class="fas fa-hand"></i> Held ({{activations.staff.handsHeld}}H)</span>
+            <span class="equipped-badge badge-held m-badge m-inline-flex m-align-center m-gap-4 m-text-xs m-semibold"><i class="fas fa-hand"></i> Held ({{activations.staff.handsHeld}}H)</span>
             {{else}}
-            <span class="equipped-badge badge-not-held m-inline-flex m-align-center m-gap-4 m-text-xs m-semibold"><i class="fas fa-triangle-exclamation"></i> Not Held</span>
+            <span class="equipped-badge badge-not-held m-badge m-inline-flex m-align-center m-gap-4 m-text-xs m-semibold"><i class="fas fa-triangle-exclamation"></i> Not Held</span>
             {{/if}}
-            <span class="staff-spells-badge m-inline-flex m-align-center m-text-xs m-semibold m-color-normal">{{activations.staff.spellCount}} Spells</span>
+            <span class="staff-spells-badge m-badge m-inline-flex m-align-center m-text-xs m-semibold m-color-normal">{{activations.staff.spellCount}} Spells</span>
             <i class="fas fa-chevron-down action-expand-icon m-shrink-0 m-text-sm m-color-dim {{#if activations.staff.isExpanded}}expanded{{/if}}"></i>
           </div>
           <div class="staff-charges-tracker m-flex-row m-align-center m-justify-between m-gap-8">
@@ -301,8 +301,8 @@
               <img class="activation-item-img m-shrink-0" src="{{wand.img}}" alt="{{wand.name}}" />
               <div class="m-flex-row m-wrap m-align-center m-gap-6">
                 <span class="action-name m-min-w-0 m-truncate"><strong>{{wand.name}}</strong></span>
-                <span class="detail-tag">Rank {{wand.rank}}</span>
-                <span class="wand-uses-badge m-text-sm {{#if wand.isOvercharged}}badge-expended{{/if}}">
+                <span class="detail-tag m-badge">Rank {{wand.rank}}</span>
+                <span class="wand-uses-badge m-badge m-text-sm {{#if wand.isOvercharged}}badge-expended{{/if}}">
                   {{#if wand.isOvercharged}}Overcharged / Expended{{else}}{{wand.uses.value}} / {{wand.uses.max}} Uses{{/if}}
                 </span>
               </div>
@@ -343,8 +343,8 @@
               <img class="activation-item-img m-shrink-0" src="{{scroll.img}}" alt="{{scroll.name}}" />
               <div class="m-flex-row m-wrap m-align-center m-gap-6">
                 <span class="action-name m-min-w-0 m-truncate"><strong>{{scroll.name}}</strong></span>
-                <span class="detail-tag">Rank {{scroll.rank}}</span>
-                <span class="quantity-badge m-text-sm m-color-normal">Qty: {{scroll.quantity}}</span>
+                <span class="detail-tag m-badge">Rank {{scroll.rank}}</span>
+                <span class="quantity-badge m-badge m-text-sm m-color-normal">Qty: {{scroll.quantity}}</span>
               </div>
             </div>
             <div class="action-btn-group m-flex-row m-align-center m-gap-6 m-shrink-0">
@@ -381,7 +381,7 @@
           <div class="action-card-header m-flex-row m-align-center m-justify-between">
             <div class="action-title-group m-flex-row m-align-center m-gap-8 m-flex-1 m-min-w-0">
               <span class="action-name m-min-w-0 m-truncate"><strong>{{act.spell.name}}</strong></span>
-              <span class="detail-tag">{{act.entryName}}</span>
+              <span class="detail-tag m-badge">{{act.entryName}}</span>
             </div>
             <div class="action-btn-group m-flex-row m-align-center m-gap-6 m-shrink-0">
               <button type="button" class="touch-target btn-action-chat m-compact m-inline-flex m-align-center m-gap-4 m-text-base m-color-normal" data-action="itemToChat" data-item-id="{{act.spell.id}}" title="Send to Chat">

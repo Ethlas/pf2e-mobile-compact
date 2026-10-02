@@ -36,7 +36,7 @@
 {{!-- A list of short labels (traits, senses, languages, IWR) as tags --}}
 {{#*inline "tagList"}}
 <ul class="character-tags m-flex-row m-wrap m-gap-4">
-  {{#each tags as |tag|}}<li class="character-tag m-text-sm m-color-normal {{../tagClass}}">{{tag}}</li>{{/each}}
+  {{#each tags as |tag|}}<li class="character-tag m-badge-neutral m-text-sm m-color-normal {{../tagClass}}">{{tag}}</li>{{/each}}
 </ul>
 {{/inline}}
 <div class="tab-pane character-tab" data-tab="character">
@@ -49,8 +49,8 @@
     </h3>
     {{#if (or id.size id.traits.length)}}
     <ul class="character-tags m-flex-row m-wrap m-gap-4">
-      {{#if id.size}}<li class="character-tag character-tag-size m-text-sm m-bold m-color-normal">{{id.size}}</li>{{/if}}
-      {{#each id.traits as |trait|}}<li class="character-tag character-tag-trait m-text-sm m-bold m-color-normal">{{trait}}</li>{{/each}}
+      {{#if id.size}}<li class="character-tag character-tag-size m-badge-neutral m-text-sm m-bold m-color-normal">{{id.size}}</li>{{/if}}
+      {{#each id.traits as |trait|}}<li class="character-tag character-tag-trait m-badge-neutral m-text-sm m-bold m-color-normal">{{trait}}</li>{{/each}}
     </ul>
     {{/if}}
     <dl class="character-details">

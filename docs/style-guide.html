@@ -67,7 +67,7 @@
   <ul class="sg-rules">
     <li>Use a palette variable (<code>--m-*</code>) for every background, border and text colour. Need a colour that is not here? Add it to the Colour Palette block and to this page, instead of writing a hex value in a component rule.</li>
     <li>Layout and text size/weight in templates use the <code>m-*</code> utilities (flex, gap, truncate, <code>m-text-*</code>, <code>m-medium</code>/<code>m-semibold</code>/<code>m-bold</code>, <code>m-color-*</code>). Component rules keep only how something looks.</li>
-    <li>Badges and soft buttons of a role use that role's tone; solid action buttons use its <code>-solid</code> shades. Add a new badge's selector to the tone rule at the end of the stylesheet.</li>
+    <li>Every badge takes <code>m-badge</code> (its shape); badges without a role colour also take <code>m-badge-neutral</code>. Size and colour of the text come from <code>m-text-*</code> and <code>m-color-*</code>. Badges and soft buttons of a role use that role's tone; solid action buttons use its <code>-solid</code> shades. Add a new badge's selector to the tone rule at the end of the stylesheet.</li>
     <li>Damage types, proficiency ranks and character tags use pf2e's colours; the role colours follow Foundry's.</li>
     <li>When you add or change a variable, utility, component or colour role, update this page in the same change.</li>
   </ul>
@@ -117,7 +117,7 @@
     <div class="sg-item"><div class="sg-sample staff-header-card"><h3 class="staff-name m-truncate">Staff of Fire</h3></div></div>
     <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-cast btn-staff-charges m-inline-flex m-align-center m-justify-center">2 Chg</button></div></div>
     <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-cast btn-staff-spontaneous m-inline-flex m-align-center m-justify-center">1 Chg + slot</button></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-charge-cost"><i class="fas fa-bolt"></i> 2 Chg</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-charge-cost m-badge"><i class="fas fa-bolt"></i> 2 Chg</span></div></div>
     <div class="sg-item"><div class="sg-sample"><span class="charges-label"><i class="fas fa-bolt"></i> <strong>3 / 5</strong></span></div></div>
     <div class="sg-item"><div class="sg-sample"><div class="slot-counter"><span title="Spell slots"><strong>2 / 3</strong></span></div></div></div>
     <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-slot-adjust m-flex-row m-align-center m-justify-center">+</button></div></div>
@@ -127,30 +127,30 @@
   <h2>Badges and tags</h2>
   <h3>Spell badges</h3>
   <div class="sg-grid">
-    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-prepared">Prepared</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-spontaneous">Spontaneous</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-signature">Signature</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-innate">Innate</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-focus">Focus</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-heightened">Heightened</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-cantrip">Cantrip</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="spell-expended-badge">Expended</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="wand-uses-badge">1/day</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="wand-uses-badge badge-expended">Broken</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="equipped-badge badge-held m-inline-flex m-align-center m-gap-4">Held</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="equipped-badge badge-not-held m-inline-flex m-align-center m-gap-4">Not held</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-prepared m-badge">Prepared</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-spontaneous m-badge">Spontaneous</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-signature m-badge">Signature</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-innate m-badge">Innate</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-focus m-badge">Focus</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-heightened m-badge">Heightened</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-cantrip m-badge">Cantrip</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-expended-badge m-badge">Expended</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="wand-uses-badge m-badge">1/day</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="wand-uses-badge badge-expended m-badge">Broken</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="equipped-badge badge-held m-badge m-inline-flex m-align-center m-gap-4">Held</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="equipped-badge badge-not-held m-badge m-inline-flex m-align-center m-gap-4">Not held</span></div></div>
     <div class="sg-item"><div class="sg-sample"><div class="spell-heightened-notice">Heightened (+2): more damage</div></div></div>
   </div>
   <h3>Item badges</h3>
   <div class="sg-grid">
-    <div class="sg-item"><div class="sg-sample"><span class="item-badge category-badge m-inline-flex m-align-center m-gap-4">Weapon</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="item-badge uses-badge m-inline-flex m-align-center m-gap-4">2/3</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="item-badge container-badge m-inline-flex m-align-center m-gap-4">Backpack</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="item-badge poison-badge m-inline-flex m-align-center m-gap-4">Poisoned</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="item-badge runes-badge m-inline-flex m-align-center m-gap-4">+1 striking</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="item-badge shield-badge m-inline-flex m-align-center m-gap-4">Shield</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="item-badge bulk-badge m-inline-flex m-align-center m-gap-4">L</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="quantity-badge">x3</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="item-badge category-badge m-badge m-inline-flex m-align-center m-gap-4">Weapon</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="item-badge uses-badge m-badge m-inline-flex m-align-center m-gap-4">2/3</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="item-badge container-badge m-badge m-inline-flex m-align-center m-gap-4">Backpack</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="item-badge poison-badge m-badge m-inline-flex m-align-center m-gap-4">Poisoned</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="item-badge runes-badge m-badge m-inline-flex m-align-center m-gap-4">+1 striking</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="item-badge shield-badge m-badge m-inline-flex m-align-center m-gap-4">Shield</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="item-badge bulk-badge m-badge m-inline-flex m-align-center m-gap-4">L</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="quantity-badge m-badge">x3</span></div></div>
   </div>
   <h3>pf2e colours: damage types, ranks and character tags</h3>
   <div class="sg-grid">
@@ -159,15 +159,15 @@
     <div class="sg-item"><div class="sg-sample"><span class="damage-type-badge damage-acid">acid</span><span class="damage-type-badge damage-bleed">bleed</span><span class="damage-type-badge damage-force">force</span></div></div>
     <div class="sg-item"><div class="sg-sample"><span class="damage-type-badge damage-vitality">vitality</span><span class="damage-type-badge damage-void">void</span><span class="damage-type-badge damage-spirit">spirit</span></div></div>
     <div class="sg-item"><div class="sg-sample"><span class="skill-rank-badge rank-1 m-inline-flex m-align-center m-justify-center m-shrink-0">T</span><span class="skill-rank-badge rank-2 m-inline-flex m-align-center m-justify-center m-shrink-0">E</span><span class="skill-rank-badge rank-3 m-inline-flex m-align-center m-justify-center m-shrink-0">M</span><span class="skill-rank-badge rank-4 m-inline-flex m-align-center m-justify-center m-shrink-0">L</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><ul class="character-tags m-flex-row m-wrap m-gap-4"><li class="character-tag character-tag-size">Medium</li><li class="character-tag character-tag-trait">Humanoid</li><li class="character-tag">Darkvision</li></ul></div></div>
-    <div class="sg-item"><div class="sg-sample"><ul class="character-tags m-flex-row m-wrap m-gap-4"><li class="character-tag character-tag-immunity">poison</li><li class="character-tag character-tag-weakness">cold 5</li><li class="character-tag character-tag-resistance">fire 5</li></ul></div></div>
+    <div class="sg-item"><div class="sg-sample"><ul class="character-tags m-flex-row m-wrap m-gap-4"><li class="character-tag character-tag-size m-badge-neutral">Medium</li><li class="character-tag character-tag-trait m-badge-neutral">Humanoid</li><li class="character-tag m-badge-neutral">Darkvision</li></ul></div></div>
+    <div class="sg-item"><div class="sg-sample"><ul class="character-tags m-flex-row m-wrap m-gap-4"><li class="character-tag character-tag-immunity m-badge-neutral">poison</li><li class="character-tag character-tag-weakness m-badge-neutral">cold 5</li><li class="character-tag character-tag-resistance m-badge-neutral">fire 5</li></ul></div></div>
   </div>
   <h3>Party and header</h3>
   <div class="sg-grid">
-    <div class="sg-item"><div class="sg-sample"><span class="coin-pill pp">1 pp</span><span class="coin-pill gp">120 gp</span><span class="coin-pill sp">4 sp</span><span class="coin-pill cp">9 cp</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="defense-badge ac">AC 22</span><span class="defense-badge save">Fort +12</span><span class="defense-badge perc">Perc +10</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="competency-pill skill-pill">Athletics +13</span><span class="competency-pill rk-pill">Arcana +12</span></div></div>
-    <div class="sg-item"><div class="sg-sample"><span class="hero-points-badge">2 hero</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="coin-pill pp m-badge">1 pp</span><span class="coin-pill gp m-badge">120 gp</span><span class="coin-pill sp m-badge">4 sp</span><span class="coin-pill cp m-badge">9 cp</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="defense-badge ac m-badge m-badge-neutral">AC 22</span><span class="defense-badge save m-badge m-badge-neutral">Fort +12</span><span class="defense-badge perc m-badge m-badge-neutral">Perc +10</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="competency-pill skill-pill m-badge m-badge-neutral">Athletics +13</span><span class="competency-pill rk-pill m-badge m-badge-neutral">Arcana +12</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="hero-points-badge m-badge">2 hero</span></div></div>
     <div class="sg-item"><div class="sg-sample mobile-header-dashboard" style="position: static; padding: 4px; border: 0;"><div class="hp-direct-group hp-healthy m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0"><span class="hp-label">HP</span> <input type="text" class="hp-current-input" value="40"></div></div></div>
     <div class="sg-item"><div class="sg-sample mobile-header-dashboard" style="position: static; padding: 4px; border: 0;"><div class="hp-direct-group hp-warning m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0"><span class="hp-label">HP</span> <input type="text" class="hp-current-input" value="25"></div></div></div>
     <div class="sg-item"><div class="sg-sample mobile-header-dashboard" style="position: static; padding: 4px; border: 0;"><div class="hp-direct-group hp-danger m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0"><span class="hp-label">HP</span> <input type="text" class="hp-current-input" value="10"></div></div></div>
@@ -222,6 +222,7 @@
     </div></div>
     <div class="sg-item"><div class="sg-sample" style="display: block;"><div class="m-panel" style="padding: 8px 10px;">m-panel: flat panel</div></div></div>
     <div class="sg-item"><div class="sg-sample"><button class="touch-target m-compact">m-compact (38px)</button> <button class="touch-target">default (48px)</button></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-badge m-badge-neutral m-text-sm">m-badge m-badge-neutral</span> <span class="m-badge m-text-sm" style="background: var(--m-info-bg); border: 1px solid var(--m-info-border); color: var(--m-info-text);">m-badge + a tone</span></div></div>
   </div>
 
   <h2>Utility classes</h2>

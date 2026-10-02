@@ -21,13 +21,13 @@
       <!-- Title (layout only; the whole line is the tap target) -->
       <div class="m-card-title m-flex-row m-align-center">
         {{#if spell.isFocus}}
-          <span class="spell-source-badge badge-focus badge-letter m-inline-flex m-align-center m-justify-center m-text-2xs m-bold" title="Focus Spell">F</span>
+          <span class="spell-source-badge badge-focus badge-letter m-badge m-inline-flex m-align-center m-justify-center m-text-2xs m-bold" title="Focus Spell">F</span>
         {{else if spell.isInnate}}
-          <span class="spell-source-badge badge-innate badge-letter m-inline-flex m-align-center m-justify-center m-text-2xs m-bold" title="Innate Spell">I</span>
+          <span class="spell-source-badge badge-innate badge-letter m-badge m-inline-flex m-align-center m-justify-center m-text-2xs m-bold" title="Innate Spell">I</span>
         {{else if spell.isPrepared}}
-          <!--          <span class="spell-source-badge badge-prepared badge-letter m-inline-flex m-align-center m-justify-center m-text-2xs m-bold" title="Prepared Spell">P</span>-->
+          <!--          <span class="spell-source-badge badge-prepared badge-letter m-badge m-inline-flex m-align-center m-justify-center m-text-2xs m-bold" title="Prepared Spell">P</span>-->
         {{else if spell.isSpontaneous}}
-          <!--          <span class="spell-source-badge badge-spontaneous badge-letter m-inline-flex m-align-center m-justify-center m-text-2xs m-bold" title="Spontaneous Spell">S</span>-->
+          <!--          <span class="spell-source-badge badge-spontaneous badge-letter m-badge m-inline-flex m-align-center m-justify-center m-text-2xs m-bold" title="Spontaneous Spell">S</span>-->
         {{/if}}
         {{#if spell.glyph}}
           <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base m-color-accent"><span class="action-glyph">{{spell.glyph}}</span></span>
@@ -40,28 +40,28 @@
       <!-- Source badges + quick detail tags (under the spell name, always visible) -->
       <div class="spell-details m-flex-row m-wrap m-gap-4 m-text-md m-color-muted">
         {{#if spell.isSignature}}
-          <span class="spell-source-badge badge-signature badge-letter m-inline-flex m-align-center m-justify-center m-text-2xs m-bold" title="Signature Spell"><i class="fas fa-star"></i></span>
+          <span class="spell-source-badge badge-signature badge-letter m-badge m-inline-flex m-align-center m-justify-center m-text-2xs m-bold" title="Signature Spell"><i class="fas fa-star"></i></span>
         {{/if}}
 
         {{#if spell.isExpended}}
-          <span class="spell-expended-badge m-text-2xs m-bold">Exp</span>
+          <span class="spell-expended-badge m-badge m-text-2xs m-bold">Exp</span>
         {{/if}}
 
         {{#if showChargeCost}}
           {{#if spell.isCantrip}}
-            <span class="spell-source-badge badge-cantrip m-text-2xs m-bold">0 Chg</span>
+            <span class="spell-source-badge badge-cantrip m-badge m-text-2xs m-bold">0 Chg</span>
           {{else if spell.canCastCharges}}
-            <span class="spell-source-badge badge-charge-cost m-text-2xs m-bold"><i class="fas fa-bolt"></i> {{spell.chargeCost}} Chg</span>
+            <span class="spell-source-badge badge-charge-cost m-badge m-text-2xs m-bold"><i class="fas fa-bolt"></i> {{spell.chargeCost}} Chg</span>
           {{else}}
-            <span class="spell-source-badge badge-charge-cost badge-charge-insufficient m-text-2xs m-bold" title="Insufficient charges (requires {{spell.chargeCost}})"><i class="fas fa-bolt"></i> {{spell.chargeCost}} Chg</span>
+            <span class="spell-source-badge badge-charge-cost badge-charge-insufficient m-badge m-text-2xs m-bold" title="Insufficient charges (requires {{spell.chargeCost}})"><i class="fas fa-bolt"></i> {{spell.chargeCost}} Chg</span>
           {{/if}}
         {{/if}}
 
-        {{#if spell.range}}<span class="detail-tag m-inline-flex m-align-center m-gap-4"><i class="fas fa-ruler"></i> {{spell.range}}</span>{{/if}}
-<!--        {{#if spell.target}}<span class="detail-tag"><i class="fas fa-crosshairs"></i> {{spell.target}}</span>{{/if}}-->
-        {{#if spell.area}}<span class="detail-tag m-inline-flex m-align-center m-gap-4"><i class="fas fa-expand"></i> {{spell.area}}</span>{{/if}}
-        {{#if spell.defense}}<span class="detail-tag m-inline-flex m-align-center m-gap-4"><i class="fas fa-shield-halved"></i> {{spell.defense}}</span>{{/if}}
-        {{#if spell.duration}}<span class="detail-tag m-inline-flex m-align-center m-gap-4"><i class="fas fa-clock"></i> {{spell.duration}}</span>{{/if}}
+        {{#if spell.range}}<span class="detail-tag m-badge m-inline-flex m-align-center m-gap-4"><i class="fas fa-ruler"></i> {{spell.range}}</span>{{/if}}
+<!--        {{#if spell.target}}<span class="detail-tag m-badge"><i class="fas fa-crosshairs"></i> {{spell.target}}</span>{{/if}}-->
+        {{#if spell.area}}<span class="detail-tag m-badge m-inline-flex m-align-center m-gap-4"><i class="fas fa-expand"></i> {{spell.area}}</span>{{/if}}
+        {{#if spell.defense}}<span class="detail-tag m-badge m-inline-flex m-align-center m-gap-4"><i class="fas fa-shield-halved"></i> {{spell.defense}}</span>{{/if}}
+        {{#if spell.duration}}<span class="detail-tag m-badge m-inline-flex m-align-center m-gap-4"><i class="fas fa-clock"></i> {{spell.duration}}</span>{{/if}}
       </div>
     </div>
     <!-- Line buttons (supplied by the caller through the "lineButtons" slot) -->
@@ -75,13 +75,13 @@
     <div class="expanded-spell-fullname m-flex-row m-align-center m-justify-between m-gap-8 m-text-xl m-color-strong">
       <strong>{{spell.name}}</strong>
       {{#if spell.isFocus}}
-      <span class="spell-source-badge badge-focus m-text-2xs m-bold">Focus</span>
+      <span class="spell-source-badge badge-focus m-badge m-text-2xs m-bold">Focus</span>
       {{else if spell.isInnate}}
-      <span class="spell-source-badge badge-innate m-text-2xs m-bold">Innate</span>
+      <span class="spell-source-badge badge-innate m-badge m-text-2xs m-bold">Innate</span>
       {{else if spell.isPrepared}}
-      <span class="spell-source-badge badge-prepared m-text-2xs m-bold">Prepared</span>
+      <span class="spell-source-badge badge-prepared m-badge m-text-2xs m-bold">Prepared</span>
       {{else if spell.isSpontaneous}}
-      <span class="spell-source-badge badge-spontaneous m-text-2xs m-bold">Spontaneous</span>
+      <span class="spell-source-badge badge-spontaneous m-badge m-text-2xs m-bold">Spontaneous</span>
       {{/if}}
     </div>
 
@@ -89,13 +89,13 @@
     {{#if spell.traits.length}}
     <div class="action-traits staff-spell-traits m-flex-row m-wrap m-gap-4">
       {{#each spell.traits as |trait|}}
-      <span class="trait-badge m-text-xs m-color-soft">{{trait.label}}</span>
+      <span class="trait-badge m-badge m-badge-neutral m-text-xs m-color-soft">{{trait.label}}</span>
       {{/each}}
     </div>
     {{/if}}
     {{#if spell.target}}
     <div class="action-traits staff-spell-traits m-flex-row m-wrap m-gap-4">
-      <span class="detail-tag"><i class="fas fa-crosshairs"></i> {{spell.target}}</span>
+      <span class="detail-tag m-badge"><i class="fas fa-crosshairs"></i> {{spell.target}}</span>
     </div>
     {{/if}}
 
