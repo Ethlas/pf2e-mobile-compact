@@ -246,6 +246,22 @@ for (const cssRel of ["styles/pf2e-mobile.css", "styles/kingdom.css"]) {
   }
 }
 
+// 5b. Style guide (docs/style-guide.html): every m-* utility or component class in the stylesheet needs a sample there
+const styleGuidePath = path.join(rootDir, "docs/style-guide.html");
+if (fs.existsSync(styleGuidePath)) {
+  const sheetCss = fs.readFileSync(path.join(rootDir, "styles/pf2e-mobile.css"), "utf-8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const guideHtml = fs.readFileSync(styleGuidePath, "utf-8");
+  const mClasses = [...new Set([...sheetCss.matchAll(/\.pf2e-mobile-sheet \.(m-[a-z0-9-]+)/g)].map(m => m[1]))];
+  const missing = mClasses.filter(c => !new RegExp(`class="[^"]*(?<![\\w-])${c}(?![\\w-])`).test(guideHtml));
+  if (missing.length) {
+    logFail(`[Style Guide] No sample in docs/style-guide.html for: ${missing.join(", ")}. Add one when adding a utility or component class.`);
+  } else {
+    logPass(`[Style Guide] All ${mClasses.length} m-* classes have a sample in docs/style-guide.html.`);
+  }
+} else {
+  logFail("[Style Guide] docs/style-guide.html is missing.");
+}
+
 // 6. Comprehensive Section-by-Section Interactive Button, Sub-Tab & Handler Verification
 console.log("\n--- 6. Section-by-Section Interactive Button, Sub-Tab & Handler Tests ---");
 try {

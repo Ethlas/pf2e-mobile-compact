@@ -56,6 +56,13 @@ Welcome to the **PF2e Mobile Sheet (Compact)** repository (`pf2e-mobile-compact`
   - Proactively assess file sizes: if any helper or module approaches 400–600 lines or takes on mixed responsibilities, immediately refactor and extract into dedicated domain sub-modules.
   - Preserve registered action names in `DEFAULT_OPTIONS.actions` on `PF2eMobileSheet` while delegating execution directly to the modular domain handlers.
 
+### F. Stylesheet: Follow the Style Guide (Critical Styling Rule)
+- **The style guide is the reference**: `docs/style-guide.html` (open it over HTTP from the repository root, e.g. `python3 -m http.server 8000` and <http://localhost:8000/docs/style-guide.html>) shows every colour variable, utility class, component and badge/button colour of `styles/pf2e-mobile.css`, with class names. Every change to the stylesheet or to classes in the templates must follow it.
+- **Colours come from the palette**: use the `--m-*` variables in the Colour Palette block (surfaces, borders, role hues and their badge tones and solid shades, staff/charge/slot/gold) instead of hex values in component rules. The role colours are linked to Foundry's own variables (`--color-level-*`, `--color-warm-1`); damage types, proficiency ranks and character tags use pf2e's colours. A genuinely new colour is added to the palette first.
+- **Layout lives in the templates**: use the `m-*` utilities (`m-flex-row`, `m-flex-col`, `m-align-*`, `m-justify-*`, `m-gap-*`, `m-wrap`, `m-flex-1`, `m-flex-auto`, `m-min-w-0`, `m-shrink-0`, `m-truncate`) on the element instead of repeating those declarations in a component rule. Component rules keep how something looks.
+- **Reuse the shared components**: `m-group`, `m-card`, `m-panel` and `m-compact` (the 38px control size). A new badge or soft button of a role joins that role's rule in the Badge Tones section at the end of the stylesheet.
+- **Keep the guide current**: when adding or changing a variable, utility, component or colour role, update `docs/style-guide.html` in the same change. `scripts/verify.mjs` fails when an `m-*` class has no sample there.
+
 ---
 
 ## 3. Workflow & Deployment Rules

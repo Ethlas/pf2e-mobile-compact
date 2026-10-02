@@ -1,0 +1,296 @@
+<!doctype html>
+<!--
+  Style guide for the mobile sheet (documentation, not part of the module).
+
+  Shows the colours, utility classes and components the sheet's stylesheet defines, rendered with the real
+  styles/pf2e-mobile.css, with the class names next to each sample. AGENTS.md asks every change to the
+  stylesheet to follow this guide and to keep it current.
+
+  What updates itself, read from the stylesheet when the page loads:
+    - every --m-* colour variable (Colour Palette block), with its resolved colour
+    - every m-* utility and component class, with its declarations
+    - the badge tone rules and the selectors that use each tone
+  What is written here by hand: the sample buttons, badges, tags and states. Add a sample when you add a
+  component or a colour role; scripts/verify.mjs checks that every m-* class appears on this page.
+
+  Serve over HTTP from the repository root (the browser blocks reading a stylesheet's rules from file://):
+    python3 -m http.server 8000   ->   http://localhost:8000/docs/style-guide.html
+  Foundry's own variables (--color-level-*, --color-warm-1, pf2e's --color-*) are not loaded here, so the
+  sheet's fallback values show; inside Foundry they come from Foundry and pf2e.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mobile Sheet Style Guide</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="../styles/pf2e-mobile.css">
+  <style>
+    /* Page chrome only (sg- prefix). Everything inside the samples comes from the real stylesheet. */
+    html, body { margin: 0; background: #141414; }
+    /* The sheet root is a fixed, full-screen app on phones (the stylesheet's max-width: 768px rule uses
+       !important); this page is a normal scrolling document instead. */
+    .pf2e-mobile-sheet.sg-root {
+      position: static !important; inset: auto !important; width: auto !important; height: auto !important;
+      max-width: 1000px !important; max-height: none !important; margin: 0 auto !important; transform: none !important;
+      overflow: visible; user-select: text; -webkit-user-select: text;
+      display: block; padding: 20px 16px 60px; line-height: 1.45;
+    }
+    .sg-root h1 { font-size: 1.5rem; margin: 0 0 6px; }
+    .sg-root h2 { font-size: 1.15rem; margin: 28px 0 8px; color: var(--m-accent); border-bottom: 1px solid var(--m-border); padding-bottom: 4px; }
+    .sg-root h3 { font-size: 0.95rem; margin: 16px 0 6px; color: #e0e0e0; }
+    .sg-root p { margin: 4px 0; color: #bbb; max-width: 75ch; }
+    .sg-root code { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 0.78rem; color: #8fd3c5; }
+    .sg-rules { background: var(--m-surface-2); border: 1px solid var(--m-border-subtle); border-radius: 6px; padding: 10px 14px; margin-top: 10px; }
+    .sg-rules li { color: #ccc; margin: 3px 0; }
+    .sg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+    .sg-item { background: var(--m-surface-1); border: 1px solid var(--m-border-subtle); border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .sg-item > .sg-sample { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 28px; }
+    .sg-item code { overflow-wrap: anywhere; }
+    .sg-swatch { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; align-items: center; background: var(--m-surface-1); border: 1px solid var(--m-border-subtle); border-radius: 6px; padding: 6px 8px; }
+    .sg-swatch i { width: 34px; height: 26px; border-radius: 4px; border: 1px solid #555; display: block; }
+    .sg-swatch span { display: grid; min-width: 0; }
+    .sg-swatch b { font-weight: 600; font-size: 0.8rem; color: #e0e0e0; overflow-wrap: anywhere; }
+    .sg-swatch small { font-size: 0.72rem; color: #999; overflow-wrap: anywhere; }
+    .sg-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .sg-table td { border-top: 1px solid var(--m-border-subtle); padding: 5px 6px; vertical-align: top; color: #ccc; }
+    .sg-table td:first-child { white-space: nowrap; }
+    .sg-scroll { overflow-x: auto; }
+    .sg-box { background: var(--m-surface-3); border: 1px dashed #555; border-radius: 3px; padding: 2px 6px; font-size: 0.75rem; }
+    .sg-error { color: #f08080; }
+  </style>
+</head>
+<body>
+<div class="pf2e-mobile-sheet sg-root">
+  <h1>Mobile Sheet Style Guide</h1>
+  <p>The colours, utility classes and components of <code>styles/pf2e-mobile.css</code>, rendered with the real stylesheet. Class names are shown under each sample.</p>
+  <ul class="sg-rules">
+    <li>Use a palette variable (<code>--m-*</code>) for every background, border and text colour. Need a colour that is not here? Add it to the Colour Palette block and to this page, instead of writing a hex value in a component rule.</li>
+    <li>Layout in templates uses the <code>m-*</code> utilities (flex, gap, truncate). Component rules keep only how something looks.</li>
+    <li>Badges and soft buttons of a role use that role's tone; solid action buttons use its <code>-solid</code> shades. Add a new badge's selector to the tone rule at the end of the stylesheet.</li>
+    <li>Damage types, proficiency ranks and character tags use pf2e's colours; the role colours follow Foundry's.</li>
+    <li>When you add or change a variable, utility, component or colour role, update this page in the same change.</li>
+  </ul>
+
+  <h2>Colour palette</h2>
+  <p>Every <code>--m-*</code> variable, read from the stylesheet. Swatches show the resolved colour (with Foundry's values as fallback here).</p>
+  <div id="sg-palette"></div>
+
+  <h2>Badge tones</h2>
+  <p>One rule per tone at the end of the stylesheet. Each lists every badge and soft button that uses it.</p>
+  <div id="sg-tones" class="sg-grid"></div>
+
+  <h2>Buttons</h2>
+  <h3>Solid action buttons</h3>
+  <div class="sg-grid">
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-primary">Primary</button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-cast m-inline-flex m-align-center m-justify-center"><i class="fas fa-wand-magic"></i></button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-cast m-inline-flex m-align-center m-justify-center btn-cast-attack"><i class="fas fa-crosshairs"></i></button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-action-use m-compact"><i class="fas fa-play"></i></button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-action-use m-compact active"><i class="fas fa-toggle-on"></i></button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-action-roll m-compact"><i class="fas fa-dice-d20"></i></button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-action-roll m-compact btn-action-attack"><i class="fas fa-crosshairs"></i></button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-action-chat m-compact"><i class="fas fa-message"></i></button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-spell-damage m-compact"><i class="fas fa-burst"></i> Dmg</button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-spell-damage m-compact btn-spell-heal"><i class="fas fa-heart-pulse"></i> Heal</button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-add-gear m-compact">Add</button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-transfer m-compact m-inline-flex m-align-center m-gap-4"><i class="fas fa-right-left"></i> Transfer</button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-party-stash m-compact m-inline-flex m-align-center m-gap-4"><i class="fas fa-box"></i> Stash</button></div></div>
+  </div>
+  <h3>Soft buttons (badge tones)</h3>
+  <div class="sg-grid">
+    <div class="sg-item"><div class="sg-sample spells-preparation-view"><button class="touch-target btn-prepare-slot">Prepare</button></div></div>
+    <div class="sg-item"><div class="sg-sample spells-preparation-view"><button class="touch-target btn-apply-preset m-compact">Apply</button></div></div>
+    <div class="sg-item"><div class="sg-sample spells-preparation-view"><button class="touch-target btn-save-preset m-compact">Save</button></div></div>
+    <div class="sg-item"><div class="sg-sample spells-preparation-view"><button class="touch-target btn-delete-preset m-compact">Delete</button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-restore-slot m-compact m-inline-flex m-align-center m-justify-center m-gap-4"><i class="fas fa-arrow-rotate-left"></i> Restore</button></div></div>
+    <div class="sg-item"><div class="sg-sample strike-card"><button class="touch-target map-button">−5</button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target badge-btn equip-badge m-compact equipped">Equipped</button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target badge-btn invest-badge m-compact invested">Invested</button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target badge-btn carry-badge m-compact held">Held</button></div></div>
+    <div class="sg-item"><div class="sg-sample spell-drawer-footer"><button class="touch-target btn-toggle-signature active">Signature</button></div></div>
+    <div class="sg-item"><div class="sg-sample spell-drawer-footer"><button class="touch-target btn-remove-spell">Remove</button></div></div>
+  </div>
+  <h3>Staff, charges and slots</h3>
+  <p>Purple for charges (<code>--m-charge-*</code>), verdigris for spell slots (<code>--m-slot-*</code>); the charge + slot button runs from one to the other.</p>
+  <div class="sg-grid">
+    <div class="sg-item"><div class="sg-sample staff-header-card"><h3 class="staff-name m-truncate">Staff of Fire</h3></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-cast btn-staff-charges m-inline-flex m-align-center m-justify-center">2 Chg</button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-cast btn-staff-spontaneous m-inline-flex m-align-center m-justify-center">1 Chg + slot</button></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-charge-cost"><i class="fas fa-bolt"></i> 2 Chg</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="charges-label"><i class="fas fa-bolt"></i> <strong>3 / 5</strong></span></div></div>
+    <div class="sg-item"><div class="sg-sample"><div class="slot-counter"><span title="Spell slots"><strong>2 / 3</strong></span></div></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target btn-slot-adjust m-flex-row m-align-center m-justify-center">+</button></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="slot-num-badge m-flex-row m-align-center m-justify-center m-shrink-0">1</span></div></div>
+  </div>
+
+  <h2>Badges and tags</h2>
+  <h3>Spell badges</h3>
+  <div class="sg-grid">
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-prepared">Prepared</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-spontaneous">Spontaneous</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-signature">Signature</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-innate">Innate</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-focus">Focus</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-heightened">Heightened</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-source-badge badge-cantrip">Cantrip</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="spell-expended-badge">Expended</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="wand-uses-badge">1/day</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="wand-uses-badge badge-expended">Broken</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="equipped-badge badge-held m-inline-flex m-align-center m-gap-4">Held</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="equipped-badge badge-not-held m-inline-flex m-align-center m-gap-4">Not held</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><div class="spell-heightened-notice">Heightened (+2): more damage</div></div></div>
+  </div>
+  <h3>Item badges</h3>
+  <div class="sg-grid">
+    <div class="sg-item"><div class="sg-sample"><span class="item-badge category-badge m-inline-flex m-align-center m-gap-4">Weapon</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="item-badge uses-badge m-inline-flex m-align-center m-gap-4">2/3</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="item-badge container-badge m-inline-flex m-align-center m-gap-4">Backpack</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="item-badge poison-badge m-inline-flex m-align-center m-gap-4">Poisoned</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="item-badge runes-badge m-inline-flex m-align-center m-gap-4">+1 striking</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="item-badge shield-badge m-inline-flex m-align-center m-gap-4">Shield</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="item-badge bulk-badge m-inline-flex m-align-center m-gap-4">L</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="quantity-badge">x3</span></div></div>
+  </div>
+  <h3>pf2e colours: damage types, ranks and character tags</h3>
+  <div class="sg-grid">
+    <div class="sg-item"><div class="sg-sample"><span class="damage-type-badge damage-slashing">slashing</span><span class="damage-type-badge damage-piercing">piercing</span><span class="damage-type-badge damage-bludgeoning">bludgeoning</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="damage-type-badge damage-fire">fire</span><span class="damage-type-badge damage-cold">cold</span><span class="damage-type-badge damage-electricity">electricity</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="damage-type-badge damage-acid">acid</span><span class="damage-type-badge damage-bleed">bleed</span><span class="damage-type-badge damage-force">force</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="damage-type-badge damage-vitality">vitality</span><span class="damage-type-badge damage-void">void</span><span class="damage-type-badge damage-spirit">spirit</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="skill-rank-badge rank-1 m-inline-flex m-align-center m-justify-center m-shrink-0">T</span><span class="skill-rank-badge rank-2 m-inline-flex m-align-center m-justify-center m-shrink-0">E</span><span class="skill-rank-badge rank-3 m-inline-flex m-align-center m-justify-center m-shrink-0">M</span><span class="skill-rank-badge rank-4 m-inline-flex m-align-center m-justify-center m-shrink-0">L</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><ul class="character-tags m-flex-row m-wrap m-gap-4"><li class="character-tag character-tag-size">Medium</li><li class="character-tag character-tag-trait">Humanoid</li><li class="character-tag">Darkvision</li></ul></div></div>
+    <div class="sg-item"><div class="sg-sample"><ul class="character-tags m-flex-row m-wrap m-gap-4"><li class="character-tag character-tag-immunity">poison</li><li class="character-tag character-tag-weakness">cold 5</li><li class="character-tag character-tag-resistance">fire 5</li></ul></div></div>
+  </div>
+  <h3>Party and header</h3>
+  <div class="sg-grid">
+    <div class="sg-item"><div class="sg-sample"><span class="coin-pill pp">1 pp</span><span class="coin-pill gp">120 gp</span><span class="coin-pill sp">4 sp</span><span class="coin-pill cp">9 cp</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="defense-badge ac">AC 22</span><span class="defense-badge save">Fort +12</span><span class="defense-badge perc">Perc +10</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="competency-pill skill-pill">Athletics +13</span><span class="competency-pill rk-pill">Arcana +12</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="hero-points-badge">2 hero</span></div></div>
+    <div class="sg-item"><div class="sg-sample mobile-header-dashboard" style="position: static; padding: 4px; border: 0;"><div class="hp-direct-group hp-healthy m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0"><span class="hp-label">HP</span> <input type="text" class="hp-current-input" value="40"></div></div></div>
+    <div class="sg-item"><div class="sg-sample mobile-header-dashboard" style="position: static; padding: 4px; border: 0;"><div class="hp-direct-group hp-warning m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0"><span class="hp-label">HP</span> <input type="text" class="hp-current-input" value="25"></div></div></div>
+    <div class="sg-item"><div class="sg-sample mobile-header-dashboard" style="position: static; padding: 4px; border: 0;"><div class="hp-direct-group hp-danger m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0"><span class="hp-label">HP</span> <input type="text" class="hp-current-input" value="10"></div></div></div>
+    <div class="sg-item"><div class="sg-sample" style="flex-direction: column; align-items: stretch;"><div class="member-hp-fill healthy" style="width: 80%; height: 8px;"></div><div class="member-hp-fill warning" style="width: 45%; height: 8px;"></div><div class="member-hp-fill danger" style="width: 20%; height: 8px;"></div></div></div>
+  </div>
+  <h3>Text accents</h3>
+  <div class="sg-grid">
+    <div class="sg-item"><div class="sg-sample"><h3 class="section-title" style="width: 100%;"><i class="fas fa-bolt"></i> Section title</h3></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="action-cost-glyph">2</span> <span class="glyph-reaction">R</span> <span class="glyph-free">F</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="action-frequency">1/day</span></div></div>
+  </div>
+
+  <h2>Components</h2>
+  <div class="sg-grid">
+    <div class="sg-item"><div class="sg-sample" style="display: block;">
+      <section class="m-group">
+        <div class="m-group-list">
+          <div class="m-card"><div class="m-card-line m-flex-row m-align-center m-gap-8"><span class="m-card-main m-card-title">m-card in m-group</span></div></div>
+          <div class="m-card"><div class="m-drawer-row m-flex-row m-gap-6"><span class="sg-box">m-drawer-row</span></div></div>
+        </div>
+      </section>
+    </div></div>
+    <div class="sg-item"><div class="sg-sample" style="display: block;"><div class="m-panel" style="padding: 8px 10px;">m-panel: flat panel</div></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="touch-target m-compact">m-compact (38px)</button> <button class="touch-target">default (48px)</button></div></div>
+  </div>
+
+  <h2>Utility classes</h2>
+  <p>Every <code>m-*</code> class with its declarations, read from the stylesheet. Utilities do layout only; component classes (<code>m-card</code>, <code>m-group</code>, <code>m-panel</code>, <code>m-compact</code>) carry a look.</p>
+  <h3>Samples</h3>
+  <div class="sg-grid">
+    <div class="sg-item"><div class="sg-sample"><div class="m-flex-row m-gap-4"><span class="sg-box">a</span><span class="sg-box">b</span><span class="sg-box">c</span></div></div></div>
+    <div class="sg-item"><div class="sg-sample"><div class="m-flex-col m-gap-2"><span class="sg-box">a</span><span class="sg-box">b</span></div></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-inline-flex m-align-center m-gap-6 sg-box">inline <i class="fas fa-star"></i></span></div></div>
+    <div class="sg-item"><div class="sg-sample" style="width: 100%;"><div class="m-flex-row m-justify-between" style="width: 100%;"><span class="sg-box">start</span><span class="sg-box">end</span></div></div></div>
+    <div class="sg-item"><div class="sg-sample" style="width: 100%;"><div class="m-flex-row m-justify-center m-align-baseline m-gap-8" style="width: 100%;"><span class="sg-box">centred</span><small>baseline</small></div></div></div>
+    <div class="sg-item"><div class="sg-sample" style="width: 100%;"><div class="m-flex-row m-wrap m-gap-10 m-gap-12" style="width: 100%;"><span class="sg-box">wraps</span><span class="sg-box">to the</span><span class="sg-box">next line</span><span class="sg-box">when full</span></div></div></div>
+    <div class="sg-item"><div class="sg-sample" style="width: 100%;"><div class="m-flex-row m-gap-6" style="width: 100%;"><span class="sg-box m-flex-1">m-flex-1</span><span class="sg-box m-flex-auto">m-flex-auto</span><span class="sg-box m-shrink-0">m-shrink-0</span></div></div></div>
+    <div class="sg-item"><div class="sg-sample" style="width: 100%;"><div class="m-flex-row m-gap-6" style="width: 100%;"><span class="m-min-w-0 m-truncate">m-min-w-0 m-truncate: a very long name that does not fit on one line</span></div></div></div>
+  </div>
+  <h3>All m-* classes</h3>
+  <div class="sg-scroll"><table class="sg-table" id="sg-utils"></table></div>
+</div>
+
+<script>
+  const root = document.querySelector(".sg-root");
+  const sheet = [...document.styleSheets].find(s => (s.href || "").includes("pf2e-mobile.css"));
+  let rules = [];
+  try { rules = [...sheet.cssRules]; } catch (err) {
+    for (const id of ["sg-palette", "sg-tones", "sg-utils"]) {
+      document.getElementById(id).innerHTML = `<p class="sg-error">Could not read the stylesheet (${err.name}). Serve the page over HTTP, see the comment at the top of this file.</p>`;
+    }
+  }
+  const styleRules = rules.filter(r => r instanceof CSSStyleRule);
+
+  // A computed colour (rgb(...) or color(srgb r g b) from color-mix) to #rrggbb
+  function toHex(css) {
+    if (!css || css === "rgba(0, 0, 0, 0)" || css === "transparent") return "transparent";
+    const hex = n => Math.round(Math.min(255, Math.max(0, n))).toString(16).padStart(2, "0");
+    const srgb = css.match(/color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)/);
+    if (srgb) return "#" + srgb.slice(1, 4).map(v => hex(parseFloat(v) * 255)).join("");
+    const rgb = css.match(/rgba?\((\d+), (\d+), (\d+)/);
+    return rgb ? "#" + rgb.slice(1, 4).map(v => hex(+v)).join("") : css;
+  }
+  function resolved(prop, value) {
+    const probe = document.createElement("i");
+    probe.style.setProperty(prop, value);
+    root.appendChild(probe);
+    const cs = getComputedStyle(probe);
+    const out = prop === "background" ? (cs.backgroundImage !== "none" ? "gradient" : cs.backgroundColor) : cs.getPropertyValue(prop);
+    probe.remove();
+    return out;
+  }
+
+  // Colour palette: every custom property of the palette rule, grouped by name
+  const paletteRule = styleRules.find(r => r.style.getPropertyValue("--m-surface-0"));
+  if (paletteRule) {
+    const names = [...paletteRule.style].filter(n => n.startsWith("--m-"));
+    const groupOf = n => /surface/.test(n) ? "Surfaces (backgrounds by layer)"
+      : /^--m-border/.test(n) ? "Borders"
+      : /^--m-(accent|hue-)/.test(n) ? "Role hues (linked to Foundry)"
+      : /-solid/.test(n) ? "Solid buttons"
+      : /^--m-(info|success|danger|warning|purple|cyan)-/.test(n) ? "Badge tones and light text"
+      : "Staff, charges, slots and gold";
+    const groups = new Map();
+    for (const n of names) { const g = groupOf(n); if (!groups.has(g)) groups.set(g, []); groups.get(g).push(n); }
+    document.getElementById("sg-palette").innerHTML = [...groups].map(([g, list]) => `
+      <h3>${g}</h3><div class="sg-grid">${list.map(n => {
+        const raw = paletteRule.style.getPropertyValue(n).trim();
+        const isGradient = /gradient/.test(raw);
+        const swatch = isGradient ? `background: var(${n})` : `background: var(${n})`;
+        const value = isGradient ? "gradient" : toHex(resolved("background-color", `var(${n})`));
+        return `<div class="sg-swatch"><i style="${swatch}"></i><span><b>${n}</b><small>${value} · ${raw.replace(/</g, "&lt;")}</small></span></div>`;
+      }).join("")}</div>`).join("");
+  }
+
+  // Badge tones: the rules at the end that set background: var(--m-<tone>-bg) for a list of selectors
+  const toneRules = styleRules.filter(r => /^var\(--m-(\w+)-bg\)$/.test(r.style.getPropertyValue("background").trim()) && r.selectorText.includes(","));
+  document.getElementById("sg-tones").innerHTML = toneRules.map(r => {
+    const tone = r.style.getPropertyValue("background").match(/--m-(\w+)-bg/)[1];
+    const sels = r.selectorText.split(",").map(s => s.trim().replace(".pf2e-mobile-sheet ", ""));
+    return `<div class="sg-item"><div class="sg-sample"><span class="spell-source-badge sg-nolabel" style="background: var(--m-${tone}-bg); border: 1px solid var(--m-${tone}-border); color: var(--m-${tone}-text);">${tone}</span></div>
+      <code>--m-${tone}-bg / -border / -text</code><small style="color:#999">${sels.join("<br>")}</small></div>`;
+  }).join("");
+
+  // Every m-* class rule with its declarations
+  const utilRules = styleRules.filter(r => /^\.pf2e-mobile-sheet \.m-[\w-]+/.test(r.selectorText));
+  document.getElementById("sg-utils").innerHTML = utilRules.map(r => {
+    // The authored declarations (cssText keeps shorthands such as background and border)
+    const decls = r.style.cssText;
+    return `<tr><td><code>${r.selectorText.replace(/\.pf2e-mobile-sheet /g, "")}</code></td><td>${decls}</td></tr>`;
+  }).join("");
+
+  // Show the classes of every sample under it
+  for (const sample of document.querySelectorAll(".sg-sample")) {
+    const labels = [];
+    if (sample.classList.length > 1) labels.push(`inside .${[...sample.classList].filter(c => c !== "sg-sample").join(".")}`);
+    for (const el of sample.querySelectorAll(":scope > *, :scope > * > *")) {
+      if (el.classList.length && !el.classList.contains("sg-box") && !el.classList.contains("sg-nolabel") && el.tagName !== "I") labels.push(`${el.tagName.toLowerCase()}.${[...el.classList].join(".")}`);
+    }
+    const code = document.createElement("code");
+    code.innerHTML = labels.join("<br>");
+    sample.after(code);
+  }
+</script>
+</body>
+</html>

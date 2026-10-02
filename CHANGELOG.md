@@ -17,6 +17,8 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
   - `m-panel`: card colour, thin subtle border and 6px corners for flat panels (the sub-tab bars, Preparation rank cards, and the party summary, member and stash panels).
   - Badge tones: the ~35 rules that each repeated a tone's background, border and text colour are now one rule per tone (blue, green, red, orange, purple, cyan) listing all its selectors, at the end of the stylesheet. Each selector keeps its own specificity, so the cascade is unchanged; a class in the template would have lost to the two-class base rules of the badges.
   - No difference in the dev preview.
+- **Style guide rule (`AGENTS.md`, `scripts/verify.mjs`)**: a new section "F. Stylesheet: Follow the Style Guide" in `AGENTS.md` asks every stylesheet change to use the palette variables, the `m-*` utilities and the shared components, and to keep the new style guide page current. A `[Style Guide]` check in `verify.mjs` fails when an `m-*` class has no sample on that page.
+- **Style guide page (`docs/style-guide.html`)**: shows the colours, utility classes and components of the stylesheet, rendered with the real `styles/pf2e-mobile.css` and with the class names under each sample. The colour variables, `m-*` classes and badge tone rules are read from the stylesheet when the page loads; the sample buttons, badges, tags and states are written by hand. Open it over HTTP from the repository root (`python3 -m http.server 8000`, then `/docs/style-guide.html`). Not part of the module.
 
 ### Accent Colours from Foundry and pf2e (`styles/pf2e-mobile.css`, `scripts/utils/sheet-utils.js`, `templates/parts/header.hbs`)
 
