@@ -996,13 +996,15 @@ body.pf2e-mobile-active textarea {
 }/* ----------------------------------------- *//* Action Cards & Strike Blocks              *//* ----------------------------------------- */.pf2e-mobile-sheet .actions-section,
 .pf2e-mobile-sheet .inventory-section {
   margin-bottom: 16px;
-}/* Action Subtabs (Encounter, Exploration, Downtime) */.pf2e-mobile-sheet .action-subtabs {
+}/* Sub-tab bars: Actions (Encounter, Exploration, Downtime) and Spells (Spells, Preparation, Activations) */.pf2e-mobile-sheet .action-subtabs,
+.pf2e-mobile-sheet .spell-subtabs {
   margin-bottom: 12px;
   background: var(--m-surface-2);
   padding: 4px;
   border-radius: 6px;
   border: 1px solid var(--m-border-subtle);
-}.pf2e-mobile-sheet .action-subtabs .subtab-btn {
+}.pf2e-mobile-sheet .action-subtabs .subtab-btn,
+.pf2e-mobile-sheet .spell-subtabs .subtab-btn {
   flex: 1;
   min-height: 40px;
   height: 40px;
@@ -1017,7 +1019,10 @@ body.pf2e-mobile-active textarea {
   justify-content: center;
   gap: 4px;
   transition: background 0.15s ease, color 0.15s ease;
-}.pf2e-mobile-sheet .action-subtabs .subtab-btn.active {
+}.pf2e-mobile-sheet .spell-subtabs .subtab-btn {
+  gap: 6px;
+}.pf2e-mobile-sheet .action-subtabs .subtab-btn.active,
+.pf2e-mobile-sheet .spell-subtabs .subtab-btn.active {
   background: var(--m-surface-4);
   color: #fff;
   border: 1px solid var(--m-border-strong);
@@ -1198,7 +1203,8 @@ body.pf2e-mobile-active textarea {
   border: 1px solid var(--m-border);
   color: #e0e0e0;
   min-width: 38px;
-}.pf2e-mobile-sheet .btn-action-use {
+}.pf2e-mobile-sheet .btn-action-use,
+.pf2e-mobile-sheet .btn-action-roll {
   background: var(--m-info-solid);
   border: 1px solid var(--m-hue-info);
   color: #fff;
@@ -1208,11 +1214,6 @@ body.pf2e-mobile-active textarea {
   border: 1px solid var(--m-hue-success);
   color: #fff;
   font-weight: bold;
-}.pf2e-mobile-sheet .btn-action-roll {
-  background: var(--m-info-solid);
-  border: 1px solid var(--m-hue-info);
-  color: #fff;
-  font-weight: 600;
 }.pf2e-mobile-sheet .btn-action-roll:hover,
 .pf2e-mobile-sheet .btn-action-roll:active {
   background: var(--m-info-solid-active);
@@ -1364,20 +1365,6 @@ body.pf2e-mobile-active textarea {
 }/* ----------------------------------------- *//* Spells Tab & Slots                        *//* ----------------------------------------- */
 .pf2e-mobile-sheet .spell-rank-group {
   margin-bottom: 16px;
-}.pf2e-mobile-sheet .spell-rank-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--m-surface-3);
-  padding: 6px 10px;
-  border-radius: 4px;
-}.pf2e-mobile-sheet .rank-title {
-  margin: 0;
-  font-size: 0.95rem;
-}.pf2e-mobile-sheet .slot-counter {
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }.pf2e-mobile-sheet .slot-counter button {
   min-width: 40px;
   min-height: 40px;
@@ -1390,14 +1377,7 @@ body.pf2e-mobile-active textarea {
   color: var(--m-slot-number);
   font-size: 0.95rem;
 }
-.pf2e-mobile-sheet .spell-details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  font-size: 0.8rem;
-  color: #aaa;
-  margin-top: 4px;
-}.pf2e-mobile-sheet .detail-tag {
+.pf2e-mobile-sheet .detail-tag {
   background: var(--m-surface-1);
   padding: 2px 6px;
   border-radius: 3px;
@@ -1527,7 +1507,8 @@ body.pf2e-mobile-active textarea {
 }.pf2e-mobile-sheet .btn-runes:active {
   background: #4527a0;
   color: #fff;
-}.pf2e-mobile-sheet .badge-btn.invest-badge {
+}.pf2e-mobile-sheet .badge-btn.invest-badge,
+.pf2e-mobile-sheet .badge-btn.equip-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1546,20 +1527,6 @@ body.pf2e-mobile-active textarea {
   color: var(--m-info-text);
   border: 1px solid var(--m-info-border);
   box-shadow: 0 0 6px rgba(63, 81, 181, 0.4);
-}.pf2e-mobile-sheet .badge-btn.equip-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-height: 38px;
-  height: 38px;
-  padding: 0 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: 4px;
-  background: var(--m-surface-2);
-  color: #aaa;
-  border: 1px solid var(--m-border);
 }.pf2e-mobile-sheet .badge-btn.equip-badge.equipped {
   background: var(--m-success-bg);
   color: var(--m-success-text);
@@ -1797,33 +1764,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   text-align: center;
 }.pf2e-mobile-sheet .physical-error-msg.hidden {
   display: none !important;
-}/* ----------------------------------------- *//* Spells Tab & Spell Management             *//* ----------------------------------------- *//* Spell Subtabs (Spells vs Preparation) */.pf2e-mobile-sheet .spell-subtabs {
-  margin-bottom: 12px;
-  background: var(--m-surface-2);
-  padding: 4px;
-  border-radius: 6px;
-  border: 1px solid var(--m-border-subtle);
-}.pf2e-mobile-sheet .spell-subtabs .subtab-btn {
-  flex: 1;
-  min-height: 40px;
-  height: 40px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  color: #aaa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: background 0.15s ease, color 0.15s ease;
-}.pf2e-mobile-sheet .spell-subtabs .subtab-btn.active {
-  background: var(--m-surface-4);
-  color: #fff;
-  border: 1px solid var(--m-border-strong);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-}.pf2e-mobile-sheet .btn-daily-reset {
+}/* ----------------------------------------- *//* Spells Tab & Spell Management             *//* ----------------------------------------- */.pf2e-mobile-sheet .btn-daily-reset {
   min-height: 38px;
   height: 38px;
   padding: 4px 10px;
@@ -2224,6 +2165,8 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   flex-wrap: wrap;
   gap: 4px;
   margin-top: 4px;
+  font-size: 0.8rem;
+  color: #aaa;
 }.pf2e-mobile-sheet .spell-details .detail-tag {
   font-size: 0.72rem;
   background: var(--m-surface-1);
