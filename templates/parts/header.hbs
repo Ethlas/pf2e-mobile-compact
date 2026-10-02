@@ -2,6 +2,14 @@
   <!-- Row 1: Identity & Controls Toolbar -->
   <div class="header-top-row">
     <div class="actor-identity-wrapper">
+      {{!-- Character overview & feats: opens a view in the tab area instead of using a footer slot.
+            It carries the 👤 that party and kingdom names have in front of them. --}}
+      {{#unless (or isParty isKingdom)}}
+      <button type="button" class="touch-target header-btn {{#if (eq activeTab "character")}}active{{/if}}" data-action="toggleCharacterOverview" title="Character overview & feats{{#if hasActiveEffects}} (effects active){{/if}}" aria-label="Character Overview">
+        👤
+        {{#if hasActiveEffects}}<span class="header-btn-badge"><i class="fas fa-bolt"></i></span>{{/if}}
+      </button>
+      {{/unless}}
       {{#if hasMultipleCharacters}}
       <select class="touch-target header-select actor-switcher" data-change-action="switchActor" title="Switch Character / Party / Kingdom" aria-label="Switch Character">
         {{#each ownedCharacters as |char|}}
@@ -11,7 +19,7 @@
         {{/each}}
       </select>
       {{else}}
-      <span class="actor-name" title="{{actor.name}}">{{#if isKingdom}}👑{{else if isParty}}👥{{else}}👤{{/if}} {{actor.name}}</span>
+      <span class="actor-name" title="{{actor.name}}">{{#if isKingdom}}👑 {{else if isParty}}👥 {{/if}}{{actor.name}}</span>
       {{/if}}
     </div>
 

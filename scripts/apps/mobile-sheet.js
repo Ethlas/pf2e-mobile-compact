@@ -29,6 +29,8 @@ import {
 } from "../kingdom/kingdom-handlers.js";
 import { prepareActionsContext } from "./sheet-helpers/context-actions.js";
 import { prepareSkillsContext } from "./sheet-helpers/context-skills.js";
+import { prepareCharacterContext } from "./sheet-helpers/context-character.js";
+import { onToggleItemDescription } from "./sheet-helpers/character-handlers.js";
 import { prepareInventoryContext } from "./sheet-helpers/context-inventory.js";
 import { prepareSpellsContext, formatSpell } from "./sheet-helpers/context-spells.js";
 import { prepareActivationsContext } from "./sheet-helpers/context-activations.js";
@@ -38,7 +40,7 @@ import { onExecuteStrike, onExecuteDamage, onExecuteCritical, onExecuteAuxiliary
 import { onUseConsumable, onApplyPoison, onDetachSubitem, onChangeCarryType, onToggleInventorySection, onConfigureRunes, onToggleInvested, onToggleEquipped } from "./sheet-helpers/inventory-handlers.js";
 import { onSwitchSpellSubTab, onToggleRankGroup, onOpenSpellPrepPicker, prepareSlot, onUnprepareSlot, onToggleSlotExpended, onResetDailySpells, onSaveSpellPreset, onApplySpellPreset, onDeleteSpellPreset, onOpenCompendiumPicker, onAdjustSlot, onAdjustFocus, onCastSpell, onRollSpellDamage, onToggleSignatureSpell, onRemoveSpell } from "./sheet-helpers/spells-handlers.js";
 import { onCastStaffSpell, onAdjustStaffCharges, onCastItemSpell, onOpenDailies } from "./sheet-helpers/activations-handlers.js";
-import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleHeaderMenu, onToggleCanvasMode, onToggleFullscreen, onSwitchActor } from "./sheet-helpers/header-handlers.js";
+import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleHeaderMenu, onToggleCharacterOverview, onToggleCanvasMode, onToggleFullscreen, onSwitchActor } from "./sheet-helpers/header-handlers.js";
 import { disableChatInputs, dockChatElement, restoreChatElement, scrollChatToBottom, setupScrollBottomListener, registerChatListener, unregisterChatListener, updateChatBadge } from "./sheet-helpers/chat-handler.js";
 
 /**
@@ -78,6 +80,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       selectTarget: PF2eMobileSheet._onSelectTarget,
       toggleRollMode: PF2eMobileSheet._onToggleRollMode,
       toggleHeaderMenu: PF2eMobileSheet._onToggleHeaderMenu,
+      toggleCharacterOverview: PF2eMobileSheet._onToggleCharacterOverview,
+      toggleItemDescription: PF2eMobileSheet._onToggleItemDescription,
       toggleCanvasMode: PF2eMobileSheet._onToggleCanvasMode,
       switchTab: PF2eMobileSheet._onSwitchTab,
       scrollChatToBottom: PF2eMobileSheet._onScrollChatToBottom,
@@ -514,6 +518,12 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
 
     try {
+      prepareCharacterContext(actor, this, context);
+    } catch (err) {
+      console.error("PF2e Mobile Compact | Error preparing character overview context:", err);
+    }
+
+    try {
       await prepareInventoryContext(actor, this, context);
     } catch (err) {
       console.error("PF2e Mobile Compact | Error preparing inventory context:", err);
@@ -538,6 +548,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onSelectTarget(event, target) { return onSelectTarget(this, event, target); }
   static async _onToggleRollMode(event, target) { return onToggleRollMode(this, event, target); }
   static _onToggleHeaderMenu(event, target) { return onToggleHeaderMenu(this, event, target); }
+  static _onToggleCharacterOverview() { return onToggleCharacterOverview(this); }
+  static async _onToggleItemDescription(event, target) { return onToggleItemDescription(this, event, target); }
   static async _onToggleCanvasMode(event, target) { return onToggleCanvasMode(this, event, target); }
   static async _onToggleFullscreen(event, target) { return onToggleFullscreen(this, event, target); }
   static async _onScrollChatToBottom() { this._scrollChatToBottom(true); }
@@ -556,11 +568,13 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       if (scrollEl) {
         this._tabScrollPositions.set(this._activeTab, scrollEl.scrollTop);
       }
+      // Leaving the Character overview also re-renders the header, so its user button loses the active state
+      const parts = this._activeTab === "character" ? ["header", "sheet"] : ["sheet"];
       this._activeTab = newTab;
       if (newTab === "chat") {
         this._unreadChatCount = 0;
       }
-      this.render({ parts: ["sheet"] });
+      this.render({ parts });
     }
   }
 
