@@ -88,13 +88,13 @@
   <!-- Party Overview Dashboard Strip -->
   <div class="header-party-row">
     <div class="party-header-stat m-flex-row m-align-center m-gap-6">
-      <i class="fas fa-users"></i> <span><strong>{{partyHeader.membersCount}}</strong> Members</span>
+      <i class="fas fa-users m-color-accent"></i> <span><strong>{{partyHeader.membersCount}}</strong> Members</span>
     </div>
     <div class="party-header-stat m-flex-row m-align-center m-gap-6">
-      <i class="fas fa-coins"></i> <span><strong>{{partyHeader.totalWealth}}</strong></span>
+      <i class="fas fa-coins m-color-accent"></i> <span><strong>{{partyHeader.totalWealth}}</strong></span>
     </div>
     <div class="party-header-stat m-flex-row m-align-center m-gap-6">
-      <i class="fas fa-weight-hanging"></i> <span>Bulk: <strong>{{partyHeader.totalBulk}}</strong></span>
+      <i class="fas fa-weight-hanging m-color-accent"></i> <span>Bulk: <strong>{{partyHeader.totalBulk}}</strong></span>
     </div>
   </div>
   {{else}}
@@ -111,7 +111,7 @@
       <div class="m-flex-row m-align-center m-gap-2">
         <input type="text" class="hp-current-input m-bold" data-change-action="setDirectHP" value="{{hp.value}}" title="Current HP (type number to set, or +/- to change)" aria-label="Current HP" />
         <span class="hp-slash m-text-xl m-bold m-color-faint">/</span>
-        <span class="hp-max-value m-bold m-color-soft" title="Max HP">{{hp.max}}</span>
+        <span class="hp-max-value m-text-full m-bold m-color-soft" title="Max HP">{{hp.max}}</span>
       </div>
     </div>
 
@@ -126,7 +126,7 @@
     {{#if shield.hp.max}}
     <div class="shield-badge-group m-flex-row m-align-center">
       <span class="defense-item shield-badge m-compact m-inline-flex m-align-center m-justify-center m-gap-2 m-text-md m-semibold" title="Shield HP: {{shield.hp.value}}/{{shield.hp.max}} (Hardness {{shield.hardness}})">
-        <strong>🛡️</strong> {{shield.hp.value}}/{{shield.hp.max}}
+        <strong class="m-color-cyan">🛡️</strong> {{shield.hp.value}}/{{shield.hp.max}}
       </span>
     </div>
     {{/if}}
@@ -135,17 +135,17 @@
   <!-- Row 3: Defenses, Saves & Perception/Initiative Pill Strip -->
   <div class="header-defenses-saves-row m-flex-row m-align-center m-justify-between m-gap-4">
     <span class="defense-item ac-badge m-compact m-inline-flex m-align-center m-justify-center m-gap-2 m-text-base m-semibold m-color-normal" title="Armor Class: {{defenses.ac.value}}">
-      <strong>AC</strong> {{defenses.ac.value}}
+      <strong class="m-color-info">AC</strong> {{defenses.ac.value}}
     </span>
 
     <button type="button" class="save-item touch-target m-compact m-flex-row m-align-center m-justify-center m-text-base m-semibold m-color-normal" data-action="rollSave" data-save="fortitude" title="Roll Fortitude Save (+{{defenses.fortitude.mod}})">
-      <strong>Fort</strong> +{{defenses.fortitude.mod}}
+      <strong class="m-color-success">Fort</strong> +{{defenses.fortitude.mod}}
     </button>
     <button type="button" class="save-item touch-target m-compact m-flex-row m-align-center m-justify-center m-text-base m-semibold m-color-normal" data-action="rollSave" data-save="reflex" title="Roll Reflex Save (+{{defenses.reflex.mod}})">
-      <strong>Ref</strong> +{{defenses.reflex.mod}}
+      <strong class="m-color-success">Ref</strong> +{{defenses.reflex.mod}}
     </button>
     <button type="button" class="save-item touch-target m-compact m-flex-row m-align-center m-justify-center m-text-base m-semibold m-color-normal" data-action="rollSave" data-save="will" title="Roll Will Save (+{{defenses.will.mod}})">
-      <strong>Will</strong> +{{defenses.will.mod}}
+      <strong class="m-color-success">Will</strong> +{{defenses.will.mod}}
     </button>
 
     <div class="perc-init-dropdown-wrapper m-flex-row m-min-w-0">

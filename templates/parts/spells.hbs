@@ -53,7 +53,7 @@
 
         {{#if group.hasSlots}}
         <div class="slot-counter m-flex-row m-align-center m-gap-6 m-text-md m-color-soft">
-          <span title="Spell slots"><strong>{{group.slots.value}} / {{group.slots.max}}</strong></span>
+          <span title="Spell slots"><strong class="m-text-xl m-color-slot">{{group.slots.value}} / {{group.slots.max}}</strong></span>
           <button type="button" class="touch-target btn-slot-adjust m-flex-row m-align-center m-justify-center m-text-xl m-bold" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="-1" title="Decrease Slot">-</button>
           <button type="button" class="touch-target btn-slot-adjust m-flex-row m-align-center m-justify-center m-text-xl m-bold" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="1" title="Increase Slot">+</button>
         </div>
@@ -218,7 +218,7 @@
             <i class="fas fa-chevron-down action-expand-icon m-shrink-0 m-text-sm m-color-dim {{#if activations.staff.isExpanded}}expanded{{/if}}"></i>
           </div>
           <div class="staff-charges-tracker m-flex-row m-align-center m-justify-between m-gap-8">
-            <span class="charges-label m-text-base m-color-normal"><i class="fas fa-bolt"></i> Charges: <strong>{{activations.staff.charges.value}} / {{activations.staff.charges.max}}</strong></span>
+            <span class="charges-label m-text-base m-color-normal"><i class="fas fa-bolt"></i> Charges: <strong class="m-text-xl m-color-charge">{{activations.staff.charges.value}} / {{activations.staff.charges.max}}</strong></span>
             <div class="charges-buttons m-flex-row m-gap-6">
               <button type="button" class="touch-target btn-charge-adjust m-inline-flex m-align-center m-justify-center m-text-xl m-bold m-color-strong" data-action="adjustStaffCharges" data-delta="-1" data-current="{{activations.staff.charges.value}}" data-max="{{activations.staff.charges.max}}" data-staff-id="{{activations.staff.id}}" title="Spend Staff Charge">-1</button>
               <button type="button" class="touch-target btn-charge-adjust m-inline-flex m-align-center m-justify-center m-text-xl m-bold m-color-strong" data-action="adjustStaffCharges" data-delta="1" data-current="{{activations.staff.charges.value}}" data-max="{{activations.staff.charges.max}}" data-staff-id="{{activations.staff.id}}" title="Gain Staff Charge">+1</button>

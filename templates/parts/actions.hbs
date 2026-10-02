@@ -44,7 +44,7 @@
           <!-- MAP Variants at the TOP (Prominent attack row) -->
           <div class="strike-map-row m-flex-row m-gap-6">
             {{#each strike.variants as |variant vIndex|}}
-            <button type="button" class="touch-target map-button m-flex-row m-align-center m-justify-center m-flex-1 m-bold" data-action="executeStrike" data-strike-index="{{index}}" data-variant-index="{{vIndex}}" title="Attack Variant {{vIndex}}">
+            <button type="button" class="touch-target map-button m-text-full m-flex-row m-align-center m-justify-center m-flex-1 m-bold" data-action="executeStrike" data-strike-index="{{index}}" data-variant-index="{{vIndex}}" title="Attack Variant {{vIndex}}">
               {{variant.label}}
             </button>
             {{/each}}

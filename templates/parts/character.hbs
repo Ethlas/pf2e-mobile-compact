@@ -54,10 +54,10 @@
     </ul>
     {{/if}}
     <dl class="character-details">
-      {{#if id.ancestry}}<div><dt>Ancestry</dt><dd>{{id.ancestry}}</dd></div>{{/if}}
-      {{#if id.heritage}}<div><dt>Heritage</dt><dd>{{id.heritage}}</dd></div>{{/if}}
-      {{#if id.background}}<div><dt>Background</dt><dd>{{id.background}}</dd></div>{{/if}}
-      {{#if id.deity}}<div><dt>Deity</dt><dd>{{id.deity}}</dd></div>{{/if}}
+      {{#if id.ancestry}}<div><dt class="m-text-xs m-bold">Ancestry</dt><dd class="m-color-normal">{{id.ancestry}}</dd></div>{{/if}}
+      {{#if id.heritage}}<div><dt class="m-text-xs m-bold">Heritage</dt><dd class="m-color-normal">{{id.heritage}}</dd></div>{{/if}}
+      {{#if id.background}}<div><dt class="m-text-xs m-bold">Background</dt><dd class="m-color-normal">{{id.background}}</dd></div>{{/if}}
+      {{#if id.deity}}<div><dt class="m-text-xs m-bold">Deity</dt><dd class="m-color-normal">{{id.deity}}</dd></div>{{/if}}
     </dl>
   </section>
   {{/with}}
@@ -117,10 +117,10 @@
     {{#if (or def.classDC def.immunities.length def.weaknesses.length def.resistances.length)}}
     <h4 class="character-subtitle m-text-base m-bold m-color-accent"><i class="fas fa-shield-halved"></i> Defenses</h4>
     <dl class="character-facts m-align-center">
-      {{#if def.classDC}}<dt>Class DC</dt><dd>{{def.classDC}}</dd>{{/if}}
-      {{#if def.immunities.length}}<dt>Immunities</dt><dd>{{> tagList tags=def.immunities tagClass="character-tag-immunity"}}</dd>{{/if}}
-      {{#if def.weaknesses.length}}<dt>Weaknesses</dt><dd>{{> tagList tags=def.weaknesses tagClass="character-tag-weakness"}}</dd>{{/if}}
-      {{#if def.resistances.length}}<dt>Resistances</dt><dd>{{> tagList tags=def.resistances tagClass="character-tag-resistance"}}</dd>{{/if}}
+      {{#if def.classDC}}<dt class="m-normal m-color-dim">Class DC</dt><dd class="m-color-normal">{{def.classDC}}</dd>{{/if}}
+      {{#if def.immunities.length}}<dt class="m-normal m-color-dim">Immunities</dt><dd class="m-color-normal">{{> tagList tags=def.immunities tagClass="character-tag-immunity"}}</dd>{{/if}}
+      {{#if def.weaknesses.length}}<dt class="m-normal m-color-dim">Weaknesses</dt><dd class="m-color-normal">{{> tagList tags=def.weaknesses tagClass="character-tag-weakness"}}</dd>{{/if}}
+      {{#if def.resistances.length}}<dt class="m-normal m-color-dim">Resistances</dt><dd class="m-color-normal">{{> tagList tags=def.resistances tagClass="character-tag-resistance"}}</dd>{{/if}}
     </dl>
     {{/if}}
     {{/with}}

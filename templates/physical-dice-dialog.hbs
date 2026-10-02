@@ -42,7 +42,7 @@
       </div>
 
       <div class="physical-modifier-info m-text-base m-color-muted">
-        Modifier: <strong>{{#if (gte modifier 0)}}+{{/if}}{{modifier}}</strong> (will be added automatically)
+        Modifier: <strong class="m-color-info">{{#if (gte modifier 0)}}+{{/if}}{{modifier}}</strong> (will be added automatically)
       </div>
       <div class="physical-error-msg hidden m-text-base m-color-danger"></div>
     </div>
@@ -67,7 +67,7 @@
           </div>
 
           <div class="damage-input-row m-flex-row m-align-center m-gap-10">
-            <label for="pool-input-{{this.id}}">Dice Total:</label>
+            <label for="pool-input-{{this.id}}" class="m-text-base m-medium m-color-soft">Dice Total:</label>
             <input 
               type="number" 
               id="pool-input-{{this.id}}"
