@@ -284,69 +284,72 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 /* Small Tailwind-style helpers for layout only; component classes keep the look.
    Prefixed with "m-" so they cannot clash with Foundry, pf2e or other module classes.
    They come before the component rules on purpose: a component rule with the same specificity that sets
-   the same property later in this file wins, so a utility never silently overrides a component. */
-.pf2e-mobile-sheet .m-flex-row {
+   the same property later in this file wins, so a utility never silently overrides a component.
+   Scoped to the sheet and to the two windows the module opens outside it (the compendium picker and the
+   spell picker dialog). :is() takes the specificity of its strongest argument, one class, so they weigh
+   exactly as much as a plain .pf2e-mobile-sheet rule. */
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-flex-row {
   display: flex;
   flex-direction: row;
 }
 
-.pf2e-mobile-sheet .m-flex-col {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-flex-col {
   display: flex;
   flex-direction: column;
 }
 
-.pf2e-mobile-sheet .m-align-baseline {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-align-baseline {
   align-items: baseline;
 }
 
-.pf2e-mobile-sheet .m-align-center {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-align-center {
   align-items: center;
 }
 
-.pf2e-mobile-sheet .m-inline-flex {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-inline-flex {
   display: inline-flex;
 }
 
-.pf2e-mobile-sheet .m-justify-center {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-justify-center {
   justify-content: center;
 }
 
-.pf2e-mobile-sheet .m-justify-between {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-justify-between {
   justify-content: space-between;
 }
 
-.pf2e-mobile-sheet .m-wrap {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-wrap {
   flex-wrap: wrap;
 }
 
 /* Gaps: only these steps; other values stay in the component's own rule */
-.pf2e-mobile-sheet .m-gap-2 { gap: 2px; }
-.pf2e-mobile-sheet .m-gap-4 { gap: 4px; }
-.pf2e-mobile-sheet .m-gap-6 { gap: 6px; }
-.pf2e-mobile-sheet .m-gap-8 { gap: 8px; }
-.pf2e-mobile-sheet .m-gap-10 { gap: 10px; }
-.pf2e-mobile-sheet .m-gap-12 { gap: 12px; }
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-2 { gap: 2px; }
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-4 { gap: 4px; }
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-6 { gap: 6px; }
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-8 { gap: 8px; }
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-10 { gap: 10px; }
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-12 { gap: 12px; }
 
 /* For children of a flex container: take the free room (m-flex-1 shares it out evenly, m-flex-auto starts from the
    content's own size), may shrink below their content (so text can truncate), or keep their size */
-.pf2e-mobile-sheet .m-flex-1 {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-flex-1 {
   flex: 1;
 }
 
-.pf2e-mobile-sheet .m-flex-auto {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-flex-auto {
   flex: 1 1 auto;
 }
 
-.pf2e-mobile-sheet .m-min-w-0 {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-min-w-0 {
   min-width: 0;
 }
 
-.pf2e-mobile-sheet .m-shrink-0 {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-shrink-0 {
   flex-shrink: 0;
 }
 
 /* One line of text that ends in "…" when it does not fit (needs a width limit, e.g. m-min-w-0 in a flex row) */
-.pf2e-mobile-sheet .m-truncate {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-truncate {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1087,9 +1090,6 @@ body.pf2e-mobile-active textarea {
   color: var(--m-accent);
 }.pf2e-mobile-sheet .action-cost-glyph,
 .spell-picker-dialog .action-cost-glyph {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   color: var(--m-accent);
   /*border-radius: 4px;*/
   min-width: 26px;
@@ -1098,7 +1098,6 @@ body.pf2e-mobile-active textarea {
   padding: 0 5px;
   font-size: 0.85rem;
   white-space: nowrap;
-  flex-shrink: 0;
   box-sizing: border-box;
 }.pf2e-mobile-sheet .glyph-reaction {
   color: var(--m-danger-text);
@@ -1404,42 +1403,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.8);
   z-index: 150;
   transform: none !important;
-}.compendium-picker {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 12px;
-  gap: 10px;
-  background: #1a1a1a;
-  color: #e0e0e0;
-}.compendium-picker .compendium-search-input {
-  min-height: 48px;
-  width: 100%;
-  padding: 8px;
-  font-size: 1rem;
-}.compendium-picker .compendium-results-list {
-  flex: 1;
-  overflow-y: auto;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}.compendium-picker .compendium-item-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px;
-  border-bottom: 1px solid #333;
-  min-height: 48px;
-}.compendium-picker .compendium-item-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}.compendium-picker .compendium-item-text {
-  display: flex;
-  flex-direction: column;
-}.compendium-picker .compendium-item-sub {
-  font-size: 0.8rem;
-  color: #888;
 }/* ----------------------------------------- *//* Physical Dice Entry Modal                 *//* ----------------------------------------- */.physical-dice-dialog-app {
   z-index: 10000 !important;
 }.physical-dice-dialog-content {
@@ -1447,9 +1410,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   background: var(--m-surface-2);
   color: #eee;
   border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }.pf2e-mobile-sheet .physical-dialog-header {
   border-bottom: 1px solid var(--m-border);
   padding-bottom: 8px;
@@ -1572,7 +1532,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   color: #ccc;
   min-width: 80px;
 }.physical-dice-dialog-content .physical-damage-input {
-  flex: 1;
   min-height: 48px;
   font-size: 1.3rem;
   font-weight: bold;
@@ -1591,11 +1550,8 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   margin-top: 6px;
   font-style: italic;
 }/* Footer & Actions */.physical-dice-dialog-content .physical-dialog-footer {
-  display: flex;
-  gap: 10px;
   margin-top: 14px;
 }.physical-dice-dialog-content .physical-dialog-footer .btn-cancel {
-  flex: 1;
   background: var(--m-surface-4);
   color: #ddd;
   border: 1px solid var(--m-border);
@@ -2158,8 +2114,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   color: #999;
 }.spell-picker-dialog .spell-picker-search {
   position: relative;
-  display: flex;
-  align-items: center;
 }.spell-picker-dialog .spell-picker-search .search-icon {
   position: absolute;
   left: 10px;
@@ -2181,18 +2135,11 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-color: var(--m-accent);
   box-shadow: 0 0 6px color-mix(in srgb, var(--m-accent) 40%, transparent);
 }.spell-picker-dialog .spell-picker-list {
-  flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
   max-height: 50vh;
 }.spell-picker-dialog .spell-picker-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   background: var(--m-surface-2);
   border: 1px solid var(--m-border-subtle);
   border-radius: 6px;
@@ -2211,28 +2158,12 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   object-fit: cover;
   border: 1px solid var(--m-border);
   background: var(--m-surface-0);
-  flex-shrink: 0;
-}.spell-picker-dialog .spell-item-info,
-.pf2e-mobile-sheet .spell-item-info {
-  flex: 1;
-  min-width: 0;
-}.spell-picker-dialog .spell-item-title-row,
-.pf2e-mobile-sheet .spell-item-title-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }.spell-picker-dialog .spell-item-name,
 .pf2e-mobile-sheet .spell-item-name {
   font-size: 0.9rem;
   color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }.spell-picker-dialog .spell-item-meta,
 .pf2e-mobile-sheet .spell-item-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
   margin-top: 2px;
 }.spell-picker-dialog .spell-item-meta .detail-tag,
 .pf2e-mobile-sheet .spell-item-meta .detail-tag {
@@ -2249,10 +2180,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-radius: 4px;
   font-weight: 600;
   font-size: 0.8rem;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
   cursor: pointer;
 }.spell-picker-dialog .btn-select-spell:active {
   background: var(--m-info-solid-active);
@@ -2271,10 +2198,11 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   width: 100%;
   position: relative;
   overflow: hidden;
+  padding: 12px;
+  gap: 10px;
+  background: #1a1a1a;
+  color: #e0e0e0;
 }/* Search Bar */.compendium-picker .compendium-search-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   padding: 10px 12px;
   background: #1c1c20;
   border-bottom: 1px solid #2e2e34;
@@ -2286,7 +2214,8 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   font-size: 0.95rem;
   pointer-events: none;
 }.compendium-picker .compendium-search-input {
-  flex: 1;
+  width: 100%;
+  min-height: 48px;
   height: 44px;
   background: #121214;
   border: 1px solid #3f3f46;
@@ -2308,17 +2237,11 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border: 1px solid #3b82f6;
   border-radius: 6px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 0.95rem;
-  flex-shrink: 0;
   transition: background 0.15s ease;
 }.compendium-picker .compendium-search-bar .btn-compendium-search:active {
   background: #1d4ed8;
 }/* Filters */.compendium-picker .compendium-filters {
-  display: flex;
-  gap: 10px;
   padding: 8px 12px;
   background: #18181b;
   border-bottom: 1px solid #27272a;
@@ -2352,31 +2275,17 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-color: #3b82f6;
   outline: none;
 }/* Compendium Results List */.compendium-picker .compendium-results-list {
-  flex: 1;
   overflow-y: auto;
   margin: 0;
   padding: 8px 12px;
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
   -webkit-overflow-scrolling: touch;
 }.compendium-picker .compendium-item-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
   padding: 8px 10px;
   background: #1f1f23;
   border: 1px solid #2e2e34;
   border-radius: 6px;
   min-height: 52px;
-}.compendium-picker .compendium-item-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  flex: 1;
 }.compendium-picker .compendium-item-img {
   width: 38px;
   height: 38px;
@@ -2384,18 +2293,9 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   object-fit: cover;
   border: 1px solid #3f3f46;
   background: #09090b;
-  flex-shrink: 0;
-}.compendium-picker .compendium-item-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  flex: 1;
 }.compendium-picker .compendium-item-name {
   font-size: 0.92rem;
   color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }.compendium-picker .compendium-item-sub {
   font-size: 0.78rem;
   color: #a1a1aa;
@@ -2409,12 +2309,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-radius: 6px;
   font-size: 0.88rem;
   font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
   cursor: pointer;
-  flex-shrink: 0;
   touch-action: manipulation;
 }.compendium-picker .compendium-item-row .btn-import:active {
   background: #1d4ed8;
@@ -2431,9 +2326,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   bottom: 0;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 100;
   padding: 16px;
   box-sizing: border-box;
@@ -2445,13 +2337,8 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   width: 100%;
   max-width: 380px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-  display: flex;
-  flex-direction: column;
   gap: 16px;
 }.compendium-picker .staged-item-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   border-bottom: 1px solid #27272a;
   padding-bottom: 14px;
 }.compendium-picker .staged-img {
@@ -2460,26 +2347,12 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-radius: 8px;
   border: 1px solid #3f3f46;
   object-fit: cover;
-  flex-shrink: 0;
   background: #09090b;
-}.compendium-picker .staged-title-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  flex: 1;
 }.compendium-picker .staged-name {
   margin: 0;
   font-size: 1.15rem;
   color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }.compendium-picker .staged-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
   font-size: 0.78rem;
 }.compendium-picker .staged-badge {
   padding: 2px 6px;
@@ -2496,20 +2369,11 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }.compendium-picker .staged-traditions {
   color: #a1a1aa;
 }.compendium-picker .spell-config-form {
-  display: flex;
-  flex-direction: column;
   gap: 14px;
-}.compendium-picker .spell-config-form .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 }.compendium-picker .spell-config-form label {
   font-size: 0.85rem;
   color: #d4d4d8;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }.compendium-picker .config-select {
   width: 100%;
   height: 46px;
@@ -2530,19 +2394,11 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-radius: 6px;
   padding: 8px 10px;
   font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }.compendium-picker .tradition-warning-banner i {
   color: #eab308;
-  flex-shrink: 0;
 }.compendium-picker .no-entries-warning {
   text-align: center;
   padding: 16px 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
   color: #f87171;
 }.compendium-picker .no-entries-warning i {
   font-size: 2rem;
@@ -2552,19 +2408,12 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   color: #a1a1aa;
   margin: 0;
 }.compendium-picker .config-actions {
-  display: flex;
-  gap: 10px;
   margin-top: 6px;
 }.compendium-picker .config-actions button {
-  flex: 1;
   height: 46px;
   border-radius: 6px;
   font-size: 0.95rem;
   font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
   cursor: pointer;
   touch-action: manipulation;
 }.compendium-picker .config-actions .btn-cancel {

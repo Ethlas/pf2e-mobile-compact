@@ -2,30 +2,30 @@
   <div class="spell-picker-header">
     <h4><i class="fas fa-book-sparkles"></i> Select Spell for Rank {{rank}}</h4>
     <p class="dialog-subtitle">Choose a spell from your repertoire to prepare in Slot {{slotNumber}}.</p>
-    <div class="spell-picker-search">
+    <div class="spell-picker-search m-flex-row m-align-center">
       <i class="fas fa-search search-icon"></i>
       <input type="text" class="spell-picker-input touch-target" placeholder="Filter spells by name..." autofocus />
     </div>
   </div>
 
-  <div class="spell-picker-list">
+  <div class="spell-picker-list m-flex-col m-gap-6 m-flex-1">
     {{#each spells as |spell|}}
-    <div class="spell-picker-item touch-target" data-action="confirmPrepareSpell" data-item-id="{{spell.id}}" data-spell-name="{{spell.name}}">
-      <img class="spell-item-img" src="{{spell.img}}" alt="{{spell.name}}" />
-      <div class="spell-item-info">
-        <div class="spell-item-title-row">
-          <span class="spell-item-name"><strong>{{spell.name}}</strong></span>
+    <div class="spell-picker-item touch-target m-flex-row m-align-center m-gap-10" data-action="confirmPrepareSpell" data-item-id="{{spell.id}}" data-spell-name="{{spell.name}}">
+      <img class="spell-item-img m-shrink-0" src="{{spell.img}}" alt="{{spell.name}}" />
+      <div class="m-flex-1 m-min-w-0">
+        <div class="m-flex-row m-align-center m-gap-6">
+          <span class="spell-item-name m-truncate"><strong>{{spell.name}}</strong></span>
           {{#if spell.glyph}}
-          <span class="action-cost-glyph"><span class="action-glyph">{{spell.glyph}}</span></span>
+          <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0"><span class="action-glyph">{{spell.glyph}}</span></span>
           {{/if}}
         </div>
-        <div class="spell-item-meta">
+        <div class="spell-item-meta m-flex-row m-wrap m-gap-4">
           <span class="detail-tag">Base Rank {{spell.baseRank}}</span>
           {{#if spell.range}}<span class="detail-tag">Range: {{spell.range}}</span>{{/if}}
           {{#if spell.target}}<span class="detail-tag">Target: {{spell.target}}</span>{{/if}}
         </div>
       </div>
-      <button type="button" class="touch-target btn-select-spell" data-action="confirmPrepareSpell" data-item-id="{{spell.id}}">
+      <button type="button" class="touch-target btn-select-spell m-inline-flex m-align-center m-gap-4 m-shrink-0" data-action="confirmPrepareSpell" data-item-id="{{spell.id}}">
         <i class="fas fa-check"></i> Prepare
       </button>
     </div>

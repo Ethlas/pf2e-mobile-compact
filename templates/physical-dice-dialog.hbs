@@ -1,4 +1,4 @@
-<div class="physical-dice-dialog-content">
+<div class="physical-dice-dialog-content m-flex-col m-gap-12">
   <!-- Header / Action Title & Target Info -->
   <div class="physical-dialog-header">
     <div class="physical-action-title">{{title}}</div>
@@ -72,7 +72,7 @@
               type="number" 
               id="pool-input-{{this.id}}"
               name="pool-{{this.id}}" 
-              class="physical-damage-input touch-target" 
+              class="physical-damage-input touch-target m-flex-1" 
               inputmode="numeric" 
               pattern="[0-9]*" 
               data-pool-id="{{this.id}}" 
@@ -99,8 +99,8 @@
     {{/if}}
 
     <!-- Dialog Actions -->
-    <div class="physical-dialog-footer">
-      <button type="button" class="btn-cancel touch-target" data-action="cancel">
+    <div class="physical-dialog-footer m-flex-row m-gap-10">
+      <button type="button" class="btn-cancel touch-target m-flex-1" data-action="cancel">
         Cancel
       </button>
       <button type="button" class="btn-submit btn-primary touch-target" data-action="submit">

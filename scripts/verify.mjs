@@ -251,7 +251,8 @@ const styleGuidePath = path.join(rootDir, "docs/style-guide.html");
 if (fs.existsSync(styleGuidePath)) {
   const sheetCss = fs.readFileSync(path.join(rootDir, "styles/pf2e-mobile.css"), "utf-8").replace(/\/\*[\s\S]*?\*\//g, "");
   const guideHtml = fs.readFileSync(styleGuidePath, "utf-8");
-  const mClasses = [...new Set([...sheetCss.matchAll(/\.pf2e-mobile-sheet \.(m-[a-z0-9-]+)/g)].map(m => m[1]))];
+  // Utilities are scoped as ":is(.pf2e-mobile-sheet, ...) .m-x", components as ".pf2e-mobile-sheet .m-x"
+  const mClasses = [...new Set([...sheetCss.matchAll(/(?:\.pf2e-mobile-sheet|:is\([^)]*\)) \.(m-[a-z0-9-]+)/g)].map(m => m[1]))];
   const missing = mClasses.filter(c => !new RegExp(`class="[^"]*(?<![\\w-])${c}(?![\\w-])`).test(guideHtml));
   if (missing.length) {
     logFail(`[Style Guide] No sample in docs/style-guide.html for: ${missing.join(", ")}. Add one when adding a utility or component class.`);

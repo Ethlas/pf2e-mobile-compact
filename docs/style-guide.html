@@ -195,7 +195,7 @@
   </div>
 
   <h2>Utility classes</h2>
-  <p>Every <code>m-*</code> class with its declarations, read from the stylesheet. Utilities do layout only; component classes (<code>m-card</code>, <code>m-group</code>, <code>m-panel</code>, <code>m-compact</code>) carry a look.</p>
+  <p>Every <code>m-*</code> class with its declarations, read from the stylesheet. Utilities do layout only and also work in the compendium picker and the spell picker dialog, which Foundry renders outside the sheet; component classes (<code>m-card</code>, <code>m-group</code>, <code>m-panel</code>, <code>m-compact</code>) carry a look and are for the sheet.</p>
   <h3>Samples</h3>
   <div class="sg-grid">
     <div class="sg-item"><div class="sg-sample"><div class="m-flex-row m-gap-4"><span class="sg-box">a</span><span class="sg-box">b</span><span class="sg-box">c</span></div></div></div>
@@ -273,11 +273,12 @@
   }).join("");
 
   // Every m-* class rule with its declarations
-  const utilRules = styleRules.filter(r => /^\.pf2e-mobile-sheet \.m-[\w-]+/.test(r.selectorText));
+  // Layout utilities are scoped as :is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-x
+  const utilRules = styleRules.filter(r => /^(\.pf2e-mobile-sheet|:is\([^)]*\)) \.m-[\w-]+/.test(r.selectorText));
   document.getElementById("sg-utils").innerHTML = utilRules.map(r => {
     // The authored declarations (cssText keeps shorthands such as background and border)
     const decls = r.style.cssText;
-    return `<tr><td><code>${r.selectorText.replace(/\.pf2e-mobile-sheet /g, "")}</code></td><td>${decls}</td></tr>`;
+    return `<tr><td><code>${r.selectorText.replace(/\.pf2e-mobile-sheet |:is\([^)]*\) /g, "")}</code></td><td>${decls}</td></tr>`;
   }).join("");
 
   // Show the classes of every sample under it
