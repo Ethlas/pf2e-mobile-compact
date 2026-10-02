@@ -71,7 +71,7 @@
             {{#each strike.auxiliaryActions as |aux|}}
             <button type="button" class="touch-target aux-action-btn m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-color-soft" data-action="executeAuxiliaryAction" data-strike-index="{{index}}" data-aux-index="{{aux.index}}" title="{{aux.label}}">
               {{#if aux.glyph}}
-                <span class="aux-glyph m-inline-flex m-align-center m-justify-center m-text-sm m-bold m-color-accent"><span class="action-glyph">{{aux.glyph}}</span></span>
+                <span class="m-inline-flex m-align-center m-justify-center m-text-sm m-bold m-color-accent"><span class="action-glyph">{{aux.glyph}}</span></span>
               {{/if}}
                 <span class="aux-label m-medium">{{aux.label}}</span>
               {{#if aux.annotation}}
