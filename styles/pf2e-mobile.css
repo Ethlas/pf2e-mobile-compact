@@ -3942,6 +3942,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   background: #2a2a2a;
   font-size: 0.78rem;
   color: #e0e0e0;
+  text-transform: capitalize;
 }
 
 .pf2e-mobile-sheet .character-tag-size,
@@ -3962,6 +3963,12 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-color: #8a3030;
   background: #5c1a1a;
   color: #fff;
+}
+
+/* Immunities: the purple of the Gear tab's runes badge; pf2e's immunity labels are lower case ("sleep") */
+.pf2e-mobile-sheet .character-tag-immunity {
+  border-color: #ba68c8;
+  color: #ce93d8;
 }
 
 .pf2e-mobile-sheet .character-tag-weakness {
@@ -4085,9 +4092,11 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   flex-direction: column;
   align-items: center;
   padding: 4px 0;
-  background: #222;
-  border: 1px solid #3a3a3a;
-  border-radius: 6px;
+  /* Thin bronze line, the colour of pf2e's sheet frames, on the section background (no fill of its own) */
+  border: 1px solid #8d6e4aaa;
+  border-left: 0;
+  border-right: 0;
+  border-radius: 4px;
 }
 
 .pf2e-mobile-sheet .character-attribute-label {

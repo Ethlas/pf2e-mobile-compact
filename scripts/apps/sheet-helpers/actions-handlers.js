@@ -181,7 +181,8 @@ export async function onExecuteAuxiliaryAction(sheet, event, target) {
  */
 export async function onItemToChat(sheet, event, target) {
   const itemId = target.dataset.itemId;
-  const item = sheet.actor.items.get(itemId);
+  // Conditions are looked up like pf2e's effects panel does: some only exist in memory (actor.conditions)
+  const item = sheet.actor.conditions?.get?.(itemId) ?? sheet.actor.items.get(itemId);
   if (!item) return;
 
   const rank = parseInt(target.dataset.rank, 10);

@@ -373,28 +373,6 @@ export function closeHeaderMenu(sheet) {
 }
 
 /**
- * Action handler: the user button next to the character name opens the Character overview
- * (a view in the tab area, not a footer tab) and returns to the previous tab when tapped again.
- * The footer tabs also leave the overview (see _onSwitchTab in mobile-sheet.js).
- * @param {object} sheet
- */
-export function onToggleCharacterOverview(sheet) {
-  closeHeaderMenu(sheet);
-  const scrollEl = sheet.element?.querySelector?.(".mobile-tab-content");
-  if (scrollEl) sheet._tabScrollPositions?.set(sheet._activeTab, scrollEl.scrollTop);
-  if (sheet._activeTab === "character") {
-    sheet._activeTab = sheet._tabBeforeOverview ?? "actions";
-  } else {
-    sheet._tabBeforeOverview = sheet._activeTab;
-    sheet._activeTab = "character";
-    // Each visit starts with all feats closed and re-reads descriptions, in case a feat was edited meanwhile
-    sheet._expandedItemIds?.clear();
-    sheet._itemDescriptions?.clear();
-  }
-  sheet.render({ parts: ["header", "sheet"] });
-}
-
-/**
  * Action handler: the roll mode button in the header switches between digital and physical (manual) dice.
  * @param {object} sheet
  * @param {Event} event

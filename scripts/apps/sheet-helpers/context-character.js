@@ -1,6 +1,6 @@
 /**
  * Context preparation for the Character overview, the pseudo-tab opened by the user button
- * next to the character name in the header (see onToggleCharacterOverview in header-handlers.js).
+ * next to the character name in the header (see onToggleCharacterOverview in character-handlers.js).
  *
  * Everything here is read from values pf2e has already prepared on the actor (attribute
  * modifiers, speeds, senses, IWR, class DC, effects, feat groups). Nothing is recalculated.
@@ -87,14 +87,23 @@ function buildSpeeds(actor) {
   return SPEED_TYPES.map(type => ({ type, label: speedTypeLabel(type), value: valueOf(type) }));
 }
 
+// Vision senses made redundant by a better one, like pf2e's character sheet shows them: darkvision
+// supersedes low-light vision, greater darkvision both. Mirrors pf2e's condenseSenses(), which isn't exposed.
+const SUPERSEDED_SENSES = {
+  "greater-darkvision": ["darkvision", "low-light-vision"],
+  darkvision: ["low-light-vision"]
+};
+
 /**
- * Sense labels (e.g. "Darkvision", "Scent (imprecise) 30 feet").
+ * Sense labels (e.g. "Darkvision", "Scent (imprecise) 30 feet"), without the ones a better sense supersedes.
  * @param {Actor} actor
  * @returns {string[]}
  */
 function buildSenses(actor) {
-  const senses = actor.perception?.senses?.contents ?? actor.system?.perception?.senses ?? [];
-  return Array.from(senses).map(s => s?.label ?? s?.type).filter(Boolean);
+  const senses = Array.from(actor.perception?.senses?.contents ?? actor.system?.perception?.senses ?? []);
+  const types = new Set(senses.map(s => s?.type));
+  const hidden = new Set([...types].flatMap(type => SUPERSEDED_SENSES[type] ?? []));
+  return senses.filter(s => !hidden.has(s?.type)).map(s => s?.label ?? s?.type).filter(Boolean);
 }
 
 /**

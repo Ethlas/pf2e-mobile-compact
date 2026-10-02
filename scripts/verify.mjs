@@ -1263,7 +1263,7 @@ try {
     class: { name: "Fighter" },
     abilities: { str: { mod: 4 }, dex: { mod: 2 }, con: { mod: 2 }, int: { mod: 0 }, wis: { mod: 1 }, cha: { mod: -1 } },
     movement: { speeds: { land: { label: "Land Speed", value: 25 }, swim: null, travel: { label: "Travel Speed", value: 25 } } },
-    perception: { senses: { contents: [{ label: "Low-Light Vision" }] } },
+    perception: { senses: { contents: [{ type: "low-light-vision", label: "Low-Light Vision" }, { type: "darkvision", label: "Darkvision" }, { type: "scent", label: "Scent (imprecise) 30 feet" }] } },
     attributes: { immunities: [], weaknesses: [], resistances: [{ label: "Fire 5" }] },
     classDC: { dc: { value: 21 } },
     system: { details: { languages: { value: ["common"] } } },
@@ -1284,6 +1284,7 @@ try {
     c.featGroups[1].feats[0].children[0]?.name !== "Deity's Domain" ||
     c.attributes.find(a => a.key === "str")?.mod !== 4 ||
     c.speeds.map(s => `${s.type}:${s.value}`).join(",") !== "land:25,swim:null,climb:null,fly:null,burrow:null" ||
+    c.senses.join(",") !== "Darkvision,Scent (imprecise) 30 feet" ||
     c.defenses.classDC !== 21 ||
     c.defenses.resistances[0] !== "Fire 5" ||
     c.identity.className !== "Fighter" ||
@@ -1292,7 +1293,7 @@ try {
   ) {
     logFail(`[Character Overview] Unexpected context: ${JSON.stringify(c)} (closed: ${JSON.stringify(closedCtx.character)})`);
   } else {
-    logPass("[Character Overview] Context only builds while open, keeps pf2e's feat group order, skips empty slots and groups, nests granted feats, and lists land, swim, climb, fly and burrow speed (null when missing, no travel speed).");
+    logPass("[Character Overview] Context only builds while open, keeps pf2e's feat group order, skips empty slots and groups, nests granted feats, lists land, swim, climb, fly and burrow speed (null when missing, no travel speed), and hides low-light vision next to darkvision.");
   }
 
   // Feat descriptions: nothing is enriched when the overview opens; the first tap enriches one feat
@@ -1365,6 +1366,18 @@ try {
     logFail(`[Character Overview] Effects list: expected ${expectedEffects}, got ${effectSummary}`);
   } else {
     logPass("[Character Overview] Effects list afflictions, conditions and effects like pf2e's effects panel, with badge values and pf2e's remaining duration strings.");
+  }
+
+  // Effect durations: combat and world time updates re-render the sheet part only while the overview is open
+  const { refreshOverviewDurations } = await import("../scripts/apps/sheet-helpers/character-handlers.js");
+  const refreshRenders = [];
+  const refreshSheet = (tab) => ({ rendered: true, _activeTab: tab, render: (opts) => refreshRenders.push(`${tab}:${opts.parts.join("+")}`) });
+  refreshOverviewDurations(refreshSheet("character"));
+  refreshOverviewDurations(refreshSheet("actions"));
+  if (refreshRenders.join(",") !== "character:sheet") {
+    logFail(`[Character Overview] refreshOverviewDurations should only re-render an open overview, got: ${refreshRenders.join(",")}`);
+  } else {
+    logPass("[Character Overview] Combat and world time updates re-render the sheet part only while the overview is open, so effect durations count down.");
   }
 
   if (

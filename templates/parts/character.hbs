@@ -113,7 +113,7 @@
     <h4 class="character-subtitle"><i class="fas fa-shield-halved"></i> Defenses</h4>
     <dl class="character-facts">
       {{#if def.classDC}}<dt>Class DC</dt><dd>{{def.classDC}}</dd>{{/if}}
-      {{#if def.immunities.length}}<dt>Immunities</dt><dd>{{> tagList tags=def.immunities}}</dd>{{/if}}
+      {{#if def.immunities.length}}<dt>Immunities</dt><dd>{{> tagList tags=def.immunities tagClass="character-tag-immunity"}}</dd>{{/if}}
       {{#if def.weaknesses.length}}<dt>Weaknesses</dt><dd>{{> tagList tags=def.weaknesses tagClass="character-tag-weakness"}}</dd>{{/if}}
       {{#if def.resistances.length}}<dt>Resistances</dt><dd>{{> tagList tags=def.resistances tagClass="character-tag-resistance"}}</dd>{{/if}}
     </dl>

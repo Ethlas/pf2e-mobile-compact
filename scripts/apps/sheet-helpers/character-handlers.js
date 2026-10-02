@@ -1,6 +1,40 @@
 /**
  * Action handlers for the Character overview (templates/parts/character.hbs).
  */
+import { closeHeaderMenu } from "./header-handlers.js";
+
+/**
+ * Action handler: the user button next to the character name opens the Character overview
+ * (a view in the tab area, not a footer tab) and returns to the previous tab when tapped again.
+ * The footer tabs also leave the overview (see _onSwitchTab in mobile-sheet.js).
+ * @param {object} sheet
+ */
+export function onToggleCharacterOverview(sheet) {
+  closeHeaderMenu(sheet);
+  const scrollEl = sheet.element?.querySelector?.(".mobile-tab-content");
+  if (scrollEl) sheet._tabScrollPositions?.set(sheet._activeTab, scrollEl.scrollTop);
+  if (sheet._activeTab === "character") {
+    sheet._activeTab = sheet._tabBeforeOverview ?? "actions";
+  } else {
+    sheet._tabBeforeOverview = sheet._activeTab;
+    sheet._activeTab = "character";
+    // Each visit starts with all feats closed and re-reads descriptions, in case a feat was edited meanwhile
+    sheet._expandedItemIds?.clear();
+    sheet._itemDescriptions?.clear();
+  }
+  sheet.render({ parts: ["header", "sheet"] });
+}
+
+/**
+ * Re-renders the overview when game time moves on (a new combat round or turn, or world time),
+ * so the effects' remaining durations stay current: pf2e derives them from the world time and
+ * combat turn without updating the effect, so no document change triggers a render.
+ * Does nothing unless the overview is open.
+ * @param {object} sheet
+ */
+export function refreshOverviewDurations(sheet) {
+  if (sheet.rendered && sheet._activeTab === "character") sheet.render({ parts: ["sheet"] });
+}
 
 /**
  * Enriches a feat or effect description the same way the Actions tab does (context-actions.js),

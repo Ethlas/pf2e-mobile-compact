@@ -30,7 +30,7 @@ import {
 import { prepareActionsContext } from "./sheet-helpers/context-actions.js";
 import { prepareSkillsContext } from "./sheet-helpers/context-skills.js";
 import { prepareCharacterContext } from "./sheet-helpers/context-character.js";
-import { onToggleItemDescription } from "./sheet-helpers/character-handlers.js";
+import { onToggleCharacterOverview, onToggleItemDescription, refreshOverviewDurations } from "./sheet-helpers/character-handlers.js";
 import { prepareInventoryContext } from "./sheet-helpers/context-inventory.js";
 import { prepareSpellsContext, formatSpell } from "./sheet-helpers/context-spells.js";
 import { prepareActivationsContext } from "./sheet-helpers/context-activations.js";
@@ -40,7 +40,7 @@ import { onExecuteStrike, onExecuteDamage, onExecuteCritical, onExecuteAuxiliary
 import { onUseConsumable, onApplyPoison, onDetachSubitem, onChangeCarryType, onToggleInventorySection, onConfigureRunes, onToggleInvested, onToggleEquipped } from "./sheet-helpers/inventory-handlers.js";
 import { onSwitchSpellSubTab, onToggleRankGroup, onOpenSpellPrepPicker, prepareSlot, onUnprepareSlot, onToggleSlotExpended, onResetDailySpells, onSaveSpellPreset, onApplySpellPreset, onDeleteSpellPreset, onOpenCompendiumPicker, onAdjustSlot, onAdjustFocus, onCastSpell, onRollSpellDamage, onToggleSignatureSpell, onRemoveSpell } from "./sheet-helpers/spells-handlers.js";
 import { onCastStaffSpell, onAdjustStaffCharges, onCastItemSpell, onOpenDailies } from "./sheet-helpers/activations-handlers.js";
-import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleHeaderMenu, onToggleCharacterOverview, onToggleCanvasMode, onToggleFullscreen, onSwitchActor } from "./sheet-helpers/header-handlers.js";
+import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleHeaderMenu, onToggleCanvasMode, onToggleFullscreen, onSwitchActor } from "./sheet-helpers/header-handlers.js";
 import { disableChatInputs, dockChatElement, restoreChatElement, scrollChatToBottom, setupScrollBottomListener, registerChatListener, unregisterChatListener, updateChatBadge } from "./sheet-helpers/chat-handler.js";
 
 /**
@@ -414,7 +414,10 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       { name: "updateCombat", id: Hooks.on("updateCombat", onTokenChange) },
       { name: "createCombatant", id: Hooks.on("createCombatant", onTokenChange) },
       { name: "deleteCombatant", id: Hooks.on("deleteCombatant", onTokenChange) },
-      { name: "updateCombatant", id: Hooks.on("updateCombatant", onTokenChange) }
+      { name: "updateCombatant", id: Hooks.on("updateCombatant", onTokenChange) },
+      // Effect durations in the Character overview count down with the combat turn and world time
+      { name: "updateCombat", id: Hooks.on("updateCombat", () => refreshOverviewDurations(this)) },
+      { name: "updateWorldTime", id: Hooks.on("updateWorldTime", () => refreshOverviewDurations(this)) }
     );
   }
 
