@@ -6,6 +6,17 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Grey Palette Variables (`styles/pf2e-mobile.css`)
+
+#### Changed
+- **Backgrounds and borders use a small set of greys**:
+  - New CSS variables on `.pf2e-mobile-sheet` (and `.spell-picker-dialog`, which Foundry renders outside the sheet): `--m-surface-0` to `--m-surface-5` (`#111`, `#1a1a1a`, `#222`, `#2a2a2a`, `#333`, `#444`) and `--m-border-subtle`, `--m-border`, `--m-border-strong` (`#333`, `#444`, `#555`).
+  - The surfaces go by layer: 0 chrome and wells (header, bottom nav, image and input wells), 1 the sheet and group frames, 2 cards and panels, 3 controls on a card (buttons, pills, inputs), 4 raised and hover, 5 pressed.
+  - 169 hex greys in backgrounds and borders were replaced by these variables. 96 kept their exact colour; 73 were near-duplicates (27 background greys and about 15 border greys were in use) and moved by a few steps to the nearest level of their role. The most visible: the subtabs bars and party/stash panels (`#1e1e1e` → `#222`), controls such as skill buttons and preset pills (`#252525` → `#2a2a2a`), and the `.m-group` frame border (`#3a3a3a` → `#444`). The base `.detail-tag` (wand/scroll rank, activation entry name) goes to `--m-surface-1` instead, so it stays darker than the card it sits on.
+  - The zinc greys used in a few sheet controls (staff charge buttons and badges, filter select, spell drawer footer) were folded into the same levels.
+  - Left as they were: tinted backgrounds that carry meaning (the expended spell card, the staff drawer, the quantity badge and Signature button), coloured backgrounds, text colours, the compendium picker (its own window with its own zinc scheme) and Foundry UI overrides on `body`.
+  - Design rationale: the sheet used 27 background greys, many only 1–3 steps apart, chosen per component. One named set makes the layering consistent and gives one place to tune the look. Layout was compared before and after in the dev preview (no element moved); every changed colour matched one of the planned shifts.
+
 ### Flex Layout Utility Classes (`styles/pf2e-mobile.css`, `templates/`)
 
 #### Changed
