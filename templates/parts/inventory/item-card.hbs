@@ -27,7 +27,7 @@
       <div class="item-badges m-flex-row m-wrap m-align-center m-gap-4">
         {{#> badges}}{{/badges}}
         {{#if showBulk}}
-        <span class="item-badge bulk-badge m-inline-flex m-align-center m-gap-4">Bulk: {{item.bulk}}</span>
+        <span class="item-badge bulk-badge m-inline-flex m-align-center m-gap-4 m-text-xs">Bulk: {{item.bulk}}</span>
         {{/if}}
       </div>
     </div>
@@ -37,7 +37,7 @@
   </div>
 
   <!-- Expandable drawer: the less frequent buttons, then the description -->
-  <div class="action-summary item-summary {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
+  <div class="action-summary item-summary m-text-base {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
     <div class="m-drawer-row m-flex-row">
       {{#> drawerButtons}}{{/drawerButtons}}
       {{#if @root.partyStash}}

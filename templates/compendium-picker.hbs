@@ -9,11 +9,11 @@
         <img class="staged-img m-shrink-0" src="{{staged.img}}" alt="{{staged.name}}" width="48" height="48" />
         <div class="m-flex-col m-gap-4 m-flex-1 m-min-w-0">
           <h3 class="staged-name m-truncate">{{staged.name}}</h3>
-          <span class="staged-meta m-flex-row m-wrap m-align-center m-gap-6">
+          <span class="m-flex-row m-wrap m-align-center m-gap-6 m-text-sm">
             {{#if staged.isCantrip}}
-              <span class="staged-badge badge-cantrip">Cantrip</span>
+              <span class="staged-badge badge-cantrip m-bold">Cantrip</span>
             {{else}}
-              <span class="staged-badge badge-rank">Base Rank {{staged.baseRank}}</span>
+              <span class="staged-badge badge-rank m-bold">Base Rank {{staged.baseRank}}</span>
             {{/if}}
             <span class="staged-traditions"><i class="fas fa-hat-wizard"></i> {{staged.traditionsLabel}}</span>
           </span>
@@ -28,7 +28,7 @@
           <select
             id="targetEntry"
             name="targetEntry"
-            class="touch-target config-select"
+            class="touch-target config-select m-text-xl"
             data-change-action="updateStagedEntry"
             onclick="event.stopPropagation()"
           >
@@ -41,7 +41,7 @@
         </div>
 
         {{#unless staged.entryMatchesTradition}}
-        <div class="tradition-warning-banner m-flex-row m-align-center m-gap-8">
+        <div class="tradition-warning-banner m-flex-row m-align-center m-gap-8 m-text-md">
           <i class="fas fa-triangle-exclamation m-shrink-0"></i>
           <span>This spell is not native to the selected entry's tradition ({{staged.traditionsLabel}}).</span>
         </div>
@@ -53,7 +53,7 @@
           <select
             id="targetRank"
             name="targetRank"
-            class="touch-target config-select"
+            class="touch-target config-select m-text-xl"
             data-change-action="updateStagedRank"
             onclick="event.stopPropagation()"
           >
@@ -79,7 +79,7 @@
       <div class="no-entries-warning m-flex-col m-align-center m-gap-8">
         <i class="fas fa-circle-exclamation"></i>
         <p>This character has no Spellcasting Entries configured yet.</p>
-        <p class="sub-text">Add a Spellcasting Entry on your character sheet first to learn or prepare spells.</p>
+        <p class="sub-text m-text-md">Add a Spellcasting Entry on your character sheet first to learn or prepare spells.</p>
         <button type="button" class="touch-target btn-cancel" data-action="cancelStage">
           <i class="fas fa-arrow-left"></i> Back to Spells
         </button>
@@ -96,12 +96,12 @@
     <i class="fas fa-magnifying-glass search-icon"></i>
     <input
       type="search"
-      class="compendium-search-input touch-target m-flex-1"
+      class="compendium-search-input touch-target m-flex-1 m-text-xl"
       placeholder="Search {{type}} (Press Enter)..."
       value="{{query}}"
       onclick="event.stopPropagation()"
     />
-    <button type="button" class="touch-target btn-compendium-search m-flex-row m-align-center m-justify-center m-shrink-0" data-action="executeSearch" title="Search">
+    <button type="button" class="touch-target btn-compendium-search m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl" data-action="executeSearch" title="Search">
       <i class="fas fa-magnifying-glass"></i>
     </button>
   </div>
@@ -165,17 +165,17 @@
         <img class="compendium-item-img m-shrink-0" src="{{this.img}}" alt="{{this.name}}" width="40" height="40" />
         {{/if}}
         <div class="m-flex-col m-flex-1 m-min-w-0">
-          <span class="compendium-item-name m-truncate"><strong>{{this.name}}</strong></span>
+          <span class="compendium-item-name m-truncate m-text-lg"><strong>{{this.name}}</strong></span>
           {{#if this.system.level.value}}
-            <span class="compendium-item-sub">Rank {{this.system.level.value}}</span>
+            <span class="compendium-item-sub m-text-sm">Rank {{this.system.level.value}}</span>
           {{else}}
-            <span class="compendium-item-sub">Cantrip</span>
+            <span class="compendium-item-sub m-text-sm">Cantrip</span>
           {{/if}}
         </div>
       </div>
       <button
         type="button"
-        class="touch-target btn-import m-inline-flex m-align-center m-justify-center m-gap-6 m-shrink-0"
+        class="touch-target btn-import m-inline-flex m-align-center m-justify-center m-gap-6 m-shrink-0 m-text-base m-semibold"
         data-action="stageItem"
         data-entry-id="{{this._id}}"
         title="Add to Character"

@@ -2,19 +2,19 @@
   <!-- Sub-Navigation: Spells vs Preparation vs Activations -->
   {{#if (or hasPreparedEntry hasActivations)}}
   <div class="spell-subtabs m-panel m-flex-row m-gap-6">
-    <button type="button" class="touch-target subtab-btn m-flex-row m-align-center m-justify-center m-gap-6 m-flex-1 {{#if (eq spellSubTab "spells")}}active{{/if}}" data-action="switchSpellSubTab" data-subtab="spells">
+    <button type="button" class="touch-target subtab-btn m-flex-row m-align-center m-justify-center m-gap-6 m-flex-1 m-text-base m-semibold {{#if (eq spellSubTab "spells")}}active{{/if}}" data-action="switchSpellSubTab" data-subtab="spells">
       <i class="fas fa-wand-magic-sparkles"></i> Spells
     </button>
     {{#if hasPreparedEntry}}
-    <button type="button" class="touch-target subtab-btn m-flex-row m-align-center m-justify-center m-gap-6 m-flex-1 {{#if (eq spellSubTab "preparation")}}active{{/if}}" data-action="switchSpellSubTab" data-subtab="preparation">
+    <button type="button" class="touch-target subtab-btn m-flex-row m-align-center m-justify-center m-gap-6 m-flex-1 m-text-base m-semibold {{#if (eq spellSubTab "preparation")}}active{{/if}}" data-action="switchSpellSubTab" data-subtab="preparation">
       <i class="fas fa-book-open"></i> Preparation
     </button>
     {{/if}}
     {{#if hasActivations}}
-    <button type="button" class="touch-target subtab-btn m-flex-row m-align-center m-justify-center m-gap-6 m-flex-1 {{#if (eq spellSubTab "activations")}}active{{/if}}" data-action="switchSpellSubTab" data-subtab="activations">
+    <button type="button" class="touch-target subtab-btn m-flex-row m-align-center m-justify-center m-gap-6 m-flex-1 m-text-base m-semibold {{#if (eq spellSubTab "activations")}}active{{/if}}" data-action="switchSpellSubTab" data-subtab="activations">
       <i class="fas fa-bolt"></i> Activations
       {{#if activationsCount}}
-      <span class="subtab-count-badge">{{activationsCount}}</span>
+      <span class="subtab-count-badge m-text-xs m-bold">{{activationsCount}}</span>
       {{/if}}
     </button>
     {{/if}}
@@ -23,14 +23,14 @@
 
   <!-- Action Bar: Add Spell from SRD, Daily Prep Reset, Dailies (focus points are in the Focus Spells header) -->
   <div class="tab-action-bar m-flex-row m-align-center m-justify-between m-gap-8">
-    <button type="button" class="touch-target btn-primary" data-action="openCompendiumPicker" data-type="spells">
+    <button type="button" class="touch-target btn-primary m-bold" data-action="openCompendiumPicker" data-type="spells">
       <i class="fas fa-plus"></i> Add Spell
     </button>
-    <button type="button" class="touch-target btn-daily-reset m-compact m-inline-flex m-align-center m-gap-6" data-action="resetDailySpells" title="Restore all expended spell slots and focus points">
+    <button type="button" class="touch-target btn-daily-reset m-compact m-inline-flex m-align-center m-gap-6 m-text-md m-semibold" data-action="resetDailySpells" title="Restore all expended spell slots and focus points">
       <i class="fas fa-bed"></i> Daily Rest
     </button>
     {{#if hasDailies}}
-    <button type="button" class="touch-target btn-dailies m-compact m-inline-flex m-align-center m-gap-6" data-action="openDailies" title="Open Daily Preparations (pf2e-dailies)">
+    <button type="button" class="touch-target btn-dailies m-compact m-inline-flex m-align-center m-gap-6 m-text-md m-semibold" data-action="openDailies" title="Open Daily Preparations (pf2e-dailies)">
       <i class="fas fa-sun"></i> Dailies
     </button>
     {{/if}}
@@ -46,16 +46,16 @@
       <!-- Collapsible Rank Header -->
       <div class="spell-rank-header touch-target m-flex-row m-align-center m-justify-between" data-action="toggleRankGroup" data-rank="{{group.rank}}" title="Toggle {{group.label}}">
         <div class="m-flex-row m-align-center m-gap-8">
-          <i class="fas fa-chevron-down rank-expand-icon {{#if group.isCollapsed}}collapsed{{/if}}"></i>
-          <h3 class="rank-title">{{group.label}}</h3>
-          <span class="rank-count-badge">{{group.spellCount}}</span>
+          <i class="fas fa-chevron-down rank-expand-icon m-text-md {{#if group.isCollapsed}}collapsed{{/if}}"></i>
+          <h3 class="rank-title m-text-xl m-bold">{{group.label}}</h3>
+          <span class="rank-count-badge m-text-xs m-bold">{{group.spellCount}}</span>
         </div>
 
         {{#if group.hasSlots}}
-        <div class="slot-counter m-flex-row m-align-center m-gap-6">
+        <div class="slot-counter m-flex-row m-align-center m-gap-6 m-text-md">
           <span title="Spell slots"><strong>{{group.slots.value}} / {{group.slots.max}}</strong></span>
-          <button type="button" class="touch-target btn-slot-adjust m-flex-row m-align-center m-justify-center" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="-1" title="Decrease Slot">-</button>
-          <button type="button" class="touch-target btn-slot-adjust m-flex-row m-align-center m-justify-center" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="1" title="Increase Slot">+</button>
+          <button type="button" class="touch-target btn-slot-adjust m-flex-row m-align-center m-justify-center m-text-xl m-bold" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="-1" title="Decrease Slot">-</button>
+          <button type="button" class="touch-target btn-slot-adjust m-flex-row m-align-center m-justify-center m-text-xl m-bold" data-action="adjustSlot" data-rank="{{group.rank}}" data-entry-id="{{group.entryId}}" data-delta="1" title="Increase Slot">+</button>
         </div>
         {{/if}}
 
@@ -63,7 +63,7 @@
               one flame per point. Tapping an available (lit) flame spends a point, tapping a spent
               (dimmed) one regains a point. --}}
         {{#if (and (eq group.rank "focus") @root.focus.max)}}
-        <div class="slot-counter focus-counter m-flex-row m-align-center m-gap-6" title="Focus Points: {{@root.focus.value}} / {{@root.focus.max}}">
+        <div class="slot-counter focus-counter m-flex-row m-align-center m-gap-6 m-text-md" title="Focus Points: {{@root.focus.value}} / {{@root.focus.max}}">
           {{#each @root.focus.points as |point|}}
           {{#if point.available}}
           <button type="button" class="btn-focus-point m-flex-row m-align-center m-justify-center" data-action="adjustFocus" data-delta="-1" title="Spend a Focus Point" aria-label="Focus Point available, tap to spend">
@@ -92,7 +92,7 @@
 
           {{#*inline "drawerButtons"}}
             {{#if (and spell.isPrepared spell.isExpended)}}
-            <button type="button" class="touch-target btn-restore-slot m-compact m-inline-flex m-align-center m-justify-center m-gap-4" data-action="toggleSlotExpended" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="Restore Expended Slot">
+            <button type="button" class="touch-target btn-restore-slot m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-text-md m-semibold" data-action="toggleSlotExpended" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="Restore Expended Slot">
               <i class="fas fa-arrow-rotate-left"></i>
             </button>
             {{/if}}
@@ -116,8 +116,8 @@
     <!-- Presets Toolbar -->
     <div class="spell-presets-bar">
       <div class="presets-header m-flex-row m-align-center m-justify-between">
-        <span class="presets-title m-flex-row m-align-center m-gap-6"><i class="fas fa-layer-group"></i> <strong>Spell Presets</strong></span>
-        <button type="button" class="touch-target btn-save-preset m-compact m-inline-flex m-align-center m-gap-4" data-action="saveSpellPreset" title="Save current prepared loadout as preset">
+        <span class="presets-title m-flex-row m-align-center m-gap-6 m-text-base"><i class="fas fa-layer-group"></i> <strong>Spell Presets</strong></span>
+        <button type="button" class="touch-target btn-save-preset m-compact m-inline-flex m-align-center m-gap-4 m-text-md" data-action="saveSpellPreset" title="Save current prepared loadout as preset">
           <i class="fas fa-floppy-disk"></i> Save Current
         </button>
       </div>
@@ -126,42 +126,42 @@
       <div class="m-flex-row m-wrap m-gap-6">
         {{#each spellPresets as |preset|}}
         <div class="preset-pill m-inline-flex m-align-center m-gap-6">
-          <span class="preset-name">{{preset.name}}</span>
-          <button type="button" class="touch-target btn-apply-preset m-compact m-inline-flex m-align-center m-gap-4" data-action="applySpellPreset" data-preset-id="{{preset.id}}" title="Load {{preset.name}}">
+          <span class="preset-name m-text-md m-semibold">{{preset.name}}</span>
+          <button type="button" class="touch-target btn-apply-preset m-compact m-inline-flex m-align-center m-gap-4 m-text-sm" data-action="applySpellPreset" data-preset-id="{{preset.id}}" title="Load {{preset.name}}">
             <i class="fas fa-check"></i> Load
           </button>
-          <button type="button" class="touch-target btn-delete-preset m-compact" data-action="deleteSpellPreset" data-preset-id="{{preset.id}}" title="Delete Preset">
+          <button type="button" class="touch-target btn-delete-preset m-compact m-text-md" data-action="deleteSpellPreset" data-preset-id="{{preset.id}}" title="Delete Preset">
             <i class="fas fa-trash"></i>
           </button>
         </div>
         {{/each}}
       </div>
       {{else}}
-      <p class="presets-empty-hint">No saved presets yet. Prepare your spells and tap "Save Current" to create one.</p>
+      <p class="presets-empty-hint m-text-sm">No saved presets yet. Prepare your spells and tap "Save Current" to create one.</p>
       {{/if}}
     </div>
 
     <!-- Prepared Entries Slot Management -->
     {{#each preparedEntries as |entry|}}
     <div class="prepared-entry-section" data-entry-id="{{entry.id}}">
-      <h3 class="entry-section-title m-flex-row m-align-center m-gap-6"><i class="fas fa-book"></i> {{entry.name}}</h3>
+      <h3 class="entry-section-title m-flex-row m-align-center m-gap-6 m-text-xl m-bold"><i class="fas fa-book"></i> {{entry.name}}</h3>
 
       {{#each entry.ranks as |rankData|}}
       <div class="prep-rank-card m-panel" data-rank="{{rankData.rank}}">
         <div class="prep-rank-header m-flex-row m-align-center m-justify-between">
-          <span class="prep-rank-label"><strong>{{rankData.label}}</strong></span>
-          <span class="prep-slot-count">{{rankData.preparedCount}} / {{rankData.maxSlots}} Prepared</span>
+          <span class="prep-rank-label m-text-lg"><strong>{{rankData.label}}</strong></span>
+          <span class="prep-slot-count m-text-sm">{{rankData.preparedCount}} / {{rankData.maxSlots}} Prepared</span>
         </div>
 
         <div class="m-flex-col m-gap-6">
           {{#each rankData.slots as |slot|}}
           <div class="slot-row m-flex-row m-align-center m-gap-8 {{#if slot.isEmpty}}slot-empty{{else}}slot-filled{{/if}} {{#if slot.isExpended}}slot-expended{{/if}}">
-            <span class="slot-num-badge m-flex-row m-align-center m-justify-center m-shrink-0">{{slot.slotNumber}}</span>
+            <span class="slot-num-badge m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xs m-bold">{{slot.slotNumber}}</span>
 
             {{#if slot.isEmpty}}
             <div class="m-flex-row m-align-center m-justify-between m-flex-1">
-              <span class="slot-placeholder">Empty Slot</span>
-              <button type="button" class="touch-target btn-prepare-slot m-inline-flex m-align-center m-gap-6" data-action="openSpellPrepPicker" data-entry-id="{{entry.id}}" data-rank="{{rankData.rank}}" data-slot-index="{{slot.slotIndex}}">
+              <span class="slot-placeholder m-text-md">Empty Slot</span>
+              <button type="button" class="touch-target btn-prepare-slot m-inline-flex m-align-center m-gap-6 m-text-md" data-action="openSpellPrepPicker" data-entry-id="{{entry.id}}" data-rank="{{rankData.rank}}" data-slot-index="{{slot.slotIndex}}">
                 <i class="fas fa-plus"></i> Prepare Spell
               </button>
             </div>
@@ -169,12 +169,12 @@
             <div class="m-flex-row m-align-center m-gap-8 m-flex-1 m-min-w-0">
               <img class="slot-spell-img m-shrink-0" src="{{slot.spell.img}}" alt="{{slot.spell.name}}" />
               <div class="m-flex-col m-flex-1 m-min-w-0">
-                <span class="slot-spell-name m-truncate"><strong>{{slot.spell.name}}</strong></span>
+                <span class="slot-spell-name m-truncate m-text-base"><strong>{{slot.spell.name}}</strong></span>
                 {{#if slot.spell.glyph}}
-                <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0"><span class="action-glyph">{{slot.spell.glyph}}</span></span>
+                <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base"><span class="action-glyph">{{slot.spell.glyph}}</span></span>
                 {{/if}}
                 {{#if slot.isExpended}}
-                <span class="spell-expended-badge">Expended</span>
+                <span class="spell-expended-badge m-text-2xs m-bold">Expended</span>
                 {{/if}}
               </div>
               <div class="slot-actions m-flex-row m-gap-4 m-shrink-0">
@@ -208,30 +208,30 @@
         <img class="staff-img m-shrink-0" src="{{activations.staff.img}}" alt="{{activations.staff.name}}" />
         <div class="m-flex-col m-gap-4 m-flex-1 m-min-w-0">
           <div class="staff-title-row m-flex-row m-wrap m-align-center m-justify-between m-gap-6">
-            <h3 class="staff-name m-truncate">{{activations.staff.name}}</h3>
+            <h3 class="staff-name m-truncate m-text-xl m-bold">{{activations.staff.name}}</h3>
             {{#if activations.staff.isEquipped}}
-            <span class="equipped-badge badge-held m-inline-flex m-align-center m-gap-4"><i class="fas fa-hand"></i> Held ({{activations.staff.handsHeld}}H)</span>
+            <span class="equipped-badge badge-held m-inline-flex m-align-center m-gap-4 m-text-xs m-semibold"><i class="fas fa-hand"></i> Held ({{activations.staff.handsHeld}}H)</span>
             {{else}}
-            <span class="equipped-badge badge-not-held m-inline-flex m-align-center m-gap-4"><i class="fas fa-triangle-exclamation"></i> Not Held</span>
+            <span class="equipped-badge badge-not-held m-inline-flex m-align-center m-gap-4 m-text-xs m-semibold"><i class="fas fa-triangle-exclamation"></i> Not Held</span>
             {{/if}}
-            <span class="staff-spells-badge m-inline-flex m-align-center">{{activations.staff.spellCount}} Spells</span>
-            <i class="fas fa-chevron-down action-expand-icon m-shrink-0 {{#if activations.staff.isExpanded}}expanded{{/if}}"></i>
+            <span class="staff-spells-badge m-inline-flex m-align-center m-text-xs m-semibold">{{activations.staff.spellCount}} Spells</span>
+            <i class="fas fa-chevron-down action-expand-icon m-shrink-0 m-text-sm {{#if activations.staff.isExpanded}}expanded{{/if}}"></i>
           </div>
           <div class="staff-charges-tracker m-flex-row m-align-center m-justify-between m-gap-8">
-            <span class="charges-label"><i class="fas fa-bolt"></i> Charges: <strong>{{activations.staff.charges.value}} / {{activations.staff.charges.max}}</strong></span>
+            <span class="charges-label m-text-base"><i class="fas fa-bolt"></i> Charges: <strong>{{activations.staff.charges.value}} / {{activations.staff.charges.max}}</strong></span>
             <div class="charges-buttons m-flex-row m-gap-6">
-              <button type="button" class="touch-target btn-charge-adjust m-inline-flex m-align-center m-justify-center" data-action="adjustStaffCharges" data-delta="-1" data-current="{{activations.staff.charges.value}}" data-max="{{activations.staff.charges.max}}" data-staff-id="{{activations.staff.id}}" title="Spend Staff Charge">-1</button>
-              <button type="button" class="touch-target btn-charge-adjust m-inline-flex m-align-center m-justify-center" data-action="adjustStaffCharges" data-delta="1" data-current="{{activations.staff.charges.value}}" data-max="{{activations.staff.charges.max}}" data-staff-id="{{activations.staff.id}}" title="Gain Staff Charge">+1</button>
+              <button type="button" class="touch-target btn-charge-adjust m-inline-flex m-align-center m-justify-center m-text-xl m-bold" data-action="adjustStaffCharges" data-delta="-1" data-current="{{activations.staff.charges.value}}" data-max="{{activations.staff.charges.max}}" data-staff-id="{{activations.staff.id}}" title="Spend Staff Charge">-1</button>
+              <button type="button" class="touch-target btn-charge-adjust m-inline-flex m-align-center m-justify-center m-text-xl m-bold" data-action="adjustStaffCharges" data-delta="1" data-current="{{activations.staff.charges.value}}" data-max="{{activations.staff.charges.max}}" data-staff-id="{{activations.staff.id}}" title="Gain Staff Charge">+1</button>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Expandable Staff Content Drawer (Overview & Spells) -->
-      <div class="action-summary staff-drawer-content m-gap-12 {{#if activations.staff.isExpanded}}expanded{{else}}collapsed{{/if}}">
+      <div class="action-summary staff-drawer-content m-gap-12 m-text-base {{#if activations.staff.isExpanded}}expanded{{else}}collapsed{{/if}}">
         {{#if activations.staff.description}}
         <div class="staff-description-block">
-          <div class="staff-description-heading m-flex-row m-align-center m-gap-6">
+          <div class="staff-description-heading m-flex-row m-align-center m-gap-6 m-text-md m-bold">
             <i class="fas fa-book-open"></i> <span>Staff Overview</span>
           </div>
           <div class="action-description-content">
@@ -242,16 +242,16 @@
 
         <!-- Staff Spells Accordion/List -->
         <div class="staff-spells-list">
-          <div class="staff-spells-heading m-flex-row m-align-center m-gap-6">
+          <div class="staff-spells-heading m-flex-row m-align-center m-gap-6 m-text-md m-bold">
             <i class="fas fa-wand-magic-sparkles"></i> <span>Staff Spells ({{activations.staff.spellCount}})</span>
           </div>
           {{#each activations.staff.ranks as |group|}}
           <section class="m-group spell-rank-group staff-rank-group" data-rank="{{group.rank}}">
             <div class="spell-rank-header touch-target m-flex-row m-align-center m-justify-between" data-action="toggleRankGroup" data-rank="staff-{{group.rank}}" title="Toggle {{group.label}}">
               <div class="m-flex-row m-align-center m-gap-8">
-                <i class="fas fa-chevron-down rank-expand-icon {{#if group.isCollapsed}}collapsed{{/if}}"></i>
-                <h4 class="rank-title">{{group.label}}</h4>
-                <span class="rank-count-badge">{{group.spellCount}}</span>
+                <i class="fas fa-chevron-down rank-expand-icon m-text-md {{#if group.isCollapsed}}collapsed{{/if}}"></i>
+                <h4 class="rank-title m-text-xl m-bold">{{group.label}}</h4>
+                <span class="rank-count-badge m-text-xs m-bold">{{group.spellCount}}</span>
               </div>
             </div>
 
@@ -261,7 +261,7 @@
                 {{!-- Slots can only use the card's parameters (spell, rank) and @root, see spell-card.hbs --}}
                 {{#*inline "lineButtons"}}
   <!--                {{#if spell.hasDamage}}-->
-  <!--                <button type="button" class="touch-target btn-spell-damage m-compact m-inline-flex m-align-center m-justify-center m-gap-4 {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}}: {{spell.damageFormula}}{{/if}}">-->
+  <!--                <button type="button" class="touch-target btn-spell-damage m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-text-md m-semibold {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}}: {{spell.damageFormula}}{{/if}}">-->
   <!--                  {{#if spell.isHealingOnly}}-->
   <!--                    <i class="fas fa-heart-pulse"></i> Heal-->
   <!--                  {{else}}-->
@@ -292,7 +292,7 @@
     <!-- Wands Section -->
     {{#if activations.wands.length}}
     <div class="wands-activation-group m-flex-col m-gap-8">
-      <h3 class="activation-section-title m-flex-row m-align-center m-gap-6"><i class="fas fa-wand-sparkles"></i> Wands</h3>
+      <h3 class="activation-section-title m-flex-row m-align-center m-gap-6 m-text-xl m-bold"><i class="fas fa-wand-sparkles"></i> Wands</h3>
       <div class="m-flex-col m-gap-6">
         {{#each activations.wands as |wand|}}
         <div class="action-card activation-item-card {{#if wand.isOvercharged}}expended{{/if}}" data-item-id="{{wand.id}}">
@@ -302,17 +302,17 @@
               <div class="m-flex-row m-wrap m-align-center m-gap-6">
                 <span class="action-name m-min-w-0 m-truncate"><strong>{{wand.name}}</strong></span>
                 <span class="detail-tag">Rank {{wand.rank}}</span>
-                <span class="wand-uses-badge {{#if wand.isOvercharged}}badge-expended{{/if}}">
+                <span class="wand-uses-badge m-text-sm {{#if wand.isOvercharged}}badge-expended{{/if}}">
                   {{#if wand.isOvercharged}}Overcharged / Expended{{else}}{{wand.uses.value}} / {{wand.uses.max}} Uses{{/if}}
                 </span>
               </div>
             </div>
             <div class="action-btn-group m-flex-row m-align-center m-gap-6 m-shrink-0">
-              <button type="button" class="touch-target btn-action-chat m-compact m-inline-flex m-align-center m-gap-4" data-action="itemToChat" data-item-id="{{wand.id}}" title="Send to Chat">
+              <button type="button" class="touch-target btn-action-chat m-compact m-inline-flex m-align-center m-gap-4 m-text-base" data-action="itemToChat" data-item-id="{{wand.id}}" title="Send to Chat">
                 <i class="fas fa-message"></i>
               </button>
               {{#if wand.spell.hasDamage}}
-              <button type="button" class="touch-target btn-spell-damage m-compact m-inline-flex m-align-center m-justify-center m-gap-4 {{#if wand.spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{wand.id}}" data-entry-id="{{wand.entryId}}" data-rank="{{wand.rank}}" title="Roll {{#if wand.spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{wand.name}} (Rank {{wand.rank}}){{#if wand.spell.damageFormula}}: {{wand.spell.damageFormula}}{{/if}}">
+              <button type="button" class="touch-target btn-spell-damage m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-text-md m-semibold {{#if wand.spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{wand.id}}" data-entry-id="{{wand.entryId}}" data-rank="{{wand.rank}}" title="Roll {{#if wand.spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{wand.name}} (Rank {{wand.rank}}){{#if wand.spell.damageFormula}}: {{wand.spell.damageFormula}}{{/if}}">
                 {{#if wand.spell.isHealingOnly}}
                   <i class="fas fa-heart-pulse"></i> Heal
                 {{else}}
@@ -320,7 +320,7 @@
                 {{/if}}
               </button>
               {{/if}}
-              <button type="button" class="touch-target btn-cast btn-cast-item m-compact m-inline-flex m-align-center m-justify-center" data-action="castItemSpell" data-item-type="wand" data-item-id="{{wand.id}}" data-entry-id="{{wand.entryId}}" title="Cast from {{wand.name}}">
+              <button type="button" class="touch-target btn-cast btn-cast-item m-compact m-inline-flex m-align-center m-justify-center m-text-base" data-action="castItemSpell" data-item-type="wand" data-item-id="{{wand.id}}" data-entry-id="{{wand.entryId}}" title="Cast from {{wand.name}}">
                 <i class="fas fa-wand-magic"></i> Cast{{#if wand.castActions}} ({{wand.castActions}}){{/if}}
               </button>
             </div>
@@ -334,7 +334,7 @@
     <!-- Scrolls Section -->
     {{#if activations.scrolls.length}}
     <div class="scrolls-activation-group m-flex-col m-gap-8">
-      <h3 class="activation-section-title m-flex-row m-align-center m-gap-6"><i class="fas fa-scroll"></i> Scrolls</h3>
+      <h3 class="activation-section-title m-flex-row m-align-center m-gap-6 m-text-xl m-bold"><i class="fas fa-scroll"></i> Scrolls</h3>
       <div class="m-flex-col m-gap-6">
         {{#each activations.scrolls as |scroll|}}
         <div class="action-card activation-item-card" data-item-id="{{scroll.id}}">
@@ -344,15 +344,15 @@
               <div class="m-flex-row m-wrap m-align-center m-gap-6">
                 <span class="action-name m-min-w-0 m-truncate"><strong>{{scroll.name}}</strong></span>
                 <span class="detail-tag">Rank {{scroll.rank}}</span>
-                <span class="quantity-badge">Qty: {{scroll.quantity}}</span>
+                <span class="quantity-badge m-text-sm">Qty: {{scroll.quantity}}</span>
               </div>
             </div>
             <div class="action-btn-group m-flex-row m-align-center m-gap-6 m-shrink-0">
-              <button type="button" class="touch-target btn-action-chat m-compact m-inline-flex m-align-center m-gap-4" data-action="itemToChat" data-item-id="{{scroll.id}}" title="Send to Chat">
+              <button type="button" class="touch-target btn-action-chat m-compact m-inline-flex m-align-center m-gap-4 m-text-base" data-action="itemToChat" data-item-id="{{scroll.id}}" title="Send to Chat">
                 <i class="fas fa-message"></i>
               </button>
               {{#if scroll.spell.hasDamage}}
-              <button type="button" class="touch-target btn-spell-damage m-compact m-inline-flex m-align-center m-justify-center m-gap-4 {{#if scroll.spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{scroll.id}}" data-entry-id="{{scroll.entryId}}" data-rank="{{scroll.rank}}" title="Roll {{#if scroll.spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{scroll.name}} (Rank {{scroll.rank}}){{#if scroll.spell.damageFormula}}: {{scroll.spell.damageFormula}}{{/if}}">
+              <button type="button" class="touch-target btn-spell-damage m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-text-md m-semibold {{#if scroll.spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{scroll.id}}" data-entry-id="{{scroll.entryId}}" data-rank="{{scroll.rank}}" title="Roll {{#if scroll.spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{scroll.name}} (Rank {{scroll.rank}}){{#if scroll.spell.damageFormula}}: {{scroll.spell.damageFormula}}{{/if}}">
                 {{#if scroll.spell.isHealingOnly}}
                   <i class="fas fa-heart-pulse"></i> Heal
                 {{else}}
@@ -360,7 +360,7 @@
                 {{/if}}
               </button>
               {{/if}}
-              <button type="button" class="touch-target btn-cast btn-cast-item m-compact m-inline-flex m-align-center m-justify-center" data-action="castItemSpell" data-item-type="scroll" data-item-id="{{scroll.id}}" data-entry-id="{{scroll.entryId}}" title="Cast and consume 1 {{scroll.name}}">
+              <button type="button" class="touch-target btn-cast btn-cast-item m-compact m-inline-flex m-align-center m-justify-center m-text-base" data-action="castItemSpell" data-item-type="scroll" data-item-id="{{scroll.id}}" data-entry-id="{{scroll.entryId}}" title="Cast and consume 1 {{scroll.name}}">
                 <i class="fas fa-scroll"></i> Cast{{#if scroll.castActions}} ({{scroll.castActions}}){{/if}}
               </button>
             </div>
@@ -374,7 +374,7 @@
     <!-- Other Item Activations -->
     {{#if activations.other.length}}
     <div class="other-activation-group m-flex-col m-gap-8">
-      <h3 class="activation-section-title m-flex-row m-align-center m-gap-6"><i class="fas fa-gem"></i> Other Item Spells</h3>
+      <h3 class="activation-section-title m-flex-row m-align-center m-gap-6 m-text-xl m-bold"><i class="fas fa-gem"></i> Other Item Spells</h3>
       <div class="m-flex-col m-gap-6">
         {{#each activations.other as |act|}}
         <div class="action-card activation-item-card" data-item-id="{{act.id}}">
@@ -384,11 +384,11 @@
               <span class="detail-tag">{{act.entryName}}</span>
             </div>
             <div class="action-btn-group m-flex-row m-align-center m-gap-6 m-shrink-0">
-              <button type="button" class="touch-target btn-action-chat m-compact m-inline-flex m-align-center m-gap-4" data-action="itemToChat" data-item-id="{{act.spell.id}}" title="Send to Chat">
+              <button type="button" class="touch-target btn-action-chat m-compact m-inline-flex m-align-center m-gap-4 m-text-base" data-action="itemToChat" data-item-id="{{act.spell.id}}" title="Send to Chat">
                 <i class="fas fa-message"></i>
               </button>
               {{#if act.spell.hasDamage}}
-              <button type="button" class="touch-target btn-spell-damage m-compact m-inline-flex m-align-center m-justify-center m-gap-4 {{#if act.spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{act.spell.id}}" data-entry-id="{{act.entryId}}" data-rank="{{act.spell.effectiveCastRank}}" title="Roll {{#if act.spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{act.spell.name}} (Rank {{act.spell.effectiveCastRank}}){{#if act.spell.damageFormula}}: {{act.spell.damageFormula}}{{/if}}">
+              <button type="button" class="touch-target btn-spell-damage m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-text-md m-semibold {{#if act.spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{act.spell.id}}" data-entry-id="{{act.entryId}}" data-rank="{{act.spell.effectiveCastRank}}" title="Roll {{#if act.spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{act.spell.name}} (Rank {{act.spell.effectiveCastRank}}){{#if act.spell.damageFormula}}: {{act.spell.damageFormula}}{{/if}}">
                 {{#if act.spell.isHealingOnly}}
                   <i class="fas fa-heart-pulse"></i> Heal
                 {{else}}
@@ -396,7 +396,7 @@
                 {{/if}}
               </button>
               {{/if}}
-              <button type="button" class="touch-target btn-cast btn-cast-item m-compact m-inline-flex m-align-center m-justify-center" data-action="castItemSpell" data-item-typeThe="other" data-item-id="{{act.spell.id}}" data-entry-id="{{act.entryId}}" title="Cast {{act.spell.name}}">
+              <button type="button" class="touch-target btn-cast btn-cast-item m-compact m-inline-flex m-align-center m-justify-center m-text-base" data-action="castItemSpell" data-item-typeThe="other" data-item-id="{{act.spell.id}}" data-entry-id="{{act.entryId}}" title="Cast {{act.spell.name}}">
                 <i class="fas fa-wand-magic"></i> Cast{{#if act.spell.castActions}} ({{act.spell.castActions}}){{/if}}
               </button>
             </div>

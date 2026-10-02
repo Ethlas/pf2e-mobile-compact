@@ -2,7 +2,7 @@
   {{#if coreSkills.length}}
   <!-- Core Skills Section -->
   <section class="actions-section core-skills-section">
-    <h3 class="section-title"><i class="fas fa-dice-d20"></i> Core Skills</h3>
+    <h3 class="section-title m-bold"><i class="fas fa-dice-d20"></i> Core Skills</h3>
     <div class="skills-grid m-gap-8">
       {{#each coreSkills as |skill|}}
       <button
@@ -14,10 +14,10 @@
         aria-label="{{skill.label}} Check ({{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}})"
       >
         <div class="m-flex-row m-align-center m-gap-6 m-flex-auto m-min-w-0">
-          <span class="skill-rank-badge rank-{{skill.rank}} m-inline-flex m-align-center m-justify-center m-shrink-0" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
-          <span class="skill-name m-truncate">{{skill.label}}</span>
+          <span class="skill-rank-badge rank-{{skill.rank}} m-text-xs m-bold m-inline-flex m-align-center m-justify-center m-shrink-0" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
+          <span class="m-truncate m-text-base m-medium">{{skill.label}}</span>
         </div>
-        <span class="skill-mod m-shrink-0">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
+        <span class="skill-mod m-shrink-0 m-text-xl m-bold">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
       </button>
       {{/each}}
     </div>
@@ -25,7 +25,7 @@
   {{else}}
   <!-- Unified Skills Section Fallback -->
   <section class="actions-section">
-    <h3 class="section-title"><i class="fas fa-dice-d20"></i> Skills</h3>
+    <h3 class="section-title m-bold"><i class="fas fa-dice-d20"></i> Skills</h3>
     <div class="skills-grid m-gap-8">
       {{#each skills as |skill|}}
       <button
@@ -37,10 +37,10 @@
         aria-label="{{skill.label}} Check ({{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}})"
       >
         <div class="m-flex-row m-align-center m-gap-6 m-flex-auto m-min-w-0">
-          <span class="skill-rank-badge rank-{{skill.rank}} m-inline-flex m-align-center m-justify-center m-shrink-0" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
-          <span class="skill-name m-truncate">{{skill.label}}</span>
+          <span class="skill-rank-badge rank-{{skill.rank}} m-text-xs m-bold m-inline-flex m-align-center m-justify-center m-shrink-0" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
+          <span class="m-truncate m-text-base m-medium">{{skill.label}}</span>
         </div>
-        <span class="skill-mod m-shrink-0">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
+        <span class="skill-mod m-shrink-0 m-text-xl m-bold">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
       </button>
       {{/each}}
     </div>
@@ -50,7 +50,7 @@
   {{#if loreSkills.length}}
   <!-- Lore Skills Section -->
   <section class="actions-section lore-skills-section">
-    <h3 class="section-title"><i class="fas fa-book-atlas"></i> Lore Skills</h3>
+    <h3 class="section-title m-bold"><i class="fas fa-book-atlas"></i> Lore Skills</h3>
     <div class="skills-grid m-gap-8">
       {{#each loreSkills as |skill|}}
       <button
@@ -62,10 +62,10 @@
         aria-label="{{skill.label}} Check ({{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}})"
       >
         <div class="m-flex-row m-align-center m-gap-6 m-flex-auto m-min-w-0">
-          <span class="skill-rank-badge rank-{{skill.rank}} m-inline-flex m-align-center m-justify-center m-shrink-0" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
-          <span class="skill-name m-truncate">{{skill.label}}</span>
+          <span class="skill-rank-badge rank-{{skill.rank}} m-text-xs m-bold m-inline-flex m-align-center m-justify-center m-shrink-0" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
+          <span class="m-truncate m-text-base m-medium">{{skill.label}}</span>
         </div>
-        <span class="skill-mod m-shrink-0">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
+        <span class="skill-mod m-shrink-0 m-text-xl m-bold">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
       </button>
       {{/each}}
     </div>

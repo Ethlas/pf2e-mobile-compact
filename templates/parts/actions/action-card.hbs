@@ -17,11 +17,11 @@
     <div class="m-card-main m-flex-col m-align-baseline">
       <div class="m-card-title m-flex-row m-align-center">
         {{#if (eq glyphType "reaction")}}
-        <span class="action-cost-glyph glyph-reaction m-inline-flex m-align-center m-justify-center m-shrink-0"><span class="action-glyph">R</span></span>
+        <span class="action-cost-glyph glyph-reaction m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base"><span class="action-glyph">R</span></span>
         {{else if (eq glyphType "free")}}
-        <span class="action-cost-glyph glyph-free m-inline-flex m-align-center m-justify-center m-shrink-0"><span class="action-glyph">F</span></span>
+        <span class="action-cost-glyph glyph-free m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base"><span class="action-glyph">F</span></span>
         {{else if act.glyph}}
-        <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0"><span class="action-glyph">{{act.glyph}}</span></span>
+        <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base"><span class="action-glyph">{{act.glyph}}</span></span>
         {{/if}}
         <span class="action-name m-min-w-0 m-truncate"><strong>{{act.name}}</strong></span>
       </div>
@@ -30,10 +30,10 @@
       <div class="action-traits m-flex-row m-wrap m-gap-4">
         {{!-- Skill actions: the skill they roll and the character's proficiency in it --}}
         {{#if act.skill}}
-        <span class="action-skill m-inline-flex m-align-center m-gap-4" title="{{act.skill.options}} ({{act.skill.rankName}})"><span class="skill-rank-badge rank-{{act.skill.rank}} m-inline-flex m-align-center m-justify-center m-shrink-0">{{act.skill.rankLetter}}</span>{{act.skill.label}}</span>
+        <span class="action-skill m-inline-flex m-align-center m-gap-4" title="{{act.skill.options}} ({{act.skill.rankName}})"><span class="skill-rank-badge rank-{{act.skill.rank}} m-text-xs m-bold m-inline-flex m-align-center m-justify-center m-shrink-0">{{act.skill.rankLetter}}</span>{{act.skill.label}}</span>
         {{/if}}
         {{#each act.traits as |trait|}}
-        <span class="trait-badge">{{trait.label}}</span>
+        <span class="trait-badge m-text-xs">{{trait.label}}</span>
         {{/each}}
         {{!-- Actions with limited uses (pf2e "Frequency", e.g. once per day) show how many are left --}}
         {{#if act.frequency}}
@@ -46,19 +46,19 @@
     <!-- Quick buttons, icon only (the action cost is shown by the glyph) -->
     <div class="action-btn-group m-flex-row m-align-center m-gap-6 m-shrink-0">
       {{#if act.usable}}
-      <button type="button" class="touch-target btn-action-use m-compact m-inline-flex m-align-center m-gap-4 {{#if act.active}}active{{/if}}" data-action="useAction" data-item-id="{{act.id}}" title="{{#if act.active}}Deactivate {{act.name}}{{else}}Use {{act.name}}{{/if}}">
+      <button type="button" class="touch-target btn-action-use m-compact m-inline-flex m-align-center m-gap-4 m-text-base m-semibold {{#if act.active}}active{{/if}}" data-action="useAction" data-item-id="{{act.id}}" title="{{#if act.active}}Deactivate {{act.name}}{{else}}Use {{act.name}}{{/if}}">
         {{#if act.active}}<i class="fas fa-toggle-on"></i>{{else}}<i class="fas fa-play"></i>{{/if}}
       </button>
       {{/if}}
       {{#if act.hasRoll}}
-      <button type="button" class="touch-target btn-action-roll m-compact m-inline-flex m-align-center m-gap-4 {{#if act.isAttack}}btn-action-attack{{/if}}" data-action="rollActionCheck" data-item-id="{{act.id}}" data-action-slug="{{act.slug}}" title="{{#if act.isAttack}}Attack{{else}}Roll Check{{/if}}">
+      <button type="button" class="touch-target btn-action-roll m-compact m-inline-flex m-align-center m-gap-4 m-text-base m-semibold {{#if act.isAttack}}btn-action-attack{{/if}}" data-action="rollActionCheck" data-item-id="{{act.id}}" data-action-slug="{{act.slug}}" title="{{#if act.isAttack}}Attack{{else}}Roll Check{{/if}}">
         {{#if act.isAttack}}<i class="fas fa-crosshairs"></i>{{else}}<i class="fas fa-dice-d20"></i>{{/if}}
       </button>
       {{/if}}
       {{!-- Actions without Use or Roll (e.g. Anoint Ally, whose effect goes on an ally) get Chat on the
             line instead of in the drawer: posting the card is their action, and the chat card links the effect --}}
       {{#unless (or act.usable act.hasRoll)}}
-      <button type="button" class="touch-target btn-action-chat m-compact m-inline-flex m-align-center m-gap-4" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
+      <button type="button" class="touch-target btn-action-chat m-compact m-inline-flex m-align-center m-gap-4 m-text-base" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
         <i class="fas fa-message"></i>
       </button>
       {{/unless}}
@@ -66,10 +66,10 @@
   </div>
 
   <!-- Expandable drawer: Chat (unless it is on the line), then the description -->
-  <div class="action-summary {{#if act.isExpanded}}expanded{{else}}collapsed{{/if}}">
+  <div class="action-summary m-text-base {{#if act.isExpanded}}expanded{{else}}collapsed{{/if}}">
     <div class="m-drawer-row m-flex-row">
       {{#if (or act.usable act.hasRoll)}}
-      <button type="button" class="touch-target btn-action-chat m-compact m-inline-flex m-align-center m-gap-4" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
+      <button type="button" class="touch-target btn-action-chat m-compact m-inline-flex m-align-center m-gap-4 m-text-base" data-action="itemToChat" data-item-id="{{act.id}}" title="Send to Chat">
         <i class="fas fa-message"></i>
       </button>
       {{/if}}

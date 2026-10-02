@@ -66,7 +66,7 @@
   <p>The colours, utility classes and components of <code>styles/pf2e-mobile.css</code>, rendered with the real stylesheet. Class names are shown under each sample.</p>
   <ul class="sg-rules">
     <li>Use a palette variable (<code>--m-*</code>) for every background, border and text colour. Need a colour that is not here? Add it to the Colour Palette block and to this page, instead of writing a hex value in a component rule.</li>
-    <li>Layout in templates uses the <code>m-*</code> utilities (flex, gap, truncate). Component rules keep only how something looks.</li>
+    <li>Layout and text size/weight in templates use the <code>m-*</code> utilities (flex, gap, truncate, <code>m-text-*</code>, <code>m-medium</code>/<code>m-semibold</code>/<code>m-bold</code>). Component rules keep only how something looks.</li>
     <li>Badges and soft buttons of a role use that role's tone; solid action buttons use its <code>-solid</code> shades. Add a new badge's selector to the tone rule at the end of the stylesheet.</li>
     <li>Damage types, proficiency ranks and character tags use pf2e's colours; the role colours follow Foundry's.</li>
     <li>When you add or change a variable, utility, component or colour role, update this page in the same change.</li>
@@ -178,6 +178,21 @@
     <div class="sg-item"><div class="sg-sample"><h3 class="section-title" style="width: 100%;"><i class="fas fa-bolt"></i> Section title</h3></div></div>
     <div class="sg-item"><div class="sg-sample"><span class="action-cost-glyph">2</span> <span class="glyph-reaction">R</span> <span class="glyph-free">F</span></div></div>
     <div class="sg-item"><div class="sg-sample"><span class="action-frequency">1/day</span></div></div>
+  </div>
+
+  <h2>Typography</h2>
+  <p>The type scale (<code>m-text-*</code>) and weights. Inputs and selects stay at 16px (iOS zooms in on smaller fields); a few large titles, numbers and icons keep their own size.</p>
+  <div class="sg-grid">
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-2xs">m-text-2xs · 0.65rem</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-xs">m-text-xs · 0.7rem</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-sm">m-text-sm · 0.75rem</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-md">m-text-md · 0.8rem</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base">m-text-base · 0.85rem</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-lg">m-text-lg · 0.9rem</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-xl">m-text-xl · 0.95rem</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-medium">m-medium · 500</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-semibold">m-semibold · 600</span></div></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-bold">m-bold · bold</span></div></div>
   </div>
 
   <h2>Components</h2>
