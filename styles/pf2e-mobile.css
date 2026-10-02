@@ -502,6 +502,11 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   font-size: 0.9375rem;
 }
 
+/* 16px */
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-full {
+  font-size: 1rem;
+}
+
 /* 15px */
 
 /* Font weights */
@@ -3660,22 +3665,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   margin: 4px 4px 2px;
-}
-
-.pf2e-mobile-sheet .character-speed-value {
-  font-size: 1.0625rem;
-}
-
-/* A speed the character doesn't have: dimmed dash */
-.pf2e-mobile-sheet .character-speed-none .character-speed-value {
-  font-weight: normal;
-  color: var(--m-text-faint);
-}
-
-.pf2e-mobile-sheet .character-speed-value small {
-  font-size: 0.6875rem;
-  font-weight: normal;
-  color: var(--m-text-dim);
 }
 
 /* The six attribute modifiers in one row (two rows of three on narrow screens) */

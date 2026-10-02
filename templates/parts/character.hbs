@@ -91,9 +91,14 @@
     <h4 class="character-subtitle m-text-base m-bold m-color-accent"><i class="fas fa-person-running"></i> Speeds</h4>
     <div class="character-speeds m-gap-6">
       {{#each character.speeds as |speed|}}
-      <div class="m-flex-col m-align-center {{#unless speed.value}}character-speed-none{{/unless}}">
+      <div class="m-flex-col m-align-center {{#unless speed.value}}m-color-faint{{/unless}}">
         <span class="m-text-sm m-color-dim">{{speed.label}}</span>
-        <span class="character-speed-value m-bold m-color-strong">{{#if speed.value}}{{speed.value}} <small>ft</small>{{else}}&mdash;{{/if}}</span>
+        <span class="m-text-full">
+          {{#if speed.value}}
+            <span class="m-bold m-color-strong">{{speed.value}}</span>
+            <small class="m-text-xs m-color-dim">ft</small>
+          {{else}}&mdash;{{/if}}
+        </span>
       </div>
       {{/each}}
     </div>
