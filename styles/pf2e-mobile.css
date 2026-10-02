@@ -258,15 +258,19 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   --m-warning-solid: color-mix(in srgb, var(--m-hue-warning) 72%, black);
   --m-warning-solid-active: color-mix(in srgb, var(--m-hue-warning) 88%, black);
 
-  /* Staff: quiet wood for the card and drawer; gold for charges, verdigris for spell slots */
+  /* Staff: quiet wood for the card and drawer; purple for charges, verdigris for spell slots */
   --m-staff-bg: linear-gradient(135deg, #262320 0%, #201e1b 100%);
   --m-staff-bg-active: linear-gradient(135deg, #2c2925 0%, #24221f 100%);
   --m-staff-bg-flat: #201e1b;
   --m-staff-border: #4a3f30;
-  --m-charge-bg: #3d300b;
-  --m-charge-bg-active: #4d3d0e;
-  --m-charge-border: #ca8a04;
-  --m-charge-text: #fde047;
+  --m-charge-bg: var(--m-purple-bg);
+  --m-charge-bg-active: color-mix(in srgb, var(--m-hue-purple) 32%, #1a1a1a);
+  --m-charge-border: var(--m-purple-border);
+  --m-charge-text: var(--m-purple-text);
+  /* Gold: hero points and the HP change input in the header */
+  --m-gold-bg: #3d300b;
+  --m-gold-border: #ca8a04;
+  --m-gold-text: #fde047;
   --m-slot-bg: #173a35;
   --m-slot-bg-active: #1d4842;
   --m-slot-border: #4f9a8c;
@@ -549,7 +553,7 @@ body.pf2e-mobile-active textarea {
   font-weight: bold;
   background: var(--m-surface-2);
   border: 1px solid var(--m-border);
-  color: var(--m-charge-text);
+  color: var(--m-gold-text);
   border-radius: 4px;
   padding: 0 2px;
 }.pf2e-mobile-sheet .mobile-header-dashboard .hp-delta-input::placeholder {
@@ -3043,11 +3047,11 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 
 .pf2e-mobile-sheet .hero-points-badge {
   font-size: 0.7rem;
-  color: var(--m-charge-text);
-  background: var(--m-charge-bg);
+  color: var(--m-gold-text);
+  background: var(--m-gold-bg);
   padding: 1px 5px;
   border-radius: 4px;
-  border: 1px solid var(--m-charge-border);
+  border: 1px solid var(--m-gold-border);
 }
 
 .pf2e-mobile-sheet .member-blurb {
