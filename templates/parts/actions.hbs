@@ -53,13 +53,13 @@
           <!-- Damage and Critical Buttons Row -->
           <div class="strike-damage-row m-flex-row m-gap-6">
             {{#if strike.damage}}
-            <button type="button" class="touch-target variant-button damage-button m-flex-1 m-text-lg m-color-strong" data-action="executeDamage" data-strike-index="{{index}}" title="Roll Damage">
+            <button type="button" class="touch-target variant-button damage-button m-flex-1 m-text-base m-color-strong" data-action="executeDamage" data-strike-index="{{index}}" title="Roll Damage">
               💥 {{strike.damageFormula}}
             </button>
             {{/if}}
 
             {{#if strike.critical}}
-            <button type="button" class="touch-target variant-button critical-button m-flex-1 m-text-lg m-bold m-color-strong" data-action="executeCritical" data-strike-index="{{index}}" title="Roll Critical Damage">
+            <button type="button" class="touch-target variant-button critical-button m-flex-1 m-text-base m-bold m-color-strong" data-action="executeCritical" data-strike-index="{{index}}" title="Roll Critical Damage">
               ⚡ Crit
             </button>
             {{/if}}

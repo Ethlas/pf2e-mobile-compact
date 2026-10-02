@@ -4,7 +4,7 @@
     <p class="dialog-subtitle m-text-sm m-color-dim">Choose a spell from your repertoire to prepare in Slot {{slotNumber}}.</p>
     <div class="spell-picker-search m-flex-row m-align-center">
       <i class="fas fa-search search-icon"></i>
-      <input type="text" class="spell-picker-input touch-target m-text-lg m-color-strong" placeholder="Filter spells by name..." autofocus />
+      <input type="text" class="spell-picker-input touch-target m-text-base m-color-strong" placeholder="Filter spells by name..." autofocus />
     </div>
   </div>
 
@@ -14,7 +14,7 @@
       <img class="spell-item-img m-shrink-0" src="{{spell.img}}" alt="{{spell.name}}" />
       <div class="m-flex-1 m-min-w-0">
         <div class="m-flex-row m-align-center m-gap-6">
-          <span class="m-truncate m-text-lg m-color-strong"><strong>{{spell.name}}</strong></span>
+          <span class="m-truncate m-text-base m-color-strong"><strong>{{spell.name}}</strong></span>
           {{#if spell.glyph}}
           <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base m-color-accent"><span class="action-glyph">{{spell.glyph}}</span></span>
           {{/if}}

@@ -149,7 +149,7 @@
       {{#each entry.ranks as |rankData|}}
       <div class="prep-rank-card m-panel" data-rank="{{rankData.rank}}">
         <div class="prep-rank-header m-flex-row m-align-center m-justify-between">
-          <span class="m-text-lg m-color-normal"><strong>{{rankData.label}}</strong></span>
+          <span class="m-text-base m-color-normal"><strong>{{rankData.label}}</strong></span>
           <span class="m-text-sm m-color-dim">{{rankData.preparedCount}} / {{rankData.maxSlots}} Prepared</span>
         </div>
 
@@ -174,7 +174,7 @@
                 <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base m-color-accent"><span class="action-glyph">{{slot.spell.glyph}}</span></span>
                 {{/if}}
                 {{#if slot.isExpended}}
-                <span class="spell-expended-badge m-badge m-text-2xs m-bold">Expended</span>
+                <span class="spell-expended-badge m-badge m-text-xs m-bold">Expended</span>
                 {{/if}}
               </div>
               <div class="slot-actions m-flex-row m-gap-4 m-shrink-0">

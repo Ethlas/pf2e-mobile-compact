@@ -86,7 +86,7 @@ body.pf2e-fullscreen #notifications .notification {
   pointer-events: auto;
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }body.pf2e-mobile-active #screen-warning,
 body.pf2e-mobile-active #resolution-warning,
 body.pf2e-fullscreen #screen-warning,
@@ -415,16 +415,14 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   border: 1px solid var(--m-border);
 }
 
-/* Text sizes: the sheet's type scale (in rem). Like m-compact they come after the 48px / 16px button and input
+/* Text sizes: the sheet's type scale, in rem that land on whole pixels at the 16px base (11 to 15px). Like m-compact they come after the 48px / 16px button and input
    defaults above, so a button can take a smaller size. Inputs and selects keep 16px (iOS zooms in on smaller
    fields, enforced with !important), and the few larger titles, numbers and icons keep their own size. */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-2xs { font-size: 0.65rem; } /* 10.4px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-xs { font-size: 0.7rem; } /* 11.2px */
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-xs { font-size: 0.6875rem; } /* 11px */
 :is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-sm { font-size: 0.75rem; } /* 12px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-md { font-size: 0.8rem; } /* 12.8px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-base { font-size: 0.85rem; } /* 13.6px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-lg { font-size: 0.9rem; } /* 14.4px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-xl { font-size: 0.95rem; } /* 15.2px */
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-md { font-size: 0.8125rem; } /* 13px */
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-base { font-size: 0.875rem; } /* 14px */
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-xl { font-size: 0.9375rem; } /* 15px */
 
 /* Font weights */
 :is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-medium { font-weight: 500; }
@@ -597,7 +595,7 @@ body.pf2e-mobile-active textarea {
   padding: 0 2px;
 }.pf2e-mobile-sheet .mobile-header-dashboard .hp-delta-input::placeholder {
   color: var(--m-text-dim);
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   font-weight: normal;
 }.pf2e-mobile-sheet .mobile-header-dashboard .hp-delta-input:focus {
   border-color: var(--m-accent);
@@ -618,7 +616,7 @@ body.pf2e-mobile-active textarea {
   min-height: 28px;
   height: 28px;
   text-align: center;
-  font-size: 1.05rem;
+  font-size: 1.0625rem;
   background: transparent;
   border: none;
   border-bottom: 1px dashed rgba(129, 199, 132, 0.5);
@@ -645,7 +643,7 @@ body.pf2e-mobile-active textarea {
 .pf2e-mobile-sheet .hp-slash {
   margin: 0 1px;
 }.pf2e-mobile-sheet .hp-max-value {
-  font-size: 1.05rem;
+  font-size: 1.0625rem;
 }/* 3. Temp HP Pill */.pf2e-mobile-sheet .temp-hp-direct-group {
   background: var(--m-surface-2);
   padding: 2px 8px;
@@ -661,7 +659,7 @@ body.pf2e-mobile-active textarea {
   min-height: 28px;
   height: 28px;
   text-align: center;
-  font-size: 1.05rem;
+  font-size: 1.0625rem;
   background: transparent;
   border: none;
   border-bottom: 1px dashed rgba(79, 195, 247, 0.5);
@@ -755,7 +753,7 @@ body.pf2e-mobile-active textarea {
   background: rgba(255, 255, 255, 0.05);
   border-top: 3px solid var(--m-accent);
 }.pf2e-mobile-sheet .nav-item i {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
 }.pf2e-mobile-sheet .nav-icon-wrapper {
   position: relative;
 }.pf2e-mobile-sheet .chat-badge {
@@ -916,7 +914,7 @@ body.pf2e-mobile-active textarea {
   height: 38px;
   min-width: 0;
   padding: 2px 4px;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -1017,7 +1015,7 @@ body.pf2e-mobile-active textarea {
 }.pf2e-mobile-sheet .strike-card .map-button {
   min-height: 44px;
   height: 44px;
-  font-size: 1.05rem;
+  font-size: 1.0625rem;
   border-radius: 4px;
 }.pf2e-mobile-sheet .strike-card .map-button:active {
   background: var(--m-info-solid-active);
@@ -1126,13 +1124,13 @@ body.pf2e-mobile-active textarea {
   text-transform: capitalize;
 }.pf2e-mobile-sheet .action-skill {
   /* Skill label on skill action cards: rank letter (Skills tab colors) + skill name */
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   color: var(--m-text);
 }.pf2e-mobile-sheet .action-skill .skill-rank-badge {
   width: 16px;
   height: 16px;
-  font-size: 0.65rem;
+  font-size: 0.6875rem;
   border-radius: 3px;
 }.pf2e-mobile-sheet .action-frequency {
   font-size: 0.75rem;
@@ -1250,7 +1248,7 @@ body.pf2e-mobile-active textarea {
 /* The slot count in a rank header ("2 / 3") in the spell slot colour, a little larger than the header text */
 .pf2e-mobile-sheet .slot-counter strong {
   color: var(--m-slot-number);
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
 }
 .pf2e-mobile-sheet .detail-tag {
   background: var(--m-surface-1);
@@ -1300,16 +1298,16 @@ body.pf2e-mobile-active textarea {
   color: #ffcc80;
   border: 1px solid #e64a19;
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   padding: 0 10px;
 }.pf2e-mobile-sheet .item-bulk {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   color: var(--m-text-muted);
 }.pf2e-mobile-sheet .empty-hint {
   font-style: italic;
   color: var(--m-text-faint);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   padding: 8px 4px;
   margin: 0;
 }.pf2e-mobile-sheet .btn-runes {
@@ -1358,7 +1356,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-bottom: 1px solid var(--m-border);
   padding-bottom: 8px;
 }.pf2e-mobile-sheet .physical-action-title {
-  font-size: 1.15rem;
+  font-size: 1.125rem;
 }.pf2e-mobile-sheet .physical-action-subtitle {
   margin-top: 2px;
 }.pf2e-mobile-sheet .physical-target-badge {
@@ -1451,13 +1449,13 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   background: var(--color-border-bleed, #99001a);
   color: var(--m-text-strong);
 }.pf2e-mobile-sheet .damage-input-row label {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: var(--m-text-soft);
   min-width: 80px;
 }.physical-dice-dialog-content .physical-damage-input {
   min-height: 48px;
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   text-align: center;
   background: var(--m-surface-0);
   border: 1px solid var(--m-border-strong);
@@ -1739,7 +1737,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   white-space: nowrap;
 }.pf2e-mobile-sheet .spell-source-badge.badge-signature {
   padding: 2px 5px;
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
 }.pf2e-mobile-sheet .spell-expended-badge {
   text-transform: uppercase;
   letter-spacing: 0.4px;
@@ -1776,7 +1774,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   min-width: 0;
   min-height: 42px;
   height: 42px;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   border-radius: 6px;
 }
 .pf2e-mobile-sheet .btn-cast {
@@ -1808,7 +1806,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }.pf2e-mobile-sheet .spell-details {
   margin-top: 4px;
 }.pf2e-mobile-sheet .spell-details .detail-tag {
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
   background: var(--m-surface-1);
   border: 1px solid var(--m-border-subtle);
   color: var(--m-text-muted);
@@ -1818,7 +1816,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   margin-bottom: 10px;
 }.pf2e-mobile-sheet .spell-heightened-notice i {
   color: var(--m-hue-cyan);
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
 }.pf2e-mobile-sheet .spell-heightened-notice strong {
   color: var(--m-cyan-text);
 }/* Spell Drawer Management Footer */.pf2e-mobile-sheet .spell-drawer-footer {
@@ -1948,7 +1946,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-bottom: 1px solid var(--m-border-subtle);
 }.spell-picker-dialog .spell-picker-header h4 {
   margin: 0 0 4px 0;
-  font-size: 1.05rem;
+  font-size: 1.0625rem;
   color: var(--m-accent);
 }.spell-picker-dialog .dialog-subtitle {
   margin: 0 0 8px 0;
@@ -1958,7 +1956,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   position: absolute;
   left: 10px;
   color: var(--m-text-faint);
-  font-size: 0.85rem;
+  font-size: 0.875rem;
 }.spell-picker-dialog .spell-picker-input {
   width: 100%;
   min-height: 40px;
@@ -2001,7 +1999,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   margin-top: 2px;
 }.spell-picker-dialog .spell-item-meta .detail-tag,
 .pf2e-mobile-sheet .spell-item-meta .detail-tag {
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
   background: var(--m-surface-0);
   border: 1px solid var(--m-border-subtle);
   color: var(--m-text-muted);
@@ -2041,7 +2039,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   position: absolute;
   left: 22px;
   color: #71717a;
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
   pointer-events: none;
 }.compendium-picker .compendium-search-input {
   width: 100%;
@@ -2078,7 +2076,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   gap: 4px;
   min-width: 0;
 }.pf2e-mobile-sheet .filter-label {
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   color: #a1a1aa;
   font-weight: bold;
@@ -2094,7 +2092,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border: 1px solid var(--m-border);
   border-radius: 6px;
   padding: 0 8px;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   cursor: pointer;
   touch-action: manipulation;
 }.pf2e-mobile-sheet .filter-select:focus {
@@ -2136,7 +2134,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   padding: 24px 12px;
   text-align: center;
   color: #71717a;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }/* Spell Config Overlay */.compendium-picker .spell-config-overlay {
   position: absolute;
   top: 0;
@@ -2169,7 +2167,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   background: #09090b;
 }.compendium-picker .staged-name {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 1.125rem;
 }.compendium-picker .staged-badge {
 }.compendium-picker .badge-cantrip {
   background: #1e3a5f;
@@ -2184,7 +2182,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }.compendium-picker .spell-config-form {
   gap: 14px;
 }.compendium-picker .spell-config-form label {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   color: var(--m-text);
   font-weight: 600;
 }.compendium-picker .config-select {
@@ -2221,7 +2219,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }.compendium-picker .config-actions button {
   height: 46px;
   border-radius: 6px;
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
   touch-action: manipulation;
@@ -2285,7 +2283,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 
 .pf2e-mobile-sheet .staff-title-row .action-expand-icon {
   margin-left: auto;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   color: var(--m-text);
   transition: transform 0.2s ease;
 }
@@ -2345,7 +2343,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 
 .pf2e-mobile-sheet .charges-label strong {
   color: var(--m-charge-text);
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
 }
 
 .pf2e-mobile-sheet .btn-charge-adjust {
@@ -2444,7 +2442,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
   font-weight: bold;
   border-radius: 4px;
   line-height: 1;
@@ -2504,7 +2502,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-radius: 6px;
   padding: 6px 10px;
   margin-top: 6px;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   color: var(--m-text);
 }
 
@@ -2733,7 +2731,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 
 .pf2e-mobile-sheet .character-tag-size,
 .pf2e-mobile-sheet .character-tag-trait {
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
@@ -2775,7 +2773,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }
 
 .pf2e-mobile-sheet .character-details dt {
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -2825,7 +2823,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }
 
 .pf2e-mobile-sheet .character-speed-value {
-  font-size: 1.05rem;
+  font-size: 1.0625rem;
 }
 
 /* A speed the character doesn't have: dimmed dash */
@@ -2835,7 +2833,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }
 
 .pf2e-mobile-sheet .character-speed-value small {
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
   font-weight: normal;
   color: var(--m-text-dim);
 }
@@ -2867,7 +2865,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }
 
 .pf2e-mobile-sheet .character-attribute-mod {
-  font-size: 1.1rem;
+  font-size: 1.125rem;
 }
 
 /* Shown only when an open feat or effect has no description (its content div stays empty) */
