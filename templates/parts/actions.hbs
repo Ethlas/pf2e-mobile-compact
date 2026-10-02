@@ -1,13 +1,13 @@
 <div class="tab-pane actions-tab" data-tab="actions">
   <!-- Sub-Navigation for Action Mode: Encounter, Exploration, Downtime -->
   <div class="action-subtabs m-panel m-flex-row m-gap-6">
-    <button type="button" class="touch-target subtab-btn {{#if (eq actionSubTab "encounter")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="encounter">
+    <button type="button" class="touch-target subtab-btn m-flex-row m-align-center m-justify-center m-gap-4 m-flex-1 {{#if (eq actionSubTab "encounter")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="encounter">
       ⚔️ Encounter
     </button>
-    <button type="button" class="touch-target subtab-btn {{#if (eq actionSubTab "exploration")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="exploration">
+    <button type="button" class="touch-target subtab-btn m-flex-row m-align-center m-justify-center m-gap-4 m-flex-1 {{#if (eq actionSubTab "exploration")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="exploration">
       🧭 Exploration
     </button>
-    <button type="button" class="touch-target subtab-btn {{#if (eq actionSubTab "downtime")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="downtime">
+    <button type="button" class="touch-target subtab-btn m-flex-row m-align-center m-justify-center m-gap-4 m-flex-1 {{#if (eq actionSubTab "downtime")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="downtime">
       ⛺ Downtime
     </button>
   </div>
@@ -44,7 +44,7 @@
           <!-- MAP Variants at the TOP (Prominent attack row) -->
           <div class="strike-map-row m-flex-row m-gap-6">
             {{#each strike.variants as |variant vIndex|}}
-            <button type="button" class="touch-target map-button" data-action="executeStrike" data-strike-index="{{index}}" data-variant-index="{{vIndex}}" title="Attack Variant {{vIndex}}">
+            <button type="button" class="touch-target map-button m-flex-row m-align-center m-justify-center m-flex-1" data-action="executeStrike" data-strike-index="{{index}}" data-variant-index="{{vIndex}}" title="Attack Variant {{vIndex}}">
               {{variant.label}}
             </button>
             {{/each}}
@@ -53,13 +53,13 @@
           <!-- Damage and Critical Buttons Row -->
           <div class="strike-damage-row m-flex-row m-gap-6">
             {{#if strike.damage}}
-            <button type="button" class="touch-target variant-button damage-button" data-action="executeDamage" data-strike-index="{{index}}" title="Roll Damage">
+            <button type="button" class="touch-target variant-button damage-button m-flex-1" data-action="executeDamage" data-strike-index="{{index}}" title="Roll Damage">
               💥 {{strike.damageFormula}}
             </button>
             {{/if}}
 
             {{#if strike.critical}}
-            <button type="button" class="touch-target variant-button critical-button" data-action="executeCritical" data-strike-index="{{index}}" title="Roll Critical Damage">
+            <button type="button" class="touch-target variant-button critical-button m-flex-1" data-action="executeCritical" data-strike-index="{{index}}" title="Roll Critical Damage">
               ⚡ Crit
             </button>
             {{/if}}
@@ -69,7 +69,7 @@
           {{#if strike.hasAuxiliary}}
           <div class="strike-auxiliary-row m-flex-row m-wrap m-gap-6">
             {{#each strike.auxiliaryActions as |aux|}}
-            <button type="button" class="touch-target aux-action-btn m-compact" data-action="executeAuxiliaryAction" data-strike-index="{{index}}" data-aux-index="{{aux.index}}" title="{{aux.label}}">
+            <button type="button" class="touch-target aux-action-btn m-compact m-inline-flex m-align-center m-gap-4" data-action="executeAuxiliaryAction" data-strike-index="{{index}}" data-aux-index="{{aux.index}}" title="{{aux.label}}">
               {{#if aux.glyph}}
                 <span class="aux-glyph m-inline-flex m-align-center m-justify-center"><span class="action-glyph">{{aux.glyph}}</span></span>
               {{/if}}

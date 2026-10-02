@@ -19,10 +19,10 @@
         <i class="fas fa-weight-hanging"></i> Bulk: <strong>{{stashBulk.value}}</strong> ({{stashBulk.itemsCount}} items)
       </div>
       <div class="m-flex-row m-gap-6">
-        <button type="button" class="touch-target btn-coin-transfer m-compact" data-action="transferCoins" title="Withdraw or Deposit Coins">
+        <button type="button" class="touch-target btn-coin-transfer m-compact m-inline-flex m-align-center m-gap-4" data-action="transferCoins" title="Withdraw or Deposit Coins">
           <i class="fas fa-coins"></i> Transfer Coins
         </button>
-        <button type="button" class="touch-target btn-add-gear m-compact" data-action="openCompendiumPicker" data-type="equipment" title="Add Gear from Compendium">
+        <button type="button" class="touch-target btn-add-gear m-compact m-inline-flex m-align-center m-gap-4" data-action="openCompendiumPicker" data-type="equipment" title="Add Gear from Compendium">
           <i class="fas fa-plus"></i> Add Gear
         </button>
       </div>
@@ -31,7 +31,7 @@
 
   <!-- Consumables Section -->
   <section class="inventory-section">
-    <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="stash-consumables">
+    <h3 class="section-title touch-header m-flex-row m-align-center m-justify-between" data-action="toggleInventorySection" data-section="stash-consumables">
       <span><i class="fas fa-flask"></i> Consumables ({{stash.consumables.length}})</span>
       <i class="fas fa-chevron-down section-expand-icon"></i>
     </h3>
@@ -81,7 +81,7 @@
 
   <!-- Equipment Section (Weapons & Armor) -->
   <section class="inventory-section">
-    <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="stash-equipment">
+    <h3 class="section-title touch-header m-flex-row m-align-center m-justify-between" data-action="toggleInventorySection" data-section="stash-equipment">
       <span><i class="fas fa-shield-halved"></i> Weapons & Armor ({{stash.equipment.length}})</span>
       <i class="fas fa-chevron-down section-expand-icon"></i>
     </h3>
@@ -128,7 +128,7 @@
 
   <!-- Other Gear & Treasure Section -->
   <section class="inventory-section">
-    <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="stash-gear">
+    <h3 class="section-title touch-header m-flex-row m-align-center m-justify-between" data-action="toggleInventorySection" data-section="stash-gear">
       <span><i class="fas fa-backpack"></i> Other Gear & Treasure ({{stash.gear.length}})</span>
       <i class="fas fa-chevron-down section-expand-icon"></i>
     </h3>

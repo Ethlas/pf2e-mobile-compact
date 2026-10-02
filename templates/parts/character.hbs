@@ -24,7 +24,7 @@
   </div>
   <div class="action-summary {{#if entry.isExpanded}}expanded{{else}}collapsed{{/if}}">
     <div class="m-drawer-row m-flex-row">
-      <button type="button" class="touch-target btn-action-chat m-compact" data-action="itemToChat" data-item-id="{{entry.id}}" title="Send to Chat">
+      <button type="button" class="touch-target btn-action-chat m-compact m-inline-flex m-align-center m-gap-4" data-action="itemToChat" data-item-id="{{entry.id}}" title="Send to Chat">
         <i class="fas fa-message"></i> Chat
       </button>
     </div>
@@ -79,7 +79,7 @@
   <!-- Attributes, speeds, senses, languages and the defense details not already in the header (class DC, IWR) -->
   <section class="m-group actions-section character-stats">
     <h3 class="section-title"><i class="fas fa-dumbbell"></i> Attributes</h3>
-    <div class="character-attributes">
+    <div class="character-attributes m-gap-6">
       {{#each character.attributes as |attr|}}
       <div class="character-attribute m-flex-col m-align-center" title="{{attr.title}}">
         <span class="character-attribute-label">{{attr.key}}</span>
@@ -89,7 +89,7 @@
     </div>
 
     <h4 class="character-subtitle"><i class="fas fa-person-running"></i> Speeds</h4>
-    <div class="character-speeds">
+    <div class="character-speeds m-gap-6">
       {{#each character.speeds as |speed|}}
       <div class="m-flex-col m-align-center {{#unless speed.value}}character-speed-none{{/unless}}">
         <span class="character-speed-label">{{speed.label}}</span>
@@ -111,7 +111,7 @@
     {{#with character.defenses as |def|}}
     {{#if (or def.classDC def.immunities.length def.weaknesses.length def.resistances.length)}}
     <h4 class="character-subtitle"><i class="fas fa-shield-halved"></i> Defenses</h4>
-    <dl class="character-facts">
+    <dl class="character-facts m-align-center">
       {{#if def.classDC}}<dt>Class DC</dt><dd>{{def.classDC}}</dd>{{/if}}
       {{#if def.immunities.length}}<dt>Immunities</dt><dd>{{> tagList tags=def.immunities tagClass="character-tag-immunity"}}</dd>{{/if}}
       {{#if def.weaknesses.length}}<dt>Weaknesses</dt><dd>{{> tagList tags=def.weaknesses tagClass="character-tag-weakness"}}</dd>{{/if}}
