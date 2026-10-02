@@ -28,7 +28,7 @@
           <select
             id="targetEntry"
             name="targetEntry"
-            class="touch-target config-select m-text-xl m-color-strong"
+            class="config-select m-text-xl m-color-strong"
             data-change-action="updateStagedEntry"
             onclick="event.stopPropagation()"
           >
@@ -53,7 +53,7 @@
           <select
             id="targetRank"
             name="targetRank"
-            class="touch-target config-select m-text-xl m-color-strong"
+            class="config-select m-text-xl m-color-strong"
             data-change-action="updateStagedRank"
             onclick="event.stopPropagation()"
           >
@@ -67,10 +67,10 @@
 
         <!-- Action Buttons -->
         <div class="config-actions m-flex-row m-gap-10">
-          <button type="button" class="touch-target btn-cancel m-inline-flex m-align-center m-justify-center m-gap-6 m-flex-1" data-action="cancelStage">
+          <button type="button" class="btn-cancel m-inline-flex m-align-center m-justify-center m-gap-6 m-flex-1" data-action="cancelStage">
             <i class="fas fa-xmark"></i> Cancel
           </button>
-          <button type="button" class="touch-target btn-confirm-add m-inline-flex m-align-center m-justify-center m-gap-6 m-flex-1 m-color-strong" data-action="importItem">
+          <button type="button" class="btn-confirm-add m-inline-flex m-align-center m-justify-center m-gap-6 m-flex-1 m-color-strong" data-action="importItem">
             <i class="fas fa-plus"></i> Confirm Add
           </button>
         </div>
@@ -80,7 +80,7 @@
         <i class="fas fa-circle-exclamation"></i>
         <p>This character has no Spellcasting Entries configured yet.</p>
         <p class="sub-text m-text-md">Add a Spellcasting Entry on your character sheet first to learn or prepare spells.</p>
-        <button type="button" class="touch-target btn-cancel" data-action="cancelStage">
+        <button type="button" class="btn-cancel" data-action="cancelStage">
           <i class="fas fa-arrow-left"></i> Back to Spells
         </button>
       </div>
@@ -96,12 +96,12 @@
     <i class="fas fa-magnifying-glass search-icon"></i>
     <input
       type="search"
-      class="compendium-search-input touch-target m-flex-1 m-text-xl m-color-strong"
+      class="compendium-search-input m-flex-1 m-text-xl m-color-strong"
       placeholder="Search {{type}} (Press Enter)..."
       value="{{query}}"
       onclick="event.stopPropagation()"
     />
-    <button type="button" class="touch-target btn-compendium-search m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-strong" data-action="executeSearch" title="Search">
+    <button type="button" class="btn-compendium-search m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-strong" data-action="executeSearch" title="Search">
       <i class="fas fa-magnifying-glass"></i>
     </button>
   </div>
@@ -113,7 +113,7 @@
       <label class="filter-label"><i class="fas fa-layer-group"></i> Rank</label>
       <select
         name="rankFilter"
-        class="touch-target filter-select"
+        class="filter-select"
         data-change-action="updateRankFilter"
         onclick="event.stopPropagation()"
       >
@@ -137,7 +137,7 @@
       <label class="filter-label"><i class="fas fa-hat-wizard"></i> Tradition</label>
       <select
         name="traditionFilter"
-        class="touch-target filter-select"
+        class="filter-select"
         data-change-action="updateTraditionFilter"
         onclick="event.stopPropagation()"
       >
@@ -175,7 +175,7 @@
       </div>
       <button
         type="button"
-        class="touch-target btn-import m-inline-flex m-align-center m-justify-center m-gap-6 m-shrink-0 m-text-base m-semibold m-color-strong"
+        class="btn-import m-inline-flex m-align-center m-justify-center m-gap-6 m-shrink-0 m-text-base m-semibold m-color-strong"
         data-action="stageItem"
         data-entry-id="{{this._id}}"
         title="Add to Character"

@@ -24,8 +24,8 @@ export async function promptItemTransfer(sheet, item, partyMembers, defaultRecip
     <div class="form-group" style="margin-bottom: 12px;">
       <label style="display:block; margin-bottom: 6px; font-weight: bold;">Quantity (Max ${maxQty}):</label>
       <div style="display:flex; align-items:center; gap: 8px;">
-        <input type="number" id="transfer-qty" name="quantity" class="touch-target" value="1" min="1" max="${maxQty}" style="flex:1; text-align:center; font-size:16px; height:42px; border-radius:6px; border:1px solid #444; background:#222; color:#fff;" />
-        <button type="button" class="touch-target btn-max-qty" style="padding: 0 14px; height:42px; border-radius:6px; background:#444; color:#fff; border:1px solid #666; font-size:14px; font-weight:bold;">All</button>
+        <input type="number" id="transfer-qty" name="quantity" value="1" min="1" max="${maxQty}" style="flex:1; text-align:center; font-size:16px; height:42px; border-radius:6px; border:1px solid #444; background:#222; color:#fff;" />
+        <button type="button" class="btn-max-qty" style="padding: 0 14px; height:42px; border-radius:6px; background:#444; color:#fff; border:1px solid #666; font-size:14px; font-weight:bold;">All</button>
       </div>
     </div>
   ` : `<input type="hidden" id="transfer-qty" name="quantity" value="1" />`;
@@ -41,7 +41,7 @@ export async function promptItemTransfer(sheet, item, partyMembers, defaultRecip
       </div>
       <div class="form-group" style="margin-bottom: 12px;">
         <label for="transfer-recipient" style="display:block; margin-bottom: 6px; font-weight: bold;">Give to Member:</label>
-        <select id="transfer-recipient" name="recipient" class="touch-target" style="width:100%; height:44px; font-size:15px; border-radius:6px; border:1px solid #444; background:#222; color:#fff; padding: 0 8px;">
+        <select id="transfer-recipient" name="recipient" style="width:100%; height:44px; font-size:15px; border-radius:6px; border:1px solid #444; background:#222; color:#fff; padding: 0 8px;">
           ${memberOptionsHtml}
         </select>
       </div>
@@ -203,8 +203,8 @@ export async function onSendToPartyStash(sheet, event, target) {
       <div style="padding: 6px 0;">
         <p style="margin-bottom: 10px;">Send <strong>${item.name}</strong> to <strong>${party.name}</strong> Stash:</p>
         <div style="display:flex; align-items:center; gap: 8px;">
-          <input type="number" id="stash-qty" class="touch-target" value="1" min="1" max="${maxQty}" style="flex:1; text-align:center; font-size:16px; height:42px; border-radius:6px; border:1px solid #444; background:#222; color:#fff;" />
-          <button type="button" class="touch-target btn-max-qty" style="padding: 0 14px; height:42px; border-radius:6px; background:#444; color:#fff; border:1px solid #666; font-size:14px; font-weight:bold;">All</button>
+          <input type="number" id="stash-qty" value="1" min="1" max="${maxQty}" style="flex:1; text-align:center; font-size:16px; height:42px; border-radius:6px; border:1px solid #444; background:#222; color:#fff;" />
+          <button type="button" class="btn-max-qty" style="padding: 0 14px; height:42px; border-radius:6px; background:#444; color:#fff; border:1px solid #666; font-size:14px; font-weight:bold;">All</button>
         </div>
       </div>
     `;
@@ -346,33 +346,33 @@ export async function onTransferCoins(sheet, event, target) {
     <div style="padding: 6px 0;">
       <div class="form-group" style="margin-bottom: 10px;">
         <label style="display:block; margin-bottom: 4px; font-weight: bold;">Direction:</label>
-        <select id="coin-direction" class="touch-target" style="width:100%; height:42px; border-radius:6px; background:#222; color:#fff; border:1px solid #444; padding:0 8px;">
+        <select id="coin-direction" style="width:100%; height:42px; border-radius:6px; background:#222; color:#fff; border:1px solid #444; padding:0 8px;">
           <option value="withdraw" selected>Withdraw from Stash to Member</option>
           <option value="deposit">Deposit from Member to Stash</option>
         </select>
       </div>
       <div class="form-group" style="margin-bottom: 10px;">
         <label style="display:block; margin-bottom: 4px; font-weight: bold;">Party Member:</label>
-        <select id="coin-member" class="touch-target" style="width:100%; height:42px; border-radius:6px; background:#222; color:#fff; border:1px solid #444; padding:0 8px;">
+        <select id="coin-member" style="width:100%; height:42px; border-radius:6px; background:#222; color:#fff; border:1px solid #444; padding:0 8px;">
           ${memberOptionsHtml}
         </select>
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
         <div>
           <label style="font-weight:bold; font-size:12px;">Platinum (PP):</label>
-          <input type="number" id="coin-pp" value="0" min="0" class="touch-target" style="width:100%; height:38px; text-align:center; border-radius:6px; background:#222; color:#fff; border:1px solid #444;" />
+          <input type="number" id="coin-pp" value="0" min="0" style="width:100%; height:38px; text-align:center; border-radius:6px; background:#222; color:#fff; border:1px solid #444;" />
         </div>
         <div>
           <label style="font-weight:bold; font-size:12px;">Gold (GP):</label>
-          <input type="number" id="coin-gp" value="0" min="0" class="touch-target" style="width:100%; height:38px; text-align:center; border-radius:6px; background:#222; color:#fff; border:1px solid #444;" />
+          <input type="number" id="coin-gp" value="0" min="0" style="width:100%; height:38px; text-align:center; border-radius:6px; background:#222; color:#fff; border:1px solid #444;" />
         </div>
         <div>
           <label style="font-weight:bold; font-size:12px;">Silver (SP):</label>
-          <input type="number" id="coin-sp" value="0" min="0" class="touch-target" style="width:100%; height:38px; text-align:center; border-radius:6px; background:#222; color:#fff; border:1px solid #444;" />
+          <input type="number" id="coin-sp" value="0" min="0" style="width:100%; height:38px; text-align:center; border-radius:6px; background:#222; color:#fff; border:1px solid #444;" />
         </div>
         <div>
           <label style="font-weight:bold; font-size:12px;">Copper (CP):</label>
-          <input type="number" id="coin-cp" value="0" min="0" class="touch-target" style="width:100%; height:38px; text-align:center; border-radius:6px; background:#222; color:#fff; border:1px solid #444;" />
+          <input type="number" id="coin-cp" value="0" min="0" style="width:100%; height:38px; text-align:center; border-radius:6px; background:#222; color:#fff; border:1px solid #444;" />
         </div>
       </div>
       <div style="font-size:12px; color:#aaa; margin-top:8px;">

@@ -423,7 +423,6 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 /* ----------------------------------------- *//* Touch Targets & Universal Controls        *//* ----------------------------------------- */
 .pf2e-mobile-sheet [data-action],
 .pf2e-mobile-sheet [data-change-action],
-.pf2e-mobile-sheet .touch-target,
 .pf2e-mobile-sheet button,
 .pf2e-mobile-sheet select,
 .pf2e-mobile-sheet summary,
@@ -437,8 +436,7 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 .pf2e-mobile-sheet select,
 .pf2e-mobile-sheet input[type="search"],
 .pf2e-mobile-sheet input[type="number"],
-.pf2e-mobile-sheet input[type="text"],
-.pf2e-mobile-sheet .touch-target {
+.pf2e-mobile-sheet input[type="text"] {
   min-height: 48px;
   min-width: 48px;
   font-size: 1rem;
@@ -451,13 +449,38 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   color: var(--m-text-strong);
 }
 
-/* Compact controls: the 38px buttons, pills and selects used inside cards and the header, smaller than the
-   48px default above. Comes right after it so it wins; component rules later in the file can still change
-   the corner radius. */
-.pf2e-mobile-sheet .m-compact {
+/* Compact controls: the 38px buttons, pills, selects and inputs used inside cards and the header, smaller than
+   the 48px default above. Comes right after it so it wins; component rules later in the file can still change
+   the corner radius. input.m-compact matches the specificity of the input[type=…] defaults, which a single
+   class does not reach. */
+.pf2e-mobile-sheet .m-compact,
+.pf2e-mobile-sheet input.m-compact {
   min-height: 38px;
   height: 38px;
   border-radius: 4px;
+}
+
+/* An input inside a pill (the header's HP and Temp HP): no box of its own, only a dashed underline in its
+   text colour that turns solid with a light tint while editing. The pill around it (m-compact) gives the
+   height; the input's own rule only sets its width and text colour. input.m-pill-input matches the
+   specificity of the input[type=…] defaults above, so it undoes their 48px box. */
+.pf2e-mobile-sheet input.m-pill-input {
+  min-height: 0;
+  min-width: 0;
+  height: 28px;
+  padding: 0 1px;
+  border: none;
+  border-bottom: 1px dashed color-mix(in srgb, currentColor 50%, transparent);
+  border-radius: 2px;
+  background: transparent;
+  text-align: center;
+}
+
+.pf2e-mobile-sheet input.m-pill-input:focus {
+  border-bottom-style: solid;
+  border-bottom-color: currentColor;
+  background: color-mix(in srgb, currentColor 15%, transparent);
+  outline: none;
 }
 
 /* Badges: a badge takes one of these. m-badge is the shape every badge shares; its colour comes from the
@@ -775,44 +798,23 @@ body.pf2e-mobile-active textarea {
   color: var(--m-accent);
 }
 
-/* Row 2: Consolidated HP & Temp HP Streamlined Controls */
-.pf2e-mobile-sheet .header-hp-row {
-  background: var(--m-surface-0);
-  padding: 3px 6px;
-  border-radius: 6px;
-  border: 1px solid var(--m-border-subtle);
-  width: 100%;
-}
-
-/* 1. Delta Pill */
+/* 1. Delta input: a plain m-compact input, centred in its 54px column, on the same surface as the HP and
+   Temp pills next to it */
 .pf2e-mobile-sheet .hp-delta-group {
   flex: 0 0 54px;
 }
 
 .pf2e-mobile-sheet .mobile-header-dashboard .hp-delta-input {
   width: 100%;
-  min-height: 38px;
-  height: 38px;
-  text-align: center;
-  font-size: 1rem;
-  background: var(--m-surface-2);
-  border: 1px solid var(--m-border);
-  color: var(--m-gold-text);
-  border-radius: 4px;
   padding: 0 2px;
+  text-align: center;
+  background: var(--m-surface-2);
 }
 
 .pf2e-mobile-sheet .mobile-header-dashboard .hp-delta-input::placeholder {
   color: var(--m-text-dim);
   font-size: 0.8125rem;
   font-weight: normal;
-}
-
-.pf2e-mobile-sheet .mobile-header-dashboard .hp-delta-input:focus {
-  border-color: var(--m-accent);
-  outline: none;
-  background: var(--m-surface-3);
-  box-shadow: 0 0 4px color-mix(in srgb, var(--m-accent) 40%, transparent);
 }
 
 /* 2. Current & Max HP Pill */
@@ -829,23 +831,10 @@ body.pf2e-mobile-active textarea {
   margin-right: 2px;
 }
 
+/* m-pill-input; green, or the warning/danger colour below */
 .pf2e-mobile-sheet .mobile-header-dashboard .hp-current-input {
   width: 38px;
-  min-height: 28px;
-  height: 28px;
-  text-align: center;
-  background: transparent;
-  border: none;
-  border-bottom: 1px dashed rgba(129, 199, 132, 0.5);
   color: var(--m-success-text);
-  border-radius: 2px;
-  padding: 0 1px;
-}
-
-.pf2e-mobile-sheet .mobile-header-dashboard .hp-current-input:focus {
-  border-bottom: 1px solid currentColor;
-  background: rgba(76, 175, 80, 0.15);
-  outline: none;
 }
 
 /* Header HP coloured by health state, with the same thresholds as the party overview's HP bars
@@ -879,23 +868,10 @@ body.pf2e-mobile-active textarea {
   margin-right: 2px;
 }
 
+/* m-pill-input */
 .pf2e-mobile-sheet .mobile-header-dashboard .temp-hp-current-input {
   width: 32px;
-  min-height: 28px;
-  height: 28px;
-  text-align: center;
-  background: transparent;
-  border: none;
-  border-bottom: 1px dashed rgba(79, 195, 247, 0.5);
   color: var(--m-hue-cyan);
-  border-radius: 2px;
-  padding: 0 1px;
-}
-
-.pf2e-mobile-sheet .mobile-header-dashboard .temp-hp-current-input:focus {
-  border-bottom: 1px solid var(--m-hue-cyan);
-  background: rgba(2, 136, 209, 0.15);
-  outline: none;
 }
 
 /* 4. Shield Pill */

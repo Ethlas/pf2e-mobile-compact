@@ -7,7 +7,7 @@
       {{#each coreSkills as |skill|}}
       <button
         type="button"
-        class="touch-target skill-button m-color-normal prof-rank-{{skill.rank}} m-flex-row m-align-center m-justify-between"
+        class="skill-button m-color-normal prof-rank-{{skill.rank}} m-flex-row m-align-center m-justify-between"
         data-action="rollSkill"
         data-skill="{{skill.slug}}"
         data-statistic="{{skill.slug}}"
@@ -30,7 +30,7 @@
       {{#each skills as |skill|}}
       <button
         type="button"
-        class="touch-target skill-button m-flex-row m-align-center m-justify-between m-color-normal {{#if skill.isLore}}is-lore{{/if}} prof-rank-{{skill.rank}}"
+        class="skill-button m-flex-row m-align-center m-justify-between m-color-normal {{#if skill.isLore}}is-lore{{/if}} prof-rank-{{skill.rank}}"
         data-action="rollSkill"
         data-skill="{{skill.slug}}"
         data-statistic="{{skill.slug}}"
@@ -55,7 +55,7 @@
       {{#each loreSkills as |skill|}}
       <button
         type="button"
-        class="touch-target skill-button is-lore m-color-normal prof-rank-{{skill.rank}} m-flex-row m-align-center m-justify-between"
+        class="skill-button is-lore m-color-normal prof-rank-{{skill.rank}} m-flex-row m-align-center m-justify-between"
         data-action="rollSkill"
         data-skill="{{skill.slug}}"
         data-statistic="{{skill.slug}}"

@@ -1,7 +1,7 @@
 <div class="tab-pane party-overview-tab" data-tab="overview">
   {{#if hasKingdom}}
   <div class="party-kingdom-banner">
-    <button type="button" class="open-kingdom-sheet-btn touch-target" data-action="openMobileKingdomSheet">
+    <button type="button" class="open-kingdom-sheet-btn" data-action="openMobileKingdomSheet">
       <span><i class="fa-solid fa-crown"></i> Open Kingdom Sheet (Mobile View)</span>
       <i class="fa-solid fa-chevron-right"></i>
     </button>
@@ -77,7 +77,7 @@
             <span class="member-blurb m-truncate m-text-sm m-color-muted">{{member.blurb}}</span>
           </div>
           {{#if member.isOwner}}
-          <button type="button" class="touch-target btn-switch-member m-compact m-inline-flex m-align-center m-justify-center m-color-accent" data-action="switchToPartyMember" data-actor-id="{{member.id}}" title="Open Character Sheet">
+          <button type="button" class="btn-switch-member m-compact m-inline-flex m-align-center m-justify-center m-color-accent" data-action="switchToPartyMember" data-actor-id="{{member.id}}" title="Open Character Sheet">
             <i class="fas fa-arrow-right-to-bracket"></i>
           </button>
           {{/if}}

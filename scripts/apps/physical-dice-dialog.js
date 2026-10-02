@@ -174,7 +174,7 @@ export class PhysicalDiceDialog extends HandlebarsApplicationMixin(ApplicationV2
     super._onRender(context, options);
 
     // Focus first input field automatically
-    const firstInput = this.element?.querySelector("input.touch-target, input[type='number']");
+    const firstInput = this.element?.querySelector("input[type='number']");
     if (firstInput) {
       setTimeout(() => {
         try {

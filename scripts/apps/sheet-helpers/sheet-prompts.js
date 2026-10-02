@@ -369,7 +369,7 @@ export async function promptMultiTargetSelection(sheet, actionLabel, options = {
       const distBadge = t.distanceLabel ? `<span style="font-size: 0.82rem; color: #aaa;">${t.distanceLabel}</span>` : "";
 
       return `
-        <label class="multi-target-row touch-target" data-token-id="${t.id}" data-is-enemy="${t.isEnemy ? "1" : "0"}" data-is-self="${t.isSelf ? "1" : "0"}"
+        <label class="multi-target-row" data-token-id="${t.id}" data-is-enemy="${t.isEnemy ? "1" : "0"}" data-is-self="${t.isSelf ? "1" : "0"}"
           style="display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 6px 10px; margin-bottom: 5px; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid #3a3a42; cursor: pointer; user-select: none;">
           <span style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
             <input type="checkbox" class="multi-target-checkbox" value="${t.id}" ${t.selected ? "checked" : ""}
@@ -393,15 +393,15 @@ export async function promptMultiTargetSelection(sheet, actionLabel, options = {
         <p style="margin: 0 0 4px 0; font-size: 1rem; font-weight: 700; color: #fff;">Select Targets: ${actionLabel}</p>
         ${subtitleHtml}
         <div style="display: flex; gap: 6px; margin-bottom: 8px;">
-          <button type="button" class="multi-target-quick-btn touch-target" data-quick="enemies"
+          <button type="button" class="multi-target-quick-btn" data-quick="enemies"
             style="flex: 1; min-height: 38px; padding: 4px 8px; font-size: 0.8rem; font-weight: 600; border-radius: 5px; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); cursor: pointer;">
             🎯 Enemies
           </button>
-          <button type="button" class="multi-target-quick-btn touch-target" data-quick="self"
+          <button type="button" class="multi-target-quick-btn" data-quick="self"
             style="flex: 1; min-height: 38px; padding: 4px 8px; font-size: 0.8rem; font-weight: 600; border-radius: 5px; background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); cursor: pointer;">
             👤 +Self
           </button>
-          <button type="button" class="multi-target-quick-btn touch-target" data-quick="clear"
+          <button type="button" class="multi-target-quick-btn" data-quick="clear"
             style="flex: 1; min-height: 38px; padding: 4px 8px; font-size: 0.8rem; font-weight: 600; border-radius: 5px; background: rgba(255, 255, 255, 0.08); color: #d4d4d8; border: 1px solid #444; cursor: pointer;">
             ✖ Clear
           </button>
@@ -758,7 +758,7 @@ export async function promptSpontaneousSlotSelection(sheet, spellName, minRank, 
     const DialogV2 = foundry.applications?.api?.DialogV2;
 
     const buttonsHtml = eligibleSlots.map((slot, idx) => `
-      <button type="button" class="spont-slot-choice-btn touch-target" data-slot-idx="${idx}"
+      <button type="button" class="spont-slot-choice-btn" data-slot-idx="${idx}"
         style="width: 100%; min-height: 44px; margin-bottom: 6px; padding: 8px 12px; font-size: 0.95rem; font-weight: 600; border-radius: 6px; background: rgba(120, 80, 220, 0.22); color: #e8ddff; border: 1px solid rgba(155, 115, 255, 0.5); display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
         <span><i class="fas fa-wand-magic-sparkles"></i> Rank ${slot.rank} — ${slot.entryName}</span>
         <span style="font-size: 0.85rem; color: #c4b0f5;">${slot.available} / ${slot.max} left</span>
