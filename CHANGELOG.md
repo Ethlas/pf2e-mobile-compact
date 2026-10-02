@@ -95,6 +95,7 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 #### Fixed
 - **Prepared casters no longer show a "Slots x / y" counter in the Cast view**: the counter and its +/- buttons showed pf2e's `slots.slotN.value`, which pf2e only uses for spontaneous and flexible casting. Casting a prepared spell marks that prepared spell as expended instead (shown on the spell card) and never changes the value, so prepared casters saw a counter stuck at its old number (e.g. "2 / 2") whose buttons did nothing useful. The counter now only counts spontaneous and flexible entries. For a prepared caster a rank group shows once a spell is prepared at that rank; the Preparation view is unchanged.
+- **No slot counter on Cantrips (`scripts/apps/sheet-helpers/context-spells.js`, `scripts/verify.mjs`)**: cantrips are cast at will, but spontaneous casters got a counter on the Cantrips group because pf2e's `slots.slot0` holds the number of cantrips known. The counter now only looks at ranks 1–10. A `[Slot Counter]` check in `verify.mjs` covers it.
 
 ### Chat on the Line for Actions Without Use or Roll (`templates/parts/actions/action-card.hbs`)
 

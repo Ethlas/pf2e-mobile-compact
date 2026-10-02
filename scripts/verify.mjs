@@ -1255,6 +1255,33 @@ try {
   logFail(`Action Cost / Spell Damage / Issue #16 verification threw an error: ${err.stack || err.message}`);
 }
 
+// 6a. Slot counter: spontaneous ranks get one, cantrips never (they are cast at will; pf2e's slot0 counts cantrips known)
+try {
+  const { prepareSpellsContext } = await import("./apps/sheet-helpers/context-spells.js");
+  const spontEntry = {
+    id: "spont1",
+    isSpontaneous: true,
+    system: { prepared: { value: "spontaneous" }, slots: { slot0: { value: 0, max: 5 }, slot1: { value: 2, max: 3 } } },
+    spells: { contents: [], get: () => null }
+  };
+  const slotActor = {
+    spellcasting: { contents: [spontEntry] },
+    itemTypes: { spellcastingEntry: [spontEntry], consumable: [], equipment: [], weapon: [] },
+    items: { get: () => null, filter: () => [], contents: [] },
+    system: { resources: {} }
+  };
+  const slotCtx = {};
+  await prepareSpellsContext(slotActor, { _collapsedRankGroups: new Set() }, slotCtx);
+  const slotGroups = (slotCtx.spellRanks ?? []).map(g => `${g.rank}:${g.hasSlots ? `${g.slots.value}/${g.slots.max}` : "-"}`).join(",");
+  if (slotGroups !== "1:2/3") {
+    logFail(`[Slot Counter] Expected only rank 1 with a 2/3 counter and no cantrip counter, got: ${slotGroups}`);
+  } else {
+    logPass("[Slot Counter] Spontaneous ranks show their slot counter; cantrips never get one.");
+  }
+} catch (err) {
+  logFail(`Slot counter verification threw an error: ${err.stack || err.message}`);
+}
+
 // 6b. Character overview: header user button and pf2e feat groups
 try {
   const { prepareCharacterContext } = await import("../scripts/apps/sheet-helpers/context-character.js");
