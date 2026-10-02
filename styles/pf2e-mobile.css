@@ -1,4 +1,5 @@
-/* ----------------------------------------- *//* PF2e Mobile Compact Sheet Styling         *//* ----------------------------------------- *//* Mobile UI Overrides: Suppress default Foundry UI ONLY when mobile mode is actively detected or enabled *//* Keep canvas in DOM and rendered behind the mobile sheet so Token placeables and raycasting function natively */body.pf2e-mobile-active #board,
+/* ----------------------------------------- *//* PF2e Mobile Compact Sheet Styling         *//* ----------------------------------------- *//* Mobile UI Overrides: Suppress default Foundry UI ONLY when mobile mode is actively detected or enabled *//* Keep canvas in DOM and rendered behind the mobile sheet so Token placeables and raycasting function natively */
+body.pf2e-mobile-active #board,
 body.pf2e-mobile-active canvas#board,
 body.pf2e-mobile-active #board-container {
   position: fixed !important;
@@ -9,7 +10,9 @@ body.pf2e-mobile-active #board-container {
   opacity: 0.001 !important;
   pointer-events: none !important;
   visibility: visible !important;
-}body.pf2e-mobile-active #sidebar,
+}
+
+body.pf2e-mobile-active #sidebar,
 body.pf2e-mobile-active #navigation,
 body.pf2e-mobile-active #controls,
 body.pf2e-mobile-active #logo,
@@ -48,7 +51,9 @@ body.pf2e-fullscreen #chat-message,
 body.pf2e-fullscreen .chat-controls,
 body.pf2e-fullscreen .chat-form {
   display: none !important;
-}html:has(body.pf2e-mobile-active),
+}
+
+html:has(body.pf2e-mobile-active),
 html:has(body.pf2e-fullscreen) {
   position: fixed !important;
   inset: 0 !important;
@@ -57,7 +62,9 @@ html:has(body.pf2e-fullscreen) {
   overflow: hidden !important;
   overscroll-behavior: none !important;
   -webkit-text-size-adjust: 100%;
-}body.pf2e-mobile-active,
+}
+
+body.pf2e-mobile-active,
 body.pf2e-fullscreen {
   position: fixed !important;
   inset: 0 !important;
@@ -67,7 +74,10 @@ body.pf2e-fullscreen {
   overflow: hidden !important;
   overscroll-behavior: none !important;
   -webkit-overflow-scrolling: auto;
-}/* Mobile Notifications Toast Positioning */body.pf2e-mobile-active #notifications,
+}
+
+/* Mobile Notifications Toast Positioning */
+body.pf2e-mobile-active #notifications,
 body.pf2e-fullscreen #notifications {
   position: fixed !important;
   top: 10px !important;
@@ -81,18 +91,25 @@ body.pf2e-fullscreen #notifications {
   display: flex;
   flex-direction: column;
   gap: 6px;
-}body.pf2e-mobile-active #notifications .notification,
+}
+
+body.pf2e-mobile-active #notifications .notification,
 body.pf2e-fullscreen #notifications .notification {
   pointer-events: auto;
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   font-size: 0.875rem;
-}body.pf2e-mobile-active #screen-warning,
+}
+
+body.pf2e-mobile-active #screen-warning,
 body.pf2e-mobile-active #resolution-warning,
 body.pf2e-fullscreen #screen-warning,
 body.pf2e-fullscreen #resolution-warning {
   display: none !important;
-}/* Full-bleed viewport layout on mobile devices or fullscreen mode */body.pf2e-mobile-active .pf2e-mobile-sheet,
+}
+
+/* Full-bleed viewport layout on mobile devices or fullscreen mode */
+body.pf2e-mobile-active .pf2e-mobile-sheet,
 body.pf2e-mobile-active.pf2e-mobile-sheet,
 body.pf2e-fullscreen .pf2e-mobile-sheet,
 .pf2e-mobile-sheet.fullscreen-mode,
@@ -112,7 +129,9 @@ body.pf2e-fullscreen .pf2e-mobile-sheet,
   transform: none !important;
   z-index: 100;
   background: var(--pf2e-theme-bg, #1a1a1a);
-}/* Ensure full bleed on narrow mobile viewports even if body class is delayed */
+}
+
+/* Ensure full bleed on narrow mobile viewports even if body class is delayed */
 
 @media (max-width: 768px) {
   .pf2e-mobile-sheet {
@@ -130,18 +149,24 @@ body.pf2e-fullscreen .pf2e-mobile-sheet,
     transform: none !important;
     z-index: 100;
   }
-}body.pf2e-mobile-active .pf2e-mobile-sheet .window-header,
+}
+
+body.pf2e-mobile-active .pf2e-mobile-sheet .window-header,
 body.pf2e-fullscreen .pf2e-mobile-sheet .window-header,
 .pf2e-mobile-sheet.fullscreen-mode .window-header {
   display: none !important;
-}body.pf2e-mobile-active .pf2e-mobile-sheet .window-resize-handle,
+}
+
+body.pf2e-mobile-active .pf2e-mobile-sheet .window-resize-handle,
 body.pf2e-mobile-active .pf2e-mobile-sheet .resize-handle,
 body.pf2e-fullscreen .pf2e-mobile-sheet .window-resize-handle,
 body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 .pf2e-mobile-sheet.fullscreen-mode .window-resize-handle,
 .pf2e-mobile-sheet.fullscreen-mode .resize-handle {
   display: none !important;
-}.pf2e-mobile-sheet .window-content {
+}
+
+.pf2e-mobile-sheet .window-content {
   padding: 0 !important;
   margin: 0;
   height: 100%;
@@ -153,14 +178,19 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   flex: 1 1 auto;
   min-height: 0;
   background: var(--pf2e-theme-bg, #1a1a1a);
-}/* ----------------------------------------- *//* ApplicationV2 Parts Flex Structure        *//* ----------------------------------------- */.pf2e-mobile-sheet .window-content > [data-application-part="header"],
+}
+
+/* ----------------------------------------- *//* ApplicationV2 Parts Flex Structure        *//* ----------------------------------------- */
+.pf2e-mobile-sheet .window-content > [data-application-part="header"],
 .pf2e-mobile-sheet .mobile-header-dashboard {
   flex: 0 0 auto !important;
   width: 100%;
   max-width: 100%;
   overflow: visible;
   z-index: 10;
-}.pf2e-mobile-sheet .window-content > [data-application-part="sheet"],
+}
+
+.pf2e-mobile-sheet .window-content > [data-application-part="sheet"],
 .pf2e-mobile-sheet .mobile-sheet-body {
   flex: 1 1 0% !important;
   min-height: 0;
@@ -171,7 +201,10 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   flex-direction: column;
   overflow: hidden;
   position: relative;
-}/* ----------------------------------------- *//* Root Sheet Layout                         *//* ----------------------------------------- */.pf2e-mobile-sheet {
+}
+
+/* ----------------------------------------- *//* Root Sheet Layout                         *//* ----------------------------------------- */
+.pf2e-mobile-sheet {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -187,13 +220,17 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
-}.pf2e-mobile-sheet input,
+}
+
+.pf2e-mobile-sheet input,
 .pf2e-mobile-sheet textarea,
 .pf2e-mobile-sheet .chat-message,
 .pf2e-mobile-sheet .action-summary-content {
   -webkit-user-select: text;
   user-select: text;
-}.pf2e-mobile-sheet * {
+}
+
+.pf2e-mobile-sheet * {
   box-sizing: border-box;
 }
 
@@ -334,12 +371,29 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 }
 
 /* Gaps: only these steps; other values stay in the component's own rule */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-2 { gap: 2px; }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-4 { gap: 4px; }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-6 { gap: 6px; }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-8 { gap: 8px; }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-10 { gap: 10px; }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-12 { gap: 12px; }
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-2 {
+  gap: 2px;
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-4 {
+  gap: 4px;
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-6 {
+  gap: 6px;
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-8 {
+  gap: 8px;
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-10 {
+  gap: 10px;
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-12 {
+  gap: 12px;
+}
 
 /* For children of a flex container: take the free room (m-flex-1 shares it out evenly, m-flex-auto starts from the
    content's own size), may shrink below their content (so text can truncate), or keep their size */
@@ -366,7 +420,8 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   text-overflow: ellipsis;
 }
 
-/* ----------------------------------------- *//* Touch Targets & Universal Controls        *//* ----------------------------------------- */.pf2e-mobile-sheet [data-action],
+/* ----------------------------------------- *//* Touch Targets & Universal Controls        *//* ----------------------------------------- */
+.pf2e-mobile-sheet [data-action],
 .pf2e-mobile-sheet [data-change-action],
 .pf2e-mobile-sheet .touch-target,
 .pf2e-mobile-sheet button,
@@ -376,7 +431,9 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   cursor: pointer !important;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-}.pf2e-mobile-sheet button,
+}
+
+.pf2e-mobile-sheet button,
 .pf2e-mobile-sheet select,
 .pf2e-mobile-sheet input[type="search"],
 .pf2e-mobile-sheet input[type="number"],
@@ -393,6 +450,7 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   background: var(--m-surface-3);
   color: var(--m-text-strong);
 }
+
 /* Compact controls: the 38px buttons, pills and selects used inside cards and the header, smaller than the
    48px default above. Comes right after it so it wins; component rules later in the file can still change
    the corner radius. */
@@ -401,6 +459,7 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   height: 38px;
   border-radius: 4px;
 }
+
 /* Badges: a badge takes one of these. m-badge is the shape every badge shares; its colour comes from the
    Badge Tones rules or the badge's own rule. m-badge-neutral is the same badge with the neutral look of
    badges without a role colour. Layout (m-inline-flex etc.), text size (m-text-*) and text colour
@@ -410,6 +469,7 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   padding: 2px 6px;
   border-radius: 4px;
 }
+
 :is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-badge-neutral {
   background: var(--m-surface-3);
   border: 1px solid var(--m-border);
@@ -418,43 +478,112 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 /* Text sizes: the sheet's type scale, in rem that land on whole pixels at the 16px base (11 to 15px). Like m-compact they come after the 48px / 16px button and input
    defaults above, so a button can take a smaller size. Inputs and selects keep 16px (iOS zooms in on smaller
    fields, enforced with !important), and the few larger titles, numbers and icons keep their own size. */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-xs { font-size: 0.6875rem; } /* 11px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-sm { font-size: 0.75rem; } /* 12px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-md { font-size: 0.8125rem; } /* 13px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-base { font-size: 0.875rem; } /* 14px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-xl { font-size: 0.9375rem; } /* 15px */
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-xs {
+  font-size: 0.6875rem;
+}
+
+/* 11px */
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-sm {
+  font-size: 0.75rem;
+}
+
+/* 12px */
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-md {
+  font-size: 0.8125rem;
+}
+
+/* 13px */
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-base {
+  font-size: 0.875rem;
+}
+
+/* 14px */
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-xl {
+  font-size: 0.9375rem;
+}
+
+/* 15px */
 
 /* Font weights */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-medium { font-weight: 500; }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-semibold { font-weight: 600; }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-bold { font-weight: bold; }
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-medium {
+  font-weight: 500;
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-semibold {
+  font-weight: 600;
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-bold {
+  font-weight: bold;
+}
 
 /* Text colours: the six text greys of the palette (strong to faint), the accent, and the light text of each role */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-strong { color: var(--m-text-strong); }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-normal { color: var(--m-text); }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-soft { color: var(--m-text-soft); }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-muted { color: var(--m-text-muted); }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-dim { color: var(--m-text-dim); }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-faint { color: var(--m-text-faint); }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-accent { color: var(--m-accent); }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-info { color: var(--m-info-text); }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-success { color: var(--m-success-text); }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-danger { color: var(--m-danger-text); }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-warning { color: var(--m-warning-text); }
-/* Prevent iOS Safari auto-zoom on focus (requires computed font-size >= 16px on all inputs/selects) */.pf2e-mobile-sheet input,
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-strong {
+  color: var(--m-text-strong);
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-normal {
+  color: var(--m-text);
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-soft {
+  color: var(--m-text-soft);
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-muted {
+  color: var(--m-text-muted);
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-dim {
+  color: var(--m-text-dim);
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-faint {
+  color: var(--m-text-faint);
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-accent {
+  color: var(--m-accent);
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-info {
+  color: var(--m-info-text);
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-success {
+  color: var(--m-success-text);
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-danger {
+  color: var(--m-danger-text);
+}
+
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-warning {
+  color: var(--m-warning-text);
+}
+
+/* Prevent iOS Safari auto-zoom on focus (requires computed font-size >= 16px on all inputs/selects) */
+.pf2e-mobile-sheet input,
 .pf2e-mobile-sheet select,
 .pf2e-mobile-sheet textarea,
 body.pf2e-mobile-active input,
 body.pf2e-mobile-active select,
 body.pf2e-mobile-active textarea {
   font-size: 16px !important;
-}.pf2e-mobile-sheet button:active {
+}
+
+.pf2e-mobile-sheet button:active {
   background: var(--m-surface-5);
-}/* Buttons with distinct roles */.pf2e-mobile-sheet .btn-primary {
+}
+
+/* Buttons with distinct roles */
+.pf2e-mobile-sheet .btn-primary {
   background: var(--m-info-solid);
   border: 1px solid var(--m-hue-info);
   padding: 8px 12px;
-}.pf2e-mobile-sheet .btn-cast,
+}
+
+.pf2e-mobile-sheet .btn-cast,
 .pf2e-mobile-sheet .btn-consume,
 .pf2e-mobile-sheet .btn-import {
   background: var(--m-success-solid);
@@ -462,7 +591,10 @@ body.pf2e-mobile-active textarea {
   border: 1px solid var(--m-hue-success);
   font-weight: bold;
   padding: 6px 12px;
-}/* ----------------------------------------- *//* Sticky Header Component                   *//* ----------------------------------------- */.pf2e-mobile-sheet .mobile-header-dashboard {
+}
+
+/* ----------------------------------------- *//* Sticky Header Component                   *//* ----------------------------------------- */
+.pf2e-mobile-sheet .mobile-header-dashboard {
   position: sticky;
   top: 0;
   z-index: 10;
@@ -474,6 +606,7 @@ body.pf2e-mobile-active textarea {
   padding-right: max(8px, env(safe-area-inset-right, 0px));
   padding-bottom: 6px;
 }
+
 /* Row 1: Identity & Controls Toolbar */
 .pf2e-mobile-sheet .header-top-row {
   /* Grid instead of nested flex: character overview | name | target | roll mode | cog. Firefox and Chrome resolved
@@ -483,33 +616,41 @@ body.pf2e-mobile-active textarea {
   grid-template-columns: auto minmax(80px, 2fr) minmax(0, 3fr) auto auto;
   width: 100%;
 }
+
 /* A plain name without the switcher only takes the room its text needs; the target gets the rest */
 .pf2e-mobile-sheet .header-top-row:has(.actor-name) {
   grid-template-columns: auto minmax(0, max-content) minmax(0, 1fr) auto auto;
 }
+
 .pf2e-mobile-sheet .actor-identity-wrapper {
   /* Its children (name, character overview button) take part in the header-top-row grid directly */
   display: contents;
 }
+
 .pf2e-mobile-sheet .actor-identity-wrapper > .actor-switcher,
 .pf2e-mobile-sheet .actor-identity-wrapper > .actor-name {
   grid-column: 2;
   min-width: 0;
 }
+
 .pf2e-mobile-sheet .actor-identity-wrapper > .header-btn {
   grid-column: 1;
 }
+
 /* Party and Kingdom have no overview button and no target select: the name takes those columns as well */
 .pf2e-mobile-sheet .header-top-row:not(:has(.header-target-group)) .actor-identity-wrapper > :first-child {
   grid-column: 1 / 4;
 }
-/* Shared header controls: .header-select for dropdowns, .header-btn for square icon buttons */.pf2e-mobile-sheet .mobile-header-dashboard .header-select {
+
+/* Shared header controls: .header-select for dropdowns, .header-btn for square icon buttons */
+.pf2e-mobile-sheet .mobile-header-dashboard .header-select {
   font-size: 16px;
   background: var(--m-surface-2);
   color: var(--m-text);
   border: 1px solid var(--m-border);
   padding: 2px 4px;
 }
+
 .pf2e-mobile-sheet .mobile-header-dashboard .header-btn {
   position: relative;
   min-width: 38px;
@@ -517,34 +658,55 @@ body.pf2e-mobile-active textarea {
   background: var(--m-surface-2);
   border: 1px solid var(--m-border);
   padding: 0;
-}.pf2e-mobile-sheet .mobile-header-dashboard .header-btn.active {
+}
+
+.pf2e-mobile-sheet .mobile-header-dashboard .header-btn.active {
   color: var(--m-success-text);
   border-color: rgba(129, 199, 132, 0.45);
-}.pf2e-mobile-sheet .mobile-header-dashboard .header-btn:active {
+}
+
+.pf2e-mobile-sheet .mobile-header-dashboard .header-btn:active {
   background: var(--m-surface-4);
   border-color: var(--m-info-text);
   color: var(--m-info-text);
-}.pf2e-mobile-sheet .actor-switcher {
+}
+
+.pf2e-mobile-sheet .actor-switcher {
   width: 100%;
-}.pf2e-mobile-sheet .actor-name {
+}
+
+.pf2e-mobile-sheet .actor-name {
   font-size: 1rem;
   display: block;
   line-height: 38px;
-}.pf2e-mobile-sheet .header-controls-wrapper {
+}
+
+.pf2e-mobile-sheet .header-controls-wrapper {
   /* Its children (target select, cog menu) take part in the header-top-row grid directly */
   display: contents;
-}.pf2e-mobile-sheet .header-controls-wrapper .header-target-group {
+}
+
+.pf2e-mobile-sheet .header-controls-wrapper .header-target-group {
   grid-column: 3;
-}/* Roll mode toggle, between the target select and the cog */.pf2e-mobile-sheet .header-controls-wrapper > .header-btn {
+}
+
+/* Roll mode toggle, between the target select and the cog */
+.pf2e-mobile-sheet .header-controls-wrapper > .header-btn {
   grid-column: 4;
-}.pf2e-mobile-sheet .header-controls-wrapper .header-target-select {
+}
+
+.pf2e-mobile-sheet .header-controls-wrapper .header-target-select {
   width: 100%;
   min-width: 0;
-}/* Settings menu: the cog opens a small popover under it with roll mode, canvas and fullscreen */
+}
+
+/* Settings menu: the cog opens a small popover under it with roll mode, canvas and fullscreen */
 .pf2e-mobile-sheet .header-menu {
   position: relative;
   grid-column: 5;
-}.pf2e-mobile-sheet .header-menu-panel {
+}
+
+.pf2e-mobile-sheet .header-menu-panel {
   display: none;
   position: absolute;
   top: calc(100% + 4px);
@@ -555,12 +717,19 @@ body.pf2e-mobile-active textarea {
   border: 1px solid var(--m-border);
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-}.pf2e-mobile-sheet .header-menu.open .header-menu-panel {
+}
+
+.pf2e-mobile-sheet .header-menu.open .header-menu-panel {
   display: flex;
-}.pf2e-mobile-sheet .mobile-header-dashboard .header-menu.open .header-menu-toggle {
+}
+
+.pf2e-mobile-sheet .mobile-header-dashboard .header-menu.open .header-menu-toggle {
   color: var(--m-info-text);
   border-color: var(--m-info-text);
-}/* Small corner icon on a header button (the chip or hand on the roll mode die) */.pf2e-mobile-sheet .header-btn-badge {
+}
+
+/* Small corner icon on a header button (the chip or hand on the roll mode die) */
+.pf2e-mobile-sheet .header-btn-badge {
   position: absolute;
   right: 5px;
   bottom: 4px;
@@ -568,21 +737,37 @@ body.pf2e-mobile-active textarea {
   pointer-events: none;
   /* Outline in the button colour, so the icon stays readable where it overlaps the main icon */
   text-shadow: 0 0 2px #242424, 0 0 2px #242424, 0 0 2px #242424;
-}/* Roll mode colours: each mode has its own colour, so neither looks like an "off" state */.pf2e-mobile-sheet .header-btn-badge .fa-microchip {
+}
+
+/* Roll mode colours: each mode has its own colour, so neither looks like an "off" state */
+.pf2e-mobile-sheet .header-btn-badge .fa-microchip {
   color: #4fc3f7;
-}.pf2e-mobile-sheet .header-btn-badge .fa-hand {
+}
+
+.pf2e-mobile-sheet .header-btn-badge .fa-hand {
   color: #ffca28;
-}/* Active effects on the Character overview button: same orange as the overview's section titles */.pf2e-mobile-sheet .header-btn-badge .fa-bolt {
+}
+
+/* Active effects on the Character overview button: same orange as the overview's section titles */
+.pf2e-mobile-sheet .header-btn-badge .fa-bolt {
   color: var(--m-accent);
-}/* Row 2: Consolidated HP & Temp HP Streamlined Controls */.pf2e-mobile-sheet .header-hp-row {
+}
+
+/* Row 2: Consolidated HP & Temp HP Streamlined Controls */
+.pf2e-mobile-sheet .header-hp-row {
   background: var(--m-surface-0);
   padding: 3px 6px;
   border-radius: 6px;
   border: 1px solid var(--m-border-subtle);
   width: 100%;
-}/* 1. Delta Pill */.pf2e-mobile-sheet .hp-delta-group {
+}
+
+/* 1. Delta Pill */
+.pf2e-mobile-sheet .hp-delta-group {
   flex: 0 0 54px;
-}.pf2e-mobile-sheet .mobile-header-dashboard .hp-delta-input {
+}
+
+.pf2e-mobile-sheet .mobile-header-dashboard .hp-delta-input {
   width: 100%;
   min-height: 38px;
   height: 38px;
@@ -593,25 +778,36 @@ body.pf2e-mobile-active textarea {
   color: var(--m-gold-text);
   border-radius: 4px;
   padding: 0 2px;
-}.pf2e-mobile-sheet .mobile-header-dashboard .hp-delta-input::placeholder {
+}
+
+.pf2e-mobile-sheet .mobile-header-dashboard .hp-delta-input::placeholder {
   color: var(--m-text-dim);
   font-size: 0.8125rem;
   font-weight: normal;
-}.pf2e-mobile-sheet .mobile-header-dashboard .hp-delta-input:focus {
+}
+
+.pf2e-mobile-sheet .mobile-header-dashboard .hp-delta-input:focus {
   border-color: var(--m-accent);
   outline: none;
   background: var(--m-surface-3);
   box-shadow: 0 0 4px color-mix(in srgb, var(--m-accent) 40%, transparent);
-}/* 2. Current & Max HP Pill */.pf2e-mobile-sheet .hp-direct-group {
+}
+
+/* 2. Current & Max HP Pill */
+.pf2e-mobile-sheet .hp-direct-group {
   background: var(--m-surface-2);
   padding: 2px 8px;
   border: 1px solid var(--m-border);
   flex: 1.2 1 0;
-}.pf2e-mobile-sheet .hp-direct-group .hp-label {
+}
+
+.pf2e-mobile-sheet .hp-direct-group .hp-label {
   text-transform: uppercase;
   line-height: 1;
   margin-right: 2px;
-}.pf2e-mobile-sheet .mobile-header-dashboard .hp-current-input {
+}
+
+.pf2e-mobile-sheet .mobile-header-dashboard .hp-current-input {
   width: 38px;
   min-height: 28px;
   height: 28px;
@@ -623,7 +819,9 @@ body.pf2e-mobile-active textarea {
   color: var(--m-success-text);
   border-radius: 2px;
   padding: 0 1px;
-}.pf2e-mobile-sheet .mobile-header-dashboard .hp-current-input:focus {
+}
+
+.pf2e-mobile-sheet .mobile-header-dashboard .hp-current-input:focus {
   border-bottom: 1px solid currentColor;
   background: rgba(76, 175, 80, 0.15);
   outline: none;
@@ -640,21 +838,31 @@ body.pf2e-mobile-active textarea {
 .pf2e-mobile-sheet .hp-direct-group.hp-danger .hp-current-input {
   color: var(--m-danger-text);
 }
+
 .pf2e-mobile-sheet .hp-slash {
   margin: 0 1px;
-}.pf2e-mobile-sheet .hp-max-value {
+}
+
+.pf2e-mobile-sheet .hp-max-value {
   font-size: 1.0625rem;
-}/* 3. Temp HP Pill */.pf2e-mobile-sheet .temp-hp-direct-group {
+}
+
+/* 3. Temp HP Pill */
+.pf2e-mobile-sheet .temp-hp-direct-group {
   background: var(--m-surface-2);
   padding: 2px 8px;
   border: 1px solid var(--m-border);
   flex: 1 1 0;
-}.pf2e-mobile-sheet .temp-hp-direct-group .temp-hp-label {
+}
+
+.pf2e-mobile-sheet .temp-hp-direct-group .temp-hp-label {
   color: var(--m-hue-cyan);
   text-transform: uppercase;
   line-height: 1;
   margin-right: 2px;
-}.pf2e-mobile-sheet .mobile-header-dashboard .temp-hp-current-input {
+}
+
+.pf2e-mobile-sheet .mobile-header-dashboard .temp-hp-current-input {
   width: 32px;
   min-height: 28px;
   height: 28px;
@@ -666,57 +874,94 @@ body.pf2e-mobile-active textarea {
   color: var(--m-hue-cyan);
   border-radius: 2px;
   padding: 0 1px;
-}.pf2e-mobile-sheet .mobile-header-dashboard .temp-hp-current-input:focus {
+}
+
+.pf2e-mobile-sheet .mobile-header-dashboard .temp-hp-current-input:focus {
   border-bottom: 1px solid var(--m-hue-cyan);
   background: rgba(2, 136, 209, 0.15);
   outline: none;
-}/* 4. Shield Pill */.pf2e-mobile-sheet .shield-badge-group {
+}
+
+/* 4. Shield Pill */
+.pf2e-mobile-sheet .shield-badge-group {
   flex: 0 0 auto;
-}.pf2e-mobile-sheet .defense-item.shield-badge {
+}
+
+.pf2e-mobile-sheet .defense-item.shield-badge {
   padding: 2px 6px;
   white-space: nowrap;
-}.pf2e-mobile-sheet .defense-item.shield-badge strong {
+}
+
+.pf2e-mobile-sheet .defense-item.shield-badge strong {
   color: var(--m-hue-cyan);
-}/* Row 3: Defenses, Saves & Perception/Initiative Pill Strip */.pf2e-mobile-sheet .header-defenses-saves-row {
+}
+
+/* Row 3: Defenses, Saves & Perception/Initiative Pill Strip */
+.pf2e-mobile-sheet .header-defenses-saves-row {
   width: 100%;
-}.pf2e-mobile-sheet .defense-item.ac-badge {
+}
+
+.pf2e-mobile-sheet .defense-item.ac-badge {
   padding: 2px 6px;
   background: var(--m-surface-2);
   border: 1px solid var(--m-border);
   white-space: nowrap;
   flex: 0 0 auto;
-}.pf2e-mobile-sheet .defense-item.ac-badge strong {
+}
+
+.pf2e-mobile-sheet .defense-item.ac-badge strong {
   color: var(--m-info-text);
-}.pf2e-mobile-sheet .header-defenses-saves-row .save-item {
+}
+
+.pf2e-mobile-sheet .header-defenses-saves-row .save-item {
   flex: 1 1 0;
   min-width: 0;
   background: var(--m-surface-2);
   border: 1px solid var(--m-border-subtle);
   padding: 2px 4px;
   white-space: nowrap;
-}.pf2e-mobile-sheet .header-defenses-saves-row .save-item strong {
+}
+
+.pf2e-mobile-sheet .header-defenses-saves-row .save-item strong {
   color: var(--m-success-text);
   margin-right: 2px;
-}.pf2e-mobile-sheet .header-defenses-saves-row .save-item:active {
+}
+
+.pf2e-mobile-sheet .header-defenses-saves-row .save-item:active {
   background: var(--m-surface-4);
   border-color: var(--m-accent);
   color: var(--m-accent);
-}.pf2e-mobile-sheet .perc-init-dropdown-wrapper {
+}
+
+.pf2e-mobile-sheet .perc-init-dropdown-wrapper {
   flex: 1.3 1 0;
-}.pf2e-mobile-sheet .perception-init-select {
+}
+
+.pf2e-mobile-sheet .perception-init-select {
   width: 100%;
   background: var(--m-surface-2);
   border: 1px solid var(--m-border);
   padding: 2px 4px;
-}.pf2e-mobile-sheet .perception-init-select.combat-active {
+}
+
+.pf2e-mobile-sheet .perception-init-select.combat-active {
   box-shadow: 0 0 6px rgba(255, 152, 0, 0.4);
   animation: combat-pulse 1.8s infinite ease-in-out;
 }
 
 @keyframes combat-pulse {
-  0%, 100% { border-color: #ff9800; box-shadow: 0 0 4px rgba(255, 152, 0, 0.3); }
-  50% { border-color: #ffb74d; box-shadow: 0 0 10px rgba(255, 152, 0, 0.6); }
-}/* ----------------------------------------- *//* Tab Content Container                     *//* ----------------------------------------- */.pf2e-mobile-sheet .mobile-tab-content {
+  0%, 100% {
+    border-color: #ff9800;
+    box-shadow: 0 0 4px rgba(255, 152, 0, 0.3);
+  }
+  50% {
+    border-color: #ffb74d;
+    box-shadow: 0 0 10px rgba(255, 152, 0, 0.6);
+  }
+}
+
+/* ----------------------------------------- *//* Tab Content Container                     *//* ----------------------------------------- */
+.pf2e-mobile-sheet .mobile-tab-content {
   min-height: 0;
   height: auto;
   overflow-y: auto;
@@ -728,9 +973,14 @@ body.pf2e-mobile-active textarea {
   padding-bottom: 24px;
   padding-left: max(12px, env(safe-area-inset-left, 0px));
   padding-right: max(12px, env(safe-area-inset-right, 0px));
-}.pf2e-mobile-sheet .tab-action-bar {
+}
+
+.pf2e-mobile-sheet .tab-action-bar {
   margin-bottom: 12px;
-}/* ----------------------------------------- *//* Bottom Navigation Bar                     *//* ----------------------------------------- */.pf2e-mobile-sheet .mobile-bottom-nav {
+}
+
+/* ----------------------------------------- *//* Bottom Navigation Bar                     *//* ----------------------------------------- */
+.pf2e-mobile-sheet .mobile-bottom-nav {
   position: relative;
   flex: 0 0 auto;
   width: 100%;
@@ -743,20 +993,30 @@ body.pf2e-mobile-active textarea {
   justify-content: space-around;
   align-items: stretch;
   z-index: 20;
-}.pf2e-mobile-sheet .mobile-bottom-nav .nav-item {
+}
+
+.pf2e-mobile-sheet .mobile-bottom-nav .nav-item {
   background: transparent;
   border: none;
   border-radius: 0;
   min-height: 48px;
-}.pf2e-mobile-sheet .mobile-bottom-nav .nav-item.active {
+}
+
+.pf2e-mobile-sheet .mobile-bottom-nav .nav-item.active {
   color: var(--m-accent);
   background: rgba(255, 255, 255, 0.05);
   border-top: 3px solid var(--m-accent);
-}.pf2e-mobile-sheet .nav-item i {
+}
+
+.pf2e-mobile-sheet .nav-item i {
   font-size: 1.25rem;
-}.pf2e-mobile-sheet .nav-icon-wrapper {
+}
+
+.pf2e-mobile-sheet .nav-icon-wrapper {
   position: relative;
-}.pf2e-mobile-sheet .chat-badge {
+}
+
+.pf2e-mobile-sheet .chat-badge {
   position: absolute;
   top: -6px;
   right: -12px;
@@ -768,36 +1028,52 @@ body.pf2e-mobile-active textarea {
   border-radius: 8px;
   text-align: center;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
-}.pf2e-mobile-sheet .chat-badge.hidden {
+}
+
+.pf2e-mobile-sheet .chat-badge.hidden {
   display: none !important;
-}/* ----------------------------------------- *//* Persistent Tab Pane & Mobile Chat Stream  *//* ----------------------------------------- */.pf2e-mobile-sheet .mobile-tab-pane.is-hidden {
+}
+
+/* ----------------------------------------- *//* Persistent Tab Pane & Mobile Chat Stream  *//* ----------------------------------------- */
+.pf2e-mobile-sheet .mobile-tab-pane.is-hidden {
   display: none !important;
-}.pf2e-mobile-sheet .mobile-chat-pane {
+}
+
+.pf2e-mobile-sheet .mobile-chat-pane {
   flex: 1 1 100%;
   height: 100%;
   min-height: 0;
   overflow: hidden;
   padding: 0;
   margin: 0;
-}/* Remove outer tab-content padding and nested scroll when viewing chat */.pf2e-mobile-sheet .mobile-tab-content:has(.mobile-chat-pane:not(.is-hidden)),
+}
+
+/* Remove outer tab-content padding and nested scroll when viewing chat */
+.pf2e-mobile-sheet .mobile-tab-content:has(.mobile-chat-pane:not(.is-hidden)),
 .pf2e-mobile-sheet .mobile-sheet-body:has(.mobile-chat-pane:not(.is-hidden)) .mobile-tab-content {
   padding: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   height: 100%;
-}.pf2e-mobile-sheet .mobile-chat-container {
+}
+
+.pf2e-mobile-sheet .mobile-chat-container {
   flex: 1 1 100%;
   height: 100%;
   min-height: 0;
   overflow: hidden;
   position: relative;
-}.pf2e-mobile-sheet .mobile-chat-mount {
+}
+
+.pf2e-mobile-sheet .mobile-chat-mount {
   flex: 1 1 100%;
   height: 100%;
   min-height: 0;
   overflow: hidden;
-}.pf2e-mobile-sheet .mobile-chat-mount #chat {
+}
+
+.pf2e-mobile-sheet .mobile-chat-mount #chat {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
@@ -813,7 +1089,9 @@ body.pf2e-mobile-active textarea {
   box-shadow: none;
   position: relative;
   overflow: hidden;
-}.pf2e-mobile-sheet .mobile-chat-mount .chat-scroll {
+}
+
+.pf2e-mobile-sheet .mobile-chat-mount .chat-scroll {
   flex: 1 1 100%;
   height: 100%;
   min-height: 0;
@@ -824,7 +1102,9 @@ body.pf2e-mobile-active textarea {
   -webkit-overflow-scrolling: touch;
   position: relative;
   scroll-behavior: auto;
-}.pf2e-mobile-sheet .mobile-chat-mount #chat-log,
+}
+
+.pf2e-mobile-sheet .mobile-chat-mount #chat-log,
 .pf2e-mobile-sheet .mobile-chat-mount .chat-log {
   flex: 1 1 auto;
   height: auto;
@@ -840,7 +1120,10 @@ body.pf2e-mobile-active textarea {
   flex-direction: column;
   flex-wrap: nowrap;
   gap: 8px;
-}/* Individual message boxes: strictly vertical column stack with 100% width scrolling up to down */.pf2e-mobile-sheet .mobile-chat-mount #chat-log > li,
+}
+
+/* Individual message boxes: strictly vertical column stack with 100% width scrolling up to down */
+.pf2e-mobile-sheet .mobile-chat-mount #chat-log > li,
 .pf2e-mobile-sheet .mobile-chat-mount #chat-log .chat-message,
 .pf2e-mobile-sheet .mobile-chat-mount .chat-log > li,
 .pf2e-mobile-sheet .mobile-chat-mount .chat-log .chat-message,
@@ -852,7 +1135,10 @@ body.pf2e-mobile-active textarea {
   max-width: 100%;
   margin: 0 0 8px 0;
   flex-shrink: 0;
-}/* Chat input and controls removed: chat tab is dedicated to quick damage calculation and roll reviews */.pf2e-mobile-sheet .mobile-chat-mount #chat-controls,
+}
+
+/* Chat input and controls removed: chat tab is dedicated to quick damage calculation and roll reviews */
+.pf2e-mobile-sheet .mobile-chat-mount #chat-controls,
 .pf2e-mobile-sheet .mobile-chat-mount #chat-form,
 .pf2e-mobile-sheet .mobile-chat-mount .chat-controls,
 .pf2e-mobile-sheet .mobile-chat-mount .chat-form,
@@ -875,7 +1161,10 @@ body.pf2e-mobile-active textarea {
   border: none !important;
   overflow: hidden !important;
   pointer-events: none !important;
-}/* Floating "Latest" / Scroll-to-Bottom Button */.pf2e-mobile-sheet .btn-scroll-bottom {
+}
+
+/* Floating "Latest" / Scroll-to-Bottom Button */
+.pf2e-mobile-sheet .btn-scroll-bottom {
   position: absolute;
   bottom: 16px;
   right: 16px;
@@ -892,22 +1181,31 @@ body.pf2e-mobile-active textarea {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   pointer-events: auto;
-}.pf2e-mobile-sheet .btn-scroll-bottom:hover,
+}
+
+.pf2e-mobile-sheet .btn-scroll-bottom:hover,
 .pf2e-mobile-sheet .btn-scroll-bottom:active {
   background: #7a0000;
   transform: scale(1.04);
-}.pf2e-mobile-sheet .btn-scroll-bottom.is-hidden {
+}
+
+.pf2e-mobile-sheet .btn-scroll-bottom.is-hidden {
   opacity: 0;
   pointer-events: none;
   transform: translateY(12px);
-}/* Mobile-Optimized PF2e Damage Application Buttons */.pf2e-mobile-sheet .mobile-chat-mount .damage-application,
+}
+
+/* Mobile-Optimized PF2e Damage Application Buttons */
+.pf2e-mobile-sheet .mobile-chat-mount .damage-application,
 .pf2e-mobile-sheet .damage-application {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin-top: 6px;
   justify-content: stretch;
-}.pf2e-mobile-sheet .mobile-chat-mount .damage-application button,
+}
+
+.pf2e-mobile-sheet .mobile-chat-mount .damage-application button,
 .pf2e-mobile-sheet .damage-application button {
   flex: 1 1 calc(33.333% - 5px);
   min-height: 38px;
@@ -921,49 +1219,71 @@ body.pf2e-mobile-active textarea {
   justify-content: center;
   border-radius: 4px;
   white-space: nowrap;
-}.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="apply-damage"],
+}
+
+.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="apply-damage"],
 .pf2e-mobile-sheet .damage-application button[data-action="apply-damage"] {
   background: #b71c1c;
   color: var(--m-text-strong);
   border: 1px solid #d32f2f;
-}.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="half-damage"],
+}
+
+.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="half-damage"],
 .pf2e-mobile-sheet .damage-application button[data-action="half-damage"] {
   background: #e65100;
   color: var(--m-text-strong);
   border: 1px solid #f57c00;
-}.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="double-damage"],
+}
+
+.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="double-damage"],
 .pf2e-mobile-sheet .damage-application button[data-action="double-damage"] {
   background: #880e4f;
   color: var(--m-text-strong);
   border: 1px solid #ad1457;
-}.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="shield-block"],
+}
+
+.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="shield-block"],
 .pf2e-mobile-sheet .damage-application button[data-action="shield-block"] {
   background: #0277bd;
   color: var(--m-text-strong);
   border: 1px solid #0288d1;
-}.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="shield-block"].shield-activated,
+}
+
+.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="shield-block"].shield-activated,
 .pf2e-mobile-sheet .damage-application button[data-action="shield-block"].shield-activated {
   background: #014a7a;
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6);
   border: 2px solid #4fc3f7;
   color: #b3e5fc;
-}.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="apply-healing"],
+}
+
+.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="apply-healing"],
 .pf2e-mobile-sheet .damage-application button[data-action="apply-healing"] {
   background: #1b5e20;
   color: var(--m-text-strong);
   border: 1px solid #2e7d32;
-}.pf2e-mobile-sheet .mobile-chat-mount .damage-application button:active,
+}
+
+.pf2e-mobile-sheet .mobile-chat-mount .damage-application button:active,
 .pf2e-mobile-sheet .damage-application button:active {
   filter: brightness(1.2);
   transform: scale(0.98);
-}/* ----------------------------------------- *//* Action Cards & Strike Blocks              *//* ----------------------------------------- */.pf2e-mobile-sheet .actions-section,
+}
+
+/* ----------------------------------------- *//* Action Cards & Strike Blocks              *//* ----------------------------------------- */
+.pf2e-mobile-sheet .actions-section,
 .pf2e-mobile-sheet .inventory-section {
   margin-bottom: 16px;
-}/* Sub-tab bars: Actions (Encounter, Exploration, Downtime) and Spells (Spells, Preparation, Activations) */.pf2e-mobile-sheet .action-subtabs,
+}
+
+/* Sub-tab bars: Actions (Encounter, Exploration, Downtime) and Spells (Spells, Preparation, Activations) */
+.pf2e-mobile-sheet .action-subtabs,
 .pf2e-mobile-sheet .spell-subtabs {
   margin-bottom: 12px;
   padding: 4px;
-}.pf2e-mobile-sheet .action-subtabs .subtab-btn,
+}
+
+.pf2e-mobile-sheet .action-subtabs .subtab-btn,
 .pf2e-mobile-sheet .spell-subtabs .subtab-btn {
   min-height: 40px;
   height: 40px;
@@ -971,18 +1291,24 @@ body.pf2e-mobile-active textarea {
   border: 1px solid transparent;
   border-radius: 4px;
   transition: background 0.15s ease, color 0.15s ease;
-}.pf2e-mobile-sheet .action-subtabs .subtab-btn.active,
+}
+
+.pf2e-mobile-sheet .action-subtabs .subtab-btn.active,
 .pf2e-mobile-sheet .spell-subtabs .subtab-btn.active {
   background: var(--m-surface-4);
   color: var(--m-text-strong);
   border: 1px solid var(--m-border-strong);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-}.pf2e-mobile-sheet .section-title {
+}
+
+.pf2e-mobile-sheet .section-title {
   font-size: 1rem;
   margin: 8px 0 8px 0;
   border-bottom: 1px solid var(--m-border);
   padding-bottom: 4px;
-}.pf2e-mobile-sheet .section-title.touch-header {
+}
+
+.pf2e-mobile-sheet .section-title.touch-header {
   user-select: none;
   -webkit-user-select: none;
   min-height: 38px;
@@ -990,88 +1316,138 @@ body.pf2e-mobile-active textarea {
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.03);
   transition: background 0.15s ease;
-}.pf2e-mobile-sheet .section-title.touch-header:active {
+}
+
+.pf2e-mobile-sheet .section-title.touch-header:active {
   background: rgba(255, 255, 255, 0.08);
-}.pf2e-mobile-sheet .section-expand-icon {
+}
+
+.pf2e-mobile-sheet .section-expand-icon {
   transition: transform 0.2s ease;
-}.pf2e-mobile-sheet .section-expand-icon.collapsed {
+}
+
+.pf2e-mobile-sheet .section-expand-icon.collapsed {
   transform: rotate(-90deg);
   color: var(--m-text-faint);
-}.pf2e-mobile-sheet .action-card {
+}
+
+.pf2e-mobile-sheet .action-card {
   background: var(--m-surface-2);
   border: 1px solid var(--m-border-subtle);
   border-radius: 6px;
   padding: 10px;
   margin-bottom: 10px;
-}/* Strike Card Layout (the raised card look comes from .m-card) */.pf2e-mobile-sheet .strike-img {
+}
+
+/* Strike Card Layout (the raised card look comes from .m-card) */
+.pf2e-mobile-sheet .strike-img {
   width: 42px;
   height: 42px;
   border-radius: 4px;
   border: 1px solid var(--m-border);
   object-fit: cover;
   background: var(--m-surface-0);
-}/* MAP Row at the top */.pf2e-mobile-sheet .strike-map-row {
+}
+
+/* MAP Row at the top */
+.pf2e-mobile-sheet .strike-map-row {
   width: 100%;
-}.pf2e-mobile-sheet .strike-card .map-button {
+}
+
+.pf2e-mobile-sheet .strike-card .map-button {
   min-height: 44px;
   height: 44px;
   font-size: 1.0625rem;
   border-radius: 4px;
-}.pf2e-mobile-sheet .strike-card .map-button:active {
+}
+
+.pf2e-mobile-sheet .strike-card .map-button:active {
   background: var(--m-info-solid-active);
   color: var(--m-text-strong);
-}/* Damage Row */.pf2e-mobile-sheet .strike-damage-row {
+}
+
+/* Damage Row */
+.pf2e-mobile-sheet .strike-damage-row {
   width: 100%;
-}.pf2e-mobile-sheet .strike-damage-row .damage-button,
+}
+
+.pf2e-mobile-sheet .strike-damage-row .damage-button,
 .pf2e-mobile-sheet .strike-damage-row .critical-button {
   min-height: 40px;
   height: 40px;
-}.pf2e-mobile-sheet .strike-card .damage-button {
+}
+
+.pf2e-mobile-sheet .strike-card .damage-button {
   background: var(--m-danger-solid);
   border: 1px solid var(--m-hue-danger);
-}.pf2e-mobile-sheet .strike-card .critical-button {
+}
+
+.pf2e-mobile-sheet .strike-card .critical-button {
   background: #7b1241;
   border: 1px solid #ad1457;
-}/* Weapon Auxiliary Actions Row */.pf2e-mobile-sheet .strike-auxiliary-row {
+}
+
+/* Weapon Auxiliary Actions Row */
+.pf2e-mobile-sheet .strike-auxiliary-row {
   padding-top: 6px;
   border-top: 1px solid var(--m-border-subtle);
-}.pf2e-mobile-sheet .strike-card .aux-action-btn {
+}
+
+.pf2e-mobile-sheet .strike-card .aux-action-btn {
   padding: 4px 8px;
   background: var(--m-surface-3);
   border: 1px solid var(--m-border);
-}.pf2e-mobile-sheet .strike-card .aux-action-btn:active {
+}
+
+.pf2e-mobile-sheet .strike-card .aux-action-btn:active {
   background: var(--m-surface-5);
   border-color: var(--m-accent);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .aux-label {
+}
+
+.pf2e-mobile-sheet .aux-label {
   white-space: nowrap;
-}.pf2e-mobile-sheet .action-card-header {
+}
+
+.pf2e-mobile-sheet .action-card-header {
   margin-bottom: 6px;
-}.pf2e-mobile-sheet .action-name {
+}
+
+.pf2e-mobile-sheet .action-name {
   font-size: 1rem;
-}.pf2e-mobile-sheet .action-type-badge {
+}
+
+.pf2e-mobile-sheet .action-type-badge {
   font-size: 0.75rem;
   background: var(--m-surface-4);
   padding: 2px 6px;
   border-radius: 4px;
   text-transform: uppercase;
   color: var(--m-text-soft);
-}.pf2e-mobile-sheet .action-title-group {
+}
+
+.pf2e-mobile-sheet .action-title-group {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   overflow: hidden;
-}.pf2e-mobile-sheet .action-expand-icon {
+}
+
+.pf2e-mobile-sheet .action-expand-icon {
   margin-left: 2px;
   transition: transform 0.2s ease, color 0.2s ease;
-}.pf2e-mobile-sheet .character-action-card.expanded .action-expand-icon,
+}
+
+.pf2e-mobile-sheet .character-action-card.expanded .action-expand-icon,
 .pf2e-mobile-sheet .spell-card.expanded .action-expand-icon,
 .pf2e-mobile-sheet .inventory-item-card.expanded .action-expand-icon,
 .pf2e-mobile-sheet .action-card.expanded .action-expand-icon,
 .pf2e-mobile-sheet .action-expand-icon.expanded {
   transform: rotate(180deg);
   color: var(--m-accent);
-}.pf2e-mobile-sheet .action-cost-glyph,
+}
+
+.pf2e-mobile-sheet .action-cost-glyph,
 .spell-picker-dialog .action-cost-glyph {
   /*border-radius: 4px;*/
   min-width: 26px;
@@ -1080,58 +1456,88 @@ body.pf2e-mobile-active textarea {
   padding: 0 5px;
   white-space: nowrap;
   box-sizing: border-box;
-}.pf2e-mobile-sheet .glyph-reaction {
+}
+
+.pf2e-mobile-sheet .glyph-reaction {
   color: var(--m-danger-text);
-}.pf2e-mobile-sheet .glyph-free {
+}
+
+.pf2e-mobile-sheet .glyph-free {
   color: var(--m-success-text);
-}.pf2e-mobile-sheet .btn-action-chat,
+}
+
+.pf2e-mobile-sheet .btn-action-chat,
 .pf2e-mobile-sheet .btn-action-use,
 .pf2e-mobile-sheet .btn-action-roll,
 .pf2e-mobile-sheet .btn-action-attack {
   padding: 4px 10px;
   white-space: nowrap;
-}.pf2e-mobile-sheet .btn-action-chat {
+}
+
+.pf2e-mobile-sheet .btn-action-chat {
   background: var(--m-surface-3);
   border: 1px solid var(--m-border);
   min-width: 38px;
-}.pf2e-mobile-sheet .btn-action-use,
+}
+
+.pf2e-mobile-sheet .btn-action-use,
 .pf2e-mobile-sheet .btn-action-roll {
   background: var(--m-info-solid);
   border: 1px solid var(--m-hue-info);
-}.pf2e-mobile-sheet .btn-action-use.active {
+}
+
+.pf2e-mobile-sheet .btn-action-use.active {
   background: var(--m-success-solid);
   border: 1px solid var(--m-hue-success);
   color: var(--m-text-strong);
   font-weight: bold;
-}.pf2e-mobile-sheet .btn-action-roll:hover,
+}
+
+.pf2e-mobile-sheet .btn-action-roll:hover,
 .pf2e-mobile-sheet .btn-action-roll:active {
   background: var(--m-info-solid-active);
-}.pf2e-mobile-sheet .btn-action-attack {
+}
+
+.pf2e-mobile-sheet .btn-action-attack {
   background: var(--m-danger-solid);
   border: 1px solid var(--m-hue-danger);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .btn-action-attack:hover,
+}
+
+.pf2e-mobile-sheet .btn-action-attack:hover,
 .pf2e-mobile-sheet .btn-action-attack:active {
   background: var(--m-danger-solid-active);
-}.pf2e-mobile-sheet .action-traits {
+}
+
+.pf2e-mobile-sheet .action-traits {
   margin-top: 6px;
-}.pf2e-mobile-sheet .action-traits .trait-badge {
+}
+
+.pf2e-mobile-sheet .action-traits .trait-badge {
   text-transform: capitalize;
-}.pf2e-mobile-sheet .action-skill {
+}
+
+.pf2e-mobile-sheet .action-skill {
   /* Skill label on skill action cards: rank letter (Skills tab colors) + skill name */
   font-size: 0.6875rem;
   font-weight: 600;
   color: var(--m-text);
-}.pf2e-mobile-sheet .action-skill .skill-rank-badge {
+}
+
+.pf2e-mobile-sheet .action-skill .skill-rank-badge {
   width: 16px;
   height: 16px;
   font-size: 0.6875rem;
   border-radius: 3px;
-}.pf2e-mobile-sheet .action-frequency {
+}
+
+.pf2e-mobile-sheet .action-frequency {
   font-size: 0.75rem;
   color: var(--m-cyan-text);
   margin-top: 4px;
-}.pf2e-mobile-sheet .action-summary,
+}
+
+.pf2e-mobile-sheet .action-summary,
 .pf2e-mobile-sheet .item-summary {
   display: none;
   margin-top: 8px;
@@ -1141,36 +1547,50 @@ body.pf2e-mobile-active textarea {
   border-radius: 4px;
   line-height: 1.45;
   overflow-wrap: break-word;
-}.pf2e-mobile-sheet .action-summary.expanded,
+}
+
+.pf2e-mobile-sheet .action-summary.expanded,
 .pf2e-mobile-sheet .action-summary.open,
 .pf2e-mobile-sheet .item-summary.expanded,
 .pf2e-mobile-sheet .item-summary.open {
   display: block;
-}.pf2e-mobile-sheet .action-description-content p {
+}
+
+.pf2e-mobile-sheet .action-description-content p {
   margin: 0 0 6px 0;
-}.pf2e-mobile-sheet .action-description-content p:last-child {
+}
+
+.pf2e-mobile-sheet .action-description-content p:last-child {
   margin-bottom: 0;
-}.pf2e-mobile-sheet .action-description-content hr {
+}
+
+.pf2e-mobile-sheet .action-description-content hr {
   border: 0;
   border-top: 1px solid var(--m-border);
   margin: 6px 0;
-}.pf2e-mobile-sheet .action-description-content a.content-link,
+}
+
+.pf2e-mobile-sheet .action-description-content a.content-link,
 .pf2e-mobile-sheet .action-description-content a.inline-roll {
   color: var(--m-hue-info);
   background: rgba(100, 181, 246, 0.15);
   padding: 1px 4px;
   border-radius: 3px;
   text-decoration: none;
-}/* Skills Grid */
+}
+
+/* Skills Grid */
 .pf2e-mobile-sheet .skills-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
 }
+
 @media (max-width: 340px) {
   .pf2e-mobile-sheet .skills-grid {
     grid-template-columns: 1fr;
   }
 }
+
 .pf2e-mobile-sheet .skill-button {
   padding: 8px 10px;
   min-height: 48px;
@@ -1182,43 +1602,52 @@ body.pf2e-mobile-active textarea {
   user-select: none;
   -webkit-user-select: none;
 }
+
 .pf2e-mobile-sheet .skill-button:hover {
   background: var(--m-surface-4);
   border-color: var(--m-border-strong);
 }
+
 .pf2e-mobile-sheet .skill-button:active {
   background: var(--m-surface-5);
   transform: scale(0.98);
 }
+
 .pf2e-mobile-sheet .skill-button * {
   pointer-events: none;
 }
+
 .pf2e-mobile-sheet .skill-rank-badge {
   width: 20px;
   height: 20px;
   border-radius: 4px;
   text-transform: uppercase;
 }
+
 .pf2e-mobile-sheet .skill-rank-badge.rank-0 {
   background: var(--color-proficiency-untrained, #333);
   color: var(--m-text-faint);
   border: 1px solid var(--m-border);
 }
+
 .pf2e-mobile-sheet .skill-rank-badge.rank-1 {
   background: var(--color-proficiency-trained, #171f69);
   color: #90caf9;
   border: 1px solid #1976d2;
 }
+
 .pf2e-mobile-sheet .skill-rank-badge.rank-2 {
   background: var(--color-proficiency-expert, #3c005e);
   color: #ce93d8;
   border: 1px solid #8e24aa;
 }
+
 .pf2e-mobile-sheet .skill-rank-badge.rank-3 {
   background: var(--color-proficiency-master, #664400);
   color: #ffe082;
   border: 1px solid #f57f17;
 }
+
 .pf2e-mobile-sheet .skill-rank-badge.rank-4 {
   background: var(--color-proficiency-legendary, #5e0000);
   color: #ff8a80;
@@ -1228,12 +1657,17 @@ body.pf2e-mobile-active textarea {
 .pf2e-mobile-sheet .skill-mod {
   margin-left: 6px;
 }
+
 .pf2e-mobile-sheet .lore-skills-section {
   margin-top: 14px;
-}/* ----------------------------------------- *//* Spells Tab & Slots                        *//* ----------------------------------------- */
+}
+
+/* ----------------------------------------- *//* Spells Tab & Slots                        *//* ----------------------------------------- */
 .pf2e-mobile-sheet .spell-rank-group {
   margin-bottom: 16px;
-}.pf2e-mobile-sheet .slot-counter button {
+}
+
+.pf2e-mobile-sheet .slot-counter button {
   min-width: 40px;
   min-height: 40px;
   height: 40px;
@@ -1245,50 +1679,80 @@ body.pf2e-mobile-active textarea {
   color: var(--m-slot-number);
   font-size: 0.9375rem;
 }
+
 .pf2e-mobile-sheet .detail-tag {
   background: var(--m-surface-1);
-}/* ----------------------------------------- *//* Inventory & Bulk                          *//* ----------------------------------------- */.pf2e-mobile-sheet .inventory-status-bar {
+}
+
+/* ----------------------------------------- *//* Inventory & Bulk                          *//* ----------------------------------------- */
+.pf2e-mobile-sheet .inventory-status-bar {
   background: var(--m-surface-2);
   padding: 8px 12px;
   border-radius: 6px;
   margin-bottom: 12px;
-}.pf2e-mobile-sheet .encumbered-badge {
+}
+
+.pf2e-mobile-sheet .encumbered-badge {
   font-size: 0.75rem;
   font-weight: bold;
   margin-left: 6px;
-}.pf2e-mobile-sheet .encumbered-badge.warning {
+}
+
+.pf2e-mobile-sheet .encumbered-badge.warning {
   background: var(--m-warning-solid);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .encumbered-badge.danger {
+}
+
+.pf2e-mobile-sheet .encumbered-badge.danger {
   background: var(--m-danger-solid);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .item-img {
+}
+
+.pf2e-mobile-sheet .item-img {
   border-radius: 4px;
   object-fit: cover;
-}.pf2e-mobile-sheet .item-title-row {
+}
+
+.pf2e-mobile-sheet .item-title-row {
   min-height: 28px;
-}.pf2e-mobile-sheet .item-title-row:hover .item-name {
+}
+
+.pf2e-mobile-sheet .item-title-row:hover .item-name {
   color: var(--m-accent);
-}.pf2e-mobile-sheet .item-badge {
+}
+
+.pf2e-mobile-sheet .item-badge {
   line-height: 1.2;
-}.pf2e-mobile-sheet .item-badge.poison-badge {
+}
+
+.pf2e-mobile-sheet .item-badge.poison-badge {
   font-weight: 600;
-}.pf2e-mobile-sheet .item-badge.armor-badge {
+}
+
+.pf2e-mobile-sheet .item-badge.armor-badge {
   background: var(--m-surface-3);
   border: 1px solid var(--m-border-strong);
-}.pf2e-mobile-sheet .item-badge.stowed-badge {
+}
+
+.pf2e-mobile-sheet .item-badge.stowed-badge {
   background: var(--m-surface-2);
   border: 1px solid var(--m-border);
-}.pf2e-mobile-sheet .badge-btn.carry-badge {
+}
+
+.pf2e-mobile-sheet .badge-btn.carry-badge {
   padding: 0 8px;
   background: var(--m-surface-2);
   border: 1px solid var(--m-border-strong);
-}.pf2e-mobile-sheet .btn-apply-poison {
+}
+
+.pf2e-mobile-sheet .btn-apply-poison {
   background: var(--m-success-solid);
   border: 1px solid var(--m-hue-success);
   border-radius: 6px;
   padding: 0 12px;
-}.pf2e-mobile-sheet .btn-detach-subitem {
+}
+
+.pf2e-mobile-sheet .btn-detach-subitem {
   background: #3e2723;
   color: #ffcc80;
   border: 1px solid #e64a19;
@@ -1296,32 +1760,47 @@ body.pf2e-mobile-active textarea {
   font-size: 0.8125rem;
   font-weight: 600;
   padding: 0 10px;
-}.pf2e-mobile-sheet .item-bulk {
+}
+
+.pf2e-mobile-sheet .item-bulk {
   font-size: 0.875rem;
   color: var(--m-text-muted);
-}.pf2e-mobile-sheet .empty-hint {
+}
+
+.pf2e-mobile-sheet .empty-hint {
   font-style: italic;
   color: var(--m-text-faint);
   font-size: 0.875rem;
   padding: 8px 4px;
   margin: 0;
-}.pf2e-mobile-sheet .btn-runes {
+}
+
+.pf2e-mobile-sheet .btn-runes {
   background: #311b92;
   color: #e1bee7;
   border: 1px solid #7e57c2;
   border-radius: 6px;
   padding: 0 10px;
-}.pf2e-mobile-sheet .btn-runes:active {
+}
+
+.pf2e-mobile-sheet .btn-runes:active {
   background: #4527a0;
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .badge-btn.invest-badge,
+}
+
+.pf2e-mobile-sheet .badge-btn.invest-badge,
 .pf2e-mobile-sheet .badge-btn.equip-badge {
   padding: 0 8px;
   background: var(--m-surface-2);
   border: 1px solid var(--m-border);
-}.pf2e-mobile-sheet .badge-btn.invest-badge.invested {
+}
+
+.pf2e-mobile-sheet .badge-btn.invest-badge.invested {
   box-shadow: 0 0 6px rgba(63, 81, 181, 0.4);
-}/* ----------------------------------------- *//* Compendium Picker Drawer / Modal          *//* ----------------------------------------- */body.pf2e-mobile-active .pf2e-mobile-compendium-picker,
+}
+
+/* ----------------------------------------- *//* Compendium Picker Drawer / Modal          *//* ----------------------------------------- */
+body.pf2e-mobile-active .pf2e-mobile-compendium-picker,
 body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 .compendium-picker .pf2e-mobile-compendium-picker {
   position: fixed !important;
@@ -1341,33 +1820,55 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.8);
   z-index: 150;
   transform: none !important;
-}/* ----------------------------------------- *//* Physical Dice Entry Modal                 *//* ----------------------------------------- */.physical-dice-dialog-app {
+}
+
+/* ----------------------------------------- *//* Physical Dice Entry Modal                 *//* ----------------------------------------- */
+.physical-dice-dialog-app {
   z-index: 10000 !important;
-}.physical-dice-dialog-content {
+}
+
+.physical-dice-dialog-content {
   padding: 12px;
   background: var(--m-surface-2);
   border-radius: 8px;
-}.pf2e-mobile-sheet .physical-dialog-header {
+}
+
+.pf2e-mobile-sheet .physical-dialog-header {
   border-bottom: 1px solid var(--m-border);
   padding-bottom: 8px;
-}.pf2e-mobile-sheet .physical-action-title {
+}
+
+.pf2e-mobile-sheet .physical-action-title {
   font-size: 1.125rem;
-}.pf2e-mobile-sheet .physical-action-subtitle {
+}
+
+.pf2e-mobile-sheet .physical-action-subtitle {
   margin-top: 2px;
-}.pf2e-mobile-sheet .physical-target-badge {
+}
+
+.pf2e-mobile-sheet .physical-target-badge {
   display: inline-block;
   border-radius: 4px;
   padding: 3px 8px;
   margin-top: 6px;
-}.pf2e-mobile-sheet .physical-prompt-msg {
+}
+
+.pf2e-mobile-sheet .physical-prompt-msg {
   line-height: 1.4;
   margin-bottom: 8px;
-}/* d20 Check Input */.pf2e-mobile-sheet .physical-d20-section {
+}
+
+/* d20 Check Input */
+.pf2e-mobile-sheet .physical-d20-section {
   text-align: center;
   padding: 8px 0;
-}.pf2e-mobile-sheet .physical-input-wrapper {
+}
+
+.pf2e-mobile-sheet .physical-input-wrapper {
   margin: 12px auto;
-}.physical-dice-dialog-content .physical-die-input {
+}
+
+.physical-dice-dialog-content .physical-die-input {
   display: block;
   margin: 0 auto;
   font-size: 2rem;
@@ -1377,123 +1878,189 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   background: var(--m-surface-0);
   border: 2px solid var(--m-accent);
   border-radius: 8px;
-}.physical-dice-dialog-content .physical-die-input:focus {
+}
+
+.physical-dice-dialog-content .physical-die-input:focus {
   outline: none;
   border-color: #ffa726;
   box-shadow: 0 0 8px color-mix(in srgb, var(--m-accent) 50%, transparent);
-}.pf2e-mobile-sheet .physical-modifier-info {
+}
+
+.pf2e-mobile-sheet .physical-modifier-info {
   margin-top: 8px;
-}.pf2e-mobile-sheet .physical-modifier-info strong {
+}
+
+.pf2e-mobile-sheet .physical-modifier-info strong {
   color: var(--m-info-text);
-}/* Damage Pools Rows */.pf2e-mobile-sheet .physical-damage-pools {
+}
+
+/* Damage Pools Rows */
+.pf2e-mobile-sheet .physical-damage-pools {
   margin: 8px 0;
-}.pf2e-mobile-sheet .physical-damage-row {
+}
+
+.pf2e-mobile-sheet .physical-damage-row {
   background: var(--m-surface-3);
   border: 1px solid var(--m-border);
   border-radius: 6px;
   padding: 10px 12px;
-}.pf2e-mobile-sheet .damage-row-header {
+}
+
+.pf2e-mobile-sheet .damage-row-header {
   margin-bottom: 8px;
-}.pf2e-mobile-sheet .damage-type-badge {
+}
+
+.pf2e-mobile-sheet .damage-type-badge {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 3px 8px;
   border-radius: 4px;
   background: var(--m-surface-4);
-}.pf2e-mobile-sheet .damage-type-badge.damage-slashing {
+}
+
+.pf2e-mobile-sheet .damage-type-badge.damage-slashing {
   background: var(--color-border-physical, #3c3c3c);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .damage-type-badge.damage-piercing {
+}
+
+.pf2e-mobile-sheet .damage-type-badge.damage-piercing {
   background: var(--color-border-physical, #3c3c3c);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .damage-type-badge.damage-bludgeoning {
+}
+
+.pf2e-mobile-sheet .damage-type-badge.damage-bludgeoning {
   background: var(--color-border-physical, #3c3c3c);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .damage-type-badge.damage-fire {
+}
+
+.pf2e-mobile-sheet .damage-type-badge.damage-fire {
   background: var(--color-border-fire, #a62f00);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .damage-type-badge.damage-cold {
+}
+
+.pf2e-mobile-sheet .damage-type-badge.damage-cold {
   background: #075985;
   color: #e0f2fe;
-}.pf2e-mobile-sheet .damage-type-badge.damage-electricity {
+}
+
+.pf2e-mobile-sheet .damage-type-badge.damage-electricity {
   background: var(--color-border-electricity, #b8860b);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .damage-type-badge.damage-acid {
+}
+
+.pf2e-mobile-sheet .damage-type-badge.damage-acid {
   background: var(--color-border-acid, #007300);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .damage-type-badge.damage-poison {
+}
+
+.pf2e-mobile-sheet .damage-type-badge.damage-poison {
   background: var(--m-surface-5);
   color: var(--m-text);
-}.pf2e-mobile-sheet .damage-type-badge.damage-vitality,
+}
+
+.pf2e-mobile-sheet .damage-type-badge.damage-vitality,
 .pf2e-mobile-sheet .damage-type-badge.damage-positive {
   background: linear-gradient(180deg, #fde68a, #facc15);
   color: #3d2e00;
   box-shadow: inset 0 0 0 1px #fef3c7, 0 0 6px rgba(253, 224, 71, 0.55);
-}.pf2e-mobile-sheet .damage-type-badge.damage-void,
+}
+
+.pf2e-mobile-sheet .damage-type-badge.damage-void,
 .pf2e-mobile-sheet .damage-type-badge.damage-negative {
   background: var(--color-border-void, #00001f);
   color: #b18ad6;
   box-shadow: inset 0 0 0 1px #3a3a6a;
-}.pf2e-mobile-sheet .damage-type-badge.damage-spirit {
+}
+
+.pf2e-mobile-sheet .damage-type-badge.damage-spirit {
   background: #a9d6f0;
   color: #0d2a3d;
-}.pf2e-mobile-sheet .damage-type-badge.damage-force {
+}
+
+.pf2e-mobile-sheet .damage-type-badge.damage-force {
   background: var(--color-border-force, #6300aa);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .damage-type-badge.damage-bleed {
+}
+
+.pf2e-mobile-sheet .damage-type-badge.damage-bleed {
   background: var(--color-border-bleed, #99001a);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .damage-input-row label {
+}
+
+.pf2e-mobile-sheet .damage-input-row label {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--m-text-soft);
   min-width: 80px;
-}.physical-dice-dialog-content .physical-damage-input {
+}
+
+.physical-dice-dialog-content .physical-damage-input {
   min-height: 48px;
   font-size: 1.25rem;
   text-align: center;
   background: var(--m-surface-0);
   border: 1px solid var(--m-border-strong);
   border-radius: 6px;
-}.physical-dice-dialog-content .physical-damage-input:focus {
+}
+
+.physical-dice-dialog-content .physical-damage-input:focus {
   outline: none;
   border-color: var(--m-info-text);
   box-shadow: 0 0 6px rgba(144, 202, 249, 0.4);
-}.pf2e-mobile-sheet .damage-mod-note {
+}
+
+.pf2e-mobile-sheet .damage-mod-note {
   margin-top: 6px;
   font-style: italic;
-}/* Footer & Actions */.physical-dice-dialog-content .physical-dialog-footer {
+}
+
+/* Footer & Actions */
+.physical-dice-dialog-content .physical-dialog-footer {
   margin-top: 14px;
-}.physical-dice-dialog-content .physical-dialog-footer .btn-cancel {
+}
+
+.physical-dice-dialog-content .physical-dialog-footer .btn-cancel {
   background: var(--m-surface-4);
   color: var(--m-text);
   border: 1px solid var(--m-border);
   font-weight: 500;
-}.physical-dice-dialog-content .physical-dialog-footer .btn-submit {
+}
+
+.physical-dice-dialog-content .physical-dialog-footer .btn-submit {
   flex: 1.5;
   background: var(--m-info-solid);
   color: var(--m-text-strong);
   border: 1px solid var(--m-hue-info);
   font-weight: bold;
-}.pf2e-mobile-sheet .physical-error-msg {
+}
+
+.pf2e-mobile-sheet .physical-error-msg {
   background: rgba(255, 82, 82, 0.12);
   border: 1px solid rgba(255, 82, 82, 0.3);
   border-radius: 4px;
   padding: 8px 10px;
   margin-top: 8px;
   text-align: center;
-}.pf2e-mobile-sheet .physical-error-msg.hidden {
+}
+
+.pf2e-mobile-sheet .physical-error-msg.hidden {
   display: none !important;
-}/* ----------------------------------------- *//* Spells Tab & Spell Management             *//* ----------------------------------------- */.pf2e-mobile-sheet .btn-daily-reset {
+}
+
+/* ----------------------------------------- *//* Spells Tab & Spell Management             *//* ----------------------------------------- */
+.pf2e-mobile-sheet .btn-daily-reset {
   padding: 4px 10px;
   background: #1f2937;
   border: 1px solid #374151;
   color: #93c5fd;
   border-radius: 6px;
-}.pf2e-mobile-sheet .btn-daily-reset:active {
+}
+
+.pf2e-mobile-sheet .btn-daily-reset:active {
   background: #374151;
   color: var(--m-text-strong);
 }
+
 .pf2e-mobile-sheet .btn-dailies {
   padding: 4px 10px;
   background: #3b2a0c;
@@ -1501,16 +2068,19 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   color: #fde047;
   border-radius: 6px;
 }
+
 .pf2e-mobile-sheet .btn-dailies:active {
   background: #573e13;
   color: var(--m-text-strong);
 }
+
 .pf2e-mobile-sheet .subtab-count-badge {
   background: var(--m-info-solid);
   border-radius: 10px;
   padding: 1px 6px;
   line-height: 1;
 }
+
 /* Shared groups and cards (m- classes, used by the Spells and Actions tabs):
    .m-group       a padded frame holding a header/title and a list of cards
                   (spell rank groups, Actions tab sections)
@@ -1524,7 +2094,9 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   background: var(--m-surface-1);
   border: 2px solid var(--m-border);
   border-radius: 10px;
-}.pf2e-mobile-sheet .spell-rank-header {
+}
+
+.pf2e-mobile-sheet .spell-rank-header {
   min-height: 44px;
   padding: 4px 4px;
   background: transparent;
@@ -1532,21 +2104,33 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-radius: 6px;
   user-select: none;
   transition: background 0.15s ease, border-color 0.15s ease;
-}.pf2e-mobile-sheet .spell-rank-header:active {
+}
+
+.pf2e-mobile-sheet .spell-rank-header:active {
   background: var(--m-surface-3);
   border-color: var(--m-border-strong);
-}.pf2e-mobile-sheet .rank-expand-icon {
+}
+
+.pf2e-mobile-sheet .rank-expand-icon {
   transition: transform 0.2s ease, color 0.2s ease;
-}.pf2e-mobile-sheet .rank-expand-icon.collapsed {
+}
+
+.pf2e-mobile-sheet .rank-expand-icon.collapsed {
   transform: rotate(-90deg);
   color: var(--m-text-faint);
-}.pf2e-mobile-sheet .rank-title {
+}
+
+.pf2e-mobile-sheet .rank-title {
   margin: 0;
-}.pf2e-mobile-sheet .rank-count-badge {
+}
+
+.pf2e-mobile-sheet .rank-count-badge {
   background: var(--m-surface-4);
   padding: 2px 7px;
   border-radius: 10px;
-}.pf2e-mobile-sheet .btn-slot-adjust {
+}
+
+.pf2e-mobile-sheet .btn-slot-adjust {
   min-width: 36px;
   min-height: 36px;
   width: 36px;
@@ -1556,7 +2140,9 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border: 1px solid var(--m-border);
   border-radius: 4px;
   color: var(--m-slot-number);
-}.pf2e-mobile-sheet .btn-slot-adjust:active {
+}
+
+.pf2e-mobile-sheet .btn-slot-adjust:active {
   background: var(--m-surface-4);
   border-color: var(--m-accent);
   color: var(--m-accent);
@@ -1582,12 +2168,16 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 .pf2e-mobile-sheet .btn-focus-point:active {
   background: transparent;
   transform: scale(0.9);
-}.pf2e-mobile-sheet .m-group-list {
+}
+
+.pf2e-mobile-sheet .m-group-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-top: 4px;
-}.pf2e-mobile-sheet .m-group-list > .empty-hint {
+}
+
+.pf2e-mobile-sheet .m-group-list > .empty-hint {
   margin: 0;
   padding: 4px;
 }
@@ -1602,9 +2192,13 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   padding: 0;
   border-bottom: none;
   background: transparent;
-}.pf2e-mobile-sheet .spell-list.collapsed {
+}
+
+.pf2e-mobile-sheet .spell-list.collapsed {
   display: none !important;
-}/* Spell Card Details & Status: a spell is a raised row inside its rank frame:
+}
+
+/* Spell Card Details & Status: a spell is a raised row inside its rank frame:
    a light top edge plus a soft drop shadow, slightly lighter than the frame behind it.
    Only the top border has a width, so the open (orange) and expended (red) border colours
    show as a coloured top edge. Used by spell, action and strike cards. */
@@ -1619,22 +2213,31 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   transition: opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease;
   padding: 0;
 }
+
 /* A flat panel: card colour with a thin border, without the card's shadow and top edge. Used by the
    sub-tab bars, the Preparation rank cards and the party overview's summary, member and stash panels. */
 .pf2e-mobile-sheet .m-panel {
   background: var(--m-surface-2);
   border: 1px solid var(--m-border-subtle);
   border-radius: 6px;
-}.pf2e-mobile-sheet .strike-card {
+}
+
+.pf2e-mobile-sheet .strike-card {
   /* Strikes keep their own layout, which needs inner padding (the other cards pad their line) */
   padding: 10px;
-}.pf2e-mobile-sheet .strike-card.ready {
+}
+
+.pf2e-mobile-sheet .strike-card.ready {
   /* Weapon ready to strike (held, per pf2e's strike.ready): same green as the Gear tab's Held / Equipped badges */
   border-left: 2px solid var(--m-success-border);
-}.pf2e-mobile-sheet .spell-card .action-card-header {
+}
+
+.pf2e-mobile-sheet .spell-card .action-card-header {
   flex-wrap: nowrap;
   gap: 6px;
-}/* Whole spell line (name row + detail tags) is the tap target that toggles the drawer */
+}
+
+/* Whole spell line (name row + detail tags) is the tap target that toggles the drawer */
 .pf2e-mobile-sheet .m-card-line {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
@@ -1711,67 +2314,102 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 .pf2e-mobile-sheet .m-card:has(> .character-item.expanded) {
   border-color: color-mix(in srgb, var(--m-accent) 55%, transparent);
   background: var(--m-surface-2);
-}.pf2e-mobile-sheet .spell-card .action-title-group {
+}
+
+.pf2e-mobile-sheet .spell-card .action-title-group {
   min-width: 120px;
   flex: 1 1 120px;
-}.pf2e-mobile-sheet .spell-card .action-btn-group {
+}
+
+.pf2e-mobile-sheet .spell-card .action-btn-group {
   margin-left: auto;
-}.pf2e-mobile-sheet .spell-card.expended {
+}
+
+.pf2e-mobile-sheet .spell-card.expended {
   border-color: #4a2222;
   background: #1a1616;
-}.pf2e-mobile-sheet .spell-card.expended .action-title-group,
+}
+
+.pf2e-mobile-sheet .spell-card.expended .action-title-group,
 .pf2e-mobile-sheet .spell-card.expended .spell-details,
 .pf2e-mobile-sheet .spell-card.expended .btn-cast.disabled {
   opacity: 0.6;
-}.pf2e-mobile-sheet .spell-card.expended .action-name {
+}
+
+.pf2e-mobile-sheet .spell-card.expended .action-name {
   text-decoration: line-through;
   color: var(--m-text-dim);
-}.pf2e-mobile-sheet .spell-source-badge {
+}
+
+.pf2e-mobile-sheet .spell-source-badge {
   text-transform: uppercase;
   letter-spacing: 0.4px;
   white-space: nowrap;
-}.pf2e-mobile-sheet .spell-source-badge.badge-signature {
+}
+
+.pf2e-mobile-sheet .spell-source-badge.badge-signature {
   padding: 2px 5px;
   font-size: 0.6875rem;
-}.pf2e-mobile-sheet .spell-expended-badge {
+}
+
+.pf2e-mobile-sheet .spell-expended-badge {
   text-transform: uppercase;
   letter-spacing: 0.4px;
   white-space: nowrap;
-}.pf2e-mobile-sheet .btn-restore-slot {
+}
+
+.pf2e-mobile-sheet .btn-restore-slot {
   min-width: 38px;
   padding: 4px 8px;
-}.pf2e-mobile-sheet .btn-restore-slot:active {
+}
+
+.pf2e-mobile-sheet .btn-restore-slot:active {
   background: var(--m-success-solid-active);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .btn-spell-damage {
+}
+
+.pf2e-mobile-sheet .btn-spell-damage {
   padding: 4px 10px;
   background: var(--m-danger-solid);
   border: 1px solid var(--m-hue-danger);
   white-space: nowrap;
-}.pf2e-mobile-sheet .btn-spell-damage:active {
+}
+
+.pf2e-mobile-sheet .btn-spell-damage:active {
   background: var(--m-danger-solid-active);
   transform: scale(0.98);
-}.pf2e-mobile-sheet .btn-spell-damage.btn-spell-heal {
+}
+
+.pf2e-mobile-sheet .btn-spell-damage.btn-spell-heal {
   background: var(--m-success-solid);
   border-color: var(--m-hue-success);
-}.pf2e-mobile-sheet .btn-spell-damage.btn-spell-heal:active {
+}
+
+.pf2e-mobile-sheet .btn-spell-damage.btn-spell-heal:active {
   background: var(--m-success-solid-active);
-}/* Drawer row: Chat (fixed width) + damage/healing button (fills the rest) */
+}
+
+/* Drawer row: Chat (fixed width) + damage/healing button (fills the rest) */
 .pf2e-mobile-sheet .m-drawer-row {
   margin-bottom: 10px;
   width: 100%;
   gap: 6px;
   align-items: stretch;
-}.pf2e-mobile-sheet .m-drawer-row .btn-action-chat {
+}
+
+.pf2e-mobile-sheet .m-drawer-row .btn-action-chat {
   flex: 0 0 auto;
   height: 42px;
-}.pf2e-mobile-sheet .btn-spell-damage.btn-spell-damage-full {
+}
+
+.pf2e-mobile-sheet .btn-spell-damage.btn-spell-damage-full {
   min-width: 0;
   min-height: 42px;
   height: 42px;
   font-size: 0.875rem;
   border-radius: 6px;
 }
+
 .pf2e-mobile-sheet .btn-cast {
   background: var(--m-info-solid);
   border: 1px solid var(--m-hue-info);
@@ -1781,6 +2419,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   align-content: center;
   white-space: nowrap;
 }
+
 .pf2e-mobile-sheet .action-btn-group .btn-cast {
   min-height: 100%;
   padding: 4px;
@@ -1791,124 +2430,198 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   height: 38px;
   padding: 4px;
 }
+
 .pf2e-mobile-sheet .btn-cast:active {
   background: var(--m-info-solid-active);
-}.pf2e-mobile-sheet .btn-cast.btn-cast-attack {
+}
+
+.pf2e-mobile-sheet .btn-cast.btn-cast-attack {
   background: var(--m-danger-solid);
   border-color: var(--m-hue-danger);
-}.pf2e-mobile-sheet .btn-cast.btn-cast-attack:active {
+}
+
+.pf2e-mobile-sheet .btn-cast.btn-cast-attack:active {
   background: var(--m-danger-solid-active);
-}.pf2e-mobile-sheet .spell-details {
+}
+
+.pf2e-mobile-sheet .spell-details {
   margin-top: 4px;
-}.pf2e-mobile-sheet .spell-details .detail-tag {
+}
+
+.pf2e-mobile-sheet .spell-details .detail-tag {
   font-size: 0.6875rem;
   background: var(--m-surface-1);
   border: 1px solid var(--m-border-subtle);
   color: var(--m-text-muted);
-}/* Heightened Notice in Expanded Drawer */.pf2e-mobile-sheet .spell-heightened-notice {
+}
+
+/* Heightened Notice in Expanded Drawer */
+.pf2e-mobile-sheet .spell-heightened-notice {
   padding: 8px 12px;
   border-radius: 6px;
   margin-bottom: 10px;
-}.pf2e-mobile-sheet .spell-heightened-notice i {
+}
+
+.pf2e-mobile-sheet .spell-heightened-notice i {
   color: var(--m-hue-cyan);
   font-size: 0.9375rem;
-}.pf2e-mobile-sheet .spell-heightened-notice strong {
+}
+
+.pf2e-mobile-sheet .spell-heightened-notice strong {
   color: var(--m-cyan-text);
-}/* Spell Drawer Management Footer */.pf2e-mobile-sheet .spell-drawer-footer {
+}
+
+/* Spell Drawer Management Footer */
+.pf2e-mobile-sheet .spell-drawer-footer {
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--m-border-subtle);
-}.pf2e-mobile-sheet .spell-drawer-footer .btn-spell-action {
+}
+
+.pf2e-mobile-sheet .spell-drawer-footer .btn-spell-action {
   min-height: 44px;
   height: 44px;
   padding: 0 14px;
   border-radius: 6px;
-}.pf2e-mobile-sheet .spell-drawer-footer .btn-toggle-signature {
+}
+
+.pf2e-mobile-sheet .spell-drawer-footer .btn-toggle-signature {
   background: #1c1917;
   border: 1px solid var(--m-warning-border);
-}.pf2e-mobile-sheet .spell-drawer-footer .btn-toggle-signature:active {
+}
+
+.pf2e-mobile-sheet .spell-drawer-footer .btn-toggle-signature:active {
   background: var(--m-warning-bg);
-}.pf2e-mobile-sheet .spell-drawer-footer .btn-remove-spell:active {
+}
+
+.pf2e-mobile-sheet .spell-drawer-footer .btn-remove-spell:active {
   background: var(--m-danger-solid-active);
   color: var(--m-text-strong);
-}/* ----------------------------------------- *//* Preparation Mode & Presets Styling        *//* ----------------------------------------- */.pf2e-mobile-sheet .spell-presets-bar {
+}
+
+/* ----------------------------------------- *//* Preparation Mode & Presets Styling        *//* ----------------------------------------- */
+.pf2e-mobile-sheet .spell-presets-bar {
   background: var(--m-surface-1);
   border: 1px solid var(--m-border-subtle);
   border-radius: 6px;
   padding: 10px 12px;
-}.pf2e-mobile-sheet .presets-header {
+}
+
+.pf2e-mobile-sheet .presets-header {
   margin-bottom: 8px;
-}.pf2e-mobile-sheet .spells-preparation-view .btn-save-preset {
+}
+
+.pf2e-mobile-sheet .spells-preparation-view .btn-save-preset {
   padding: 3px 10px;
-}.pf2e-mobile-sheet .spells-preparation-view .btn-save-preset:active {
+}
+
+.pf2e-mobile-sheet .spells-preparation-view .btn-save-preset:active {
   background: var(--m-success-solid-active);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .preset-pill {
+}
+
+.pf2e-mobile-sheet .preset-pill {
   background: var(--m-surface-3);
   border: 1px solid var(--m-border);
   border-radius: 4px;
   padding: 4px 8px;
-}.pf2e-mobile-sheet .spells-preparation-view .btn-apply-preset {
+}
+
+.pf2e-mobile-sheet .spells-preparation-view .btn-apply-preset {
   padding: 2px 8px;
-}.pf2e-mobile-sheet .spells-preparation-view .btn-apply-preset:active {
+}
+
+.pf2e-mobile-sheet .spells-preparation-view .btn-apply-preset:active {
   background: var(--m-info-solid-active);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .spells-preparation-view .btn-delete-preset {
+}
+
+.pf2e-mobile-sheet .spells-preparation-view .btn-delete-preset {
   padding: 4px 8px;
   background: transparent;
   border: 1px solid var(--m-danger-border);
-}.pf2e-mobile-sheet .spells-preparation-view .btn-delete-preset:active {
+}
+
+.pf2e-mobile-sheet .spells-preparation-view .btn-delete-preset:active {
   background: var(--m-danger-solid-active);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .presets-empty-hint {
+}
+
+.pf2e-mobile-sheet .presets-empty-hint {
   margin: 4px 0 0 0;
   font-style: italic;
-}.pf2e-mobile-sheet .entry-section-title {
+}
+
+.pf2e-mobile-sheet .entry-section-title {
   margin: 10px 0 6px 0;
-}.pf2e-mobile-sheet .prep-rank-card {
+}
+
+.pf2e-mobile-sheet .prep-rank-card {
   padding: 8px 10px;
   margin-bottom: 8px;
-}.pf2e-mobile-sheet .prep-rank-header {
+}
+
+.pf2e-mobile-sheet .prep-rank-header {
   margin-bottom: 6px;
   border-bottom: 1px solid var(--m-border-subtle);
   padding-bottom: 4px;
-}.pf2e-mobile-sheet .slot-row {
+}
+
+.pf2e-mobile-sheet .slot-row {
   padding: 6px 8px;
   border-radius: 4px;
-}.pf2e-mobile-sheet .slot-row.slot-empty {
+}
+
+.pf2e-mobile-sheet .slot-row.slot-empty {
   border: 1.5px dashed var(--m-border);
   background: rgba(255, 255, 255, 0.02);
-}.pf2e-mobile-sheet .slot-row.slot-filled {
+}
+
+.pf2e-mobile-sheet .slot-row.slot-filled {
   border: 1px solid var(--m-border-subtle);
   background: var(--m-surface-3);
-}.pf2e-mobile-sheet .slot-row.slot-expended {
+}
+
+.pf2e-mobile-sheet .slot-row.slot-expended {
   opacity: 0.65;
   border-color: #552a2a;
-}.pf2e-mobile-sheet .slot-num-badge {
+}
+
+.pf2e-mobile-sheet .slot-num-badge {
   min-width: 22px;
   height: 22px;
   background: var(--m-slot-bg);
   color: var(--m-slot-text);
   border-radius: 50%;
   box-shadow: inset 0 0 0 1px var(--m-slot-border);
-}.pf2e-mobile-sheet .slot-placeholder {
+}
+
+.pf2e-mobile-sheet .slot-placeholder {
   font-style: italic;
-}.pf2e-mobile-sheet .spells-preparation-view .btn-prepare-slot {
+}
+
+.pf2e-mobile-sheet .spells-preparation-view .btn-prepare-slot {
   min-height: 36px;
   height: 36px;
   padding: 4px 10px;
   border-radius: 4px;
-}.pf2e-mobile-sheet .spells-preparation-view .btn-prepare-slot:active {
+}
+
+.pf2e-mobile-sheet .spells-preparation-view .btn-prepare-slot:active {
   background: var(--m-info-solid-active);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .slot-spell-img {
+}
+
+.pf2e-mobile-sheet .slot-spell-img {
   width: 34px;
   height: 34px;
   border-radius: 4px;
   object-fit: cover;
   border: 1px solid var(--m-border);
   background: var(--m-surface-0);
-}.pf2e-mobile-sheet .slot-actions .btn-change-slot {
+}
+
+.pf2e-mobile-sheet .slot-actions .btn-change-slot {
   min-width: 36px;
   min-height: 36px;
   width: 36px;
@@ -1917,10 +2630,14 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   background: var(--m-surface-3);
   border: 1px solid var(--m-border);
   border-radius: 4px;
-}.pf2e-mobile-sheet .slot-actions .btn-change-slot:active {
+}
+
+.pf2e-mobile-sheet .slot-actions .btn-change-slot:active {
   background: var(--m-surface-4);
   color: var(--m-text-strong);
-}.pf2e-mobile-sheet .slot-actions .btn-unprepare-slot {
+}
+
+.pf2e-mobile-sheet .slot-actions .btn-unprepare-slot {
   min-width: 36px;
   min-height: 36px;
   width: 36px;
@@ -1929,30 +2646,47 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   background: var(--m-surface-3);
   border: 1px solid var(--m-danger-border);
   border-radius: 4px;
-}.pf2e-mobile-sheet .slot-actions .btn-unprepare-slot:active {
+}
+
+.pf2e-mobile-sheet .slot-actions .btn-unprepare-slot:active {
   background: var(--m-danger-solid-active);
   color: var(--m-text-strong);
-}/* ----------------------------------------- *//* Spell Picker Dialog                       *//* ----------------------------------------- */.spell-picker-dialog {
+}
+
+/* ----------------------------------------- *//* Spell Picker Dialog                       *//* ----------------------------------------- */
+.spell-picker-dialog {
   display: flex;
   flex-direction: column;
   max-height: 75vh;
-}.spell-picker-dialog .spell-picker-header {
+}
+
+.spell-picker-dialog .spell-picker-header {
   padding: 10px 12px;
   border-bottom: 1px solid var(--m-border-subtle);
-}.spell-picker-dialog .spell-picker-header h4 {
+}
+
+.spell-picker-dialog .spell-picker-header h4 {
   margin: 0 0 4px 0;
   font-size: 1.0625rem;
   color: var(--m-accent);
-}.spell-picker-dialog .dialog-subtitle {
+}
+
+.spell-picker-dialog .dialog-subtitle {
   margin: 0 0 8px 0;
-}.spell-picker-dialog .spell-picker-search {
+}
+
+.spell-picker-dialog .spell-picker-search {
   position: relative;
-}.spell-picker-dialog .spell-picker-search .search-icon {
+}
+
+.spell-picker-dialog .spell-picker-search .search-icon {
   position: absolute;
   left: 10px;
   color: var(--m-text-faint);
   font-size: 0.875rem;
-}.spell-picker-dialog .spell-picker-input {
+}
+
+.spell-picker-dialog .spell-picker-input {
   width: 100%;
   min-height: 40px;
   height: 40px;
@@ -1961,16 +2695,22 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   background: var(--m-surface-0);
   border: 1px solid var(--m-border);
   border-radius: 4px;
-}.spell-picker-dialog .spell-picker-input:focus {
+}
+
+.spell-picker-dialog .spell-picker-input:focus {
   outline: none;
   border-color: var(--m-accent);
   box-shadow: 0 0 6px color-mix(in srgb, var(--m-accent) 40%, transparent);
-}.spell-picker-dialog .spell-picker-list {
+}
+
+.spell-picker-dialog .spell-picker-list {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 8px 10px;
   max-height: 50vh;
-}.spell-picker-dialog .spell-picker-item {
+}
+
+.spell-picker-dialog .spell-picker-item {
   background: var(--m-surface-2);
   border: 1px solid var(--m-border-subtle);
   border-radius: 6px;
@@ -1978,10 +2718,14 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   cursor: pointer;
   touch-action: manipulation;
   transition: background 0.15s ease;
-}.spell-picker-dialog .spell-picker-item:active {
+}
+
+.spell-picker-dialog .spell-picker-item:active {
   background: var(--m-surface-3);
   border-color: var(--m-accent);
-}.spell-picker-dialog .spell-item-img,
+}
+
+.spell-picker-dialog .spell-item-img,
 .pf2e-mobile-sheet .spell-item-img {
   width: 38px;
   height: 38px;
@@ -1989,32 +2733,45 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   object-fit: cover;
   border: 1px solid var(--m-border);
   background: var(--m-surface-0);
-}.spell-picker-dialog .spell-item-meta,
+}
+
+.spell-picker-dialog .spell-item-meta,
 .pf2e-mobile-sheet .spell-item-meta {
   margin-top: 2px;
-}.spell-picker-dialog .spell-item-meta .detail-tag,
+}
+
+.spell-picker-dialog .spell-item-meta .detail-tag,
 .pf2e-mobile-sheet .spell-item-meta .detail-tag {
   font-size: 0.6875rem;
   background: var(--m-surface-0);
   border: 1px solid var(--m-border-subtle);
   color: var(--m-text-muted);
-}.spell-picker-dialog .btn-select-spell {
+}
+
+.spell-picker-dialog .btn-select-spell {
   min-height: 38px;
   height: 38px;
   padding: 4px 10px;
   border-radius: 4px;
   cursor: pointer;
-}.spell-picker-dialog .btn-select-spell:active {
+}
+
+.spell-picker-dialog .btn-select-spell:active {
   background: var(--m-info-solid-active);
   color: var(--m-text-strong);
-}/* ======================================================== *//* COMPENDIUM PICKER (MOBILE DRAWER & SPELL STAGING)        *//* ======================================================== */.compendium-picker .pf2e-mobile-compendium-picker .window-content {
+}
+
+/* ======================================================== *//* COMPENDIUM PICKER (MOBILE DRAWER & SPELL STAGING)        *//* ======================================================== */
+.compendium-picker .pf2e-mobile-compendium-picker .window-content {
   padding: 0 !important;
   background: #141416;
   color: var(--m-text);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-}.compendium-picker {
+}
+
+.compendium-picker {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -2025,18 +2782,25 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   gap: 10px;
   background: #1a1a1a;
   color: var(--m-text);
-}/* Search Bar */.compendium-picker .compendium-search-bar {
+}
+
+/* Search Bar */
+.compendium-picker .compendium-search-bar {
   padding: 10px 12px;
   background: #1c1c20;
   border-bottom: 1px solid #2e2e34;
   position: relative;
-}.compendium-picker .compendium-search-bar .search-icon {
+}
+
+.compendium-picker .compendium-search-bar .search-icon {
   position: absolute;
   left: 22px;
   color: #71717a;
   font-size: 0.9375rem;
   pointer-events: none;
-}.compendium-picker .compendium-search-input {
+}
+
+.compendium-picker .compendium-search-input {
   width: 100%;
   min-height: 48px;
   height: 44px;
@@ -2045,10 +2809,14 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-radius: 6px;
   padding: 0 12px 0 38px;
   box-sizing: border-box;
-}.compendium-picker .compendium-search-input:focus {
+}
+
+.compendium-picker .compendium-search-input:focus {
   border-color: #3b82f6;
   outline: none;
-}.compendium-picker .compendium-search-bar .btn-compendium-search {
+}
+
+.compendium-picker .compendium-search-bar .btn-compendium-search {
   height: 44px;
   min-height: 44px;
   min-width: 44px;
@@ -2058,19 +2826,28 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.15s ease;
-}.compendium-picker .compendium-search-bar .btn-compendium-search:active {
+}
+
+.compendium-picker .compendium-search-bar .btn-compendium-search:active {
   background: #1d4ed8;
-}/* Filters */.compendium-picker .compendium-filters {
+}
+
+/* Filters */
+.compendium-picker .compendium-filters {
   padding: 8px 12px;
   background: #18181b;
   border-bottom: 1px solid #27272a;
-}.pf2e-mobile-sheet .filter-field {
+}
+
+.pf2e-mobile-sheet .filter-field {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-}.pf2e-mobile-sheet .filter-label {
+}
+
+.pf2e-mobile-sheet .filter-label {
   font-size: 0.6875rem;
   text-transform: uppercase;
   color: #a1a1aa;
@@ -2079,7 +2856,9 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   display: flex;
   align-items: center;
   gap: 4px;
-}.pf2e-mobile-sheet .filter-select {
+}
+
+.pf2e-mobile-sheet .filter-select {
   width: 100%;
   height: 44px;
   background: var(--m-surface-3);
@@ -2090,31 +2869,44 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   font-size: 0.875rem;
   cursor: pointer;
   touch-action: manipulation;
-}.pf2e-mobile-sheet .filter-select:focus {
+}
+
+.pf2e-mobile-sheet .filter-select:focus {
   border-color: #3b82f6;
   outline: none;
-}/* Compendium Results List */.compendium-picker .compendium-results-list {
+}
+
+/* Compendium Results List */
+.compendium-picker .compendium-results-list {
   overflow-y: auto;
   margin: 0;
   padding: 8px 12px;
   list-style: none;
   -webkit-overflow-scrolling: touch;
-}.compendium-picker .compendium-item-row {
+}
+
+.compendium-picker .compendium-item-row {
   padding: 8px 10px;
   background: #1f1f23;
   border: 1px solid #2e2e34;
   border-radius: 6px;
   min-height: 52px;
-}.compendium-picker .compendium-item-img {
+}
+
+.compendium-picker .compendium-item-img {
   width: 38px;
   height: 38px;
   border-radius: 6px;
   object-fit: cover;
   border: 1px solid #3f3f46;
   background: #09090b;
-}.compendium-picker .compendium-item-sub {
+}
+
+.compendium-picker .compendium-item-sub {
   color: #a1a1aa;
-}.compendium-picker .compendium-item-row .btn-import {
+}
+
+.compendium-picker .compendium-item-row .btn-import {
   min-width: 70px;
   height: 40px;
   padding: 0 12px;
@@ -2123,14 +2915,21 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-radius: 6px;
   cursor: pointer;
   touch-action: manipulation;
-}.compendium-picker .compendium-item-row .btn-import:active {
+}
+
+.compendium-picker .compendium-item-row .btn-import:active {
   background: #1d4ed8;
-}.compendium-picker .compendium-results-list .empty-hint {
+}
+
+.compendium-picker .compendium-results-list .empty-hint {
   padding: 24px 12px;
   text-align: center;
   color: #71717a;
   font-size: 0.875rem;
-}/* Spell Config Overlay */.compendium-picker .spell-config-overlay {
+}
+
+/* Spell Config Overlay */
+.compendium-picker .spell-config-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -2141,7 +2940,9 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   z-index: 100;
   padding: 16px;
   box-sizing: border-box;
-}.compendium-picker .spell-config-card {
+}
+
+.compendium-picker .spell-config-card {
   background: #18181b;
   border: 1px solid #3f3f46;
   border-radius: 10px;
@@ -2150,37 +2951,57 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   max-width: 380px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
   gap: 16px;
-}.compendium-picker .staged-item-header {
+}
+
+.compendium-picker .staged-item-header {
   border-bottom: 1px solid #27272a;
   padding-bottom: 14px;
-}.compendium-picker .staged-img {
+}
+
+.compendium-picker .staged-img {
   width: 48px;
   height: 48px;
   border-radius: 8px;
   border: 1px solid #3f3f46;
   object-fit: cover;
   background: #09090b;
-}.compendium-picker .staged-name {
+}
+
+.compendium-picker .staged-name {
   margin: 0;
   font-size: 1.125rem;
-}.compendium-picker .staged-badge {
-}.compendium-picker .badge-cantrip {
+}
+
+.compendium-picker .staged-badge {
+}
+
+.compendium-picker .badge-cantrip {
   background: #1e3a5f;
   color: #bfdbfe;
   border: 1px solid #2563eb;
-}.compendium-picker .badge-rank {
+}
+
+.compendium-picker .badge-rank {
   background: #372804;
   color: #fde047;
   border: 1px solid #ca8a04;
-}.compendium-picker .staged-traditions {
+}
+
+.compendium-picker .staged-traditions {
   color: #a1a1aa;
-}.compendium-picker .spell-config-form {
+}
+
+.compendium-picker .spell-config-form {
   gap: 14px;
-}.compendium-picker .spell-config-form label {
+}
+
+.compendium-picker .spell-config-form label {
   font-size: 0.875rem;
   color: var(--m-text);
   font-weight: 600;
-}.compendium-picker .config-select {
+}
+
+.compendium-picker .config-select {
   width: 100%;
   height: 46px;
   background: #27272a;
@@ -2188,46 +3009,70 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-radius: 6px;
   padding: 0 10px;
   touch-action: manipulation;
-}.compendium-picker .config-select:focus {
+}
+
+.compendium-picker .config-select:focus {
   border-color: #3b82f6;
   outline: none;
-}.compendium-picker .tradition-warning-banner {
+}
+
+.compendium-picker .tradition-warning-banner {
   background: rgba(234, 179, 8, 0.12);
   border: 1px solid #ca8a04;
   color: #fef08a;
   border-radius: 6px;
   padding: 8px 10px;
-}.compendium-picker .tradition-warning-banner i {
+}
+
+.compendium-picker .tradition-warning-banner i {
   color: #eab308;
-}.compendium-picker .no-entries-warning {
+}
+
+.compendium-picker .no-entries-warning {
   text-align: center;
   padding: 16px 8px;
   color: #f87171;
-}.compendium-picker .no-entries-warning i {
+}
+
+.compendium-picker .no-entries-warning i {
   font-size: 2rem;
   margin-bottom: 4px;
-}.compendium-picker .no-entries-warning .sub-text {
+}
+
+.compendium-picker .no-entries-warning .sub-text {
   color: #a1a1aa;
   margin: 0;
-}.compendium-picker .config-actions {
+}
+
+.compendium-picker .config-actions {
   margin-top: 6px;
-}.compendium-picker .config-actions button {
+}
+
+.compendium-picker .config-actions button {
   height: 46px;
   border-radius: 6px;
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
   touch-action: manipulation;
-}.compendium-picker .config-actions .btn-cancel {
+}
+
+.compendium-picker .config-actions .btn-cancel {
   background: #27272a;
   border: 1px solid #3f3f46;
   color: var(--m-text);
-}.compendium-picker .config-actions .btn-cancel:active {
+}
+
+.compendium-picker .config-actions .btn-cancel:active {
   background: #3f3f46;
-}.compendium-picker .config-actions .btn-confirm-add {
+}
+
+.compendium-picker .config-actions .btn-confirm-add {
   background: #16a34a;
   border: none;
-}.compendium-picker .config-actions .btn-confirm-add:active {
+}
+
+.compendium-picker .config-actions .btn-confirm-add:active {
   background: #15803d;
 }
 
