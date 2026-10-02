@@ -6,6 +6,11 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Stylesheet Deduplication (`styles/pf2e-mobile.css`, `templates/`)
+
+#### Changed
+- **Removed declarations that had no effect**: 20 `box-sizing: border-box` (the sheet's `.pf2e-mobile-sheet *` rule already sets it for every element), and 36 `cursor: pointer` and 20 `touch-action: manipulation` on buttons, `.touch-target` and `data-action` elements (the global interactive rule already sets both for exactly those; checked per class against the templates). The dev preview showed no difference before and after.
+
 ### Accent Colours from Foundry and pf2e (`styles/pf2e-mobile.css`, `scripts/utils/sheet-utils.js`, `templates/parts/header.hbs`)
 
 #### Changed
