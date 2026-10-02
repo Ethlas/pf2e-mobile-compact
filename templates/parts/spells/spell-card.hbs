@@ -108,12 +108,12 @@
 
     <!-- Chat is always shown; the damage/healing button, when the spell has one, fills the rest of the row -->
     <div class="m-drawer-row m-flex-row">
-      <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{spell.id}}" data-rank="{{rank}}" title="Send to Chat">
+      <button type="button" class="touch-target btn-action-chat m-compact" data-action="itemToChat" data-item-id="{{spell.id}}" data-rank="{{rank}}" title="Send to Chat">
         <i class="fas fa-message"></i>
       </button>
 
       {{#if spell.hasDamage}}
-      <button type="button" class="touch-target btn-spell-damage btn-spell-damage-full m-inline-flex m-align-center m-justify-center m-gap-4 {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}})">
+      <button type="button" class="touch-target btn-spell-damage btn-spell-damage-full m-compact m-inline-flex m-align-center m-justify-center m-gap-4 {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}})">
         {{#if spell.isHealingOnly}}
           <i class="fas fa-heart-pulse"></i> Roll Healing (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}} · {{spell.damageFormula}}{{/if}}
         {{else}}

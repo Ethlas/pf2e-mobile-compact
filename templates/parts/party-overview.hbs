@@ -9,7 +9,7 @@
   {{/if}}
 
   <!-- Party Overview Summary Cards -->
-  <section class="party-summary-section">
+  <section class="party-summary-section m-panel">
     <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="party-competencies">
       <span><i class="fas fa-graduation-cap"></i> Party Competencies</span>
       <i class="fas fa-chevron-down section-expand-icon"></i>
@@ -62,7 +62,7 @@
     </h3>
     <div class="party-members-list">
       {{#each partyMembers as |member|}}
-      <div class="action-card party-member-card m-flex-col m-gap-6 {{#if member.isUserChar}}is-user-char{{/if}}" data-actor-id="{{member.id}}">
+      <div class="action-card party-member-card m-panel m-flex-col m-gap-6 {{#if member.isUserChar}}is-user-char{{/if}}" data-actor-id="{{member.id}}">
         <div class="m-flex-row m-align-center m-gap-8">
           <img class="member-avatar m-shrink-0" src="{{member.img}}" alt="{{member.name}}" width="42" height="42" />
           <div class="m-flex-1 m-min-w-0">
@@ -77,7 +77,7 @@
             <span class="member-blurb m-truncate">{{member.blurb}}</span>
           </div>
           {{#if member.isOwner}}
-          <button type="button" class="touch-target btn-switch-member m-inline-flex m-align-center m-justify-center" data-action="switchToPartyMember" data-actor-id="{{member.id}}" title="Open Character Sheet">
+          <button type="button" class="touch-target btn-switch-member m-compact m-inline-flex m-align-center m-justify-center" data-action="switchToPartyMember" data-actor-id="{{member.id}}" title="Open Character Sheet">
             <i class="fas fa-arrow-right-to-bracket"></i>
           </button>
           {{/if}}

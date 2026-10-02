@@ -1,6 +1,6 @@
 <div class="tab-pane party-stash-tab" data-tab="stash">
   <!-- Stash Status & Coinage Dashboard -->
-  <div class="stash-status-dashboard">
+  <div class="stash-status-dashboard m-panel">
     <div class="stash-wealth-row m-flex-row m-align-center m-justify-between">
       <div class="m-flex-row m-gap-6">
         <span class="coin-pill pp" title="Platinum Pieces"><strong>{{stashCurrency.pp}}</strong> pp</span>
@@ -19,10 +19,10 @@
         <i class="fas fa-weight-hanging"></i> Bulk: <strong>{{stashBulk.value}}</strong> ({{stashBulk.itemsCount}} items)
       </div>
       <div class="m-flex-row m-gap-6">
-        <button type="button" class="touch-target btn-coin-transfer" data-action="transferCoins" title="Withdraw or Deposit Coins">
+        <button type="button" class="touch-target btn-coin-transfer m-compact" data-action="transferCoins" title="Withdraw or Deposit Coins">
           <i class="fas fa-coins"></i> Transfer Coins
         </button>
-        <button type="button" class="touch-target btn-add-gear" data-action="openCompendiumPicker" data-type="equipment" title="Add Gear from Compendium">
+        <button type="button" class="touch-target btn-add-gear m-compact" data-action="openCompendiumPicker" data-type="equipment" title="Add Gear from Compendium">
           <i class="fas fa-plus"></i> Add Gear
         </button>
       </div>
@@ -54,7 +54,7 @@
             </div>
           </div>
           <div class="m-flex-row m-align-center m-gap-8 m-shrink-0">
-            <button type="button" class="touch-target btn-transfer m-inline-flex m-align-center m-gap-4" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
+            <button type="button" class="touch-target btn-transfer m-compact m-inline-flex m-align-center m-gap-4" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
               <i class="fas fa-hand-holding"></i> Give
             </button>
             <button type="button" class="touch-target btn-consume" data-action="consumeItem" data-item-id="{{item.id}}" title="Use Directly">
@@ -104,7 +104,7 @@
             </div>
           </div>
           <div class="m-flex-row m-align-center m-gap-8 m-shrink-0">
-            <button type="button" class="touch-target btn-transfer m-inline-flex m-align-center m-gap-4" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
+            <button type="button" class="touch-target btn-transfer m-compact m-inline-flex m-align-center m-gap-4" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
               <i class="fas fa-hand-holding"></i> Give
             </button>
             <button type="button" class="touch-target btn-chat" data-action="itemToChat" data-item-id="{{item.id}}" title="Post to Chat">
@@ -151,7 +151,7 @@
             </div>
           </div>
           <div class="m-flex-row m-align-center m-gap-8 m-shrink-0">
-            <button type="button" class="touch-target btn-transfer m-inline-flex m-align-center m-gap-4" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
+            <button type="button" class="touch-target btn-transfer m-compact m-inline-flex m-align-center m-gap-4" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
               <i class="fas fa-hand-holding"></i> Give
             </button>
             <button type="button" class="touch-target btn-chat" data-action="itemToChat" data-item-id="{{item.id}}" title="Post to Chat">

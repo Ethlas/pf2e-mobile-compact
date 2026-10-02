@@ -12,7 +12,7 @@
     </div>
     <div class="m-flex-row m-align-center m-gap-6">
       {{#if partyStash}}
-      <button type="button" class="touch-target btn-party-stash m-inline-flex m-align-center m-gap-4" data-action="openPartyStash" data-party-id="{{partyStash.id}}" title="Open {{partyStash.name}} Stash">
+      <button type="button" class="touch-target btn-party-stash m-compact m-inline-flex m-align-center m-gap-4" data-action="openPartyStash" data-party-id="{{partyStash.id}}" title="Open {{partyStash.name}} Stash">
         <i class="fas fa-box-archive"></i> Stash ({{partyStash.itemsCount}})
       </button>
       {{/if}}
@@ -41,7 +41,7 @@
         {{/inline}}
         {{#*inline "lineButtons"}}
           {{#if item.canApplyToWeapon}}
-          <button type="button" class="touch-target btn-apply-poison m-inline-flex m-align-center m-justify-center m-gap-4" data-action="applyPoison" data-item-id="{{item.id}}" title="Apply to Weapon">
+          <button type="button" class="touch-target btn-apply-poison m-compact m-inline-flex m-align-center m-justify-center m-gap-4" data-action="applyPoison" data-item-id="{{item.id}}" title="Apply to Weapon">
             <i class="fas fa-vial"></i> Apply
           </button>
           {{else}}
@@ -70,7 +70,7 @@
       {{#> "modules/pf2e-mobile-compact/templates/parts/inventory/item-card.hbs" item=weapon showBulk=true}}
       {{!-- Slots can only use the card's parameters (item) and @root, see inventory/item-card.hbs --}}
         {{#*inline "badges"}}
-          <button type="button" class="touch-target badge-btn carry-badge {{item.carryType}}" data-action="changeCarryType" data-item-id="{{item.id}}" title="Tap to toggle carry state">
+          <button type="button" class="touch-target badge-btn carry-badge m-compact {{item.carryType}}" data-action="changeCarryType" data-item-id="{{item.id}}" title="Tap to toggle carry state">
             {{item.carryLabel}}
           </button>
           {{#if item.runesSummary}}
@@ -79,7 +79,7 @@
           </span>
           {{/if}}
           {{#if item.isInvestable}}
-          <button type="button" class="touch-target badge-btn invest-badge {{#if item.isInvested}}invested{{/if}}" data-action="toggleInvested" data-item-id="{{item.id}}" title="Toggle Investiture">
+          <button type="button" class="touch-target badge-btn invest-badge m-compact {{#if item.isInvested}}invested{{/if}}" data-action="toggleInvested" data-item-id="{{item.id}}" title="Toggle Investiture">
             <i class="fas fa-sparkles"></i> {{#if item.isInvested}}Invested{{else}}Invest{{/if}}
           </button>
           {{/if}}
@@ -91,12 +91,12 @@
         {{/inline}}
         {{#*inline "drawerButtons"}}
           {{#if item.canHaveRunes}}
-          <button type="button" class="touch-target btn-runes m-inline-flex m-align-center m-justify-center m-gap-4" data-action="configureRunes" data-item-id="{{item.id}}" title="Configure Runes">
+          <button type="button" class="touch-target btn-runes m-compact m-inline-flex m-align-center m-justify-center m-gap-4" data-action="configureRunes" data-item-id="{{item.id}}" title="Configure Runes">
             <i class="fas fa-gem"></i> Runes
           </button>
           {{/if}}
           {{#if item.isPoisoned}}
-          <button type="button" class="touch-target btn-detach-subitem m-inline-flex m-align-center m-justify-center m-gap-4" data-action="detachSubitem" data-weapon-id="{{item.id}}" data-subitem-id="{{item.poison.id}}" title="Clean / Detach Poison">
+          <button type="button" class="touch-target btn-detach-subitem m-compact m-inline-flex m-align-center m-justify-center m-gap-4" data-action="detachSubitem" data-weapon-id="{{item.id}}" data-subitem-id="{{item.poison.id}}" title="Clean / Detach Poison">
             <i class="fas fa-eraser"></i> Clean
           </button>
           {{/if}}
@@ -126,7 +126,7 @@
           {{else}}
           <span class="item-badge armor-badge m-inline-flex m-align-center m-gap-4">+{{item.acBonus}} AC</span>
           {{/if}}
-          <button type="button" class="touch-target badge-btn equip-badge {{#if item.isEquipped}}equipped{{/if}}" data-action="toggleEquipped" data-item-id="{{item.id}}" title="Toggle Equipped / Worn">
+          <button type="button" class="touch-target badge-btn equip-badge m-compact {{#if item.isEquipped}}equipped{{/if}}" data-action="toggleEquipped" data-item-id="{{item.id}}" title="Toggle Equipped / Worn">
             <i class="fas fa-shirt"></i> {{item.equipLabel}}
           </button>
           {{#if item.runesSummary}}
@@ -135,14 +135,14 @@
           </span>
           {{/if}}
           {{#if item.isInvestable}}
-          <button type="button" class="touch-target badge-btn invest-badge {{#if item.isInvested}}invested{{/if}}" data-action="toggleInvested" data-item-id="{{item.id}}" title="Toggle Investiture">
+          <button type="button" class="touch-target badge-btn invest-badge m-compact {{#if item.isInvested}}invested{{/if}}" data-action="toggleInvested" data-item-id="{{item.id}}" title="Toggle Investiture">
             <i class="fas fa-sparkles"></i> {{#if item.isInvested}}Invested{{else}}Invest{{/if}}
           </button>
           {{/if}}
         {{/inline}}
         {{#*inline "drawerButtons"}}
           {{#if item.canHaveRunes}}
-          <button type="button" class="touch-target btn-runes m-inline-flex m-align-center m-justify-center m-gap-4" data-action="configureRunes" data-item-id="{{item.id}}" title="Configure Runes">
+          <button type="button" class="touch-target btn-runes m-compact m-inline-flex m-align-center m-justify-center m-gap-4" data-action="configureRunes" data-item-id="{{item.id}}" title="Configure Runes">
             <i class="fas fa-gem"></i> Runes
           </button>
           {{/if}}
@@ -168,12 +168,12 @@
       {{!-- Slots can only use the card's parameters (item) and @root, see inventory/item-card.hbs --}}
         {{#*inline "badges"}}
           {{#if item.canBeWorn}}
-          <button type="button" class="touch-target badge-btn equip-badge {{#if item.isEquipped}}equipped{{/if}}" data-action="toggleEquipped" data-item-id="{{item.id}}" title="Toggle Worn / Stowed">
+          <button type="button" class="touch-target badge-btn equip-badge m-compact {{#if item.isEquipped}}equipped{{/if}}" data-action="toggleEquipped" data-item-id="{{item.id}}" title="Toggle Worn / Stowed">
             <i class="fas fa-shirt"></i> {{item.equipLabel}}
           </button>
           {{/if}}
           {{#if item.isInvestable}}
-          <button type="button" class="touch-target badge-btn invest-badge {{#if item.isInvested}}invested{{/if}}" data-action="toggleInvested" data-item-id="{{item.id}}" title="Toggle Investiture">
+          <button type="button" class="touch-target badge-btn invest-badge m-compact {{#if item.isInvested}}invested{{/if}}" data-action="toggleInvested" data-item-id="{{item.id}}" title="Toggle Investiture">
             <i class="fas fa-sparkles"></i> {{#if item.isInvested}}Invested{{else}}Invest{{/if}}
           </button>
           {{/if}}

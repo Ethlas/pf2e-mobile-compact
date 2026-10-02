@@ -1,6 +1,6 @@
 <div class="tab-pane actions-tab" data-tab="actions">
   <!-- Sub-Navigation for Action Mode: Encounter, Exploration, Downtime -->
-  <div class="action-subtabs m-flex-row m-gap-6">
+  <div class="action-subtabs m-panel m-flex-row m-gap-6">
     <button type="button" class="touch-target subtab-btn {{#if (eq actionSubTab "encounter")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="encounter">
       ⚔️ Encounter
     </button>
@@ -69,7 +69,7 @@
           {{#if strike.hasAuxiliary}}
           <div class="strike-auxiliary-row m-flex-row m-wrap m-gap-6">
             {{#each strike.auxiliaryActions as |aux|}}
-            <button type="button" class="touch-target aux-action-btn" data-action="executeAuxiliaryAction" data-strike-index="{{index}}" data-aux-index="{{aux.index}}" title="{{aux.label}}">
+            <button type="button" class="touch-target aux-action-btn m-compact" data-action="executeAuxiliaryAction" data-strike-index="{{index}}" data-aux-index="{{aux.index}}" title="{{aux.label}}">
               {{#if aux.glyph}}
                 <span class="aux-glyph m-inline-flex m-align-center m-justify-center"><span class="action-glyph">{{aux.glyph}}</span></span>
               {{/if}}
