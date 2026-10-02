@@ -1,12 +1,12 @@
-<div class="physical-dice-dialog-content m-flex-col m-gap-12">
+<div class="physical-dice-dialog-content m-flex-col m-gap-12 m-color-normal">
   <!-- Header / Action Title & Target Info -->
   <div class="physical-dialog-header">
-    <div class="physical-action-title m-bold">{{title}}</div>
+    <div class="physical-action-title m-bold m-color-accent">{{title}}</div>
     {{#if subtitle}}
-    <div class="physical-action-subtitle m-text-base">{{subtitle}}</div>
+    <div class="physical-action-subtitle m-text-base m-color-muted">{{subtitle}}</div>
     {{/if}}
     {{#if target}}
-    <div class="physical-target-badge m-text-base">
+    <div class="physical-target-badge m-text-base m-color-info">
       🎯 Target: <strong>{{target.name}}</strong>
     </div>
     {{/if}}
@@ -16,7 +16,7 @@
     {{#if isCheck}}
     <!-- Check / d20 Roll Entry Section -->
     <div class="physical-d20-section">
-      <div class="physical-prompt-msg m-text-xl">
+      <div class="physical-prompt-msg m-text-xl m-color-normal">
         {{#if checkPrompt}}
           {{checkPrompt}}
         {{else}}
@@ -30,7 +30,7 @@
           type="number" 
           id="physical-d20-input"
           name="d20-val" 
-          class="physical-die-input touch-target m-bold" 
+          class="physical-die-input touch-target m-bold m-color-strong" 
           inputmode="numeric" 
           pattern="[0-9]*" 
           min="1" 
@@ -41,16 +41,16 @@
         />
       </div>
 
-      <div class="physical-modifier-info m-text-lg">
+      <div class="physical-modifier-info m-text-lg m-color-muted">
         Modifier: <strong>{{#if (gte modifier 0)}}+{{/if}}{{modifier}}</strong> (will be added automatically)
       </div>
-      <div class="physical-error-msg hidden m-text-base"></div>
+      <div class="physical-error-msg hidden m-text-base m-color-danger"></div>
     </div>
 
     {{else}}
     <!-- Damage Roll Entry Section (Multiple Dice Pools in Rows) -->
     <div class="physical-damage-section">
-      <div class="physical-prompt-msg m-text-xl">
+      <div class="physical-prompt-msg m-text-xl m-color-normal">
         Roll physical dice for each damage type and enter the total below:
       </div>
 
@@ -58,10 +58,10 @@
         {{#each pools}}
         <div class="physical-damage-row" data-pool-id="{{this.id}}">
           <div class="damage-row-header m-flex-row m-align-center m-justify-between">
-            <span class="damage-type-badge damage-{{this.type}} m-text-md m-bold">
+            <span class="damage-type-badge m-color-strong damage-{{this.type}} m-text-md m-bold">
               {{this.typeLabel}}{{#if this.persistent}} (Persistent){{/if}}
             </span>
-            <span class="damage-dice-instruction m-text-xl">
+            <span class="m-text-xl m-color-accent">
               🎲 Roll <strong>{{this.formula}}</strong>
             </span>
           </div>
@@ -72,7 +72,7 @@
               type="number" 
               id="pool-input-{{this.id}}"
               name="pool-{{this.id}}" 
-              class="physical-damage-input touch-target m-flex-1 m-bold" 
+              class="physical-damage-input touch-target m-flex-1 m-bold m-color-strong" 
               inputmode="numeric" 
               pattern="[0-9]*" 
               data-pool-id="{{this.id}}" 
@@ -87,14 +87,14 @@
           </div>
 
           {{#if this.mod}}
-          <div class="damage-mod-note m-text-md">
+          <div class="damage-mod-note m-text-md m-color-dim">
             Modifier: {{#if (gte this.mod 0)}}+{{/if}}{{this.mod}} {{this.typeLabel}} will be added automatically
           </div>
           {{/if}}
         </div>
         {{/each}}
       </div>
-      <div class="physical-error-msg hidden m-text-base"></div>
+      <div class="physical-error-msg hidden m-text-base m-color-danger"></div>
     </div>
     {{/if}}
 
@@ -103,7 +103,7 @@
       <button type="button" class="btn-cancel touch-target m-flex-1" data-action="cancel">
         Cancel
       </button>
-      <button type="button" class="btn-submit btn-primary touch-target m-bold" data-action="submit">
+      <button type="button" class="btn-submit btn-primary touch-target m-bold m-color-strong" data-action="submit">
         Submit Roll
       </button>
     </div>

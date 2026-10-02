@@ -15,14 +15,14 @@
     </div>
 
     <div class="m-flex-row m-wrap m-align-center m-justify-between m-gap-6">
-      <div class="stash-bulk-info m-text-md">
+      <div class="m-text-md m-color-muted">
         <i class="fas fa-weight-hanging"></i> Bulk: <strong>{{stashBulk.value}}</strong> ({{stashBulk.itemsCount}} items)
       </div>
       <div class="m-flex-row m-gap-6">
-        <button type="button" class="touch-target btn-coin-transfer m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-semibold" data-action="transferCoins" title="Withdraw or Deposit Coins">
+        <button type="button" class="touch-target btn-coin-transfer m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-semibold m-color-normal" data-action="transferCoins" title="Withdraw or Deposit Coins">
           <i class="fas fa-coins"></i> Transfer Coins
         </button>
-        <button type="button" class="touch-target btn-add-gear m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-semibold" data-action="openCompendiumPicker" data-type="equipment" title="Add Gear from Compendium">
+        <button type="button" class="touch-target btn-add-gear m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-semibold m-color-strong" data-action="openCompendiumPicker" data-type="equipment" title="Add Gear from Compendium">
           <i class="fas fa-plus"></i> Add Gear
         </button>
       </div>
@@ -31,9 +31,9 @@
 
   <!-- Consumables Section -->
   <section class="inventory-section">
-    <h3 class="section-title touch-header m-flex-row m-align-center m-justify-between m-bold" data-action="toggleInventorySection" data-section="stash-consumables">
+    <h3 class="section-title touch-header m-flex-row m-align-center m-justify-between m-bold m-color-accent" data-action="toggleInventorySection" data-section="stash-consumables">
       <span><i class="fas fa-flask"></i> Consumables ({{stash.consumables.length}})</span>
-      <i class="fas fa-chevron-down section-expand-icon m-text-base"></i>
+      <i class="fas fa-chevron-down section-expand-icon m-text-base m-color-muted"></i>
     </h3>
     <div class="inventory-list">
       {{#each stash.consumables as |item|}}
@@ -45,16 +45,16 @@
               <div class="item-title-row touch-target m-inline-flex m-align-center m-gap-6" data-action="toggleActionSummary" data-item-id="{{item.id}}" title="Toggle Description">
                 <span class="item-name"><strong>{{item.name}}</strong> (x{{item.quantity}})</span>
                 {{#if item.description}}
-                <i class="fas fa-chevron-down action-expand-icon m-shrink-0 m-text-sm {{#if item.isExpanded}}expanded{{/if}}"></i>
+                <i class="fas fa-chevron-down action-expand-icon m-shrink-0 m-text-sm m-color-dim {{#if item.isExpanded}}expanded{{/if}}"></i>
                 {{/if}}
               </div>
               <div class="item-badges m-flex-row m-wrap m-align-center m-gap-4">
-                <span class="item-badge bulk-badge m-inline-flex m-align-center m-gap-4 m-text-xs">Bulk: {{item.bulk}}</span>
+                <span class="item-badge bulk-badge m-inline-flex m-align-center m-gap-4 m-text-xs m-color-muted">Bulk: {{item.bulk}}</span>
               </div>
             </div>
           </div>
           <div class="m-flex-row m-align-center m-gap-8 m-shrink-0">
-            <button type="button" class="touch-target btn-transfer m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-semibold" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
+            <button type="button" class="touch-target btn-transfer m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-semibold m-color-strong" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
               <i class="fas fa-hand-holding"></i> Give
             </button>
             <button type="button" class="touch-target btn-consume" data-action="consumeItem" data-item-id="{{item.id}}" title="Use Directly">
@@ -66,7 +66,7 @@
           </div>
         </div>
         {{#if item.description}}
-        <div class="action-summary item-summary m-text-base {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
+        <div class="action-summary item-summary m-text-base m-color-normal {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
           <div class="action-description-content">
             {{{item.description}}}
           </div>
@@ -81,9 +81,9 @@
 
   <!-- Equipment Section (Weapons & Armor) -->
   <section class="inventory-section">
-    <h3 class="section-title touch-header m-flex-row m-align-center m-justify-between m-bold" data-action="toggleInventorySection" data-section="stash-equipment">
+    <h3 class="section-title touch-header m-flex-row m-align-center m-justify-between m-bold m-color-accent" data-action="toggleInventorySection" data-section="stash-equipment">
       <span><i class="fas fa-shield-halved"></i> Weapons & Armor ({{stash.equipment.length}})</span>
-      <i class="fas fa-chevron-down section-expand-icon m-text-base"></i>
+      <i class="fas fa-chevron-down section-expand-icon m-text-base m-color-muted"></i>
     </h3>
     <div class="inventory-list">
       {{#each stash.equipment as |item|}}
@@ -95,16 +95,16 @@
               <div class="item-title-row touch-target m-inline-flex m-align-center m-gap-6" data-action="toggleActionSummary" data-item-id="{{item.id}}" title="Toggle Description">
                 <span class="item-name"><strong>{{item.name}}</strong> (x{{item.quantity}})</span>
                 {{#if item.description}}
-                <i class="fas fa-chevron-down action-expand-icon m-shrink-0 m-text-sm {{#if item.isExpanded}}expanded{{/if}}"></i>
+                <i class="fas fa-chevron-down action-expand-icon m-shrink-0 m-text-sm m-color-dim {{#if item.isExpanded}}expanded{{/if}}"></i>
                 {{/if}}
               </div>
               <div class="item-badges m-flex-row m-wrap m-align-center m-gap-4">
-                <span class="item-badge bulk-badge m-inline-flex m-align-center m-gap-4 m-text-xs">Bulk: {{item.bulk}}</span>
+                <span class="item-badge bulk-badge m-inline-flex m-align-center m-gap-4 m-text-xs m-color-muted">Bulk: {{item.bulk}}</span>
               </div>
             </div>
           </div>
           <div class="m-flex-row m-align-center m-gap-8 m-shrink-0">
-            <button type="button" class="touch-target btn-transfer m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-semibold" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
+            <button type="button" class="touch-target btn-transfer m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-semibold m-color-strong" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
               <i class="fas fa-hand-holding"></i> Give
             </button>
             <button type="button" class="touch-target btn-chat" data-action="itemToChat" data-item-id="{{item.id}}" title="Post to Chat">
@@ -113,7 +113,7 @@
           </div>
         </div>
         {{#if item.description}}
-        <div class="action-summary item-summary m-text-base {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
+        <div class="action-summary item-summary m-text-base m-color-normal {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
           <div class="action-description-content">
             {{{item.description}}}
           </div>
@@ -128,9 +128,9 @@
 
   <!-- Other Gear & Treasure Section -->
   <section class="inventory-section">
-    <h3 class="section-title touch-header m-flex-row m-align-center m-justify-between m-bold" data-action="toggleInventorySection" data-section="stash-gear">
+    <h3 class="section-title touch-header m-flex-row m-align-center m-justify-between m-bold m-color-accent" data-action="toggleInventorySection" data-section="stash-gear">
       <span><i class="fas fa-backpack"></i> Other Gear & Treasure ({{stash.gear.length}})</span>
-      <i class="fas fa-chevron-down section-expand-icon m-text-base"></i>
+      <i class="fas fa-chevron-down section-expand-icon m-text-base m-color-muted"></i>
     </h3>
     <div class="inventory-list">
       {{#each stash.gear as |item|}}
@@ -142,16 +142,16 @@
               <div class="item-title-row touch-target m-inline-flex m-align-center m-gap-6" data-action="toggleActionSummary" data-item-id="{{item.id}}" title="Toggle Description">
                 <span class="item-name"><strong>{{item.name}}</strong> (x{{item.quantity}})</span>
                 {{#if item.description}}
-                <i class="fas fa-chevron-down action-expand-icon m-shrink-0 m-text-sm {{#if item.isExpanded}}expanded{{/if}}"></i>
+                <i class="fas fa-chevron-down action-expand-icon m-shrink-0 m-text-sm m-color-dim {{#if item.isExpanded}}expanded{{/if}}"></i>
                 {{/if}}
               </div>
               <div class="item-badges m-flex-row m-wrap m-align-center m-gap-4">
-                <span class="item-badge bulk-badge m-inline-flex m-align-center m-gap-4 m-text-xs">Bulk: {{item.bulk}}</span>
+                <span class="item-badge bulk-badge m-inline-flex m-align-center m-gap-4 m-text-xs m-color-muted">Bulk: {{item.bulk}}</span>
               </div>
             </div>
           </div>
           <div class="m-flex-row m-align-center m-gap-8 m-shrink-0">
-            <button type="button" class="touch-target btn-transfer m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-semibold" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
+            <button type="button" class="touch-target btn-transfer m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-semibold m-color-strong" data-action="transferStashItem" data-item-id="{{item.id}}" title="Give to Party Member">
               <i class="fas fa-hand-holding"></i> Give
             </button>
             <button type="button" class="touch-target btn-chat" data-action="itemToChat" data-item-id="{{item.id}}" title="Post to Chat">
@@ -160,7 +160,7 @@
           </div>
         </div>
         {{#if item.description}}
-        <div class="action-summary item-summary m-text-base {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
+        <div class="action-summary item-summary m-text-base m-color-normal {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
           <div class="action-description-content">
             {{{item.description}}}
           </div>

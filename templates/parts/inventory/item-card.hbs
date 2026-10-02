@@ -27,7 +27,7 @@
       <div class="item-badges m-flex-row m-wrap m-align-center m-gap-4">
         {{#> badges}}{{/badges}}
         {{#if showBulk}}
-        <span class="item-badge bulk-badge m-inline-flex m-align-center m-gap-4 m-text-xs">Bulk: {{item.bulk}}</span>
+        <span class="item-badge bulk-badge m-inline-flex m-align-center m-gap-4 m-text-xs m-color-muted">Bulk: {{item.bulk}}</span>
         {{/if}}
       </div>
     </div>
@@ -37,11 +37,11 @@
   </div>
 
   <!-- Expandable drawer: the less frequent buttons, then the description -->
-  <div class="action-summary item-summary m-text-base {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
+  <div class="action-summary item-summary m-text-base m-color-normal {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
     <div class="m-drawer-row m-flex-row">
       {{#> drawerButtons}}{{/drawerButtons}}
       {{#if @root.partyStash}}
-      <button type="button" class="touch-target btn-send-stash m-compact m-inline-flex m-align-center m-justify-center" data-action="sendToPartyStash" data-item-id="{{item.id}}" title="Send to Party Stash">
+      <button type="button" class="touch-target btn-send-stash m-compact m-inline-flex m-align-center m-justify-center m-color-accent" data-action="sendToPartyStash" data-item-id="{{item.id}}" title="Send to Party Stash">
         <i class="fas fa-box-archive"></i>
       </button>
       {{/if}}

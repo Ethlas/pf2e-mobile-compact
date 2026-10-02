@@ -66,7 +66,7 @@
   <p>The colours, utility classes and components of <code>styles/pf2e-mobile.css</code>, rendered with the real stylesheet. Class names are shown under each sample.</p>
   <ul class="sg-rules">
     <li>Use a palette variable (<code>--m-*</code>) for every background, border and text colour. Need a colour that is not here? Add it to the Colour Palette block and to this page, instead of writing a hex value in a component rule.</li>
-    <li>Layout and text size/weight in templates use the <code>m-*</code> utilities (flex, gap, truncate, <code>m-text-*</code>, <code>m-medium</code>/<code>m-semibold</code>/<code>m-bold</code>). Component rules keep only how something looks.</li>
+    <li>Layout and text size/weight in templates use the <code>m-*</code> utilities (flex, gap, truncate, <code>m-text-*</code>, <code>m-medium</code>/<code>m-semibold</code>/<code>m-bold</code>, <code>m-color-*</code>). Component rules keep only how something looks.</li>
     <li>Badges and soft buttons of a role use that role's tone; solid action buttons use its <code>-solid</code> shades. Add a new badge's selector to the tone rule at the end of the stylesheet.</li>
     <li>Damage types, proficiency ranks and character tags use pf2e's colours; the role colours follow Foundry's.</li>
     <li>When you add or change a variable, utility, component or colour role, update this page in the same change.</li>
@@ -193,6 +193,21 @@
     <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-medium">m-medium · 500</span></div></div>
     <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-semibold">m-semibold · 600</span></div></div>
     <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-bold">m-bold · bold</span></div></div>
+  </div>
+  <h3>Text colours</h3>
+  <p>The six text greys (<code>--m-text-strong</code> to <code>--m-text-faint</code>, linked to Foundry's <code>--color-text-light-*</code>), the accent, and the light text of each role.</p>
+  <div class="sg-grid">
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-color-strong">m-color-strong</span></div><small style="color:#999">#fff, button text, highlights</small></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-color-normal">m-color-normal</span></div><small style="color:#999">#ddd, text in cards</small></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-color-soft">m-color-soft</span></div><small style="color:#999">#bbb, secondary text</small></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-color-muted">m-color-muted</span></div><small style="color:#999">#aaa, labels, inactive tabs</small></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-color-dim">m-color-dim</span></div><small style="color:#999">#888, hints, counters</small></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-color-faint">m-color-faint</span></div><small style="color:#999">#666, collapsed icons, empty hints</small></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-color-accent">m-color-accent</span></div><small style="color:#999">the accent</small></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-color-info">m-color-info</span></div><small style="color:#999">info text</small></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-color-success">m-color-success</span></div><small style="color:#999">success text</small></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-color-danger">m-color-danger</span></div><small style="color:#999">danger text</small></div>
+    <div class="sg-item"><div class="sg-sample"><span class="m-text-base m-color-warning">m-color-warning</span></div><small style="color:#999">warning text</small></div>
   </div>
 
   <h2>Components</h2>

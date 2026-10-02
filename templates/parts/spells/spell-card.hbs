@@ -30,7 +30,7 @@
           <!--          <span class="spell-source-badge badge-spontaneous badge-letter m-inline-flex m-align-center m-justify-center m-text-2xs m-bold" title="Spontaneous Spell">S</span>-->
         {{/if}}
         {{#if spell.glyph}}
-          <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base"><span class="action-glyph">{{spell.glyph}}</span></span>
+          <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base m-color-accent"><span class="action-glyph">{{spell.glyph}}</span></span>
         {{/if}}
         <span class="action-name m-min-w-0 m-truncate"><strong>{{spell.name}}</strong></span>
 
@@ -38,7 +38,7 @@
       </div>
 
       <!-- Source badges + quick detail tags (under the spell name, always visible) -->
-      <div class="spell-details m-flex-row m-wrap m-gap-4 m-text-md">
+      <div class="spell-details m-flex-row m-wrap m-gap-4 m-text-md m-color-muted">
         {{#if spell.isSignature}}
           <span class="spell-source-badge badge-signature badge-letter m-inline-flex m-align-center m-justify-center m-text-2xs m-bold" title="Signature Spell"><i class="fas fa-star"></i></span>
         {{/if}}
@@ -71,8 +71,8 @@
   </div>
 
   <!-- Expandable Details Drawer -->
-  <div class="action-summary m-text-base {{#if spell.isExpanded}}expanded{{else}}collapsed{{/if}}">
-    <div class="expanded-spell-fullname m-flex-row m-align-center m-justify-between m-gap-8 m-text-xl">
+  <div class="action-summary m-text-base m-color-normal {{#if spell.isExpanded}}expanded{{else}}collapsed{{/if}}">
+    <div class="expanded-spell-fullname m-flex-row m-align-center m-justify-between m-gap-8 m-text-xl m-color-strong">
       <strong>{{spell.name}}</strong>
       {{#if spell.isFocus}}
       <span class="spell-source-badge badge-focus m-text-2xs m-bold">Focus</span>
@@ -89,7 +89,7 @@
     {{#if spell.traits.length}}
     <div class="action-traits staff-spell-traits m-flex-row m-wrap m-gap-4">
       {{#each spell.traits as |trait|}}
-      <span class="trait-badge m-text-xs">{{trait.label}}</span>
+      <span class="trait-badge m-text-xs m-color-soft">{{trait.label}}</span>
       {{/each}}
     </div>
     {{/if}}
@@ -108,12 +108,12 @@
 
     <!-- Chat is always shown; the damage/healing button, when the spell has one, fills the rest of the row -->
     <div class="m-drawer-row m-flex-row">
-      <button type="button" class="touch-target btn-action-chat m-compact m-inline-flex m-align-center m-gap-4 m-text-base" data-action="itemToChat" data-item-id="{{spell.id}}" data-rank="{{rank}}" title="Send to Chat">
+      <button type="button" class="touch-target btn-action-chat m-compact m-inline-flex m-align-center m-gap-4 m-text-base m-color-normal" data-action="itemToChat" data-item-id="{{spell.id}}" data-rank="{{rank}}" title="Send to Chat">
         <i class="fas fa-message"></i>
       </button>
 
       {{#if spell.hasDamage}}
-      <button type="button" class="touch-target btn-spell-damage btn-spell-damage-full m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-flex-auto m-text-md m-semibold {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}})">
+      <button type="button" class="touch-target btn-spell-damage btn-spell-damage-full m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-flex-auto m-text-md m-semibold m-color-strong {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}})">
         {{#if spell.isHealingOnly}}
           <i class="fas fa-heart-pulse"></i> Roll Healing (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}} · {{spell.damageFormula}}{{/if}}
         {{else}}
@@ -138,7 +138,7 @@
       {{#if spell.canSignature}}
       <button
         type="button"
-        class="touch-target btn-spell-action btn-toggle-signature m-inline-flex m-align-center m-justify-center m-gap-6 m-flex-1 m-text-base m-semibold {{#if spell.isSignature}}active{{/if}}"
+        class="touch-target btn-spell-action btn-toggle-signature m-inline-flex m-align-center m-justify-center m-gap-6 m-flex-1 m-text-base m-semibold m-color-warning {{#if spell.isSignature}}active{{/if}}"
         data-action="toggleSignatureSpell"
         data-item-id="{{spell.id}}"
         title="{{#if spell.isSignature}}Remove Signature Spell{{else}}Make Signature Spell{{/if}}"
