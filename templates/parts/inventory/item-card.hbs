@@ -22,7 +22,7 @@
     <img class="item-img m-shrink-0" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
     <div class="m-card-main m-flex-col m-align-baseline">
       <div class="m-card-title m-flex-row m-align-center">
-        <span class="action-name item-name m-min-w-0"><strong>{{item.name}}</strong>{{#if showQuantity}} (x{{item.quantity}}){{/if}}</span>
+        <span class="action-name item-name m-min-w-0 m-truncate"><strong>{{item.name}}</strong>{{#if showQuantity}} (x{{item.quantity}}){{/if}}</span>
       </div>
       <div class="item-badges m-flex-row m-wrap m-align-center m-gap-4">
         {{#> badges}}{{/badges}}

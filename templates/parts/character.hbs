@@ -17,7 +17,7 @@
     {{else}}
     <span class="character-item-level m-shrink-0">{{entry.level}}</span>
     {{/if}}
-    <span class="action-name m-flex-col m-flex-auto m-min-w-0">
+    <span class="action-name m-flex-col m-flex-auto m-min-w-0 m-truncate">
       <span class="character-item-name">{{#if isChild}}{{entry.name}}{{else}}<strong>{{entry.name}}</strong>{{/if}}{{#if entry.badge}} {{entry.badge}}{{/if}}</span>
       {{#if entry.remaining}}<span class="character-item-remaining">{{entry.remaining}}</span>{{/if}}
     </span>
@@ -44,7 +44,7 @@
   {{#with character.identity as |id|}}
   <section class="m-group actions-section character-identity">
     <h3 class="section-title m-flex-row m-align-baseline m-justify-between m-gap-8">
-      <span class="character-title-name m-min-w-0"><i class="fas fa-user"></i> {{@root.actor.name}}</span>
+      <span class="m-min-w-0 m-truncate"><i class="fas fa-user"></i> {{@root.actor.name}}</span>
       {{#if id.className}}<span class="character-title-class m-shrink-0">{{id.className}} {{id.level}}</span>{{/if}}
     </h3>
     {{#if (or id.size id.traits.length)}}

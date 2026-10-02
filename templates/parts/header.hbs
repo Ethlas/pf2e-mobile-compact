@@ -11,7 +11,7 @@
       </button>
       {{/unless}}
       {{#if hasMultipleCharacters}}
-      <select class="touch-target header-select actor-switcher" data-change-action="switchActor" title="Switch Character / Party / Kingdom" aria-label="Switch Character">
+      <select class="touch-target header-select actor-switcher m-truncate" data-change-action="switchActor" title="Switch Character / Party / Kingdom" aria-label="Switch Character">
         {{#each ownedCharacters as |char|}}
         <option value="{{char.id}}" {{#if char.selected}}selected{{/if}}>
           {{char.name}}
@@ -19,14 +19,14 @@
         {{/each}}
       </select>
       {{else}}
-      <span class="actor-name" title="{{actor.name}}">{{#if isKingdom}}👑 {{else if isParty}}👥 {{/if}}{{actor.name}}</span>
+      <span class="actor-name m-truncate" title="{{actor.name}}">{{#if isKingdom}}👑 {{else if isParty}}👥 {{/if}}{{actor.name}}</span>
       {{/if}}
     </div>
 
     <div class="header-controls-wrapper">
       {{#unless (or isParty isKingdom)}}
       <div class="header-target-group">
-        <select name="target-select" class="touch-target header-select header-target-select" data-change-action="selectTarget" aria-label="Select Target" title="{{#if hasMultipleTargets}}Targets ({{activeTargetCount}}): {{multiTargetNames}}{{else if activeTarget}}Target: {{activeTarget.displayName}}{{else}}Target Token{{/if}}">
+        <select name="target-select" class="touch-target header-select header-target-select m-truncate" data-change-action="selectTarget" aria-label="Select Target" title="{{#if hasMultipleTargets}}Targets ({{activeTargetCount}}): {{multiTargetNames}}{{else if activeTarget}}Target: {{activeTarget.displayName}}{{else}}Target Token{{/if}}">
           <option value="">🎯 No Target</option>
           <option value="__pick_multi__">🎯 Multi-Target Picker...</option>
           {{#if hasMultipleTargets}}
@@ -149,7 +149,7 @@
     </button>
 
     <div class="perc-init-dropdown-wrapper m-flex-row m-min-w-0">
-      <select class="touch-target perception-init-select {{#if combat.active}}{{#if combat.hasRolled}}combat-rolled{{else}}combat-active{{/if}}{{/if}}" data-change-action="rollPerceptionOrInitiative" title="Roll Perception Check or Initiative" aria-label="Roll Perception or Initiative">
+      <select class="touch-target perception-init-select m-truncate {{#if combat.active}}{{#if combat.hasRolled}}combat-rolled{{else}}combat-active{{/if}}{{/if}}" data-change-action="rollPerceptionOrInitiative" title="Roll Perception Check or Initiative" aria-label="Roll Perception or Initiative">
         <option value="" selected disabled>
           {{#if combat.active}}
             {{#if combat.hasRolled}}⚔️ {{combat.initiative}}{{else}}⚔️ Init{{/if}}

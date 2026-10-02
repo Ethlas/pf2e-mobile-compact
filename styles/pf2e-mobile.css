@@ -342,6 +342,13 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   flex-shrink: 0;
 }
 
+/* One line of text that ends in "…" when it does not fit (needs a width limit, e.g. m-min-w-0 in a flex row) */
+.pf2e-mobile-sheet .m-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ----------------------------------------- *//* Touch Targets & Universal Controls        *//* ----------------------------------------- */.pf2e-mobile-sheet [data-action],
 .pf2e-mobile-sheet [data-change-action],
 .pf2e-mobile-sheet .touch-target,
@@ -443,9 +450,6 @@ body.pf2e-mobile-active textarea {
   border: 1px solid var(--m-border);
   border-radius: 4px;
   padding: 2px 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .pf2e-mobile-sheet .mobile-header-dashboard .header-btn {
   position: relative;
@@ -478,9 +482,6 @@ body.pf2e-mobile-active textarea {
   font-weight: bold;
   font-size: 1rem;
   color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   display: block;
   line-height: 38px;
 }.pf2e-mobile-sheet .header-controls-wrapper {
@@ -720,9 +721,6 @@ body.pf2e-mobile-active textarea {
   border: 1px solid var(--m-border);
   border-radius: 4px;
   padding: 2px 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }.pf2e-mobile-sheet .perception-init-select.combat-active {
   border-color: var(--m-warning-border);
   background: var(--m-warning-bg);
@@ -1139,9 +1137,6 @@ body.pf2e-mobile-active textarea {
   margin-bottom: 6px;
 }.pf2e-mobile-sheet .action-name {
   font-size: 1rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }.pf2e-mobile-sheet .action-type-badge {
   font-size: 0.75rem;
   background: var(--m-surface-4);
@@ -1350,9 +1345,6 @@ body.pf2e-mobile-active textarea {
 .pf2e-mobile-sheet .skill-name {
   font-size: 0.88rem;
   font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .pf2e-mobile-sheet .skill-mod {
   font-weight: bold;
@@ -2361,9 +2353,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }.pf2e-mobile-sheet .slot-spell-name {
   font-size: 0.88rem;
   color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }.pf2e-mobile-sheet .slot-actions .btn-change-slot {
   min-width: 36px;
   min-height: 36px;
@@ -2944,9 +2933,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--m-accent);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .pf2e-mobile-sheet .equipped-badge {
@@ -3249,9 +3235,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   font-size: 0.95rem;
   font-weight: bold;
   color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .pf2e-mobile-sheet .hero-points-badge {
@@ -3267,9 +3250,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   display: block;
   font-size: 0.75rem;
   color: #aaa;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .pf2e-mobile-sheet .btn-switch-member {
@@ -3482,12 +3462,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 /* Character Overview (header user button)   */
 /* ----------------------------------------- */
 /* Identity title: name on the left, class and level on the right */
-.pf2e-mobile-sheet .character-title-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .pf2e-mobile-sheet .character-title-class {
   font-size: 0.9rem;
   color: #e0e0e0;

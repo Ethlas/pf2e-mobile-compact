@@ -169,7 +169,7 @@
             <div class="m-flex-row m-align-center m-gap-8 m-flex-1 m-min-w-0">
               <img class="slot-spell-img m-shrink-0" src="{{slot.spell.img}}" alt="{{slot.spell.name}}" />
               <div class="m-flex-col m-flex-1 m-min-w-0">
-                <span class="slot-spell-name"><strong>{{slot.spell.name}}</strong></span>
+                <span class="slot-spell-name m-truncate"><strong>{{slot.spell.name}}</strong></span>
                 {{#if slot.spell.glyph}}
                 <span class="action-cost-glyph"><span class="action-glyph">{{slot.spell.glyph}}</span></span>
                 {{/if}}
@@ -208,7 +208,7 @@
         <img class="staff-img m-shrink-0" src="{{activations.staff.img}}" alt="{{activations.staff.name}}" />
         <div class="m-flex-col m-gap-4 m-flex-1 m-min-w-0">
           <div class="staff-title-row m-flex-row m-wrap m-align-center m-justify-between m-gap-6">
-            <h3 class="staff-name">{{activations.staff.name}}</h3>
+            <h3 class="staff-name m-truncate">{{activations.staff.name}}</h3>
             {{#if activations.staff.isEquipped}}
             <span class="equipped-badge badge-held m-inline-flex m-align-center m-gap-4"><i class="fas fa-hand"></i> Held ({{activations.staff.handsHeld}}H)</span>
             {{else}}
@@ -300,7 +300,7 @@
             <div class="action-title-group m-flex-row m-align-center m-gap-8 m-flex-1 m-min-w-0">
               <img class="activation-item-img m-shrink-0" src="{{wand.img}}" alt="{{wand.name}}" />
               <div class="m-flex-row m-wrap m-align-center m-gap-6">
-                <span class="action-name m-min-w-0"><strong>{{wand.name}}</strong></span>
+                <span class="action-name m-min-w-0 m-truncate"><strong>{{wand.name}}</strong></span>
                 <span class="detail-tag">Rank {{wand.rank}}</span>
                 <span class="wand-uses-badge {{#if wand.isOvercharged}}badge-expended{{/if}}">
                   {{#if wand.isOvercharged}}Overcharged / Expended{{else}}{{wand.uses.value}} / {{wand.uses.max}} Uses{{/if}}
@@ -342,7 +342,7 @@
             <div class="action-title-group m-flex-row m-align-center m-gap-8 m-flex-1 m-min-w-0">
               <img class="activation-item-img m-shrink-0" src="{{scroll.img}}" alt="{{scroll.name}}" />
               <div class="m-flex-row m-wrap m-align-center m-gap-6">
-                <span class="action-name m-min-w-0"><strong>{{scroll.name}}</strong></span>
+                <span class="action-name m-min-w-0 m-truncate"><strong>{{scroll.name}}</strong></span>
                 <span class="detail-tag">Rank {{scroll.rank}}</span>
                 <span class="quantity-badge">Qty: {{scroll.quantity}}</span>
               </div>
@@ -380,7 +380,7 @@
         <div class="action-card activation-item-card" data-item-id="{{act.id}}">
           <div class="action-card-header m-flex-row m-align-center m-justify-between">
             <div class="action-title-group m-flex-row m-align-center m-gap-8 m-flex-1 m-min-w-0">
-              <span class="action-name m-min-w-0"><strong>{{act.spell.name}}</strong></span>
+              <span class="action-name m-min-w-0 m-truncate"><strong>{{act.spell.name}}</strong></span>
               <span class="detail-tag">{{act.entryName}}</span>
             </div>
             <div class="action-btn-group m-flex-row m-align-center m-gap-6 m-shrink-0">

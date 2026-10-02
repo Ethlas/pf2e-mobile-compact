@@ -15,7 +15,7 @@
       >
         <div class="m-flex-row m-align-center m-gap-6 m-flex-auto m-min-w-0">
           <span class="skill-rank-badge rank-{{skill.rank}} m-inline-flex m-align-center m-justify-center m-shrink-0" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
-          <span class="skill-name">{{skill.label}}</span>
+          <span class="skill-name m-truncate">{{skill.label}}</span>
         </div>
         <span class="skill-mod m-shrink-0">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
       </button>
@@ -38,7 +38,7 @@
       >
         <div class="m-flex-row m-align-center m-gap-6 m-flex-auto m-min-w-0">
           <span class="skill-rank-badge rank-{{skill.rank}} m-inline-flex m-align-center m-justify-center m-shrink-0" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
-          <span class="skill-name">{{skill.label}}</span>
+          <span class="skill-name m-truncate">{{skill.label}}</span>
         </div>
         <span class="skill-mod m-shrink-0">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
       </button>
@@ -63,7 +63,7 @@
       >
         <div class="m-flex-row m-align-center m-gap-6 m-flex-auto m-min-w-0">
           <span class="skill-rank-badge rank-{{skill.rank}} m-inline-flex m-align-center m-justify-center m-shrink-0" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
-          <span class="skill-name">{{skill.label}}</span>
+          <span class="skill-name m-truncate">{{skill.label}}</span>
         </div>
         <span class="skill-mod m-shrink-0">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
       </button>

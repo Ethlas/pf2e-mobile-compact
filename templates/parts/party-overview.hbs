@@ -67,14 +67,14 @@
           <img class="member-avatar m-shrink-0" src="{{member.img}}" alt="{{member.name}}" width="42" height="42" />
           <div class="m-flex-1 m-min-w-0">
             <div class="m-flex-row m-align-center m-justify-between">
-              <span class="member-name"><strong>{{member.name}}</strong></span>
+              <span class="member-name m-truncate"><strong>{{member.name}}</strong></span>
               {{#if member.heroPoints}}
               <span class="hero-points-badge" title="Hero Points: {{member.heroPoints}}">
                 <i class="fas fa-shield"></i> {{member.heroPoints}} HPt
               </span>
               {{/if}}
             </div>
-            <span class="member-blurb">{{member.blurb}}</span>
+            <span class="member-blurb m-truncate">{{member.blurb}}</span>
           </div>
           {{#if member.isOwner}}
           <button type="button" class="touch-target btn-switch-member m-inline-flex m-align-center m-justify-center" data-action="switchToPartyMember" data-actor-id="{{member.id}}" title="Open Character Sheet">
