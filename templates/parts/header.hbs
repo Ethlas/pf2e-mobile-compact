@@ -1,4 +1,4 @@
-<header class="mobile-header-dashboard {{#if isParty}}party-header{{/if}} {{#if isKingdom}}kingdom-header{{/if}}">
+<header class="mobile-header-dashboard m-flex-col m-gap-6 m-shrink-0 {{#if isParty}}party-header{{/if}} {{#if isKingdom}}kingdom-header{{/if}}">
   <!-- Row 1: Identity & Controls Toolbar -->
   <div class="header-top-row">
     <div class="actor-identity-wrapper">
@@ -55,7 +55,7 @@
         <button type="button" class="touch-target header-btn header-menu-toggle" data-action="toggleHeaderMenu" title="Settings" aria-label="Settings" aria-expanded="false">
           <i class="fas fa-cog"></i>
         </button>
-        <div class="header-menu-panel">
+        <div class="header-menu-panel m-gap-4">
           <button type="button" class="touch-target header-btn {{#unless canvasDisabled}}active{{/unless}}" data-action="toggleCanvasMode" title="{{#if canvasDisabled}}Canvas Disabled (Tap to Enable Canvas){{else}}Canvas Enabled (Tap to Disable Canvas){{/if}}" aria-label="Toggle Canvas">
             <i class="fas {{#if canvasDisabled}}fa-eye-slash{{else}}fa-map{{/if}}"></i>
           </button>
@@ -87,28 +87,28 @@
   {{else if isParty}}
   <!-- Party Overview Dashboard Strip -->
   <div class="header-party-row">
-    <div class="party-header-stat">
+    <div class="party-header-stat m-flex-row m-align-center m-gap-6">
       <i class="fas fa-users"></i> <span><strong>{{partyHeader.membersCount}}</strong> Members</span>
     </div>
-    <div class="party-header-stat">
+    <div class="party-header-stat m-flex-row m-align-center m-gap-6">
       <i class="fas fa-coins"></i> <span><strong>{{partyHeader.totalWealth}}</strong></span>
     </div>
-    <div class="party-header-stat">
+    <div class="party-header-stat m-flex-row m-align-center m-gap-6">
       <i class="fas fa-weight-hanging"></i> <span>Bulk: <strong>{{partyHeader.totalBulk}}</strong></span>
     </div>
   </div>
   {{else}}
   <!-- Row 2: Consolidated HP & Temp HP Streamlined Controls -->
-  <div class="header-hp-row">
+  <div class="header-hp-row m-flex-row m-align-center m-justify-between m-gap-4">
     <!-- Quick Delta Box (+/-) on Left -->
-    <div class="hp-delta-group">
+    <div class="hp-delta-group m-flex-row m-align-center m-justify-center">
       <input type="text" class="hp-delta-input touch-target" data-change-action="applyDeltaHP" placeholder="±Amt" title="Enter heal amount or -damage (e.g. 5 to heal, -5 for damage)" aria-label="HP Delta" />
     </div>
 
     <!-- Current & Max HP with Direct Edit -->
-    <div class="hp-direct-group">
+    <div class="hp-direct-group m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0">
       <span class="hp-label">HP</span>
-      <div class="hp-input-container">
+      <div class="m-flex-row m-align-center m-gap-2">
         <input type="text" class="hp-current-input" data-change-action="setDirectHP" value="{{hp.value}}" title="Current HP (type number to set, or +/- to change)" aria-label="Current HP" />
         <span class="hp-slash">/</span>
         <span class="hp-max-value" title="Max HP">{{hp.max}}</span>
@@ -116,15 +116,15 @@
     </div>
 
     <!-- Temp HP with Direct Edit -->
-    <div class="temp-hp-direct-group">
+    <div class="temp-hp-direct-group m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0">
       <span class="temp-hp-label">TEMP</span>
-      <div class="temp-hp-input-container">
+      <div class="m-flex-row m-align-center">
         <input type="text" class="temp-hp-current-input" data-change-action="setDirectTempHP" value="{{hp.temp}}" title="Temp HP (type number to set, or +/- to change)" aria-label="Temporary HP" />
       </div>
     </div>
 
     {{#if shield.hp.max}}
-    <div class="shield-badge-group">
+    <div class="shield-badge-group m-flex-row m-align-center">
       <span class="defense-item shield-badge" title="Shield HP: {{shield.hp.value}}/{{shield.hp.max}} (Hardness {{shield.hardness}})">
         <strong>🛡️</strong> {{shield.hp.value}}/{{shield.hp.max}}
       </span>
@@ -133,7 +133,7 @@
   </div>
 
   <!-- Row 3: Defenses, Saves & Perception/Initiative Pill Strip -->
-  <div class="header-defenses-saves-row">
+  <div class="header-defenses-saves-row m-flex-row m-align-center m-justify-between m-gap-4">
     <span class="defense-item ac-badge" title="Armor Class: {{defenses.ac.value}}">
       <strong>AC</strong> {{defenses.ac.value}}
     </span>
@@ -148,7 +148,7 @@
       <strong>Will</strong> +{{defenses.will.mod}}
     </button>
 
-    <div class="perc-init-dropdown-wrapper">
+    <div class="perc-init-dropdown-wrapper m-flex-row m-min-w-0">
       <select class="touch-target perception-init-select {{#if combat.active}}{{#if combat.hasRolled}}combat-rolled{{else}}combat-active{{/if}}{{/if}}" data-change-action="rollPerceptionOrInitiative" title="Roll Perception Check or Initiative" aria-label="Roll Perception or Initiative">
         <option value="" selected disabled>
           {{#if combat.active}}

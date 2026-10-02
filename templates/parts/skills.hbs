@@ -7,17 +7,17 @@
       {{#each coreSkills as |skill|}}
       <button
         type="button"
-        class="touch-target skill-button prof-rank-{{skill.rank}}"
+        class="touch-target skill-button prof-rank-{{skill.rank}} m-flex-row m-align-center m-justify-between"
         data-action="rollSkill"
         data-skill="{{skill.slug}}"
         data-statistic="{{skill.slug}}"
         aria-label="{{skill.label}} Check ({{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}})"
       >
-        <div class="skill-info">
-          <span class="skill-rank-badge rank-{{skill.rank}}" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
+        <div class="m-flex-row m-align-center m-gap-6 m-flex-auto m-min-w-0">
+          <span class="skill-rank-badge rank-{{skill.rank}} m-inline-flex m-align-center m-justify-center m-shrink-0" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
           <span class="skill-name">{{skill.label}}</span>
         </div>
-        <span class="skill-mod">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
+        <span class="skill-mod m-shrink-0">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
       </button>
       {{/each}}
     </div>
@@ -30,17 +30,17 @@
       {{#each skills as |skill|}}
       <button
         type="button"
-        class="touch-target skill-button {{#if skill.isLore}}is-lore{{/if}} prof-rank-{{skill.rank}}"
+        class="touch-target skill-button m-flex-row m-align-center m-justify-between {{#if skill.isLore}}is-lore{{/if}} prof-rank-{{skill.rank}}"
         data-action="rollSkill"
         data-skill="{{skill.slug}}"
         data-statistic="{{skill.slug}}"
         aria-label="{{skill.label}} Check ({{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}})"
       >
-        <div class="skill-info">
-          <span class="skill-rank-badge rank-{{skill.rank}}" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
+        <div class="m-flex-row m-align-center m-gap-6 m-flex-auto m-min-w-0">
+          <span class="skill-rank-badge rank-{{skill.rank}} m-inline-flex m-align-center m-justify-center m-shrink-0" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
           <span class="skill-name">{{skill.label}}</span>
         </div>
-        <span class="skill-mod">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
+        <span class="skill-mod m-shrink-0">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
       </button>
       {{/each}}
     </div>
@@ -55,17 +55,17 @@
       {{#each loreSkills as |skill|}}
       <button
         type="button"
-        class="touch-target skill-button is-lore prof-rank-{{skill.rank}}"
+        class="touch-target skill-button is-lore prof-rank-{{skill.rank}} m-flex-row m-align-center m-justify-between"
         data-action="rollSkill"
         data-skill="{{skill.slug}}"
         data-statistic="{{skill.slug}}"
         aria-label="{{skill.label}} Check ({{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}})"
       >
-        <div class="skill-info">
-          <span class="skill-rank-badge rank-{{skill.rank}}" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
+        <div class="m-flex-row m-align-center m-gap-6 m-flex-auto m-min-w-0">
+          <span class="skill-rank-badge rank-{{skill.rank}} m-inline-flex m-align-center m-justify-center m-shrink-0" title="{{skill.rankName}}">{{skill.rankLetter}}</span>
           <span class="skill-name">{{skill.label}}</span>
         </div>
-        <span class="skill-mod">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
+        <span class="skill-mod m-shrink-0">{{#if (gte skill.mod 0)}}+{{/if}}{{skill.mod}}</span>
       </button>
       {{/each}}
     </div>

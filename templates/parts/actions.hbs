@@ -1,6 +1,6 @@
 <div class="tab-pane actions-tab" data-tab="actions">
   <!-- Sub-Navigation for Action Mode: Encounter, Exploration, Downtime -->
-  <div class="action-subtabs">
+  <div class="action-subtabs m-flex-row m-gap-6">
     <button type="button" class="touch-target subtab-btn {{#if (eq actionSubTab "encounter")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="encounter">
       ⚔️ Encounter
     </button>
@@ -18,17 +18,17 @@
       <h3 class="section-title"><i class="fas fa-fist-raised"></i> Attacks</h3>
       <div class="m-group-list strikes-list">
         {{#each strikes as |strike index|}}
-        <div class="action-card m-card strike-card {{#if strike.ready}}ready{{/if}}">
+        <div class="action-card m-card strike-card m-flex-col m-gap-8 {{#if strike.ready}}ready{{/if}}">
           <!-- Strike Header: Weapon Image, Name, Glyph, Traits, Badge -->
-          <div class="strike-card-header">
-            <img class="strike-img" src="{{strike.img}}" alt="{{strike.label}}" />
-            <div class="strike-title-group">
-              <div class="strike-name-row">
+          <div class="m-flex-row m-align-center m-gap-10">
+            <img class="strike-img m-shrink-0" src="{{strike.img}}" alt="{{strike.label}}" />
+            <div class="m-flex-col m-gap-4 m-flex-1 m-min-w-0">
+              <div class="m-flex-row m-align-center m-gap-6">
                 <span class="action-cost-glyph"><span class="action-glyph">{{strike.glyph}}</span></span>
-                <span class="action-name"><strong>{{strike.label}}</strong></span>
+                <span class="action-name m-min-w-0"><strong>{{strike.label}}</strong></span>
               </div>
               {{#if strike.traits.length}}
-              <div class="action-traits strike-traits">
+              <div class="action-traits m-flex-row m-wrap m-gap-4">
                 {{#each strike.traits as |trait|}}
                   <span class="trait-badge">{{trait.label}}</span>
                 {{/each}}
@@ -42,7 +42,7 @@
           </div>
 
           <!-- MAP Variants at the TOP (Prominent attack row) -->
-          <div class="strike-map-row">
+          <div class="strike-map-row m-flex-row m-gap-6">
             {{#each strike.variants as |variant vIndex|}}
             <button type="button" class="touch-target map-button" data-action="executeStrike" data-strike-index="{{index}}" data-variant-index="{{vIndex}}" title="Attack Variant {{vIndex}}">
               {{variant.label}}
@@ -51,7 +51,7 @@
           </div>
 
           <!-- Damage and Critical Buttons Row -->
-          <div class="strike-damage-row">
+          <div class="strike-damage-row m-flex-row m-gap-6">
             {{#if strike.damage}}
             <button type="button" class="touch-target variant-button damage-button" data-action="executeDamage" data-strike-index="{{index}}" title="Roll Damage">
               💥 {{strike.damageFormula}}
@@ -67,11 +67,11 @@
 
           <!-- Weapon Auxiliary Actions: Draw, Sheathe, Drop, Reload, Change Grip -->
           {{#if strike.hasAuxiliary}}
-          <div class="strike-auxiliary-row">
+          <div class="strike-auxiliary-row m-flex-row m-wrap m-gap-6">
             {{#each strike.auxiliaryActions as |aux|}}
             <button type="button" class="touch-target aux-action-btn" data-action="executeAuxiliaryAction" data-strike-index="{{index}}" data-aux-index="{{aux.index}}" title="{{aux.label}}">
               {{#if aux.glyph}}
-                <span class="aux-glyph"><span class="action-glyph">{{aux.glyph}}</span></span>
+                <span class="aux-glyph m-inline-flex m-align-center m-justify-center"><span class="action-glyph">{{aux.glyph}}</span></span>
               {{/if}}
                 <span class="aux-label">{{aux.label}}</span>
               {{#if aux.annotation}}

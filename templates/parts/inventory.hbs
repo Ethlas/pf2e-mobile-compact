@@ -1,6 +1,6 @@
 <div class="tab-pane inventory-tab" data-tab="inventory">
   <!-- Bulk & Encumbrance Status Bar -->
-  <div class="inventory-status-bar">
+  <div class="inventory-status-bar m-flex-row m-align-center m-justify-between">
     <div class="bulk-info">
       <span>Bulk: <strong>{{encumbrance.bulk}} / {{encumbrance.max}}</strong></span>
       {{#if encumbrance.isEncumbered}}
@@ -10,9 +10,9 @@
       <span class="encumbered-badge danger">Over Limit</span>
       {{/if}}
     </div>
-    <div class="inventory-header-buttons">
+    <div class="m-flex-row m-align-center m-gap-6">
       {{#if partyStash}}
-      <button type="button" class="touch-target btn-party-stash" data-action="openPartyStash" data-party-id="{{partyStash.id}}" title="Open {{partyStash.name}} Stash">
+      <button type="button" class="touch-target btn-party-stash m-inline-flex m-align-center m-gap-4" data-action="openPartyStash" data-party-id="{{partyStash.id}}" title="Open {{partyStash.name}} Stash">
         <i class="fas fa-box-archive"></i> Stash ({{partyStash.itemsCount}})
       </button>
       {{/if}}
@@ -34,14 +34,14 @@
       {{#> "modules/pf2e-mobile-compact/templates/parts/inventory/item-card.hbs" item=consumable showQuantity=true}}
       {{!-- Slots can only use the card's parameters (item) and @root, see inventory/item-card.hbs --}}
         {{#*inline "badges"}}
-          <span class="item-badge category-badge">{{item.categoryLabel}}</span>
+          <span class="item-badge category-badge m-inline-flex m-align-center m-gap-4">{{item.categoryLabel}}</span>
           {{#if item.hasUses}}
-          <span class="item-badge uses-badge">{{item.uses.value}}/{{item.uses.max}} uses</span>
+          <span class="item-badge uses-badge m-inline-flex m-align-center m-gap-4">{{item.uses.value}}/{{item.uses.max}} uses</span>
           {{/if}}
         {{/inline}}
         {{#*inline "lineButtons"}}
           {{#if item.canApplyToWeapon}}
-          <button type="button" class="touch-target btn-apply-poison" data-action="applyPoison" data-item-id="{{item.id}}" title="Apply to Weapon">
+          <button type="button" class="touch-target btn-apply-poison m-inline-flex m-align-center m-justify-center m-gap-4" data-action="applyPoison" data-item-id="{{item.id}}" title="Apply to Weapon">
             <i class="fas fa-vial"></i> Apply
           </button>
           {{else}}
@@ -74,7 +74,7 @@
             {{item.carryLabel}}
           </button>
           {{#if item.runesSummary}}
-          <span class="item-badge runes-badge" title="Runes: {{item.runesSummary}}">
+          <span class="item-badge runes-badge m-inline-flex m-align-center m-gap-4" title="Runes: {{item.runesSummary}}">
             <i class="fas fa-gem"></i> {{item.runesSummary}}
           </span>
           {{/if}}
@@ -84,19 +84,19 @@
           </button>
           {{/if}}
           {{#if item.isPoisoned}}
-          <span class="item-badge poison-badge" title="Poisoned: {{item.poison.name}}">
+          <span class="item-badge poison-badge m-inline-flex m-align-center m-gap-4" title="Poisoned: {{item.poison.name}}">
             <i class="fas fa-skull-crossbones"></i> {{item.poison.name}}
           </span>
           {{/if}}
         {{/inline}}
         {{#*inline "drawerButtons"}}
           {{#if item.canHaveRunes}}
-          <button type="button" class="touch-target btn-runes" data-action="configureRunes" data-item-id="{{item.id}}" title="Configure Runes">
+          <button type="button" class="touch-target btn-runes m-inline-flex m-align-center m-justify-center m-gap-4" data-action="configureRunes" data-item-id="{{item.id}}" title="Configure Runes">
             <i class="fas fa-gem"></i> Runes
           </button>
           {{/if}}
           {{#if item.isPoisoned}}
-          <button type="button" class="touch-target btn-detach-subitem" data-action="detachSubitem" data-weapon-id="{{item.id}}" data-subitem-id="{{item.poison.id}}" title="Clean / Detach Poison">
+          <button type="button" class="touch-target btn-detach-subitem m-inline-flex m-align-center m-justify-center m-gap-4" data-action="detachSubitem" data-weapon-id="{{item.id}}" data-subitem-id="{{item.poison.id}}" title="Clean / Detach Poison">
             <i class="fas fa-eraser"></i> Clean
           </button>
           {{/if}}
@@ -122,15 +122,15 @@
       {{!-- Slots can only use the card's parameters (item) and @root, see inventory/item-card.hbs --}}
         {{#*inline "badges"}}
           {{#if item.isShield}}
-          <span class="item-badge shield-badge"><i class="fas fa-shield-halved"></i> {{item.hp}}/{{item.maxHp}} HP</span>
+          <span class="item-badge shield-badge m-inline-flex m-align-center m-gap-4"><i class="fas fa-shield-halved"></i> {{item.hp}}/{{item.maxHp}} HP</span>
           {{else}}
-          <span class="item-badge armor-badge">+{{item.acBonus}} AC</span>
+          <span class="item-badge armor-badge m-inline-flex m-align-center m-gap-4">+{{item.acBonus}} AC</span>
           {{/if}}
           <button type="button" class="touch-target badge-btn equip-badge {{#if item.isEquipped}}equipped{{/if}}" data-action="toggleEquipped" data-item-id="{{item.id}}" title="Toggle Equipped / Worn">
             <i class="fas fa-shirt"></i> {{item.equipLabel}}
           </button>
           {{#if item.runesSummary}}
-          <span class="item-badge runes-badge" title="Runes: {{item.runesSummary}}">
+          <span class="item-badge runes-badge m-inline-flex m-align-center m-gap-4" title="Runes: {{item.runesSummary}}">
             <i class="fas fa-gem"></i> {{item.runesSummary}}
           </span>
           {{/if}}
@@ -142,7 +142,7 @@
         {{/inline}}
         {{#*inline "drawerButtons"}}
           {{#if item.canHaveRunes}}
-          <button type="button" class="touch-target btn-runes" data-action="configureRunes" data-item-id="{{item.id}}" title="Configure Runes">
+          <button type="button" class="touch-target btn-runes m-inline-flex m-align-center m-justify-center m-gap-4" data-action="configureRunes" data-item-id="{{item.id}}" title="Configure Runes">
             <i class="fas fa-gem"></i> Runes
           </button>
           {{/if}}
@@ -178,10 +178,10 @@
           </button>
           {{/if}}
           {{#if item.isContainer}}
-          <span class="item-badge container-badge"><i class="fas fa-box-open"></i> Container ({{item.heldItemsCount}})</span>
+          <span class="item-badge container-badge m-inline-flex m-align-center m-gap-4"><i class="fas fa-box-open"></i> Container ({{item.heldItemsCount}})</span>
           {{/if}}
           {{#if item.isStowed}}
-          <span class="item-badge stowed-badge"><i class="fas fa-box"></i> in {{item.containerName}}</span>
+          <span class="item-badge stowed-badge m-inline-flex m-align-center m-gap-4"><i class="fas fa-box"></i> in {{item.containerName}}</span>
           {{/if}}
         {{/inline}}
       {{/"modules/pf2e-mobile-compact/templates/parts/inventory/item-card.hbs"}}

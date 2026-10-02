@@ -21,18 +21,18 @@
       <!-- Title (layout only; the whole line is the tap target) -->
       <div class="m-card-title m-flex-row m-align-center">
         {{#if spell.isFocus}}
-          <span class="spell-source-badge badge-focus badge-letter" title="Focus Spell">F</span>
+          <span class="spell-source-badge badge-focus badge-letter m-inline-flex m-align-center m-justify-center" title="Focus Spell">F</span>
         {{else if spell.isInnate}}
-          <span class="spell-source-badge badge-innate badge-letter" title="Innate Spell">I</span>
+          <span class="spell-source-badge badge-innate badge-letter m-inline-flex m-align-center m-justify-center" title="Innate Spell">I</span>
         {{else if spell.isPrepared}}
-          <!--          <span class="spell-source-badge badge-prepared badge-letter" title="Prepared Spell">P</span>-->
+          <!--          <span class="spell-source-badge badge-prepared badge-letter m-inline-flex m-align-center m-justify-center" title="Prepared Spell">P</span>-->
         {{else if spell.isSpontaneous}}
-          <!--          <span class="spell-source-badge badge-spontaneous badge-letter" title="Spontaneous Spell">S</span>-->
+          <!--          <span class="spell-source-badge badge-spontaneous badge-letter m-inline-flex m-align-center m-justify-center" title="Spontaneous Spell">S</span>-->
         {{/if}}
         {{#if spell.glyph}}
           <span class="action-cost-glyph"><span class="action-glyph">{{spell.glyph}}</span></span>
         {{/if}}
-        <span class="action-name"><strong>{{spell.name}}</strong></span>
+        <span class="action-name m-min-w-0"><strong>{{spell.name}}</strong></span>
 
 
       </div>
@@ -40,7 +40,7 @@
       <!-- Source badges + quick detail tags (under the spell name, always visible) -->
       <div class="spell-details">
         {{#if spell.isSignature}}
-          <span class="spell-source-badge badge-signature badge-letter" title="Signature Spell"><i class="fas fa-star"></i></span>
+          <span class="spell-source-badge badge-signature badge-letter m-inline-flex m-align-center m-justify-center" title="Signature Spell"><i class="fas fa-star"></i></span>
         {{/if}}
 
         {{#if spell.isExpended}}
@@ -65,14 +65,14 @@
       </div>
     </div>
     <!-- Line buttons (supplied by the caller through the "lineButtons" slot) -->
-    <div class="action-btn-group">
+    <div class="action-btn-group m-flex-row m-align-center m-gap-6 m-shrink-0">
       {{#> lineButtons}}{{/lineButtons}}
     </div>
   </div>
 
   <!-- Expandable Details Drawer -->
   <div class="action-summary {{#if spell.isExpanded}}expanded{{else}}collapsed{{/if}}">
-    <div class="expanded-spell-fullname">
+    <div class="expanded-spell-fullname m-flex-row m-align-center m-justify-between m-gap-8">
       <strong>{{spell.name}}</strong>
       {{#if spell.isFocus}}
       <span class="spell-source-badge badge-focus">Focus</span>
@@ -87,20 +87,20 @@
 
     {{!-- Cantrips carry pf2e's "cantrip" trait, so no separate Cantrip badge is needed --}}
     {{#if spell.traits.length}}
-    <div class="action-traits staff-spell-traits">
+    <div class="action-traits staff-spell-traits m-flex-row m-wrap m-gap-4">
       {{#each spell.traits as |trait|}}
       <span class="trait-badge">{{trait.label}}</span>
       {{/each}}
     </div>
     {{/if}}
     {{#if spell.target}}
-    <div class="action-traits staff-spell-traits">
+    <div class="action-traits staff-spell-traits m-flex-row m-wrap m-gap-4">
       <span class="detail-tag"><i class="fas fa-crosshairs"></i> {{spell.target}}</span>
     </div>
     {{/if}}
 
     {{#if spell.isHeightened}}
-    <div class="spell-heightened-notice">
+    <div class="spell-heightened-notice m-flex-row m-align-center m-gap-8">
       <i class="fas fa-arrow-up-right-dots"></i>
       <span>Heightened to <strong>Rank {{rank}}</strong> (Base: Rank {{spell.baseRank}})</span>
     </div>
@@ -113,7 +113,7 @@
       </button>
 
       {{#if spell.hasDamage}}
-      <button type="button" class="touch-target btn-spell-damage btn-spell-damage-full {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}})">
+      <button type="button" class="touch-target btn-spell-damage btn-spell-damage-full m-inline-flex m-align-center m-justify-center m-gap-4 {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}})">
         {{#if spell.isHealingOnly}}
           <i class="fas fa-heart-pulse"></i> Roll Healing (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}} · {{spell.damageFormula}}{{/if}}
         {{else}}
@@ -124,7 +124,7 @@
     </div>
 
     <!-- Drawer buttons (supplied by the caller through the "drawerButtons" slot) -->
-    <div class="spell-drawer-actions m-flex-row">
+    <div class="spell-drawer-actions m-flex-row m-wrap m-align-center m-gap-6">
       {{#> drawerButtons}}{{/drawerButtons}}
     </div>
 
@@ -134,7 +134,7 @@
 
     {{#if showManageButtons}}
     <!-- Spell Actions Footer (Remove & Signature Toggle) -->
-    <div class="spell-drawer-footer">
+    <div class="spell-drawer-footer m-flex-row m-wrap m-gap-8">
       {{#if spell.canSignature}}
       <button
         type="button"

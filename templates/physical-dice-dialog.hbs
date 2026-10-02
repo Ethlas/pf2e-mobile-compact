@@ -54,10 +54,10 @@
         Roll physical dice for each damage type and enter the total below:
       </div>
 
-      <div class="physical-damage-pools">
+      <div class="physical-damage-pools m-flex-col m-gap-10">
         {{#each pools}}
         <div class="physical-damage-row" data-pool-id="{{this.id}}">
-          <div class="damage-row-header">
+          <div class="damage-row-header m-flex-row m-align-center m-justify-between">
             <span class="damage-type-badge damage-{{this.type}}">
               {{this.typeLabel}}{{#if this.persistent}} (Persistent){{/if}}
             </span>
@@ -66,7 +66,7 @@
             </span>
           </div>
 
-          <div class="damage-input-row">
+          <div class="damage-input-row m-flex-row m-align-center m-gap-10">
             <label for="pool-input-{{this.id}}">Dice Total:</label>
             <input 
               type="number" 

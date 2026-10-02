@@ -18,7 +18,7 @@
       <!-- Languages Strip -->
       <div class="competency-group">
         <div class="competency-title"><i class="fas fa-language"></i> Known Languages</div>
-        <div class="tag-strip">
+        <div class="m-flex-row m-wrap m-gap-4">
           {{#each partyLanguages as |lang|}}
           <span class="competency-pill" title="Speakers: {{#each lang.speakers}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}">
             {{lang.label}}{{#if (gt lang.speakers.length 1)}} <small>({{lang.speakers.length}})</small>{{/if}}
@@ -32,7 +32,7 @@
       <!-- Core Skills Best Modifiers -->
       <div class="competency-group">
         <div class="competency-title"><i class="fas fa-dice-d20"></i> Best Party Modifiers</div>
-        <div class="tag-strip">
+        <div class="m-flex-row m-wrap m-gap-4">
           {{#each partySkills as |sk|}}
           <span class="competency-pill skill-pill" title="{{sk.member}} (+{{sk.mod}})">
             <strong>{{sk.label}}</strong> +{{sk.mod}} <small>({{sk.member}})</small>
@@ -44,7 +44,7 @@
       <!-- Recall Knowledge Best Modifiers -->
       <div class="competency-group">
         <div class="competency-title"><i class="fas fa-brain"></i> Recall Knowledge</div>
-        <div class="tag-strip">
+        <div class="m-flex-row m-wrap m-gap-4">
           {{#each partyRecallKnowledge as |rk|}}
           <span class="competency-pill rk-pill" title="{{rk.member}} (+{{rk.mod}})">
             <strong>{{rk.label}}</strong> +{{rk.mod}} <small>({{rk.member}})</small>
@@ -62,11 +62,11 @@
     </h3>
     <div class="party-members-list">
       {{#each partyMembers as |member|}}
-      <div class="action-card party-member-card {{#if member.isUserChar}}is-user-char{{/if}}" data-actor-id="{{member.id}}">
-        <div class="member-card-header">
-          <img class="member-avatar" src="{{member.img}}" alt="{{member.name}}" width="42" height="42" />
-          <div class="member-identity">
-            <div class="member-name-row">
+      <div class="action-card party-member-card m-flex-col m-gap-6 {{#if member.isUserChar}}is-user-char{{/if}}" data-actor-id="{{member.id}}">
+        <div class="m-flex-row m-align-center m-gap-8">
+          <img class="member-avatar m-shrink-0" src="{{member.img}}" alt="{{member.name}}" width="42" height="42" />
+          <div class="m-flex-1 m-min-w-0">
+            <div class="m-flex-row m-align-center m-justify-between">
               <span class="member-name"><strong>{{member.name}}</strong></span>
               {{#if member.heroPoints}}
               <span class="hero-points-badge" title="Hero Points: {{member.heroPoints}}">
@@ -77,7 +77,7 @@
             <span class="member-blurb">{{member.blurb}}</span>
           </div>
           {{#if member.isOwner}}
-          <button type="button" class="touch-target btn-switch-member" data-action="switchToPartyMember" data-actor-id="{{member.id}}" title="Open Character Sheet">
+          <button type="button" class="touch-target btn-switch-member m-inline-flex m-align-center m-justify-center" data-action="switchToPartyMember" data-actor-id="{{member.id}}" title="Open Character Sheet">
             <i class="fas fa-arrow-right-to-bracket"></i>
           </button>
           {{/if}}
@@ -88,14 +88,14 @@
           <div class="member-hp-track">
             <div class="member-hp-fill {{#if member.hp.isLow}}danger{{else if member.hp.isMedium}}warning{{else}}healthy{{/if}}" style="width: {{member.hp.percent}}%;"></div>
           </div>
-          <div class="member-hp-text">
+          <div class="member-hp-text m-flex-row m-justify-between">
             <span><i class="fas fa-heart"></i> {{member.hp.value}} / {{member.hp.max}}{{#if member.hp.temp}} (+{{member.hp.temp}}){{/if}} HP</span>
             <span class="member-hp-percent">{{member.hp.percent}}%</span>
           </div>
         </div>
 
         <!-- Defenses Strip -->
-        <div class="member-defenses-strip">
+        <div class="member-defenses-strip m-flex-row m-wrap m-gap-4">
           <span class="defense-badge ac" title="Armor Class"><strong>AC</strong> {{member.ac}}</span>
           <span class="defense-badge save" title="Fortitude Save"><strong>Fort</strong> +{{member.saves.fortitude}}</span>
           <span class="defense-badge save" title="Reflex Save"><strong>Ref</strong> +{{member.saves.reflex}}</span>
@@ -104,7 +104,7 @@
         </div>
 
         <!-- Senses & Key Skills Row -->
-        <div class="member-footer-row">
+        <div class="member-footer-row m-flex-row m-align-center m-justify-between">
           <div class="member-senses" title="Senses: {{member.senses}}">
             <i class="fas fa-eye"></i> {{member.senses}}
           </div>

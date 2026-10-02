@@ -34,13 +34,13 @@
     {{/if}}
 
     <!-- Persistent Chat Pane (always retains live ui.chat socket stream) -->
-    <div class="mobile-tab-pane mobile-chat-pane {{#unless (eq activeTab "chat")}}is-hidden{{/unless}}">
+    <div class="mobile-tab-pane mobile-chat-pane m-flex-col {{#unless (eq activeTab "chat")}}is-hidden{{/unless}}">
       {{> "modules/pf2e-mobile-compact/templates/parts/chat.hbs"}}
     </div>
   </main>
 
   <!-- Bottom Navigation Bar: Adaptive for Kingdom vs Party vs Character -->
-  <nav class="mobile-bottom-nav {{#if isKingdom}}kingdom-nav{{else if isParty}}party-nav{{/if}}">
+  <nav class="mobile-bottom-nav m-flex-row {{#if isKingdom}}kingdom-nav{{else if isParty}}party-nav{{/if}}">
     {{#if isKingdom}}
       <button
         type="button"
@@ -99,7 +99,7 @@
         data-tab="chat"
         aria-label="Chat Tab"
       >
-        <div class="nav-icon-wrapper">
+        <div class="nav-icon-wrapper m-inline-flex m-align-center m-justify-center">
           <i class="fas fa-comments"></i>
           <span class="chat-badge {{#unless unreadChatCount}}hidden{{/unless}}">{{unreadChatCount}}</span>
         </div>
@@ -133,7 +133,7 @@
         data-tab="chat"
         aria-label="Chat Tab"
       >
-        <div class="nav-icon-wrapper">
+        <div class="nav-icon-wrapper m-inline-flex m-align-center m-justify-center">
           <i class="fas fa-comments"></i>
           <span class="chat-badge {{#unless unreadChatCount}}hidden{{/unless}}">{{unreadChatCount}}</span>
         </div>
@@ -187,7 +187,7 @@
         data-tab="chat"
         aria-label="Chat Tab"
       >
-        <div class="nav-icon-wrapper">
+        <div class="nav-icon-wrapper m-inline-flex m-align-center m-justify-center">
           <i class="fas fa-comments"></i>
           <span class="chat-badge {{#unless unreadChatCount}}hidden{{/unless}}">{{unreadChatCount}}</span>
         </div>

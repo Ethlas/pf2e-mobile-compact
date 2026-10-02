@@ -6,6 +6,20 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Flex Layout Utility Classes (`styles/pf2e-mobile.css`, `templates/`)
+
+#### Changed
+- **More layout utilities (`styles/pf2e-mobile.css`)**: next to `.m-flex-row`, `.m-flex-col`, `.m-align-center` and `.m-align-baseline` there are now `.m-inline-flex`, `.m-justify-center`, `.m-justify-between`, `.m-wrap`, `.m-gap-2/4/6/8/10/12`, and for children of a flex container `.m-flex-1` (`flex: 1`), `.m-flex-auto` (`flex: 1 1 auto`), `.m-min-w-0` (`min-width: 0`) and `.m-shrink-0` (`flex-shrink: 0`). Like the existing ones they are scoped to `.pf2e-mobile-sheet` and only do layout.
+- **Flex layout moved from component rules into the templates (`templates/`, `styles/pf2e-mobile.css`)**:
+  - In component rules of the form `.pf2e-mobile-sheet .component { … }`, the declarations a utility covers (display flex/inline-flex, direction, align-items, justify-content, gap, wrap, `flex: 1`, `flex: 1 1 auto`, `min-width: 0`, `flex-shrink: 0`) were removed and the matching utilities added to every element with that class. About 380 declarations in 129 components; the stylesheet went from 4171 to 3748 lines.
+  - Rules that only held layout are gone. When nothing else used the class, it was removed from the markup as well (e.g. `strike-card-header`, `slot-filled-content`, `tag-strip`, `skill-info`); classes that JS, `verify.mjs` or other rules still use stay.
+  - Left in CSS on purpose: grid layouts, other values (e.g. `gap: 8px 12px`, `justify-content: space-around`), selectors with more than one class or a parent, rules inside media queries, classes that are only set conditionally in the template, and `.staff-drawer-content`'s `display`, which has to beat `.action-summary { display: none }`.
+  - Order of classes in the markup: component classes first, then utilities as display, wrap, align, justify, gap, child sizing.
+  - Design rationale: the same three or four flex declarations were repeated in about 200 rules. With the utilities the layout of an element can be read in the template, and component rules keep only how something looks.
+  - The utilities come before all component rules in the stylesheet, so a component rule with the same specificity that sets the same property still wins. The rendered layout was compared before and after in the dev preview for all tabs, sub-tabs and opened cards of the local fixtures, a party fixture and two screen widths: no element moved or changed size.
+- **Duplicate party nav rule removed (`styles/pf2e-mobile.css`)**: `.mobile-bottom-nav.party-nav` repeated the `display: flex` and `justify-content: space-around` the bottom nav already has.
+- **Gap steps (`styles/pf2e-mobile.css`)**: odd gap values in the sheet were rounded down to the nearest step: 5px to 4px (HP row, damage application, aux action buttons, item badges, poison/detach/runes buttons, spell details), 3px to 2px (AC and shield badges, strike traits, item details) and 7px to 6px (skill info). Gaps in the compendium picker and dice dialog keep their values.
+
 ### Character Overview & Feats
 
 #### Added
