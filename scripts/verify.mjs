@@ -562,6 +562,15 @@ try {
     logPass(`[Header] Actor switcher on Character Sheet includes '${kingdomOption.name}'.`);
   }
 
+  // Lightning badge on the Character overview button: only while an effect, condition or affliction is active
+  const effectHeaderCtx = {};
+  prepareHeaderContext({ ...mockCharActor, itemTypes: { effect: [{ id: "e1" }] } }, { _isKingdomMode: false }, effectHeaderCtx);
+  if (charContext.hasActiveEffects !== false || effectHeaderCtx.hasActiveEffects !== true) {
+    logFail(`[Header] hasActiveEffects should be false without effects and true with one: ${charContext.hasActiveEffects} / ${effectHeaderCtx.hasActiveEffects}`);
+  } else {
+    logPass("[Header] hasActiveEffects is false without effects and true with an active effect (lightning badge on the Character overview button).");
+  }
+
   const mockCharSheet = {
     actor: mockCharActor,
     _isKingdomMode: false,
@@ -1233,6 +1242,155 @@ try {
   }
 } catch (err) {
   logFail(`Action Cost / Spell Damage / Issue #16 verification threw an error: ${err.stack || err.message}`);
+}
+
+// 6b. Character overview: header user button and pf2e feat groups
+try {
+  const { prepareCharacterContext } = await import("../scripts/apps/sheet-helpers/context-character.js");
+  const headerHbs = fs.readFileSync(path.join(rootDir, "templates/parts/header.hbs"), "utf-8");
+  const mobileSheetHbs = fs.readFileSync(path.join(rootDir, "templates/mobile-sheet.hbs"), "utf-8");
+  const entryJs = fs.readFileSync(path.join(rootDir, "scripts/pf2e-mobile.js"), "utf-8");
+
+  const slot = (feat, level, children = []) => ({ feat, level, children });
+  const featItem = (id, name, level) => ({ id, name, system: { level: { value: level } } });
+  const ancestryGroup = { id: "ancestry", label: "Ancestry Feats", feats: [slot(featItem("f1", "Natural Ambition", 1), 1), slot(null, 5)] };
+  const classGroup = { id: "class", label: "Class Feats", feats: [slot(featItem("f2", "Champion Dedication", 2), 2, [slot(featItem("f3", "Deity's Domain", 2))])] };
+  const emptyGroup = { id: "general", label: "General Feats", feats: [slot(null, 3)] };
+  const mockOverviewActor = {
+    name: "Valeros",
+    level: 5,
+    ancestry: { name: "Human" },
+    class: { name: "Fighter" },
+    abilities: { str: { mod: 4 }, dex: { mod: 2 }, con: { mod: 2 }, int: { mod: 0 }, wis: { mod: 1 }, cha: { mod: -1 } },
+    movement: { speeds: { land: { label: "Land Speed", value: 25 }, swim: null, travel: { label: "Travel Speed", value: 25 } } },
+    perception: { senses: { contents: [{ type: "low-light-vision", label: "Low-Light Vision" }, { type: "darkvision", label: "Darkvision" }, { type: "scent", label: "Scent (imprecise) 30 feet" }] } },
+    attributes: { immunities: [], weaknesses: [], resistances: [{ label: "Fire 5" }] },
+    classDC: { dc: { value: 21 } },
+    system: { details: { languages: { value: ["common"] } } },
+    feats: { contents: [ancestryGroup, classGroup, emptyGroup], bonus: { id: "bonus", label: "Bonus Feats", feats: [] } }
+  };
+
+  const closedCtx = {};
+  prepareCharacterContext(mockOverviewActor, { _activeTab: "actions" }, closedCtx);
+  const ctx = {};
+  prepareCharacterContext(mockOverviewActor, { _activeTab: "character" }, ctx);
+  const c = ctx.character;
+  const groupIds = c?.featGroups?.map(g => g.id).join(",");
+
+  if (
+    closedCtx.character !== undefined ||
+    groupIds !== "ancestry,class" ||
+    c.featGroups[0].feats.length !== 1 ||
+    c.featGroups[1].feats[0].children[0]?.name !== "Deity's Domain" ||
+    c.attributes.find(a => a.key === "str")?.mod !== 4 ||
+    c.speeds.map(s => `${s.type}:${s.value}`).join(",") !== "land:25,swim:null,climb:null,fly:null,burrow:null" ||
+    c.senses.join(",") !== "Darkvision,Scent (imprecise) 30 feet" ||
+    c.defenses.classDC !== 21 ||
+    c.defenses.resistances[0] !== "Fire 5" ||
+    c.identity.className !== "Fighter" ||
+    c.identity.level !== 5 ||
+    c.identity.deity !== null
+  ) {
+    logFail(`[Character Overview] Unexpected context: ${JSON.stringify(c)} (closed: ${JSON.stringify(closedCtx.character)})`);
+  } else {
+    logPass("[Character Overview] Context only builds while open, keeps pf2e's feat group order, skips empty slots and groups, nests granted feats, lists land, swim, climb, fly and burrow speed (null when missing, no travel speed), and hides low-light vision next to darkvision.");
+  }
+
+  // Feat descriptions: nothing is enriched when the overview opens; the first tap enriches one feat
+  // and caches it, a second open of the same feat uses the cache, and a re-render keeps it open with its text.
+  const { onToggleItemDescription } = await import("../scripts/apps/sheet-helpers/character-handlers.js");
+  const mockClassList = (initial) => {
+    const set = new Set(initial);
+    return { contains: c => set.has(c), add: c => set.add(c), remove: c => set.delete(c), replace: (a, b) => (set.delete(a), set.add(b)) };
+  };
+  const content = { innerHTML: "" };
+  const drawer = { classList: mockClassList(["action-summary", "collapsed"]), querySelector: () => content };
+  const featEl = { dataset: { itemId: "f1" }, classList: mockClassList(["character-item"]), querySelector: () => drawer };
+  const itemLine = { closest: () => featEl };
+  let enrichCalls = 0;
+  const previousUx = globalThis.foundry.applications.ux;
+  globalThis.foundry.applications.ux = { TextEditor: { enrichHTML: async (html) => { enrichCalls++; return `<p>${html}</p>`; } } };
+  const featSheet = {
+    _activeTab: "character",
+    actor: { ...mockOverviewActor, items: { get: id => (id === "f1" ? { system: { description: { value: "Ambition text" } } } : null) } }
+  };
+  const callsBeforeTap = enrichCalls;
+  await onToggleItemDescription(featSheet, {}, itemLine);
+  const openedHtml = content.innerHTML;
+  await onToggleItemDescription(featSheet, {}, itemLine);
+  const closed = drawer.classList.contains("collapsed");
+  await onToggleItemDescription(featSheet, {}, itemLine);
+  const reopenCtx = {};
+  prepareCharacterContext(featSheet.actor, featSheet, reopenCtx);
+  globalThis.foundry.applications.ux = previousUx;
+  const reopenedFeat = reopenCtx.character.featGroups[0].feats[0];
+  const otherFeat = reopenCtx.character.featGroups[1].feats[0];
+
+  if (
+    callsBeforeTap !== 0 ||
+    enrichCalls !== 1 ||
+    openedHtml !== "<p>Ambition text</p>" ||
+    !closed ||
+    !reopenedFeat.isExpanded ||
+    reopenedFeat.description !== "<p>Ambition text</p>" ||
+    otherFeat.isExpanded ||
+    otherFeat.description !== ""
+  ) {
+    logFail(`[Character Overview] Lazy feat description failed: enrichCalls=${enrichCalls}, opened=${openedHtml}, closed=${closed}, reopened=${JSON.stringify(reopenedFeat)}`);
+  } else {
+    logPass("[Character Overview] Feat descriptions are enriched on the first tap only, cached for later opens, and kept open with their text on re-render.");
+  }
+
+  // Effects: afflictions, conditions, effects in that order; badge value after the name (not for conditions,
+  // whose name pf2e already gives the value); pf2e's duration strings
+  const previousI18n = globalThis.game.i18n;
+  globalThis.game.i18n = { format: (key, data) => `${key}${data && Object.keys(data).length ? JSON.stringify(data) : ""}` };
+  const effectsActor = {
+    ...mockOverviewActor,
+    conditions: { active: [{ id: "c1", name: "Frightened 2", type: "condition", badge: { type: "counter", value: 2, label: null } }] },
+    itemTypes: {
+      affliction: [{ id: "a1", name: "Spider Venom", type: "affliction", badge: { type: "counter", value: 1, labels: ["Stage 1", "Stage 2"] } }],
+      effect: [
+        { id: "e1", name: "Effect: Bless", type: "effect", badge: null, totalDuration: 60, remainingDuration: { remaining: 18 }, system: { duration: { unit: "minutes" } } },
+        { id: "e2", name: "Stance: Mountain", type: "effect", badge: null, totalDuration: Infinity, system: { duration: { unit: "unlimited" } } }
+      ]
+    }
+  };
+  const effectsCtx = {};
+  prepareCharacterContext(effectsActor, { _activeTab: "character" }, effectsCtx);
+  globalThis.game.i18n = previousI18n;
+  const effects = effectsCtx.character?.effects ?? [];
+  const effectSummary = effects.map(e => `${e.name}|${e.badge ?? ""}|${e.remaining ?? ""}`).join(";");
+  const expectedEffects = "Spider Venom|Stage 1|;Frightened 2||;Effect: Bless||PF2E.EffectPanel.RemainingDuration.MultipleRounds{\"rounds\":3};Stance: Mountain||PF2E.EffectPanel.UnlimitedDuration";
+  if (effectSummary !== expectedEffects) {
+    logFail(`[Character Overview] Effects list: expected ${expectedEffects}, got ${effectSummary}`);
+  } else {
+    logPass("[Character Overview] Effects list afflictions, conditions and effects like pf2e's effects panel, with badge values and pf2e's remaining duration strings.");
+  }
+
+  // Effect durations: combat and world time updates re-render the sheet part only while the overview is open
+  const { refreshOverviewDurations } = await import("../scripts/apps/sheet-helpers/character-handlers.js");
+  const refreshRenders = [];
+  const refreshSheet = (tab) => ({ rendered: true, _activeTab: tab, render: (opts) => refreshRenders.push(`${tab}:${opts.parts.join("+")}`) });
+  refreshOverviewDurations(refreshSheet("character"));
+  refreshOverviewDurations(refreshSheet("actions"));
+  if (refreshRenders.join(",") !== "character:sheet") {
+    logFail(`[Character Overview] refreshOverviewDurations should only re-render an open overview, got: ${refreshRenders.join(",")}`);
+  } else {
+    logPass("[Character Overview] Combat and world time updates re-render the sheet part only while the overview is open, so effect durations count down.");
+  }
+
+  if (
+    !headerHbs.includes('data-action="toggleCharacterOverview"') ||
+    !mobileSheetHbs.includes("templates/parts/character.hbs") ||
+    !entryJs.includes("templates/parts/character.hbs")
+  ) {
+    logFail("[Character Overview] header.hbs button, mobile-sheet.hbs routing or the character.hbs preload is missing.");
+  } else {
+    logPass("[Character Overview] Header user button, mobile-sheet.hbs routing and character.hbs preload are in place.");
+  }
+} catch (err) {
+  logFail(`Character overview verification threw an error: ${err.stack || err.message}`);
 }
 
 // 7. Foundry VTT AI Content Policy Compliance Audit (https://foundryvtt.com/article/ai-policy/)

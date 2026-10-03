@@ -29,6 +29,8 @@ import {
 } from "../kingdom/kingdom-handlers.js";
 import { prepareActionsContext } from "./sheet-helpers/context-actions.js";
 import { prepareSkillsContext } from "./sheet-helpers/context-skills.js";
+import { prepareCharacterContext } from "./sheet-helpers/context-character.js";
+import { onToggleCharacterOverview, onToggleItemDescription, refreshOverviewDurations } from "./sheet-helpers/character-handlers.js";
 import { prepareInventoryContext } from "./sheet-helpers/context-inventory.js";
 import { prepareSpellsContext, formatSpell } from "./sheet-helpers/context-spells.js";
 import { prepareActivationsContext } from "./sheet-helpers/context-activations.js";
@@ -78,6 +80,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       selectTarget: PF2eMobileSheet._onSelectTarget,
       toggleRollMode: PF2eMobileSheet._onToggleRollMode,
       toggleHeaderMenu: PF2eMobileSheet._onToggleHeaderMenu,
+      toggleCharacterOverview: PF2eMobileSheet._onToggleCharacterOverview,
+      toggleItemDescription: PF2eMobileSheet._onToggleItemDescription,
       toggleCanvasMode: PF2eMobileSheet._onToggleCanvasMode,
       switchTab: PF2eMobileSheet._onSwitchTab,
       scrollChatToBottom: PF2eMobileSheet._onScrollChatToBottom,
@@ -410,7 +414,10 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       { name: "updateCombat", id: Hooks.on("updateCombat", onTokenChange) },
       { name: "createCombatant", id: Hooks.on("createCombatant", onTokenChange) },
       { name: "deleteCombatant", id: Hooks.on("deleteCombatant", onTokenChange) },
-      { name: "updateCombatant", id: Hooks.on("updateCombatant", onTokenChange) }
+      { name: "updateCombatant", id: Hooks.on("updateCombatant", onTokenChange) },
+      // Effect durations in the Character overview count down with the combat turn and world time
+      { name: "updateCombat", id: Hooks.on("updateCombat", () => refreshOverviewDurations(this)) },
+      { name: "updateWorldTime", id: Hooks.on("updateWorldTime", () => refreshOverviewDurations(this)) }
     );
   }
 
@@ -514,6 +521,12 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
 
     try {
+      prepareCharacterContext(actor, this, context);
+    } catch (err) {
+      console.error("PF2e Mobile Compact | Error preparing character overview context:", err);
+    }
+
+    try {
       await prepareInventoryContext(actor, this, context);
     } catch (err) {
       console.error("PF2e Mobile Compact | Error preparing inventory context:", err);
@@ -538,6 +551,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onSelectTarget(event, target) { return onSelectTarget(this, event, target); }
   static async _onToggleRollMode(event, target) { return onToggleRollMode(this, event, target); }
   static _onToggleHeaderMenu(event, target) { return onToggleHeaderMenu(this, event, target); }
+  static _onToggleCharacterOverview() { return onToggleCharacterOverview(this); }
+  static async _onToggleItemDescription(event, target) { return onToggleItemDescription(this, event, target); }
   static async _onToggleCanvasMode(event, target) { return onToggleCanvasMode(this, event, target); }
   static async _onToggleFullscreen(event, target) { return onToggleFullscreen(this, event, target); }
   static async _onScrollChatToBottom() { this._scrollChatToBottom(true); }
@@ -556,11 +571,13 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       if (scrollEl) {
         this._tabScrollPositions.set(this._activeTab, scrollEl.scrollTop);
       }
+      // Leaving the Character overview also re-renders the header, so its user button loses the active state
+      const parts = this._activeTab === "character" ? ["header", "sheet"] : ["sheet"];
       this._activeTab = newTab;
       if (newTab === "chat") {
         this._unreadChatCount = 0;
       }
-      this.render({ parts: ["sheet"] });
+      this.render({ parts });
     }
   }
 

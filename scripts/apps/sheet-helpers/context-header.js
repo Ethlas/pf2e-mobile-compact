@@ -20,7 +20,8 @@ export function prepareHeaderContext(actor, sheet, context) {
   const owned = game.actors.filter(a => a.type === "character" && (a.isOwner || game.user.isGM));
   const actorOptions = owned.map(a => ({
     id: a.id,
-    name: `👤 ${a.name}`,
+    // No 👤 here: the Character overview button left of the switcher shows it. Party and Kingdom keep their icon.
+    name: a.name,
     img: a.img,
     isParty: false,
     isKingdom: false,
@@ -161,6 +162,12 @@ export function prepareHeaderContext(actor, sheet, context) {
     // the first `value` points are still available, the rest are spent.
     points: Array.from({ length: Math.max(0, focusMax) }, (_, i) => ({ available: i < focusValue }))
   };
+
+  // Lightning badge on the Character overview button while any affliction, condition or effect is active
+  // (the same lists the overview's Effects section shows)
+  context.hasActiveEffects = Boolean(
+    actor.itemTypes?.affliction?.length || actor.conditions?.active?.length || actor.itemTypes?.effect?.length
+  );
 
   context.canvasDisabled = isMobileCanvasDisabled();
 }
