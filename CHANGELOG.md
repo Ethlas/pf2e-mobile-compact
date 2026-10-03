@@ -6,6 +6,18 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Activations: Spell Cards for Wands, Scrolls and Item Spells (`templates/parts/spells.hbs`, `templates/parts/spells/spell-card.hbs`, `scripts/apps/sheet-helpers/context-activations.js`, `styles/pf2e-mobile.css`)
+
+#### Changed
+- **Wands, scrolls and other item spells use the Spells tab's spell card**: the spell's name, action glyph, range/area/defense/duration tags and a drawer with the item's name, traits, Chat, Damage and the description, like the staff and the Spells tab. Each section is a frame with its title and count, like the rank groups. Before, these cards showed only the item's name and badges, without a way to read the spell.
+  - The item's own data goes in through a new `detailTags` slot at the start of the tag row: a wand's rank and uses, a scroll's rank and quantity (only when more than one), an item spell's entry name.
+  - New card parameters: `sourceItemId` makes the drawer's Chat and Damage buttons use the wand or scroll instead of its spell, which is not an item on the actor (both handlers already resolve the item's spell); `sourceItemName` shows the item's name in the drawer header; `item` gives the slots the caller's data.
+  - An overcharged wand (0 uses) shows the card's expended look with an "Overcharged" tag. Cast stays enabled; pf2e's `consume()` decides what happens.
+  - A wand or scroll without a spell (e.g. a blank "Scroll of 3rd-rank Spell") gets a plain card with its name and Chat.
+- **Other item spells cast the right spell**: their Cast button is now the Spells tab's (`castSpell` through the spell's entry). Before, it used `castItemSpell`, which for a spell (no `consume()`) fell back to the entry's first spell, so an entry with several spells always cast the first one. This also removes the misspelled `data-item-typeThe` attribute.
+- Removed the old card classes and rules (`activation-item-card`, `activation-item-img`, `activation-section-title`).
+- **Rank badge stands out**: a wand's or scroll's rank is the first thing to check before using one, so its badge (`item-rank-badge`) is the neutral badge on the palette's raised grey (`--m-surface-5`, strong border) with bright, semibold text, clearly lighter than the dark detail tags next to it. No new colour.
+
 ### Stylesheet Deduplication (`styles/pf2e-mobile.css`, `templates/`)
 
 #### Changed
