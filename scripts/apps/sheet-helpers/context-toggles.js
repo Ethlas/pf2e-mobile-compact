@@ -10,7 +10,8 @@
  * decided by name; a toggle is sorted by its structure:
  *
  * 1. Left out: theater-of-the-mind toggles (pf2e's "totm" world setting), and toggles that only come from
- *    archetype or mythic feats, general and skill feats, or equipment (e.g. a lit torch).
+ *    archetype feats other than dedications, mythic feats, general and skill feats, or equipment (e.g. a lit
+ *    torch).
  * 2. Actions / Spells tab (pf2e's placement): toggles with a dropdown.
  * 3. Left out: on/off toggles whose rules only add a modifier or damage dice to a roll (plus chat notes).
  *    pf2e's roll dialog already lists such a modifier as a row that can be switched on (e.g. Sorcerous
@@ -33,7 +34,7 @@ const UNROLLED_SELECTOR = /^(ac|hp|speed|[-a-z]+-speed|[-a-z]+-dc)$/;
 // Feat categories whose toggles are shown; feats of other categories (general, skill, bonus ...) are not
 const ANCESTRY_CATEGORIES = new Set(["ancestry", "ancestryfeature", "heritage"]);
 
-// Traits of feats whose toggles are not shown
+// Traits of feats whose toggles are not shown; an archetype's dedication feat is the exception (see isShownSource)
 const EXCLUDED_TRAITS = ["archetype", "mythic"];
 
 /**
@@ -52,20 +53,21 @@ const SHOWN_ITEM_TYPES = new Set(["ancestry", "heritage", "action", "spell"]);
 
 /**
  * True for an item whose toggles the sheet shows: an ancestry, heritage, ability or spell, a class feature,
- * an ancestry or heritage feature, or a class feat (a feat with a class trait), but nothing with the
- * archetype or mythic trait.
+ * an ancestry or heritage feature, a class feat (a feat with a class trait) or an archetype's dedication feat
+ * (e.g. Ghoul Dedication), but no other archetype feat and nothing mythic.
  * @param {Item} item
  * @returns {boolean}
  */
 function isShownSource(item) {
   const traits = item?.system?.traits?.value ?? [];
-  if (traits.some(trait => EXCLUDED_TRAITS.includes(trait))) return false;
+  const isDedication = traits.includes("dedication");
+  if (traits.some(trait => EXCLUDED_TRAITS.includes(trait) && !(trait === "archetype" && isDedication))) return false;
   if (SHOWN_ITEM_TYPES.has(item?.type)) return true;
   if (item?.type !== "feat") return false;
   const category = item.system?.category;
   if (category === "classfeature" || ANCESTRY_CATEGORIES.has(category)) return true;
   const classTraits = CONFIG.PF2E?.classTraits ?? {};
-  return category === "class" && traits.some(trait => trait in classTraits);
+  return category === "class" && (isDedication || traits.some(trait => trait in classTraits));
 }
 
 /**
