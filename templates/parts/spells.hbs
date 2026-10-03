@@ -41,6 +41,8 @@
   <!-- 1. CAST VIEW: Unified Spells by Rank                    -->
   <!-- ======================================================== -->
   <div class="spells-cast-view">
+    <!-- pf2e's roll-option toggles for spellcasting (Blood Magic, Spellshape ...) -->
+    {{#if toggles.spellcasting.length}}{{> "modules/pf2e-mobile-compact/templates/parts/toggles.hbs" toggles=toggles.spellcasting key="toggles-spellcasting" collapsed=togglesCollapsed.spellcasting title="Special Abilities" icon="fa-star"}}{{/if}}
     {{#each spellRanks as |group|}}
     <section class="m-group spell-rank-group" data-rank="{{group.rank}}">
       <!-- Collapsible Rank Header -->

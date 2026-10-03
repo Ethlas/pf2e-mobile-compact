@@ -3,7 +3,8 @@
   Data comes from prepareCharacterContext() in sheet-helpers/context-character.js.
   Order: who the character is (name, class, traits, ancestry ...), what is affecting them now (effects),
   their numbers (attributes, speeds, senses, languages, defenses), and last the long list of feats in
-  pf2e's own groups, with granted feats indented under the feat that grants them.
+  pf2e's own groups, with granted feats indented under the feat that grants them. At the bottom, "Specials":
+  pf2e's plain on/off toggles of passive features (context-toggles.js decides which go here).
 --}}
 {{!-- One feat or effect: tapping the line opens its description drawer (toggleItemDescription,
       character-handlers.js), which is filled on the first tap. Send to Chat is inside the drawer, like the
@@ -142,4 +143,7 @@
     </div>
   </section>
   {{/each}}
+
+  <!-- Specials: pf2e's plain on/off toggles of passive features (auras, rage damage, reach ...) -->
+  {{#if toggles.specials.length}}{{> "modules/pf2e-mobile-compact/templates/parts/toggles.hbs" toggles=toggles.specials key="toggles-specials" collapsed=togglesCollapsed.specials title="Specials" icon="fa-star"}}{{/if}}
 </div>

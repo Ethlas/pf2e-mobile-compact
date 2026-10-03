@@ -124,6 +124,10 @@
     </section>
     {{/if}}
 
+    <!-- Special Abilities: pf2e's roll-option toggles for strikes and actions (choices, actions, limited uses);
+         used less often than the actions above, so they sit just above the skill actions -->
+    {{#if toggles.actions.length}}{{> "modules/pf2e-mobile-compact/templates/parts/toggles.hbs" toggles=toggles.actions key="toggles-actions" collapsed=togglesCollapsed.actions title="Special Abilities" icon="fa-star"}}{{/if}}
+
     <!-- 5. Skill actions (those that are possible because of skills) -->
     {{#if characterActions.skillActions.length}}
     <section class="m-group actions-section skill-actions-section">
