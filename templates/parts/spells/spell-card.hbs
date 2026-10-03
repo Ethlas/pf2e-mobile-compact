@@ -13,7 +13,7 @@
     showManageButtons  Show the Set Signature / Remove Spell footer in the drawer
     showChargeCost     Show the staff charge-cost badge (staff spells, from context-activations.js)
 --}}
-<div class="action-card m-card spell-card {{#if spell.isExpanded}}expanded{{/if}} {{#if spell.isExpended}}expended{{/if}}" data-item-id="{{#if spell.cardKey}}{{spell.cardKey}}{{else}}{{spell.id}}{{/if}}" data-entry-id="{{spell.entryId}}">
+<div class="m-action-card m-card spell-card {{#if spell.isExpanded}}expanded{{/if}} {{#if spell.isExpended}}expended{{/if}}" data-item-id="{{#if spell.cardKey}}{{spell.cardKey}}{{else}}{{spell.id}}{{/if}}" data-entry-id="{{spell.entryId}}">
   <!-- Spell line: tapping anywhere on the name row or detail tags toggles the drawer.
        The buttons inside keep their own data-action, which takes precedence. -->
   <div class="m-card-line m-flex-row" data-action="toggleActionSummary" data-item-id="{{#if spell.cardKey}}{{spell.cardKey}}{{else}}{{spell.id}}{{/if}}" title="{{spell.name}}">

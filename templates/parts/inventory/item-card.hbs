@@ -16,7 +16,7 @@
     showQuantity  Show the quantity after the name, e.g. "(x2)"
     showBulk      Show the item's bulk as a badge
 --}}
-<div class="action-card m-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
+<div class="m-action-card m-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
   <!-- Item line: tapping anywhere on it toggles the drawer; buttons and badge buttons keep their own action -->
   <div class="m-card-line m-flex-row" data-action="toggleActionSummary" data-item-id="{{item.id}}" title="{{item.name}}">
     <img class="item-img m-shrink-0" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />

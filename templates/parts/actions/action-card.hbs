@@ -11,7 +11,7 @@
     glyphType  "reaction" or "free" to always show that pf2e action icon, also when the
                action itself has no glyph
 --}}
-<div class="action-card m-card character-action-card {{#if act.isExpanded}}expanded{{/if}}" data-item-id="{{act.id}}">
+<div class="m-action-card m-card character-action-card {{#if act.isExpanded}}expanded{{/if}}" data-item-id="{{act.id}}">
   <!-- Action line: tapping anywhere on it toggles the drawer; the buttons keep their own action -->
   <div class="m-card-line m-flex-row" data-action="toggleActionSummary" data-item-id="{{act.id}}" title="{{act.name}}">
     <div class="m-card-main m-flex-col m-align-baseline">

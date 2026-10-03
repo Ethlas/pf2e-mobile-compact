@@ -432,11 +432,14 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   -webkit-tap-highlight-color: transparent;
 }
 
-.pf2e-mobile-sheet button,
-.pf2e-mobile-sheet select,
-.pf2e-mobile-sheet input[type="search"],
-.pf2e-mobile-sheet input[type="number"],
-.pf2e-mobile-sheet input[type="text"] {
+/* The sheet's controls: 48px, the sheet's surface, border and text. Not for buttons and fields inside chat
+   messages, which keep Foundry's and pf2e's look like in the sidebar; :where() keeps the selectors' specificity,
+   so m-compact and the component rules still win over this. */
+.pf2e-mobile-sheet button:where(:not(.chat-message *)),
+.pf2e-mobile-sheet select:where(:not(.chat-message *)),
+.pf2e-mobile-sheet input[type="search"]:where(:not(.chat-message *)),
+.pf2e-mobile-sheet input[type="number"]:where(:not(.chat-message *)),
+.pf2e-mobile-sheet input[type="text"]:where(:not(.chat-message *)) {
   min-height: 48px;
   min-width: 48px;
   font-size: 1rem;
@@ -1178,79 +1181,10 @@ body.pf2e-mobile-active textarea {
   transform: translateY(12px);
 }
 
-/* Mobile-Optimized PF2e Damage Application Buttons */
-.pf2e-mobile-sheet .mobile-chat-mount .damage-application,
-.pf2e-mobile-sheet .damage-application {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 6px;
-  justify-content: stretch;
-}
-
-.pf2e-mobile-sheet .mobile-chat-mount .damage-application button,
-.pf2e-mobile-sheet .damage-application button {
-  flex: 1 1 calc(33.333% - 5px);
+/* pf2e's damage buttons in the docked chat (Damage, Half, Double, Block, Heal) keep pf2e's own look and layout,
+   like in Foundry's sidebar; only their height is raised to a touch size. */
+.pf2e-mobile-sheet .mobile-chat-mount .damage-application button {
   min-height: 38px;
-  height: 38px;
-  min-width: 0;
-  padding: 2px 4px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  white-space: nowrap;
-}
-
-.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="apply-damage"],
-.pf2e-mobile-sheet .damage-application button[data-action="apply-damage"] {
-  background: #b71c1c;
-  color: var(--m-text-strong);
-  border: 1px solid #d32f2f;
-}
-
-.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="half-damage"],
-.pf2e-mobile-sheet .damage-application button[data-action="half-damage"] {
-  background: #e65100;
-  color: var(--m-text-strong);
-  border: 1px solid #f57c00;
-}
-
-.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="double-damage"],
-.pf2e-mobile-sheet .damage-application button[data-action="double-damage"] {
-  background: #880e4f;
-  color: var(--m-text-strong);
-  border: 1px solid #ad1457;
-}
-
-.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="shield-block"],
-.pf2e-mobile-sheet .damage-application button[data-action="shield-block"] {
-  background: #0277bd;
-  color: var(--m-text-strong);
-  border: 1px solid #0288d1;
-}
-
-.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="shield-block"].shield-activated,
-.pf2e-mobile-sheet .damage-application button[data-action="shield-block"].shield-activated {
-  background: #014a7a;
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6);
-  border: 2px solid #4fc3f7;
-  color: #b3e5fc;
-}
-
-.pf2e-mobile-sheet .mobile-chat-mount .damage-application button[data-action="apply-healing"],
-.pf2e-mobile-sheet .damage-application button[data-action="apply-healing"] {
-  background: #1b5e20;
-  color: var(--m-text-strong);
-  border: 1px solid #2e7d32;
-}
-
-.pf2e-mobile-sheet .mobile-chat-mount .damage-application button:active,
-.pf2e-mobile-sheet .damage-application button:active {
-  filter: brightness(1.2);
-  transform: scale(0.98);
 }
 
 /* ----------------------------------------- *//* Action Cards & Strike Blocks              *//* ----------------------------------------- */
@@ -1314,7 +1248,12 @@ body.pf2e-mobile-active textarea {
   color: var(--m-text-faint);
 }
 
-.pf2e-mobile-sheet .action-card {
+/* Base for the sheet's cards (strikes, actions, gear, spells, party members, stash items, wands and scrolls):
+   surface, border, corners, padding and spacing. Cards with m-card or m-panel take their look from those; the
+   stash and activation cards use this one. Named m-action-card, not action-card, because pf2e's own action chat
+   cards use the class action-card and would otherwise get this dark look in the docked chat. The action handlers
+   find a card's root with closest(".m-action-card, ..."). */
+.pf2e-mobile-sheet .m-action-card {
   background: var(--m-surface-2);
   border: 1px solid var(--m-border-subtle);
   border-radius: 6px;
@@ -1423,7 +1362,7 @@ body.pf2e-mobile-active textarea {
 .pf2e-mobile-sheet .character-action-card.expanded .action-expand-icon,
 .pf2e-mobile-sheet .spell-card.expanded .action-expand-icon,
 .pf2e-mobile-sheet .inventory-item-card.expanded .action-expand-icon,
-.pf2e-mobile-sheet .action-card.expanded .action-expand-icon,
+.pf2e-mobile-sheet .m-action-card.expanded .action-expand-icon,
 .pf2e-mobile-sheet .action-expand-icon.expanded {
   transform: rotate(180deg);
   color: var(--m-accent);
@@ -3241,7 +3180,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }
 
 .pf2e-mobile-sheet .spell-card.expanded .action-name,
-.pf2e-mobile-sheet .action-card.expanded .action-name {
+.pf2e-mobile-sheet .m-action-card.expanded .action-name {
   white-space: normal;
   overflow: visible;
   text-overflow: clip;

@@ -295,7 +295,7 @@
       <h3 class="activation-section-title m-flex-row m-align-center m-gap-6 m-text-xl m-bold m-color-normal"><i class="fas fa-wand-sparkles"></i> Wands</h3>
       <div class="m-flex-col m-gap-6">
         {{#each activations.wands as |wand|}}
-        <div class="action-card activation-item-card {{#if wand.isOvercharged}}expended{{/if}}" data-item-id="{{wand.id}}">
+        <div class="m-action-card activation-item-card {{#if wand.isOvercharged}}expended{{/if}}" data-item-id="{{wand.id}}">
           <div class="action-card-header m-flex-row m-align-center m-justify-between">
             <div class="action-title-group m-flex-row m-align-center m-gap-8 m-flex-1 m-min-w-0">
               <img class="activation-item-img m-shrink-0" src="{{wand.img}}" alt="{{wand.name}}" />
@@ -337,7 +337,7 @@
       <h3 class="activation-section-title m-flex-row m-align-center m-gap-6 m-text-xl m-bold m-color-normal"><i class="fas fa-scroll"></i> Scrolls</h3>
       <div class="m-flex-col m-gap-6">
         {{#each activations.scrolls as |scroll|}}
-        <div class="action-card activation-item-card" data-item-id="{{scroll.id}}">
+        <div class="m-action-card activation-item-card" data-item-id="{{scroll.id}}">
           <div class="action-card-header m-flex-row m-align-center m-justify-between">
             <div class="action-title-group m-flex-row m-align-center m-gap-8 m-flex-1 m-min-w-0">
               <img class="activation-item-img m-shrink-0" src="{{scroll.img}}" alt="{{scroll.name}}" />
@@ -377,7 +377,7 @@
       <h3 class="activation-section-title m-flex-row m-align-center m-gap-6 m-text-xl m-bold m-color-normal"><i class="fas fa-gem"></i> Other Item Spells</h3>
       <div class="m-flex-col m-gap-6">
         {{#each activations.other as |act|}}
-        <div class="action-card activation-item-card" data-item-id="{{act.id}}">
+        <div class="m-action-card activation-item-card" data-item-id="{{act.id}}">
           <div class="action-card-header m-flex-row m-align-center m-justify-between">
             <div class="action-title-group m-flex-row m-align-center m-gap-8 m-flex-1 m-min-w-0">
               <span class="action-name m-min-w-0 m-truncate"><strong>{{act.spell.name}}</strong></span>

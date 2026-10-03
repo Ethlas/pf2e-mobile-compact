@@ -18,7 +18,7 @@
       <h3 class="section-title m-bold m-color-accent"><i class="fas fa-fist-raised"></i> Attacks</h3>
       <div class="m-group-list strikes-list">
         {{#each strikes as |strike index|}}
-        <div class="action-card m-card strike-card m-flex-col m-gap-8 {{#if strike.ready}}ready{{/if}}">
+        <div class="m-action-card m-card strike-card m-flex-col m-gap-8 {{#if strike.ready}}ready{{/if}}">
           <!-- Strike Header: Weapon Image, Name, Glyph, Traits, Badge -->
           <div class="m-flex-row m-align-center m-gap-10">
             <img class="strike-img m-shrink-0" src="{{strike.img}}" alt="{{strike.label}}" />
