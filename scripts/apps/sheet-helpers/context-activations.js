@@ -389,6 +389,9 @@ export async function prepareActivationsContext(actor, sheet, context) {
       });
     }
 
+    // An overcharged wand (0 uses) shows the spell card's expended look; casting stays possible, pf2e decides
+    if (formattedSpell && isOvercharged) formattedSpell.isExpended = true;
+
     const wandSpellCost = parseActionCostInfo(spellDoc ?? spellData ?? wand, null, { isSpell: true });
 
     wands.push({

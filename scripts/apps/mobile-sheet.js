@@ -31,6 +31,8 @@ import { prepareActionsContext } from "./sheet-helpers/context-actions.js";
 import { prepareSkillsContext } from "./sheet-helpers/context-skills.js";
 import { prepareCharacterContext } from "./sheet-helpers/context-character.js";
 import { onToggleCharacterOverview, onToggleItemDescription, refreshOverviewDurations } from "./sheet-helpers/character-handlers.js";
+import { prepareTogglesContext } from "./sheet-helpers/context-toggles.js";
+import { onSetRollOption } from "./sheet-helpers/toggles-handlers.js";
 import { prepareInventoryContext } from "./sheet-helpers/context-inventory.js";
 import { prepareSpellsContext, formatSpell } from "./sheet-helpers/context-spells.js";
 import { prepareActivationsContext } from "./sheet-helpers/context-activations.js";
@@ -82,6 +84,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       toggleHeaderMenu: PF2eMobileSheet._onToggleHeaderMenu,
       toggleCharacterOverview: PF2eMobileSheet._onToggleCharacterOverview,
       toggleItemDescription: PF2eMobileSheet._onToggleItemDescription,
+      setRollOption: PF2eMobileSheet._onSetRollOption,
       toggleCanvasMode: PF2eMobileSheet._onToggleCanvasMode,
       switchTab: PF2eMobileSheet._onSwitchTab,
       scrollChatToBottom: PF2eMobileSheet._onScrollChatToBottom,
@@ -478,6 +481,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       return context;
     }
 
+    prepareTogglesContext(actor, this, context);
     try {
       await prepareActionsContext(actor, this, context);
     } catch (err) {
@@ -553,6 +557,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static _onToggleHeaderMenu(event, target) { return onToggleHeaderMenu(this, event, target); }
   static _onToggleCharacterOverview() { return onToggleCharacterOverview(this); }
   static async _onToggleItemDescription(event, target) { return onToggleItemDescription(this, event, target); }
+  static async _onSetRollOption(event, target) { return onSetRollOption(this, event, target); }
   static async _onToggleCanvasMode(event, target) { return onToggleCanvasMode(this, event, target); }
   static async _onToggleFullscreen(event, target) { return onToggleFullscreen(this, event, target); }
   static async _onScrollChatToBottom() { this._scrollChatToBottom(true); }

@@ -2542,9 +2542,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 /* ======================================================== */
 /* Activations Tab & Staff Engine                           */
 /* ======================================================== */
-.pf2e-mobile-sheet .activation-section-title {
-  margin: 6px 0 2px;
-}
 /* Staff Header Card (Persistent Sticky Header) */
 .pf2e-mobile-sheet .staff-header-card {
   position: sticky;
@@ -2730,15 +2727,12 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-bottom: 1px solid var(--m-border-subtle);
   word-break: break-word;
 }
-/* Wands & Scrolls Items */
-.pf2e-mobile-sheet .activation-item-card {
-  padding: 6px 10px;
-}
-.pf2e-mobile-sheet .activation-item-img {
-  width: 38px;
-  height: 38px;
-  border-radius: 4px;
-  object-fit: cover;
+/* Wands & Scrolls: spell cards (spells/spell-card.hbs) with these item badges */
+/* A wand's or scroll's rank: the neutral badge, lighter than the detail tags next to it, because it is the
+   first thing to check before using the item */
+.pf2e-mobile-sheet .item-rank-badge {
+  background: var(--m-surface-5);
+  border-color: var(--m-border-strong);
 }
 .pf2e-mobile-sheet .wand-uses-badge {
 }
@@ -3073,6 +3067,34 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-top: 1px solid var(--m-border-subtle);
 }
 /* Effect row: remaining duration under the name */
+/* Roll-option toggles (parts/toggles.hbs: Actions and Spells tabs, Character tab's Specials): one line per toggle
+   inside the frame, the name (with its checkbox; the whole name is the tap target) and the dropdown of choices
+   next to it, at most 55% of the line so a long name keeps room. Lines are split by a thin rule, not cards. */
+.pf2e-mobile-sheet .toggle-list {
+  margin: 0 4px;
+}
+/* A line is as tall as its dropdown (38px, m-compact) plus a little air; lines without a dropdown get the same
+   height. The row doesn't center its items, so the name (label) stretches to the full height and the whole
+   line height is the checkbox's tap target */
+.pf2e-mobile-sheet .toggle-row {
+  min-height: 38px;
+  padding: 3px 0;
+  box-sizing: content-box;
+}
+.pf2e-mobile-sheet .toggle-row + .toggle-row {
+  border-top: 1px solid var(--m-border-subtle);
+}
+.pf2e-mobile-sheet .toggle-checkbox {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--m-accent);
+}
+.pf2e-mobile-sheet .toggle-select {
+  flex: 0 1 auto;
+  max-width: 55%;
+  min-width: 0;
+}
 /* ----------------------------------------- */
 /* Badge Tones                               */
 /* ----------------------------------------- */

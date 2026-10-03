@@ -1,0 +1,42 @@
+{{!--
+  pf2e's roll-option toggles as one frame with a line per toggle: the toggle's name (with a checkbox) and, on the
+  same line, a dropdown when the toggle has choices (e.g. Blood Magic, Spellshape, Debilitation). Data comes from
+  prepareTogglesContext() in sheet-helpers/context-toggles.js; a change calls setRollOption (toggles-handlers.js).
+  Params: toggles (the list), title, icon (a Font Awesome class), key (the group's collapse key, e.g.
+  "toggles-actions") and collapsed. The frame folds like a spell rank group: same header markup and the same
+  toggleRankGroup handler (spells-handlers.js), which remembers the key in the sheet's _collapsedRankGroups.
+  An always-active toggle (pf2e's alwaysActive, e.g. Blood Magic) has no checkbox: it can't be switched off,
+  only its choice changes. A dropdown with a single choice is shown but can't be changed, like on pf2e's sheet.
+  The checkbox and dropdown use data-change-action, not data-action, so the native controls (and the OS picker)
+  keep working on touch screens.
+--}}
+<section class="m-group spell-rank-group toggles-section" data-rank="{{key}}">
+  <div class="spell-rank-header m-flex-row m-align-center m-justify-between" data-action="toggleRankGroup" data-rank="{{key}}" title="Toggle {{title}}">
+    <div class="m-flex-row m-align-center m-gap-8">
+      <i class="fas fa-chevron-down rank-expand-icon m-text-md m-color-dim {{#if collapsed}}collapsed{{/if}}"></i>
+      <h3 class="rank-title m-text-xl m-bold m-color-accent"><i class="fas {{icon}}"></i> {{title}}</h3>
+      <span class="rank-count-badge m-text-xs m-bold m-color-normal">{{toggles.length}}</span>
+    </div>
+  </div>
+  <div class="toggle-list spell-list m-flex-col {{#if collapsed}}collapsed{{/if}}">
+    {{#each toggles as |toggle|}}
+    <div class="toggle-row m-flex-row m-gap-8" data-domain="{{toggle.domain}}" data-option="{{toggle.option}}" data-toggle-item-id="{{toggle.itemId}}">
+      {{#if toggle.alwaysActive}}
+      <span class="m-flex-row m-align-center m-flex-1 m-min-w-0 m-text-base m-color-strong">{{toggle.label}}</span>
+      {{else}}
+      <label class="m-flex-row m-align-center m-gap-8 m-flex-1 m-min-w-0 m-text-base {{#if toggle.checked}}m-color-strong{{else}}m-color-soft{{/if}}">
+        <input type="checkbox" class="toggle-checkbox m-shrink-0" data-change-action="setRollOption" {{#if toggle.checked}}checked{{/if}} {{#if toggle.disabled}}disabled{{/if}}>
+        <span class="m-min-w-0">{{toggle.label}}</span>
+      </label>
+      {{/if}}
+      {{#if toggle.choices.length}}
+      <select class="toggle-select m-compact m-text-base m-color-normal" data-change-action="setRollOption" {{#if (eq toggle.choices.length 1)}}disabled{{/if}}>
+        {{#each toggle.choices as |choice|}}
+        <option value="{{choice.value}}" {{#if choice.selected}}selected{{/if}}>{{choice.label}}</option>
+        {{/each}}
+      </select>
+      {{/if}}
+    </div>
+    {{/each}}
+  </div>
+</section>

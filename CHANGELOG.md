@@ -6,6 +6,34 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Roll-Option Toggles: Blood Magic, Spellshape, Debilitation, Specials (`scripts/apps/sheet-helpers/context-toggles.js`, `scripts/apps/sheet-helpers/toggles-handlers.js`, `templates/parts/toggles.hbs`, `templates/parts/actions.hbs`, `templates/parts/spells.hbs`, `templates/parts/character.hbs`, `styles/pf2e-mobile.css`)
+
+#### Added
+- **pf2e's toggles on the mobile sheet**: the checkboxes (some with a dropdown) that pf2e's own sheet shows above the strikes and the spellcasting entries, e.g. a sorcerer's Blood Magic and Second Blood Magic, Spellshape, a rogue's Debilitation, an exemplar's Divine Spark and Epithet, a swashbuckler's Finisher, a beastkin's Change Shape. Before, the mobile sheet had none of them, so they could only be switched on the desktop sheet.
+  - **Spells tab**: a "Special Abilities" frame at the top of the Spells view for the spellcasting toggles. **Actions tab**: a "Special Abilities" frame in Encounter, after the free actions and just above the skill actions (they are used less often than the actions above them). **Character tab**: a "Specials" frame at the bottom. The name covers class features, ancestry abilities and spells alike; all three use the star icon.
+  - Each frame folds like a spell rank group (chevron, title, count), with the same `toggleRankGroup` handler; the sheet remembers a folded frame under its key (`toggles-actions`, `toggles-spellcasting`, `toggles-specials`).
+  - Data comes from `actor.synthetics.toggles`, the list pf2e's sheet uses; a change calls `actor.toggleRollOption(domain, option, itemId, value, suboption)`, the same call pf2e's sheet makes. pf2e updates the item and the sheet re-renders.
+  - One line per toggle in the frame (no card each): the name with its checkbox, and the dropdown of choices on the same line (at most 55% wide), which keeps the frame short. A line is as tall as its dropdown (the row has `min-height: 38px` and 3px padding, so lines without a dropdown match); the name sets no height of its own. The dropdown keeps the 38px `m-compact` height: smaller selects are hard to tap, and iOS needs the 16px text the sheet already forces on fields.
+  - An always-active toggle (pf2e's `alwaysActive`, e.g. Blood Magic, Debilitation) has no checkbox: it can't be switched off, only its choice changes. A dropdown with one choice is shown but can't be changed, like on pf2e's sheet.
+  - The checkbox and dropdown use `data-change-action` (not `data-action`), so the native controls and the OS picker keep working on touch screens.
+- **Where a toggle goes is decided by its structure, not its name** (`classifyToggle` in `context-toggles.js`):
+  - Actions / Spells tab (pf2e's placement): toggles with choices, and on/off toggles of an action, reaction or free action or of a feature with limited uses (e.g. Nimble Dodge, Lunge).
+  - Character tab "Specials": the other on/off toggles, of passive features (auras, reach, senses, rage damage ...).
+  - Not shown: on/off toggles whose rules only add a modifier or damage dice (`FlatModifier`, `DamageDice`) to a rolled check or damage roll, apart from chat notes, because pf2e's roll dialog already lists them as a row that can be switched on (e.g. Sorcerous Potency, Dazing Blow, Dual-Handed Assault); theater-of-the-mind toggles (pf2e's "totm" world setting); toggles that only come from archetype feats other than dedications, mythic feats, general or skill feats, or equipment (e.g. a lit torch). Dedication feats (e.g. Ghoul, Werecreature, Spellshifter Dedication) are shown like class feats. These can be added later by changing the rules in `context-toggles.js`.
+- **`toggle-row`** component (in a `toggle-list`, with `toggle-checkbox`, `toggle-select`) in the stylesheet and the style guide.
+
+### Activations: Spell Cards for Wands, Scrolls and Item Spells (`templates/parts/spells.hbs`, `templates/parts/spells/spell-card.hbs`, `scripts/apps/sheet-helpers/context-activations.js`, `styles/pf2e-mobile.css`)
+
+#### Changed
+- **Wands, scrolls and other item spells use the Spells tab's spell card**: the spell's name, action glyph, range/area/defense/duration tags and a drawer with the item's name, traits, Chat, Damage and the description, like the staff and the Spells tab. Each section is a frame with its title and count, like the rank groups. Before, these cards showed only the item's name and badges, without a way to read the spell.
+  - The item's own data goes in through a new `detailTags` slot at the start of the tag row: a wand's rank and uses, a scroll's rank and quantity (only when more than one), an item spell's entry name.
+  - New card parameters: `sourceItemId` makes the drawer's Chat and Damage buttons use the wand or scroll instead of its spell, which is not an item on the actor (both handlers already resolve the item's spell); `sourceItemName` shows the item's name in the drawer header; `item` gives the slots the caller's data.
+  - An overcharged wand (0 uses) shows the card's expended look with an "Overcharged" tag. Cast stays enabled; pf2e's `consume()` decides what happens.
+  - A wand or scroll without a spell (e.g. a blank "Scroll of 3rd-rank Spell") gets a plain card with its name and Chat.
+- **Other item spells cast the right spell**: their Cast button is now the Spells tab's (`castSpell` through the spell's entry). Before, it used `castItemSpell`, which for a spell (no `consume()`) fell back to the entry's first spell, so an entry with several spells always cast the first one. This also removes the misspelled `data-item-typeThe` attribute.
+- Removed the old card classes and rules (`activation-item-card`, `activation-item-img`, `activation-section-title`).
+- **Rank badge stands out**: a wand's or scroll's rank is the first thing to check before using one, so its badge (`item-rank-badge`) is the neutral badge on the palette's raised grey (`--m-surface-5`, strong border) with bright, semibold text, clearly lighter than the dark detail tags next to it. No new colour.
+
 ### Stylesheet Deduplication (`styles/pf2e-mobile.css`, `templates/`)
 
 #### Changed

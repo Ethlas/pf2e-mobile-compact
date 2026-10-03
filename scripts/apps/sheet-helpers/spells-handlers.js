@@ -607,7 +607,7 @@ export async function onRollSpellDamage(sheet, event, target) {
     }
 
     // Fallback: if the spell defines damage only via inline @Damage[...] links in its description
-    const cardEl = target.closest(".spell-card, .activation-item-card");
+    const cardEl = target.closest(".spell-card");
     const inlineLinks = cardEl
       ? Array.from(cardEl.querySelectorAll(".action-description-content a.inline-roll[data-formula], .action-description-content a[data-damage-roll], .action-description-content a[data-pf2-damage-roll]"))
       : [];

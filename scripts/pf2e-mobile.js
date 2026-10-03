@@ -712,6 +712,7 @@ Hooks.once("init", async () => {
     "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs",
     "modules/pf2e-mobile-compact/templates/parts/skills.hbs",
     "modules/pf2e-mobile-compact/templates/parts/character.hbs",
+    "modules/pf2e-mobile-compact/templates/parts/toggles.hbs",
     "modules/pf2e-mobile-compact/templates/parts/inventory.hbs",
     "modules/pf2e-mobile-compact/templates/parts/inventory/item-card.hbs",
     "modules/pf2e-mobile-compact/templates/parts/party-overview.hbs",
