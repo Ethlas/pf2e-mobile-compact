@@ -2,6 +2,7 @@
  * Context preparation helper for Party Sheet and Party Stash.
  * Prepares overview summaries, member tactical stats, and stash inventory.
  */
+import { getHpState } from "../../utils/sheet-utils.js";
 
 const PHYSICAL_ITEM_TYPES = new Set([
   "ammo",
@@ -89,7 +90,7 @@ export async function preparePartyContext(partyActor, sheet, context) {
     const hpVal = hpData.value ?? 0;
     const hpMax = Math.max(hpData.max ?? 1, 1);
     const hpTemp = hpData.temp ?? 0;
-    const hpPercent = Math.min(100, Math.max(0, Math.round((hpVal / hpMax) * 100)));
+    const { percent: hpPercent, state: hpState } = getHpState(hpVal, hpMax);
 
     const fortMod = m.saves?.fortitude?.mod ?? m.saves?.fortitude?.check?.mod ?? m.system?.saves?.fortitude?.value ?? 0;
     const refMod = m.saves?.reflex?.mod ?? m.saves?.reflex?.check?.mod ?? m.system?.saves?.reflex?.value ?? 0;
@@ -135,8 +136,8 @@ export async function preparePartyContext(partyActor, sheet, context) {
         max: hpMax,
         temp: hpTemp,
         percent: hpPercent,
-        isLow: hpPercent <= 25,
-        isMedium: hpPercent > 25 && hpPercent <= 50
+        isLow: hpState === "danger",
+        isMedium: hpState === "warning"
       },
       ac: acVal,
       saves: {

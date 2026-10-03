@@ -11,19 +11,19 @@
     staffId  Id of the staff item
 --}}
 {{#if spell.isCantrip}}
-<button type="button" class="touch-target btn-cast" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{staffId}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="0" data-charge-cost="0" title="Cast Cantrip">
+<button type="button" class="btn-cast m-inline-flex m-align-center m-justify-center m-text-base" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{staffId}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="0" data-charge-cost="0" title="Cast Cantrip">
   <i class="fas fa-wand-magic-sparkles"></i>
 </button>
 {{else if spell.hasSpontaneousOption}}
-  <button type="button" class="touch-target btn-cast btn-staff-charges {{#unless spell.canCastCharges}}disabled{{/unless}}" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{staffId}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-charge-cost="{{spell.chargeCost}}" title="{{#if spell.canCastCharges}}Cast using {{spell.chargeCost}} staff charges{{else if spell.chargesDisabledReason}}{{spell.chargesDisabledReason}}{{else}}Not enough charges (requires {{spell.chargeCost}}){{/if}}">
+  <button type="button" class="btn-cast btn-staff-charges m-inline-flex m-align-center m-justify-center m-text-base {{#unless spell.canCastCharges}}disabled{{/unless}}" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{staffId}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-charge-cost="{{spell.chargeCost}}" title="{{#if spell.canCastCharges}}Cast using {{spell.chargeCost}} staff charges{{else if spell.chargesDisabledReason}}{{spell.chargesDisabledReason}}{{else}}Not enough charges (requires {{spell.chargeCost}}){{/if}}">
     <i class="fas fa-bolt"></i>&nbsp;  {{spell.chargeCost}} Charge
   </button>
 
-  <button type="button" class="touch-target btn-cast btn-staff-spontaneous {{#unless spell.canCastSpontaneous}}disabled{{/unless}}" data-action="castStaffSpell" data-cast-mode="spontaneous" data-staff-id="{{staffId}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-charge-cost="1" title="{{#if spell.canCastSpontaneous}}Cast using 1 staff charge and 1 Rank {{rank}}+ spontaneous slot{{else if spell.spontaneousDisabledReason}}{{spell.spontaneousDisabledReason}}{{else}}Not enough charges or slots (requires 1 charge + 1 Rank {{rank}}+ slot){{/if}}">
+  <button type="button" class="btn-cast btn-staff-spontaneous m-inline-flex m-align-center m-justify-center m-text-base {{#unless spell.canCastSpontaneous}}disabled{{/unless}}" data-action="castStaffSpell" data-cast-mode="spontaneous" data-staff-id="{{staffId}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-charge-cost="1" title="{{#if spell.canCastSpontaneous}}Cast using 1 staff charge and 1 Rank {{rank}}+ spontaneous slot{{else if spell.spontaneousDisabledReason}}{{spell.spontaneousDisabledReason}}{{else}}Not enough charges or slots (requires 1 charge + 1 Rank {{rank}}+ slot){{/if}}">
     <i class="fas fa-wand-magic-sparkles"></i> &nbsp;  1 Charge + Slot
   </button>
 {{else}}
-  <button type="button" class="touch-target btn-cast {{#unless spell.canCastCharges}}disabled{{/unless}}" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{staffId}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-charge-cost="{{spell.chargeCost}}" title="{{#if spell.canCastCharges}}Cast using {{spell.chargeCost}} staff charges{{else if spell.chargesDisabledReason}}{{spell.chargesDisabledReason}}{{else}}Not enough charges (requires {{spell.chargeCost}}){{/if}}">
+  <button type="button" class="btn-cast m-inline-flex m-align-center m-justify-center m-text-base {{#unless spell.canCastCharges}}disabled{{/unless}}" data-action="castStaffSpell" data-cast-mode="charges" data-staff-id="{{staffId}}" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-charge-cost="{{spell.chargeCost}}" title="{{#if spell.canCastCharges}}Cast using {{spell.chargeCost}} staff charges{{else if spell.chargesDisabledReason}}{{spell.chargesDisabledReason}}{{else}}Not enough charges (requires {{spell.chargeCost}}){{/if}}">
     <i class="fas fa-bolt"></i> &nbsp; {{spell.chargeCost}} Charge
   </button>
 {{/if}}

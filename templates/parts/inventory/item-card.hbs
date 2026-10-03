@@ -16,32 +16,32 @@
     showQuantity  Show the quantity after the name, e.g. "(x2)"
     showBulk      Show the item's bulk as a badge
 --}}
-<div class="action-card m-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
+<div class="m-action-card m-card inventory-item-card {{#if item.isExpanded}}expanded{{/if}}" data-item-id="{{item.id}}">
   <!-- Item line: tapping anywhere on it toggles the drawer; buttons and badge buttons keep their own action -->
   <div class="m-card-line m-flex-row" data-action="toggleActionSummary" data-item-id="{{item.id}}" title="{{item.name}}">
-    <img class="item-img" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
+    <img class="item-img m-shrink-0" src="{{item.img}}" alt="{{item.name}}" width="32" height="32" />
     <div class="m-card-main m-flex-col m-align-baseline">
       <div class="m-card-title m-flex-row m-align-center">
-        <span class="action-name item-name"><strong>{{item.name}}</strong>{{#if showQuantity}} (x{{item.quantity}}){{/if}}</span>
+        <span class="action-name item-name m-min-w-0 m-truncate"><strong>{{item.name}}</strong>{{#if showQuantity}} (x{{item.quantity}}){{/if}}</span>
       </div>
-      <div class="item-badges">
+      <div class="item-badges m-flex-row m-wrap m-align-center m-gap-4">
         {{#> badges}}{{/badges}}
         {{#if showBulk}}
-        <span class="item-badge bulk-badge">Bulk: {{item.bulk}}</span>
+        <span class="item-badge bulk-badge m-badge m-inline-flex m-align-center m-gap-4 m-text-xs m-color-muted">Bulk: {{item.bulk}}</span>
         {{/if}}
       </div>
     </div>
-    <div class="action-btn-group">
+    <div class="action-btn-group m-flex-row m-align-center m-gap-6 m-shrink-0">
       {{#> lineButtons}}{{/lineButtons}}
     </div>
   </div>
 
   <!-- Expandable drawer: the less frequent buttons, then the description -->
-  <div class="action-summary item-summary {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
+  <div class="action-summary item-summary m-text-base m-color-normal {{#if item.isExpanded}}expanded{{else}}collapsed{{/if}}">
     <div class="m-drawer-row m-flex-row">
       {{#> drawerButtons}}{{/drawerButtons}}
       {{#if @root.partyStash}}
-      <button type="button" class="touch-target btn-send-stash" data-action="sendToPartyStash" data-item-id="{{item.id}}" title="Send to Party Stash">
+      <button type="button" class="btn-send-stash m-compact m-inline-flex m-align-center m-justify-center m-color-accent" data-action="sendToPartyStash" data-item-id="{{item.id}}" title="Send to Party Stash">
         <i class="fas fa-box-archive"></i>
       </button>
       {{/if}}

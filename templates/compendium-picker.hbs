@@ -3,17 +3,17 @@
   <!-- ======================================================== -->
   <!-- SPELL CONFIGURATION & IMPORT MODAL OVERLAY               -->
   <!-- ======================================================== -->
-  <div class="spell-config-overlay">
-    <div class="spell-config-card">
-      <div class="staged-item-header">
-        <img class="staged-img" src="{{staged.img}}" alt="{{staged.name}}" width="48" height="48" />
-        <div class="staged-title-group">
-          <h3 class="staged-name">{{staged.name}}</h3>
-          <span class="staged-meta">
+  <div class="spell-config-overlay m-flex-row m-align-center m-justify-center">
+    <div class="spell-config-card m-flex-col">
+      <div class="staged-item-header m-flex-row m-align-center m-gap-12">
+        <img class="staged-img m-shrink-0" src="{{staged.img}}" alt="{{staged.name}}" width="48" height="48" />
+        <div class="m-flex-col m-gap-4 m-flex-1 m-min-w-0">
+          <h3 class="staged-name m-truncate m-color-strong">{{staged.name}}</h3>
+          <span class="m-flex-row m-wrap m-align-center m-gap-6 m-text-sm">
             {{#if staged.isCantrip}}
-              <span class="staged-badge badge-cantrip">Cantrip</span>
+              <span class="staged-badge badge-cantrip m-badge m-bold">Cantrip</span>
             {{else}}
-              <span class="staged-badge badge-rank">Base Rank {{staged.baseRank}}</span>
+              <span class="staged-badge badge-rank m-badge m-bold">Base Rank {{staged.baseRank}}</span>
             {{/if}}
             <span class="staged-traditions"><i class="fas fa-hat-wizard"></i> {{staged.traditionsLabel}}</span>
           </span>
@@ -21,14 +21,14 @@
       </div>
 
       {{#if hasEntries}}
-      <div class="spell-config-form">
+      <div class="spell-config-form m-flex-col">
         <!-- Target Spellcasting Entry -->
-        <div class="form-group">
-          <label for="targetEntry"><i class="fas fa-book-bookmark"></i> Add to Spellcasting Entry</label>
+        <div class="form-group m-flex-col m-gap-6">
+          <label for="targetEntry" class="m-flex-row m-align-center m-gap-6 m-text-base m-semibold m-color-normal"><i class="fas fa-book-bookmark"></i> Add to Spellcasting Entry</label>
           <select
             id="targetEntry"
             name="targetEntry"
-            class="touch-target config-select"
+            class="config-select m-text-xl m-color-strong"
             data-change-action="updateStagedEntry"
             onclick="event.stopPropagation()"
           >
@@ -41,19 +41,19 @@
         </div>
 
         {{#unless staged.entryMatchesTradition}}
-        <div class="tradition-warning-banner">
-          <i class="fas fa-triangle-exclamation"></i>
+        <div class="tradition-warning-banner m-flex-row m-align-center m-gap-8 m-text-md">
+          <i class="fas fa-triangle-exclamation m-shrink-0"></i>
           <span>This spell is not native to the selected entry's tradition ({{staged.traditionsLabel}}).</span>
         </div>
         {{/unless}}
 
         <!-- Target Spell Rank (Minimum is Base Rank) -->
-        <div class="form-group">
-          <label for="targetRank"><i class="fas fa-layer-group"></i> Add at Rank / Level</label>
+        <div class="form-group m-flex-col m-gap-6">
+          <label for="targetRank" class="m-flex-row m-align-center m-gap-6 m-text-base m-semibold m-color-normal"><i class="fas fa-layer-group"></i> Add at Rank / Level</label>
           <select
             id="targetRank"
             name="targetRank"
-            class="touch-target config-select"
+            class="config-select m-text-xl m-color-strong"
             data-change-action="updateStagedRank"
             onclick="event.stopPropagation()"
           >
@@ -66,21 +66,21 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="config-actions">
-          <button type="button" class="touch-target btn-cancel" data-action="cancelStage">
+        <div class="config-actions m-flex-row m-gap-10">
+          <button type="button" class="btn-cancel m-inline-flex m-align-center m-justify-center m-gap-6 m-flex-1" data-action="cancelStage">
             <i class="fas fa-xmark"></i> Cancel
           </button>
-          <button type="button" class="touch-target btn-confirm-add" data-action="importItem">
+          <button type="button" class="btn-confirm-add m-inline-flex m-align-center m-justify-center m-gap-6 m-flex-1 m-color-strong" data-action="importItem">
             <i class="fas fa-plus"></i> Confirm Add
           </button>
         </div>
       </div>
       {{else}}
-      <div class="no-entries-warning">
+      <div class="no-entries-warning m-flex-col m-align-center m-gap-8">
         <i class="fas fa-circle-exclamation"></i>
         <p>This character has no Spellcasting Entries configured yet.</p>
-        <p class="sub-text">Add a Spellcasting Entry on your character sheet first to learn or prepare spells.</p>
-        <button type="button" class="touch-target btn-cancel" data-action="cancelStage">
+        <p class="sub-text m-text-md">Add a Spellcasting Entry on your character sheet first to learn or prepare spells.</p>
+        <button type="button" class="btn-cancel" data-action="cancelStage">
           <i class="fas fa-arrow-left"></i> Back to Spells
         </button>
       </div>
@@ -92,28 +92,28 @@
   <!-- ======================================================== -->
   <!-- SEARCH BAR & FILTER CONTROLS                             -->
   <!-- ======================================================== -->
-  <div class="compendium-search-bar">
+  <div class="compendium-search-bar m-flex-row m-align-center m-gap-8">
     <i class="fas fa-magnifying-glass search-icon"></i>
     <input
       type="search"
-      class="compendium-search-input touch-target"
+      class="compendium-search-input m-flex-1 m-text-xl m-color-strong"
       placeholder="Search {{type}} (Press Enter)..."
       value="{{query}}"
       onclick="event.stopPropagation()"
     />
-    <button type="button" class="touch-target btn-compendium-search" data-action="executeSearch" title="Search">
+    <button type="button" class="btn-compendium-search m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-strong" data-action="executeSearch" title="Search">
       <i class="fas fa-magnifying-glass"></i>
     </button>
   </div>
 
   {{#if isSpells}}
-  <div class="compendium-filters">
+  <div class="compendium-filters m-flex-row m-gap-10">
     <!-- Rank Filter -->
     <div class="filter-field">
       <label class="filter-label"><i class="fas fa-layer-group"></i> Rank</label>
       <select
         name="rankFilter"
-        class="touch-target filter-select"
+        class="filter-select"
         data-change-action="updateRankFilter"
         onclick="event.stopPropagation()"
       >
@@ -137,7 +137,7 @@
       <label class="filter-label"><i class="fas fa-hat-wizard"></i> Tradition</label>
       <select
         name="traditionFilter"
-        class="touch-target filter-select"
+        class="filter-select"
         data-change-action="updateTraditionFilter"
         onclick="event.stopPropagation()"
       >
@@ -157,25 +157,25 @@
   <!-- ======================================================== -->
   <!-- RESULTS LIST                                             -->
   <!-- ======================================================== -->
-  <ul class="compendium-results-list">
+  <ul class="compendium-results-list m-flex-col m-gap-6 m-flex-1">
     {{#each entries}}
-    <li class="compendium-item-row">
-      <div class="compendium-item-info">
+    <li class="compendium-item-row m-flex-row m-align-center m-justify-between m-gap-10">
+      <div class="m-flex-row m-align-center m-gap-10 m-flex-1 m-min-w-0">
         {{#if this.img}}
-        <img class="compendium-item-img" src="{{this.img}}" alt="{{this.name}}" width="40" height="40" />
+        <img class="compendium-item-img m-shrink-0" src="{{this.img}}" alt="{{this.name}}" width="40" height="40" />
         {{/if}}
-        <div class="compendium-item-text">
-          <span class="compendium-item-name"><strong>{{this.name}}</strong></span>
+        <div class="m-flex-col m-flex-1 m-min-w-0">
+          <span class="m-truncate m-text-base m-color-strong"><strong>{{this.name}}</strong></span>
           {{#if this.system.level.value}}
-            <span class="compendium-item-sub">Rank {{this.system.level.value}}</span>
+            <span class="compendium-item-sub m-text-sm">Rank {{this.system.level.value}}</span>
           {{else}}
-            <span class="compendium-item-sub">Cantrip</span>
+            <span class="compendium-item-sub m-text-sm">Cantrip</span>
           {{/if}}
         </div>
       </div>
       <button
         type="button"
-        class="touch-target btn-import"
+        class="btn-import m-inline-flex m-align-center m-justify-center m-gap-6 m-shrink-0 m-text-base m-semibold m-color-strong"
         data-action="stageItem"
         data-entry-id="{{this._id}}"
         title="Add to Character"

@@ -231,11 +231,13 @@ export async function prepareSpellsContext(actor, sheet, context) {
     const systemData = entry.system ?? {};
     const spells = entry.spells?.contents ?? [];
 
-    // Update slot trackers for ranks 0-10.
+    // Update slot trackers for ranks 1-10.
     // Only spontaneous and flexible entries spend slots by count (slots.slotN.value). Prepared entries
     // mark the prepared spell itself as expended, which the spell cards already show.
+    // Cantrips (rank 0) never get a counter: they are cast at will, and pf2e's slot0 holds how many
+    // cantrips the caster knows, not uses.
     const usesSlotCount = isSpontaneous || Boolean(entry.isFlexible);
-    for (let r = 0; r <= 10; r++) {
+    for (let r = 1; r <= 10; r++) {
       const slotKey = `slot${r}`;
       const slotData = systemData.slots?.[slotKey];
       if (usesSlotCount && slotData && slotData.max > 0) {

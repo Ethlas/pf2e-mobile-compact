@@ -1,6 +1,6 @@
 <div class="mobile-sheet-body">
   <!-- Dynamic Tab Content Area -->
-  <main class="mobile-tab-content">
+  <main class="mobile-tab-content m-flex-1">
     {{#if isKingdom}}
       {{#if (eq activeTab "turn")}}
         {{> "modules/pf2e-mobile-compact/templates/kingdom/kingdom-turn.hbs"}}
@@ -34,17 +34,17 @@
     {{/if}}
 
     <!-- Persistent Chat Pane (always retains live ui.chat socket stream) -->
-    <div class="mobile-tab-pane mobile-chat-pane {{#unless (eq activeTab "chat")}}is-hidden{{/unless}}">
+    <div class="mobile-tab-pane mobile-chat-pane m-flex-col {{#unless (eq activeTab "chat")}}is-hidden{{/unless}}">
       {{> "modules/pf2e-mobile-compact/templates/parts/chat.hbs"}}
     </div>
   </main>
 
   <!-- Bottom Navigation Bar: Adaptive for Kingdom vs Party vs Character -->
-  <nav class="mobile-bottom-nav {{#if isKingdom}}kingdom-nav{{else if isParty}}party-nav{{/if}}">
+  <nav class="mobile-bottom-nav m-flex-row {{#if isKingdom}}kingdom-nav{{else if isParty}}party-nav{{/if}}">
     {{#if isKingdom}}
       <button
         type="button"
-        class="nav-item {{#if (eq activeTab "turn")}}active{{/if}}"
+        class="nav-item m-flex-col m-align-center m-justify-center m-gap-2 m-flex-1 m-text-md m-color-dim {{#if (eq activeTab "turn")}}active{{/if}}"
         data-action="switchTab"
         data-tab="turn"
         aria-label="Turn Tab"
@@ -54,7 +54,7 @@
       </button>
       <button
         type="button"
-        class="nav-item {{#if (eq activeTab "kingdom")}}active{{/if}}"
+        class="nav-item m-flex-col m-align-center m-justify-center m-gap-2 m-flex-1 m-text-md m-color-dim {{#if (eq activeTab "kingdom")}}active{{/if}}"
         data-action="switchTab"
         data-tab="kingdom"
         aria-label="Kingdom Tab"
@@ -64,7 +64,7 @@
       </button>
       <button
         type="button"
-        class="nav-item {{#if (eq activeTab "settlements")}}active{{/if}}"
+        class="nav-item m-flex-col m-align-center m-justify-center m-gap-2 m-flex-1 m-text-md m-color-dim {{#if (eq activeTab "settlements")}}active{{/if}}"
         data-action="switchTab"
         data-tab="settlements"
         aria-label="Settlements Tab"
@@ -74,7 +74,7 @@
       </button>
       <button
         type="button"
-        class="nav-item {{#if (eq activeTab "trade")}}active{{/if}}"
+        class="nav-item m-flex-col m-align-center m-justify-center m-gap-2 m-flex-1 m-text-md m-color-dim {{#if (eq activeTab "trade")}}active{{/if}}"
         data-action="switchTab"
         data-tab="trade"
         aria-label="Trade Tab"
@@ -84,7 +84,7 @@
       </button>
       <button
         type="button"
-        class="nav-item {{#if (eq activeTab "notes")}}active{{/if}}"
+        class="nav-item m-flex-col m-align-center m-justify-center m-gap-2 m-flex-1 m-text-md m-color-dim {{#if (eq activeTab "notes")}}active{{/if}}"
         data-action="switchTab"
         data-tab="notes"
         aria-label="Notes Tab"
@@ -94,21 +94,21 @@
       </button>
       <button
         type="button"
-        class="nav-item nav-chat {{#if (eq activeTab "chat")}}active{{/if}}"
+        class="nav-item nav-chat m-flex-col m-align-center m-justify-center m-gap-2 m-flex-1 m-text-md m-color-dim {{#if (eq activeTab "chat")}}active{{/if}}"
         data-action="switchTab"
         data-tab="chat"
         aria-label="Chat Tab"
       >
-        <div class="nav-icon-wrapper">
+        <div class="nav-icon-wrapper m-inline-flex m-align-center m-justify-center">
           <i class="fas fa-comments"></i>
-          <span class="chat-badge {{#unless unreadChatCount}}hidden{{/unless}}">{{unreadChatCount}}</span>
+          <span class="chat-badge m-text-xs m-bold m-color-strong {{#unless unreadChatCount}}hidden{{/unless}}">{{unreadChatCount}}</span>
         </div>
         <span>Chat</span>
       </button>
     {{else if isParty}}
       <button
         type="button"
-        class="nav-item {{#if (eq activeTab "overview")}}active{{/if}}"
+        class="nav-item m-flex-col m-align-center m-justify-center m-gap-2 m-flex-1 m-text-md m-color-dim {{#if (eq activeTab "overview")}}active{{/if}}"
         data-action="switchTab"
         data-tab="overview"
         aria-label="Overview Tab"
@@ -118,7 +118,7 @@
       </button>
       <button
         type="button"
-        class="nav-item {{#if (eq activeTab "stash")}}active{{/if}}"
+        class="nav-item m-flex-col m-align-center m-justify-center m-gap-2 m-flex-1 m-text-md m-color-dim {{#if (eq activeTab "stash")}}active{{/if}}"
         data-action="switchTab"
         data-tab="stash"
         aria-label="Stash Tab"
@@ -128,21 +128,21 @@
       </button>
       <button
         type="button"
-        class="nav-item nav-chat {{#if (eq activeTab "chat")}}active{{/if}}"
+        class="nav-item nav-chat m-flex-col m-align-center m-justify-center m-gap-2 m-flex-1 m-text-md m-color-dim {{#if (eq activeTab "chat")}}active{{/if}}"
         data-action="switchTab"
         data-tab="chat"
         aria-label="Chat Tab"
       >
-        <div class="nav-icon-wrapper">
+        <div class="nav-icon-wrapper m-inline-flex m-align-center m-justify-center">
           <i class="fas fa-comments"></i>
-          <span class="chat-badge {{#unless unreadChatCount}}hidden{{/unless}}">{{unreadChatCount}}</span>
+          <span class="chat-badge m-text-xs m-bold m-color-strong {{#unless unreadChatCount}}hidden{{/unless}}">{{unreadChatCount}}</span>
         </div>
         <span>Chat</span>
       </button>
     {{else}}
       <button
         type="button"
-        class="nav-item {{#if (eq activeTab "actions")}}active{{/if}}"
+        class="nav-item m-flex-col m-align-center m-justify-center m-gap-2 m-flex-1 m-text-md m-color-dim {{#if (eq activeTab "actions")}}active{{/if}}"
         data-action="switchTab"
         data-tab="actions"
         aria-label="Actions Tab"
@@ -152,7 +152,7 @@
       </button>
       <button
         type="button"
-        class="nav-item {{#if (eq activeTab "spells")}}active{{/if}}"
+        class="nav-item m-flex-col m-align-center m-justify-center m-gap-2 m-flex-1 m-text-md m-color-dim {{#if (eq activeTab "spells")}}active{{/if}}"
         data-action="switchTab"
         data-tab="spells"
         aria-label="Spells Tab"
@@ -162,7 +162,7 @@
       </button>
       <button
         type="button"
-        class="nav-item {{#if (eq activeTab "inventory")}}active{{/if}}"
+        class="nav-item m-flex-col m-align-center m-justify-center m-gap-2 m-flex-1 m-text-md m-color-dim {{#if (eq activeTab "inventory")}}active{{/if}}"
         data-action="switchTab"
         data-tab="inventory"
         aria-label="Gear Tab"
@@ -172,7 +172,7 @@
       </button>
       <button
         type="button"
-        class="nav-item {{#if (eq activeTab "skills")}}active{{/if}}"
+        class="nav-item m-flex-col m-align-center m-justify-center m-gap-2 m-flex-1 m-text-md m-color-dim {{#if (eq activeTab "skills")}}active{{/if}}"
         data-action="switchTab"
         data-tab="skills"
         aria-label="Skills Tab"
@@ -182,14 +182,14 @@
       </button>
       <button
         type="button"
-        class="nav-item nav-chat {{#if (eq activeTab "chat")}}active{{/if}}"
+        class="nav-item nav-chat m-flex-col m-align-center m-justify-center m-gap-2 m-flex-1 m-text-md m-color-dim {{#if (eq activeTab "chat")}}active{{/if}}"
         data-action="switchTab"
         data-tab="chat"
         aria-label="Chat Tab"
       >
-        <div class="nav-icon-wrapper">
+        <div class="nav-icon-wrapper m-inline-flex m-align-center m-justify-center">
           <i class="fas fa-comments"></i>
-          <span class="chat-badge {{#unless unreadChatCount}}hidden{{/unless}}">{{unreadChatCount}}</span>
+          <span class="chat-badge m-text-xs m-bold m-color-strong {{#unless unreadChatCount}}hidden{{/unless}}">{{unreadChatCount}}</span>
         </div>
         <span>Chat</span>
       </button>

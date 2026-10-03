@@ -545,7 +545,7 @@ export async function onConsumeItem(sheet, event, target) {
 export function onToggleActionSummary(sheet, event, target) {
   if (event.target?.closest?.(".staff-charges-tracker, .charges-buttons, .btn-charge-adjust")) return;
   event.preventDefault();
-  const actionEl = target.closest(".action-card, .strike-card, .item-card, .inventory-item-card, .staff-activation-group");
+  const actionEl = target.closest(".m-action-card, .strike-card, .item-card, .inventory-item-card, .staff-activation-group");
   if (!actionEl) return;
 
   const isStaffGroup = actionEl.classList.contains("staff-activation-group");

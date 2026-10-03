@@ -13,7 +13,7 @@
     showManageButtons  Show the Set Signature / Remove Spell footer in the drawer
     showChargeCost     Show the staff charge-cost badge (staff spells, from context-activations.js)
 --}}
-<div class="action-card m-card spell-card {{#if spell.isExpanded}}expanded{{/if}} {{#if spell.isExpended}}expended{{/if}}" data-item-id="{{#if spell.cardKey}}{{spell.cardKey}}{{else}}{{spell.id}}{{/if}}" data-entry-id="{{spell.entryId}}">
+<div class="m-action-card m-card spell-card {{#if spell.isExpanded}}expanded{{/if}} {{#if spell.isExpended}}expended{{/if}}" data-item-id="{{#if spell.cardKey}}{{spell.cardKey}}{{else}}{{spell.id}}{{/if}}" data-entry-id="{{spell.entryId}}">
   <!-- Spell line: tapping anywhere on the name row or detail tags toggles the drawer.
        The buttons inside keep their own data-action, which takes precedence. -->
   <div class="m-card-line m-flex-row" data-action="toggleActionSummary" data-item-id="{{#if spell.cardKey}}{{spell.cardKey}}{{else}}{{spell.id}}{{/if}}" title="{{spell.name}}">
@@ -21,99 +21,99 @@
       <!-- Title (layout only; the whole line is the tap target) -->
       <div class="m-card-title m-flex-row m-align-center">
         {{#if spell.isFocus}}
-          <span class="spell-source-badge badge-focus badge-letter" title="Focus Spell">F</span>
+          <span class="spell-source-badge badge-focus badge-letter m-badge m-inline-flex m-align-center m-justify-center m-text-xs m-bold" title="Focus Spell">F</span>
         {{else if spell.isInnate}}
-          <span class="spell-source-badge badge-innate badge-letter" title="Innate Spell">I</span>
+          <span class="spell-source-badge badge-innate badge-letter m-badge m-inline-flex m-align-center m-justify-center m-text-xs m-bold" title="Innate Spell">I</span>
         {{else if spell.isPrepared}}
-          <!--          <span class="spell-source-badge badge-prepared badge-letter" title="Prepared Spell">P</span>-->
+          <!--          <span class="spell-source-badge badge-prepared badge-letter m-badge m-inline-flex m-align-center m-justify-center m-text-xs m-bold" title="Prepared Spell">P</span>-->
         {{else if spell.isSpontaneous}}
-          <!--          <span class="spell-source-badge badge-spontaneous badge-letter" title="Spontaneous Spell">S</span>-->
+          <!--          <span class="spell-source-badge badge-spontaneous badge-letter m-badge m-inline-flex m-align-center m-justify-center m-text-xs m-bold" title="Spontaneous Spell">S</span>-->
         {{/if}}
         {{#if spell.glyph}}
-          <span class="action-cost-glyph"><span class="action-glyph">{{spell.glyph}}</span></span>
+          <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base m-color-accent"><span class="action-glyph">{{spell.glyph}}</span></span>
         {{/if}}
-        <span class="action-name"><strong>{{spell.name}}</strong></span>
+        <span class="action-name m-min-w-0 m-truncate"><strong>{{spell.name}}</strong></span>
 
 
       </div>
 
       <!-- Source badges + quick detail tags (under the spell name, always visible) -->
-      <div class="spell-details">
+      <div class="spell-details m-flex-row m-wrap m-gap-4 m-text-md m-color-muted">
         {{#if spell.isSignature}}
-          <span class="spell-source-badge badge-signature badge-letter" title="Signature Spell"><i class="fas fa-star"></i></span>
+          <span class="spell-source-badge badge-signature badge-letter m-badge m-inline-flex m-align-center m-justify-center m-text-xs m-bold" title="Signature Spell"><i class="fas fa-star"></i></span>
         {{/if}}
 
         {{#if spell.isExpended}}
-          <span class="spell-expended-badge">Exp</span>
+          <span class="spell-expended-badge m-badge m-text-xs m-bold">Exp</span>
         {{/if}}
 
         {{#if showChargeCost}}
           {{#if spell.isCantrip}}
-            <span class="spell-source-badge badge-cantrip">0 Chg</span>
+            <span class="spell-source-badge badge-cantrip m-badge m-text-xs m-bold">0 Chg</span>
           {{else if spell.canCastCharges}}
-            <span class="spell-source-badge badge-charge-cost"><i class="fas fa-bolt"></i> {{spell.chargeCost}} Chg</span>
+            <span class="spell-source-badge badge-charge-cost m-badge m-text-xs m-bold"><i class="fas fa-bolt"></i> {{spell.chargeCost}} Chg</span>
           {{else}}
-            <span class="spell-source-badge badge-charge-cost badge-charge-insufficient" title="Insufficient charges (requires {{spell.chargeCost}})"><i class="fas fa-bolt"></i> {{spell.chargeCost}} Chg</span>
+            <span class="spell-source-badge badge-charge-cost badge-charge-insufficient m-badge m-text-xs m-bold" title="Insufficient charges (requires {{spell.chargeCost}})"><i class="fas fa-bolt"></i> {{spell.chargeCost}} Chg</span>
           {{/if}}
         {{/if}}
 
-        {{#if spell.range}}<span class="detail-tag"><i class="fas fa-ruler"></i> {{spell.range}}</span>{{/if}}
-<!--        {{#if spell.target}}<span class="detail-tag"><i class="fas fa-crosshairs"></i> {{spell.target}}</span>{{/if}}-->
-        {{#if spell.area}}<span class="detail-tag"><i class="fas fa-expand"></i> {{spell.area}}</span>{{/if}}
-        {{#if spell.defense}}<span class="detail-tag"><i class="fas fa-shield-halved"></i> {{spell.defense}}</span>{{/if}}
-        {{#if spell.duration}}<span class="detail-tag"><i class="fas fa-clock"></i> {{spell.duration}}</span>{{/if}}
+        {{#if spell.range}}<span class="detail-tag m-badge m-inline-flex m-align-center m-gap-4"><i class="fas fa-ruler"></i> {{spell.range}}</span>{{/if}}
+<!--        {{#if spell.target}}<span class="detail-tag m-badge"><i class="fas fa-crosshairs"></i> {{spell.target}}</span>{{/if}}-->
+        {{#if spell.area}}<span class="detail-tag m-badge m-inline-flex m-align-center m-gap-4"><i class="fas fa-expand"></i> {{spell.area}}</span>{{/if}}
+        {{#if spell.defense}}<span class="detail-tag m-badge m-inline-flex m-align-center m-gap-4"><i class="fas fa-shield-halved"></i> {{spell.defense}}</span>{{/if}}
+        {{#if spell.duration}}<span class="detail-tag m-badge m-inline-flex m-align-center m-gap-4"><i class="fas fa-clock"></i> {{spell.duration}}</span>{{/if}}
       </div>
     </div>
     <!-- Line buttons (supplied by the caller through the "lineButtons" slot) -->
-    <div class="action-btn-group">
+    <div class="action-btn-group m-flex-row m-align-center m-gap-6 m-shrink-0">
       {{#> lineButtons}}{{/lineButtons}}
     </div>
   </div>
 
   <!-- Expandable Details Drawer -->
-  <div class="action-summary {{#if spell.isExpanded}}expanded{{else}}collapsed{{/if}}">
-    <div class="expanded-spell-fullname">
+  <div class="action-summary m-text-base m-color-normal {{#if spell.isExpanded}}expanded{{else}}collapsed{{/if}}">
+    <div class="expanded-spell-fullname m-flex-row m-align-center m-justify-between m-gap-8 m-text-xl m-color-strong">
       <strong>{{spell.name}}</strong>
       {{#if spell.isFocus}}
-      <span class="spell-source-badge badge-focus">Focus</span>
+      <span class="spell-source-badge badge-focus m-badge m-text-xs m-bold">Focus</span>
       {{else if spell.isInnate}}
-      <span class="spell-source-badge badge-innate">Innate</span>
+      <span class="spell-source-badge badge-innate m-badge m-text-xs m-bold">Innate</span>
       {{else if spell.isPrepared}}
-      <span class="spell-source-badge badge-prepared">Prepared</span>
+      <span class="spell-source-badge badge-prepared m-badge m-text-xs m-bold">Prepared</span>
       {{else if spell.isSpontaneous}}
-      <span class="spell-source-badge badge-spontaneous">Spontaneous</span>
+      <span class="spell-source-badge badge-spontaneous m-badge m-text-xs m-bold">Spontaneous</span>
       {{/if}}
     </div>
 
     {{!-- Cantrips carry pf2e's "cantrip" trait, so no separate Cantrip badge is needed --}}
     {{#if spell.traits.length}}
-    <div class="action-traits staff-spell-traits">
+    <div class="action-traits staff-spell-traits m-flex-row m-wrap m-gap-4">
       {{#each spell.traits as |trait|}}
-      <span class="trait-badge">{{trait.label}}</span>
+      <span class="trait-badge m-badge-neutral m-text-xs m-color-soft">{{trait.label}}</span>
       {{/each}}
     </div>
     {{/if}}
     {{#if spell.target}}
-    <div class="action-traits staff-spell-traits">
-      <span class="detail-tag"><i class="fas fa-crosshairs"></i> {{spell.target}}</span>
+    <div class="action-traits staff-spell-traits m-flex-row m-wrap m-gap-4">
+      <span class="detail-tag m-badge"><i class="fas fa-crosshairs"></i> {{spell.target}}</span>
     </div>
     {{/if}}
 
     {{#if spell.isHeightened}}
-    <div class="spell-heightened-notice">
-      <i class="fas fa-arrow-up-right-dots"></i>
+    <div class="spell-heightened-notice m-flex-row m-align-center m-gap-8 m-text-md">
+      <i class="fas fa-arrow-up-right-dots m-shrink-0 m-text-xl m-color-cyan"></i>
       <span>Heightened to <strong>Rank {{rank}}</strong> (Base: Rank {{spell.baseRank}})</span>
     </div>
     {{/if}}
 
     <!-- Chat is always shown; the damage/healing button, when the spell has one, fills the rest of the row -->
     <div class="m-drawer-row m-flex-row">
-      <button type="button" class="touch-target btn-action-chat" data-action="itemToChat" data-item-id="{{spell.id}}" data-rank="{{rank}}" title="Send to Chat">
+      <button type="button" class="btn-action-chat m-compact m-inline-flex m-align-center m-gap-4 m-text-base m-color-normal" data-action="itemToChat" data-item-id="{{spell.id}}" data-rank="{{rank}}" title="Send to Chat">
         <i class="fas fa-message"></i>
       </button>
 
       {{#if spell.hasDamage}}
-      <button type="button" class="touch-target btn-spell-damage btn-spell-damage-full {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}})">
+      <button type="button" class="btn-spell-damage btn-spell-damage-full m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-flex-auto m-text-md m-semibold m-color-strong {{#if spell.isHealingOnly}}btn-spell-heal{{/if}}" data-action="rollSpellDamage" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="Roll {{#if spell.isHealingOnly}}Healing{{else}}Damage{{/if}} for {{spell.name}} (Rank {{spell.effectiveCastRank}})">
         {{#if spell.isHealingOnly}}
           <i class="fas fa-heart-pulse"></i> Roll Healing (Rank {{spell.effectiveCastRank}}){{#if spell.damageFormula}} · {{spell.damageFormula}}{{/if}}
         {{else}}
@@ -124,7 +124,7 @@
     </div>
 
     <!-- Drawer buttons (supplied by the caller through the "drawerButtons" slot) -->
-    <div class="spell-drawer-actions m-flex-row">
+    <div class="spell-drawer-actions m-flex-row m-wrap m-align-center m-gap-6">
       {{#> drawerButtons}}{{/drawerButtons}}
     </div>
 
@@ -134,11 +134,11 @@
 
     {{#if showManageButtons}}
     <!-- Spell Actions Footer (Remove & Signature Toggle) -->
-    <div class="spell-drawer-footer">
+    <div class="spell-drawer-footer m-flex-row m-wrap m-gap-8">
       {{#if spell.canSignature}}
       <button
         type="button"
-        class="touch-target btn-spell-action btn-toggle-signature {{#if spell.isSignature}}active{{/if}}"
+        class="btn-spell-action btn-toggle-signature m-inline-flex m-align-center m-justify-center m-gap-6 m-flex-1 m-text-base m-semibold m-color-warning {{#if spell.isSignature}}active{{/if}}"
         data-action="toggleSignatureSpell"
         data-item-id="{{spell.id}}"
         title="{{#if spell.isSignature}}Remove Signature Spell{{else}}Make Signature Spell{{/if}}"
@@ -150,7 +150,7 @@
 
       <button
         type="button"
-        class="touch-target btn-spell-action btn-remove-spell"
+        class="btn-spell-action btn-remove-spell m-inline-flex m-align-center m-justify-center m-gap-6 m-flex-1 m-text-base m-semibold"
         data-action="removeSpell"
         data-item-id="{{spell.id}}"
         title="Remove {{spell.name}} from character"

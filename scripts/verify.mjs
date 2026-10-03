@@ -246,6 +246,24 @@ for (const cssRel of ["styles/pf2e-mobile.css", "styles/kingdom.css"]) {
   }
 }
 
+// 5b. Style guide (docs/style-guide.html): every m-* utility or component class in the stylesheet needs a sample there
+const styleGuidePath = path.join(rootDir, "docs/style-guide.html");
+if (fs.existsSync(styleGuidePath)) {
+  const sheetCss = fs.readFileSync(path.join(rootDir, "styles/pf2e-mobile.css"), "utf-8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const guideHtml = fs.readFileSync(styleGuidePath, "utf-8");
+  // Utilities are scoped as ":is(.pf2e-mobile-sheet, ...) .m-x", components as ".pf2e-mobile-sheet .m-x"
+  // (input components as ".pf2e-mobile-sheet input.m-x")
+  const mClasses = [...new Set([...sheetCss.matchAll(/(?:\.pf2e-mobile-sheet|:is\([^)]*\)) [a-z]*\.(m-[a-z0-9-]+)/g)].map(m => m[1]))];
+  const missing = mClasses.filter(c => !new RegExp(`class="[^"]*(?<![\\w-])${c}(?![\\w-])`).test(guideHtml));
+  if (missing.length) {
+    logFail(`[Style Guide] No sample in docs/style-guide.html for: ${missing.join(", ")}. Add one when adding a utility or component class.`);
+  } else {
+    logPass(`[Style Guide] All ${mClasses.length} m-* classes have a sample in docs/style-guide.html.`);
+  }
+} else {
+  logFail("[Style Guide] docs/style-guide.html is missing.");
+}
+
 // 6. Comprehensive Section-by-Section Interactive Button, Sub-Tab & Handler Verification
 console.log("\n--- 6. Section-by-Section Interactive Button, Sub-Tab & Handler Tests ---");
 try {
@@ -569,6 +587,17 @@ try {
     logFail(`[Header] hasActiveEffects should be false without effects and true with one: ${charContext.hasActiveEffects} / ${effectHeaderCtx.hasActiveEffects}`);
   } else {
     logPass("[Header] hasActiveEffects is false without effects and true with an active effect (lightning badge on the Character overview button).");
+  }
+
+  // HP colour state: the header and the party overview switch at the same thresholds (getHpState)
+  const { getHpState } = await import("../scripts/utils/sheet-utils.js");
+  const hpStates = [[60, 60], [31, 60], [30, 60], [16, 60], [15, 60], [0, 60], [5, 0]].map(([v, m]) => getHpState(v, m).state).join(",");
+  const hpHeaderCtx = {};
+  prepareHeaderContext({ ...mockCharActor, system: { ...mockCharActor.system, attributes: { ...mockCharActor.system?.attributes, hp: { value: 10, max: 60, temp: 0 } } } }, { _isKingdomMode: false }, hpHeaderCtx);
+  if (hpStates !== "healthy,healthy,warning,warning,danger,danger,healthy" || hpHeaderCtx.hp?.state !== "danger") {
+    logFail(`[Header] HP state should be healthy above 50%, warning at 50% or less, danger at 25% or less: ${hpStates}; header 10/60 = ${hpHeaderCtx.hp?.state}`);
+  } else {
+    logPass("[Header] HP is coloured healthy / warning (50% or less) / danger (25% or less), with the same thresholds as the party overview.");
   }
 
   const mockCharSheet = {
@@ -1242,6 +1271,33 @@ try {
   }
 } catch (err) {
   logFail(`Action Cost / Spell Damage / Issue #16 verification threw an error: ${err.stack || err.message}`);
+}
+
+// 6a. Slot counter: spontaneous ranks get one, cantrips never (they are cast at will; pf2e's slot0 counts cantrips known)
+try {
+  const { prepareSpellsContext } = await import("./apps/sheet-helpers/context-spells.js");
+  const spontEntry = {
+    id: "spont1",
+    isSpontaneous: true,
+    system: { prepared: { value: "spontaneous" }, slots: { slot0: { value: 0, max: 5 }, slot1: { value: 2, max: 3 } } },
+    spells: { contents: [], get: () => null }
+  };
+  const slotActor = {
+    spellcasting: { contents: [spontEntry] },
+    itemTypes: { spellcastingEntry: [spontEntry], consumable: [], equipment: [], weapon: [] },
+    items: { get: () => null, filter: () => [], contents: [] },
+    system: { resources: {} }
+  };
+  const slotCtx = {};
+  await prepareSpellsContext(slotActor, { _collapsedRankGroups: new Set() }, slotCtx);
+  const slotGroups = (slotCtx.spellRanks ?? []).map(g => `${g.rank}:${g.hasSlots ? `${g.slots.value}/${g.slots.max}` : "-"}`).join(",");
+  if (slotGroups !== "1:2/3") {
+    logFail(`[Slot Counter] Expected only rank 1 with a 2/3 counter and no cantrip counter, got: ${slotGroups}`);
+  } else {
+    logPass("[Slot Counter] Spontaneous ranks show their slot counter; cantrips never get one.");
+  }
+} catch (err) {
+  logFail(`Slot counter verification threw an error: ${err.stack || err.message}`);
 }
 
 // 6b. Character overview: header user button and pf2e feat groups

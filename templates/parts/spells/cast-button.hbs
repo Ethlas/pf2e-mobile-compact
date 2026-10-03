@@ -8,7 +8,7 @@
     rank   Rank of the group the spell is listed under
 --}}
 {{#if (and spell.isPrepared spell.isExpended)}}
-<button type="button" class="touch-target btn-cast disabled {{#if spell.isAttack}}btn-cast-attack{{/if}}" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="{{#if spell.cannotCastReason}}{{spell.cannotCastReason}}{{else}}Spell slot already expended{{/if}}">
+<button type="button" class="btn-cast disabled m-inline-flex m-align-center m-justify-center m-text-base {{#if spell.isAttack}}btn-cast-attack{{/if}}" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="{{#if spell.cannotCastReason}}{{spell.cannotCastReason}}{{else}}Spell slot already expended{{/if}}">
   {{#if spell.isAttack}}
     <i class="fas fa-crosshairs"></i>
   {{else}}
@@ -16,7 +16,7 @@
   {{/if}}
 </button>
 {{else}}
-<button type="button" class="touch-target btn-cast {{#unless spell.canCast}}disabled{{/unless}} {{#if spell.isAttack}}btn-cast-attack{{/if}}" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="{{#if spell.canCast}}Cast {{spell.name}}{{#if spell.castActions}} ({{spell.castActions}} Actions){{/if}}{{else}}{{spell.cannotCastReason}}{{/if}}">
+<button type="button" class="btn-cast m-inline-flex m-align-center m-justify-center m-text-base {{#unless spell.canCast}}disabled{{/unless}} {{#if spell.isAttack}}btn-cast-attack{{/if}}" data-action="castSpell" data-item-id="{{spell.id}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" data-slot-index="{{spell.slotIndex}}" title="{{#if spell.canCast}}Cast {{spell.name}}{{#if spell.castActions}} ({{spell.castActions}} Actions){{/if}}{{else}}{{spell.cannotCastReason}}{{/if}}">
   {{#if spell.isAttack}}
     <i class="fas fa-crosshairs"></i>
   {{else}}

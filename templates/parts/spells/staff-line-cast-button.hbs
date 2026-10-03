@@ -13,7 +13,7 @@
 {{#if (or spell.isCantrip (not spell.hasSpontaneousOption))}}
 {{> "modules/pf2e-mobile-compact/templates/parts/spells/staff-cast-buttons.hbs" spell=spell rank=rank staffId=staffId}}
 {{else}}
-<button type="button" class="touch-target btn-cast" data-action="toggleActionSummary" data-item-id="{{spell.cardKey}}" title="Choose how to cast {{spell.name}}: staff charges, or 1 charge + a spell slot">
+<button type="button" class="btn-cast m-inline-flex m-align-center m-justify-center m-text-base" data-action="toggleActionSummary" data-item-id="{{spell.cardKey}}" title="Choose how to cast {{spell.name}}: staff charges, or 1 charge + a spell slot">
   <i class="fas fa-bolt"></i>&nbsp; / &nbsp;<i class="fas fa-wand-magic-sparkles"></i>
 </button>
 {{/if}}

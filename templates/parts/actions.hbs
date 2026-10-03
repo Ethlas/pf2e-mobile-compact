@@ -1,13 +1,13 @@
 <div class="tab-pane actions-tab" data-tab="actions">
   <!-- Sub-Navigation for Action Mode: Encounter, Exploration, Downtime -->
-  <div class="action-subtabs">
-    <button type="button" class="touch-target subtab-btn {{#if (eq actionSubTab "encounter")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="encounter">
+  <div class="action-subtabs m-panel m-flex-row m-gap-6">
+    <button type="button" class="subtab-btn m-flex-row m-align-center m-justify-center m-gap-4 m-flex-1 m-text-base m-semibold m-color-muted {{#if (eq actionSubTab "encounter")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="encounter">
       ⚔️ Encounter
     </button>
-    <button type="button" class="touch-target subtab-btn {{#if (eq actionSubTab "exploration")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="exploration">
+    <button type="button" class="subtab-btn m-flex-row m-align-center m-justify-center m-gap-4 m-flex-1 m-text-base m-semibold m-color-muted {{#if (eq actionSubTab "exploration")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="exploration">
       🧭 Exploration
     </button>
-    <button type="button" class="touch-target subtab-btn {{#if (eq actionSubTab "downtime")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="downtime">
+    <button type="button" class="subtab-btn m-flex-row m-align-center m-justify-center m-gap-4 m-flex-1 m-text-base m-semibold m-color-muted {{#if (eq actionSubTab "downtime")}}active{{/if}}" data-action="switchActionSubTab" data-subtab="downtime">
       ⛺ Downtime
     </button>
   </div>
@@ -15,51 +15,51 @@
   {{#if (eq actionSubTab "encounter")}}
     <!-- 1. Strikes & Attacks Section -->
     <section class="m-group actions-section">
-      <h3 class="section-title"><i class="fas fa-fist-raised"></i> Attacks</h3>
+      <h3 class="section-title m-bold m-color-accent"><i class="fas fa-fist-raised"></i> Attacks</h3>
       <div class="m-group-list strikes-list">
         {{#each strikes as |strike index|}}
-        <div class="action-card m-card strike-card {{#if strike.ready}}ready{{/if}}">
+        <div class="m-action-card m-card strike-card m-flex-col m-gap-8 {{#if strike.ready}}ready{{/if}}">
           <!-- Strike Header: Weapon Image, Name, Glyph, Traits, Badge -->
-          <div class="strike-card-header">
-            <img class="strike-img" src="{{strike.img}}" alt="{{strike.label}}" />
-            <div class="strike-title-group">
-              <div class="strike-name-row">
-                <span class="action-cost-glyph"><span class="action-glyph">{{strike.glyph}}</span></span>
-                <span class="action-name"><strong>{{strike.label}}</strong></span>
+          <div class="m-flex-row m-align-center m-gap-10">
+            <img class="strike-img m-shrink-0" src="{{strike.img}}" alt="{{strike.label}}" />
+            <div class="m-flex-col m-gap-4 m-flex-1 m-min-w-0">
+              <div class="m-flex-row m-align-center m-gap-6">
+                <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base m-color-accent"><span class="action-glyph">{{strike.glyph}}</span></span>
+                <span class="action-name m-min-w-0 m-truncate"><strong>{{strike.label}}</strong></span>
               </div>
               {{#if strike.traits.length}}
-              <div class="action-traits strike-traits">
+              <div class="action-traits m-flex-row m-wrap m-gap-4">
                 {{#each strike.traits as |trait|}}
-                  <span class="trait-badge">{{trait.label}}</span>
+                  <span class="trait-badge m-badge-neutral m-text-xs m-color-soft">{{trait.label}}</span>
                 {{/each}}
-                {{#if strike.isMelee}}<span class="trait-badge">Melee</span>{{/if}}
-                {{#if strike.isThrown}}<span class="trait-badge">Thrown</span>{{/if}}
-                {{#if strike.isRanged}}<span class="trait-badge">Ranged</span>{{/if}}
-                {{#if strike.rangeIncrement}}<span class="trait-badge">{{strike.rangeIncrement}} ft</span>{{/if}}
+                {{#if strike.isMelee}}<span class="trait-badge m-badge-neutral m-text-xs m-color-soft">Melee</span>{{/if}}
+                {{#if strike.isThrown}}<span class="trait-badge m-badge-neutral m-text-xs m-color-soft">Thrown</span>{{/if}}
+                {{#if strike.isRanged}}<span class="trait-badge m-badge-neutral m-text-xs m-color-soft">Ranged</span>{{/if}}
+                {{#if strike.rangeIncrement}}<span class="trait-badge m-badge-neutral m-text-xs m-color-soft">{{strike.rangeIncrement}} ft</span>{{/if}}
               </div>
               {{/if}}
             </div>
           </div>
 
           <!-- MAP Variants at the TOP (Prominent attack row) -->
-          <div class="strike-map-row">
+          <div class="strike-map-row m-flex-row m-gap-6">
             {{#each strike.variants as |variant vIndex|}}
-            <button type="button" class="touch-target map-button" data-action="executeStrike" data-strike-index="{{index}}" data-variant-index="{{vIndex}}" title="Attack Variant {{vIndex}}">
+            <button type="button" class="map-button m-text-full m-flex-row m-align-center m-justify-center m-flex-1 m-bold" data-action="executeStrike" data-strike-index="{{index}}" data-variant-index="{{vIndex}}" title="Attack Variant {{vIndex}}">
               {{variant.label}}
             </button>
             {{/each}}
           </div>
 
           <!-- Damage and Critical Buttons Row -->
-          <div class="strike-damage-row">
+          <div class="strike-damage-row m-flex-row m-gap-6">
             {{#if strike.damage}}
-            <button type="button" class="touch-target variant-button damage-button" data-action="executeDamage" data-strike-index="{{index}}" title="Roll Damage">
+            <button type="button" class="variant-button damage-button m-flex-1 m-text-base m-color-strong" data-action="executeDamage" data-strike-index="{{index}}" title="Roll Damage">
               💥 {{strike.damageFormula}}
             </button>
             {{/if}}
 
             {{#if strike.critical}}
-            <button type="button" class="touch-target variant-button critical-button" data-action="executeCritical" data-strike-index="{{index}}" title="Roll Critical Damage">
+            <button type="button" class="variant-button critical-button m-flex-1 m-text-base m-bold m-color-strong" data-action="executeCritical" data-strike-index="{{index}}" title="Roll Critical Damage">
               ⚡ Crit
             </button>
             {{/if}}
@@ -67,15 +67,15 @@
 
           <!-- Weapon Auxiliary Actions: Draw, Sheathe, Drop, Reload, Change Grip -->
           {{#if strike.hasAuxiliary}}
-          <div class="strike-auxiliary-row">
+          <div class="strike-auxiliary-row m-flex-row m-wrap m-gap-6">
             {{#each strike.auxiliaryActions as |aux|}}
-            <button type="button" class="touch-target aux-action-btn" data-action="executeAuxiliaryAction" data-strike-index="{{index}}" data-aux-index="{{aux.index}}" title="{{aux.label}}">
+            <button type="button" class="aux-action-btn m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-color-soft" data-action="executeAuxiliaryAction" data-strike-index="{{index}}" data-aux-index="{{aux.index}}" title="{{aux.label}}">
               {{#if aux.glyph}}
-                <span class="aux-glyph"><span class="action-glyph">{{aux.glyph}}</span></span>
+                <span class="m-inline-flex m-align-center m-justify-center m-text-sm m-bold m-color-accent"><span class="action-glyph">{{aux.glyph}}</span></span>
               {{/if}}
-                <span class="aux-label">{{aux.label}}</span>
+                <span class="aux-label m-medium">{{aux.label}}</span>
               {{#if aux.annotation}}
-              <span class="aux-annotation">({{aux.annotation}})</span>
+              <span class="m-text-sm m-color-dim">({{aux.annotation}})</span>
               {{/if}}
             </button>
             {{/each}}
@@ -91,7 +91,7 @@
     <!-- 2. Actions (from feats etc.) -->
     {{#if characterActions.actions.length}}
     <section class="m-group actions-section">
-      <h3 class="section-title"><i class="fas fa-bolt"></i> Actions</h3>
+      <h3 class="section-title m-bold m-color-accent"><i class="fas fa-bolt"></i> Actions</h3>
       <div class="m-group-list character-actions-list">
         {{#each characterActions.actions as |act|}}
         {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act}}
@@ -103,7 +103,7 @@
     <!-- 3. Reactions -->
     {{#if characterActions.reactions.length}}
     <section class="m-group actions-section">
-      <h3 class="section-title"><i class="fas fa-rotate-left"></i> Reactions</h3>
+      <h3 class="section-title m-bold m-color-accent"><i class="fas fa-rotate-left"></i> Reactions</h3>
       <div class="m-group-list character-actions-list">
         {{#each characterActions.reactions as |act|}}
         {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act glyphType="reaction"}}
@@ -115,7 +115,7 @@
     <!-- 4. Free Actions -->
     {{#if characterActions.free.length}}
     <section class="m-group actions-section">
-      <h3 class="section-title"><i class="far fa-circle"></i> Free Actions</h3>
+      <h3 class="section-title m-bold m-color-accent"><i class="far fa-circle"></i> Free Actions</h3>
       <div class="m-group-list character-actions-list">
         {{#each characterActions.free as |act|}}
         {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act glyphType="free"}}
@@ -127,7 +127,7 @@
     <!-- 5. Skill actions (those that are possible because of skills) -->
     {{#if characterActions.skillActions.length}}
     <section class="m-group actions-section skill-actions-section">
-      <h3 class="section-title"><i class="fas fa-book-sparkles"></i> Skill Actions</h3>
+      <h3 class="section-title m-bold m-color-accent"><i class="fas fa-book-sparkles"></i> Skill Actions</h3>
       <div class="m-group-list character-actions-list">
         {{#each characterActions.skillActions as |act|}}
         {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act}}
@@ -139,7 +139,7 @@
   {{else if (eq actionSubTab "exploration")}}
     <!-- Exploration Activities Tab -->
     <section class="m-group actions-section">
-      <h3 class="section-title"><i class="fas fa-compass"></i> Exploration Activities</h3>
+      <h3 class="section-title m-bold m-color-accent"><i class="fas fa-compass"></i> Exploration Activities</h3>
       <div class="m-group-list character-actions-list">
         {{#each characterActions.exploration as |act|}}
         {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act}}
@@ -152,7 +152,7 @@
   {{else if (eq actionSubTab "downtime")}}
     <!-- Downtime Activities Tab -->
     <section class="m-group actions-section">
-      <h3 class="section-title"><i class="fas fa-campground"></i> Downtime Activities</h3>
+      <h3 class="section-title m-bold m-color-accent"><i class="fas fa-campground"></i> Downtime Activities</h3>
       <div class="m-group-list character-actions-list">
         {{#each characterActions.downtime as |act|}}
         {{> "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs" act=act}}

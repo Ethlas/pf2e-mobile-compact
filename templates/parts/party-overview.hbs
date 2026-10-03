@@ -1,7 +1,7 @@
 <div class="tab-pane party-overview-tab" data-tab="overview">
   {{#if hasKingdom}}
   <div class="party-kingdom-banner">
-    <button type="button" class="open-kingdom-sheet-btn touch-target" data-action="openMobileKingdomSheet">
+    <button type="button" class="open-kingdom-sheet-btn" data-action="openMobileKingdomSheet">
       <span><i class="fa-solid fa-crown"></i> Open Kingdom Sheet (Mobile View)</span>
       <i class="fa-solid fa-chevron-right"></i>
     </button>
@@ -9,18 +9,18 @@
   {{/if}}
 
   <!-- Party Overview Summary Cards -->
-  <section class="party-summary-section">
-    <h3 class="section-title touch-header" data-action="toggleInventorySection" data-section="party-competencies">
+  <section class="party-summary-section m-panel">
+    <h3 class="section-title touch-header m-flex-row m-align-center m-justify-between m-bold m-color-accent" data-action="toggleInventorySection" data-section="party-competencies">
       <span><i class="fas fa-graduation-cap"></i> Party Competencies</span>
-      <i class="fas fa-chevron-down section-expand-icon"></i>
+      <i class="fas fa-chevron-down section-expand-icon m-text-base m-color-muted"></i>
     </h3>
     <div class="party-summary-content">
       <!-- Languages Strip -->
       <div class="competency-group">
-        <div class="competency-title"><i class="fas fa-language"></i> Known Languages</div>
-        <div class="tag-strip">
+        <div class="competency-title m-text-md m-bold m-color-accent"><i class="fas fa-language"></i> Known Languages</div>
+        <div class="m-flex-row m-wrap m-gap-4">
           {{#each partyLanguages as |lang|}}
-          <span class="competency-pill" title="Speakers: {{#each lang.speakers}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}">
+          <span class="competency-pill m-badge-neutral m-text-sm m-color-normal" title="Speakers: {{#each lang.speakers}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}">
             {{lang.label}}{{#if (gt lang.speakers.length 1)}} <small>({{lang.speakers.length}})</small>{{/if}}
           </span>
           {{else}}
@@ -31,10 +31,10 @@
 
       <!-- Core Skills Best Modifiers -->
       <div class="competency-group">
-        <div class="competency-title"><i class="fas fa-dice-d20"></i> Best Party Modifiers</div>
-        <div class="tag-strip">
+        <div class="competency-title m-text-md m-bold m-color-accent"><i class="fas fa-dice-d20"></i> Best Party Modifiers</div>
+        <div class="m-flex-row m-wrap m-gap-4">
           {{#each partySkills as |sk|}}
-          <span class="competency-pill skill-pill" title="{{sk.member}} (+{{sk.mod}})">
+          <span class="competency-pill skill-pill m-badge-neutral m-text-sm m-color-normal" title="{{sk.member}} (+{{sk.mod}})">
             <strong>{{sk.label}}</strong> +{{sk.mod}} <small>({{sk.member}})</small>
           </span>
           {{/each}}
@@ -43,10 +43,10 @@
 
       <!-- Recall Knowledge Best Modifiers -->
       <div class="competency-group">
-        <div class="competency-title"><i class="fas fa-brain"></i> Recall Knowledge</div>
-        <div class="tag-strip">
+        <div class="competency-title m-text-md m-bold m-color-accent"><i class="fas fa-brain"></i> Recall Knowledge</div>
+        <div class="m-flex-row m-wrap m-gap-4">
           {{#each partyRecallKnowledge as |rk|}}
-          <span class="competency-pill rk-pill" title="{{rk.member}} (+{{rk.mod}})">
+          <span class="competency-pill rk-pill m-badge-neutral m-text-sm m-color-normal" title="{{rk.member}} (+{{rk.mod}})">
             <strong>{{rk.label}}</strong> +{{rk.mod}} <small>({{rk.member}})</small>
           </span>
           {{/each}}
@@ -57,27 +57,27 @@
 
   <!-- Party Members Tactical Roster -->
   <section class="party-roster-section">
-    <h3 class="section-title">
+    <h3 class="section-title m-bold m-color-accent">
       <span><i class="fas fa-users"></i> Party Members ({{partyMembers.length}})</span>
     </h3>
     <div class="party-members-list">
       {{#each partyMembers as |member|}}
-      <div class="action-card party-member-card {{#if member.isUserChar}}is-user-char{{/if}}" data-actor-id="{{member.id}}">
-        <div class="member-card-header">
-          <img class="member-avatar" src="{{member.img}}" alt="{{member.name}}" width="42" height="42" />
-          <div class="member-identity">
-            <div class="member-name-row">
-              <span class="member-name"><strong>{{member.name}}</strong></span>
+      <div class="m-action-card party-member-card m-panel m-flex-col m-gap-6 {{#if member.isUserChar}}is-user-char{{/if}}" data-actor-id="{{member.id}}">
+        <div class="m-flex-row m-align-center m-gap-8">
+          <img class="member-avatar m-shrink-0" src="{{member.img}}" alt="{{member.name}}" width="42" height="42" />
+          <div class="m-flex-1 m-min-w-0">
+            <div class="m-flex-row m-align-center m-justify-between">
+              <span class="m-truncate m-text-xl m-bold m-color-strong"><strong>{{member.name}}</strong></span>
               {{#if member.heroPoints}}
-              <span class="hero-points-badge" title="Hero Points: {{member.heroPoints}}">
+              <span class="hero-points-badge m-badge m-text-xs" title="Hero Points: {{member.heroPoints}}">
                 <i class="fas fa-shield"></i> {{member.heroPoints}} HPt
               </span>
               {{/if}}
             </div>
-            <span class="member-blurb">{{member.blurb}}</span>
+            <span class="member-blurb m-truncate m-text-sm m-color-muted">{{member.blurb}}</span>
           </div>
           {{#if member.isOwner}}
-          <button type="button" class="touch-target btn-switch-member" data-action="switchToPartyMember" data-actor-id="{{member.id}}" title="Open Character Sheet">
+          <button type="button" class="btn-switch-member m-compact m-inline-flex m-align-center m-justify-center m-color-accent" data-action="switchToPartyMember" data-actor-id="{{member.id}}" title="Open Character Sheet">
             <i class="fas fa-arrow-right-to-bracket"></i>
           </button>
           {{/if}}
@@ -88,29 +88,29 @@
           <div class="member-hp-track">
             <div class="member-hp-fill {{#if member.hp.isLow}}danger{{else if member.hp.isMedium}}warning{{else}}healthy{{/if}}" style="width: {{member.hp.percent}}%;"></div>
           </div>
-          <div class="member-hp-text">
+          <div class="member-hp-text m-flex-row m-justify-between m-text-sm m-color-soft">
             <span><i class="fas fa-heart"></i> {{member.hp.value}} / {{member.hp.max}}{{#if member.hp.temp}} (+{{member.hp.temp}}){{/if}} HP</span>
             <span class="member-hp-percent">{{member.hp.percent}}%</span>
           </div>
         </div>
 
         <!-- Defenses Strip -->
-        <div class="member-defenses-strip">
-          <span class="defense-badge ac" title="Armor Class"><strong>AC</strong> {{member.ac}}</span>
-          <span class="defense-badge save" title="Fortitude Save"><strong>Fort</strong> +{{member.saves.fortitude}}</span>
-          <span class="defense-badge save" title="Reflex Save"><strong>Ref</strong> +{{member.saves.reflex}}</span>
-          <span class="defense-badge save" title="Will Save"><strong>Will</strong> +{{member.saves.will}}</span>
-          <span class="defense-badge perc" title="Perception"><strong>Perc</strong> +{{member.perception}}</span>
+        <div class="member-defenses-strip m-flex-row m-wrap m-gap-4">
+          <span class="defense-badge ac m-badge-neutral m-text-sm m-color-normal" title="Armor Class"><strong>AC</strong> {{member.ac}}</span>
+          <span class="defense-badge save m-badge-neutral m-text-sm m-color-normal" title="Fortitude Save"><strong>Fort</strong> +{{member.saves.fortitude}}</span>
+          <span class="defense-badge save m-badge-neutral m-text-sm m-color-normal" title="Reflex Save"><strong>Ref</strong> +{{member.saves.reflex}}</span>
+          <span class="defense-badge save m-badge-neutral m-text-sm m-color-normal" title="Will Save"><strong>Will</strong> +{{member.saves.will}}</span>
+          <span class="defense-badge perc m-badge-neutral m-text-sm m-color-normal" title="Perception"><strong>Perc</strong> +{{member.perception}}</span>
         </div>
 
         <!-- Senses & Key Skills Row -->
-        <div class="member-footer-row">
+        <div class="member-footer-row m-flex-row m-align-center m-justify-between m-text-sm m-color-dim">
           <div class="member-senses" title="Senses: {{member.senses}}">
             <i class="fas fa-eye"></i> {{member.senses}}
           </div>
           <div class="member-top-skills">
             {{#each member.bestSkills as |sk|}}
-            <span class="mini-skill-pill">{{sk.label}} +{{sk.mod}}</span>
+            <span class="mini-skill-pill m-badge m-text-xs m-color-soft">{{sk.label}} +{{sk.mod}}</span>
             {{/each}}
           </div>
         </div>

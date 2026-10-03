@@ -1,6 +1,6 @@
 import { hasKingdomData, getKingdomName } from "../../kingdom/kingdom-handlers.js";
 import { collectSceneCandidateTokens } from "./sheet-prompts.js";
-import { isMobileCanvasDisabled } from "../../utils/sheet-utils.js";
+import { isMobileCanvasDisabled, getHpState } from "../../utils/sheet-utils.js";
 
 /**
  * Prepares header dashboard data: HP, shield, defenses, initiative, targets, owned characters, and focus.
@@ -85,6 +85,8 @@ export function prepareHeaderContext(actor, sheet, context) {
     max: system.attributes?.hp?.max ?? 0,
     temp: system.attributes?.hp?.temp ?? 0
   };
+  // healthy / warning / danger colours the HP in the header, with the same thresholds as the party overview
+  context.hp.state = getHpState(context.hp.value, context.hp.max).state;
 
   const shield = system.attributes?.shield ?? actor.heldShield?.system;
   context.shield = {
