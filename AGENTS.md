@@ -12,7 +12,7 @@ Welcome to the **PF2e Mobile Sheet (Compact)** repository (`pf2e-mobile-compact`
 - **Sheet Architecture**: Foundry `ApplicationV2` / `ActorSheetV2` in [`scripts/apps/mobile-sheet.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/mobile-sheet.js) (lean orchestrator).
 - **Domain Helpers & Context Builders**: [`scripts/apps/sheet-helpers/`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/sheet-helpers/) (`context-*.js`, `sheet-prompts.js`, `actions-handlers.js`, `spells-handlers.js`).
 - **Headless Token Geometry & Canvas Adapter**: [`scripts/tokens/token-adapter.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/tokens/token-adapter.js).
-- **Physical Dice Engine**: [`scripts/rolls/physical-dice-interceptor.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/rolls/physical-dice-interceptor.js) & [`scripts/apps/physical-dice-dialog.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/physical-dice-dialog.js)
+- **Physical Dice Adapter Bridge**: [`scripts/rolls/physical-dice-interceptor.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/rolls/physical-dice-interceptor.js) (delegates roll interception and prompts to external `physical-dice` module)
 - **Utilities**: [`scripts/utils/sheet-utils.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/utils/sheet-utils.js).
 - **Templates**: Handlebars templates in [`templates/`](file:///d:/Dnd/coding/pf2e-mobile-compact/templates/) and [`templates/parts/`](file:///d:/Dnd/coding/pf2e-mobile-compact/templates/parts/)
 - **Styles**: Mobile-first CSS in [`styles/pf2e-mobile.css`](file:///d:/Dnd/coding/pf2e-mobile-compact/styles/pf2e-mobile.css)

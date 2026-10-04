@@ -4,9 +4,22 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
-## [Unreleased]
+## [1.0.30] - 2026-10-04
 
-### Spells Tab: One Section per Spellcasting Entry (`scripts/apps/sheet-helpers/context-spells.js`, `scripts/apps/sheet-helpers/context-spell-preparation.js`, `templates/parts/spells.hbs`, `styles/pf2e-mobile.css`)
+### Physical Dice Module Integration & Engine Migration (`scripts/rolls/physical-dice-interceptor.js`, `scripts/utils/sheet-utils.js`, `scripts/apps/sheet-helpers/context-header.js`, `scripts/apps/sheet-helpers/header-handlers.js`, `scripts/apps/mobile-sheet.js`, `templates/parts/header.hbs`, `styles/pf2e-mobile.css`)
+
+#### Added
+- **Bidirectional Roll Mode Synchronization with `physical-dice`**: Toggling roll mode via the header dice button (`<button data-action="toggleRollMode">`) directly synchronizes with `physical-dice.rollMode`. If the roll mode is changed externally (e.g. from the chat controls button injected by `physical-dice` or in module settings), `pf2e-mobile-compact` listens to `physicalDiceRollModeChanged` and updates the header icon in real-time.
+- **Manual Dice Entry Method Setting**: Added an entry method toggle button under the header settings cog menu (`.header-menu-panel`), enabling mobile users to switch between **Popup Dialog** (`fa-window-restore`) and **In-Chat Rolls** (`fa-comment-dots`) directly in the compact sheet UI.
+
+#### Removed
+- **Internal Physical Dice Engine & Dialog**: Removed obsolete internal `scripts/apps/physical-dice-dialog.js`, `templates/physical-dice-dialog.hbs`, and associated modal CSS rules from `styles/pf2e-mobile.css`.
+- **Duplicate Evaluator Interception**: Removed monkey patches to `Roll.prototype.evaluate` (`setupPhysicalDiceInterceptor`) from `scripts/pf2e-mobile.js`, establishing `physical-dice` as the single authoritative source of roll interception.
+
+#### Refactored
+- **Lightweight Adapter Bridge**: Replaced `scripts/rolls/physical-dice-interceptor.js` with a lean adapter bridge (`PhysicalDiceManager`) that delegates `withPhysicalMode` and `activeContext` to `game.modules.get("physical-dice").api.PhysicalDiceManager` when active and executes rolls seamlessly when inactive.
+
+## [1.0.29] - 2026-10-04
 
 #### Changed
 - **Spells are grouped by spellcasting entry, then by rank**, like pf2e's own sheet. Before, every entry's spells were merged into one list per rank, so a hand-made staff entry ("Other Spells (Staves etc)"), a spell granted by a feat (e.g. Charm from Enthralling Allure) and the class's own spells sat together, and prepared and spontaneous spells could share a rank. Now each entry gets its own section in pf2e's order (the entries' sort value).

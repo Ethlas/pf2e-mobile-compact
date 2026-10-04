@@ -2,7 +2,6 @@
  * Entry point for pf2e-mobile-compact module.
  */
 import { PF2eMobileSheet } from "./apps/mobile-sheet.js";
-import { setupPhysicalDiceInterceptor } from "./rolls/physical-dice-interceptor.js";
 import { isMobileDevice, isIOSDevice, getStoredRollMode } from "./utils/sheet-utils.js";
 import { migrateActorPropertyRunes } from "./apps/sheet-helpers/rune-handlers.js";
 
@@ -699,7 +698,6 @@ Hooks.once("init", async () => {
   const loadTemplatesFn = foundry.applications?.handlebars?.loadTemplates ?? globalThis.loadTemplates;
   await loadTemplatesFn([
     "modules/pf2e-mobile-compact/templates/mobile-sheet.hbs",
-    "modules/pf2e-mobile-compact/templates/physical-dice-dialog.hbs",
     "modules/pf2e-mobile-compact/templates/compendium-picker.hbs",
     "modules/pf2e-mobile-compact/templates/parts/header.hbs",
     "modules/pf2e-mobile-compact/templates/parts/spells.hbs",
@@ -744,11 +742,6 @@ export function activateMobileEnvironment() {
   patchMediaElements();
   sweepResolutionNotifications();
   patchUserActiveTokens();
-  try {
-    setupPhysicalDiceInterceptor();
-  } catch (err) {
-    console.warn("PF2e Mobile Compact | setupPhysicalDiceInterceptor error:", err);
-  }
 }
 
 Hooks.once("ready", () => {
@@ -870,7 +863,6 @@ export function updateFabVisibility() {
 Hooks.on("renderPF2eMobileSheet", (sheet) => {
   if (sheet?.actor) migrateActorPropertyRunes(sheet.actor);
   try {
-    setupPhysicalDiceInterceptor();
     patchUserActiveTokens();
   } catch {}
   syncStylesheetState(sheet);
@@ -885,6 +877,28 @@ Hooks.on("closePF2eMobileSheet", () => {
     syncStylesheetState();
     updateFabVisibility();
   }, 50);
+});
+
+// Reactively synchronize roll mode and entry method when physical-dice settings change externally
+Hooks.on("physicalDiceRollModeChanged", (mode) => {
+  if (foundry.applications?.instances?.values) {
+    for (const app of foundry.applications.instances.values()) {
+      if (app instanceof PF2eMobileSheet && app.rendered) {
+        app._rollMode = mode;
+        app.render({ parts: ["header"] });
+      }
+    }
+  }
+});
+
+Hooks.on("physicalDiceSettingsChanged", () => {
+  if (foundry.applications?.instances?.values) {
+    for (const app of foundry.applications.instances.values()) {
+      if (app instanceof PF2eMobileSheet && app.rendered) {
+        app.render({ parts: ["header"] });
+      }
+    }
+  }
 });
 
 // Continuously drop resolution warnings whenever notifications or dialogs render (mobile only)

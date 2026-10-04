@@ -1,4 +1,4 @@
-import { clamp, isIOSDevice, isMobileCanvasDisabled, setMobileCanvasDisabled, getStoredRollMode, setStoredRollMode } from "../../utils/sheet-utils.js";
+import { clamp, isIOSDevice, isMobileCanvasDisabled, setMobileCanvasDisabled, getStoredRollMode, setStoredRollMode, getDiceEntryMethod, setDiceEntryMethod } from "../../utils/sheet-utils.js";
 import { PhysicalDiceManager } from "../../rolls/physical-dice-interceptor.js";
 import { setTargetToken } from "../../tokens/token-adapter.js";
 import { promptMultiTargetSelection } from "./sheet-prompts.js";
@@ -380,9 +380,28 @@ export function closeHeaderMenu(sheet) {
  */
 export async function onToggleRollMode(sheet, event, target) {
   closeHeaderMenu(sheet);
-  const newMode = getStoredRollMode() === "physical" ? "digital" : "physical";
+  const currentMode = getStoredRollMode();
+  const newMode = currentMode === "physical" ? "digital" : "physical";
   sheet._rollMode = newMode;
   await setStoredRollMode(newMode);
+  sheet.render({ parts: ["header"] });
+}
+
+/**
+ * Action handler: toggle physical dice entry method between Popup Dialog ('dialog') and In-Chat Cards ('chat').
+ * @param {object} sheet
+ * @param {Event} event
+ * @param {HTMLElement} target
+ */
+export async function onToggleEntryMethod(sheet, event, target) {
+  closeHeaderMenu(sheet);
+  const currentMethod = getDiceEntryMethod();
+  const nextMethod = currentMethod === "chat" ? "dialog" : "chat";
+  await setDiceEntryMethod(nextMethod);
+  const methodLabel = nextMethod === "chat" ? "In-Chat Cards" : "Popup Dialog";
+  if (globalThis.ui?.notifications?.info) {
+    ui.notifications.info(`Manual Dice Entry: ${methodLabel}`);
+  }
   sheet.render({ parts: ["header"] });
 }
 

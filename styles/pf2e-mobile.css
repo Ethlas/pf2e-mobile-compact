@@ -1517,75 +1517,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   z-index: 150;
   transform: none !important;
 }
-/* ----------------------------------------- *//* Physical Dice Entry Modal                 *//* ----------------------------------------- */
-.physical-dice-dialog-app {
-  z-index: 10000 !important;
-}
-.physical-dice-dialog-content {
-  padding: 12px;
-  background: var(--m-surface-2);
-  border-radius: 8px;
-}
-.pf2e-mobile-sheet .physical-dialog-header {
-  border-bottom: 1px solid var(--m-border);
-  padding-bottom: 8px;
-}
-.pf2e-mobile-sheet .physical-action-title {
-  font-size: 1.125rem;
-}
-.pf2e-mobile-sheet .physical-action-subtitle {
-  margin-top: 2px;
-}
-.pf2e-mobile-sheet .physical-target-badge {
-  display: inline-block;
-  border-radius: 4px;
-  padding: 3px 8px;
-  margin-top: 6px;
-}
-.pf2e-mobile-sheet .physical-prompt-msg {
-  line-height: 1.4;
-  margin-bottom: 8px;
-}
-/* d20 Check Input */
-.pf2e-mobile-sheet .physical-d20-section {
-  text-align: center;
-  padding: 8px 0;
-}
-.pf2e-mobile-sheet .physical-input-wrapper {
-  margin: 12px auto;
-}
-.physical-dice-dialog-content .physical-die-input {
-  display: block;
-  margin: 0 auto;
-  font-size: 2rem;
-  text-align: center;
-  width: 140px;
-  min-height: 54px;
-  background: var(--m-surface-0);
-  border: 2px solid var(--m-accent);
-  border-radius: 8px;
-}
-.physical-dice-dialog-content .physical-die-input:focus {
-  outline: none;
-  border-color: #ffa726;
-  box-shadow: 0 0 8px color-mix(in srgb, var(--m-accent) 50%, transparent);
-}
-.pf2e-mobile-sheet .physical-modifier-info {
-  margin-top: 8px;
-}
-/* Damage Pools Rows */
-.pf2e-mobile-sheet .physical-damage-pools {
-  margin: 8px 0;
-}
-.pf2e-mobile-sheet .physical-damage-row {
-  background: var(--m-surface-3);
-  border: 1px solid var(--m-border);
-  border-radius: 6px;
-  padding: 10px 12px;
-}
-.pf2e-mobile-sheet .damage-row-header {
-  margin-bottom: 8px;
-}
+/* ----------------------------------------- *//* PF2e Damage Type Badges                  *//* ----------------------------------------- */
 .pf2e-mobile-sheet .damage-type-badge {
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1648,54 +1580,6 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 .pf2e-mobile-sheet .damage-type-badge.damage-bleed {
   background: var(--color-border-bleed, #99001a);
   color: var(--m-text-strong);
-}
-.pf2e-mobile-sheet .damage-input-row label {
-  min-width: 80px;
-}
-.physical-dice-dialog-content .physical-damage-input {
-  min-height: 48px;
-  font-size: 1.25rem;
-  text-align: center;
-  background: var(--m-surface-0);
-  border: 1px solid var(--m-border-strong);
-  border-radius: 6px;
-}
-.physical-dice-dialog-content .physical-damage-input:focus {
-  outline: none;
-  border-color: var(--m-info-text);
-  box-shadow: 0 0 6px rgba(144, 202, 249, 0.4);
-}
-.pf2e-mobile-sheet .damage-mod-note {
-  margin-top: 6px;
-  font-style: italic;
-}
-/* Footer & Actions */
-.physical-dice-dialog-content .physical-dialog-footer {
-  margin-top: 14px;
-}
-.physical-dice-dialog-content .physical-dialog-footer .btn-cancel {
-  background: var(--m-surface-4);
-  color: var(--m-text);
-  border: 1px solid var(--m-border);
-  font-weight: 500;
-}
-.physical-dice-dialog-content .physical-dialog-footer .btn-submit {
-  flex: 1.5;
-  background: var(--m-info-solid);
-  color: var(--m-text-strong);
-  border: 1px solid var(--m-hue-info);
-  font-weight: bold;
-}
-.pf2e-mobile-sheet .physical-error-msg {
-  background: rgba(255, 82, 82, 0.12);
-  border: 1px solid rgba(255, 82, 82, 0.3);
-  border-radius: 4px;
-  padding: 8px 10px;
-  margin-top: 8px;
-  text-align: center;
-}
-.pf2e-mobile-sheet .physical-error-msg.hidden {
-  display: none !important;
 }
 /* ----------------------------------------- *//* Spells Tab & Spell Management             *//* ----------------------------------------- */
 .pf2e-mobile-sheet .btn-daily-reset {
