@@ -1,6 +1,6 @@
 import { hasKingdomData, getKingdomName } from "../../kingdom/kingdom-handlers.js";
 import { collectSceneCandidateTokens } from "./sheet-prompts.js";
-import { isMobileCanvasDisabled, getHpState } from "../../utils/sheet-utils.js";
+import { isMobileCanvasDisabled, getHpState, isPhysicalDiceActive, getDiceEntryMethod } from "../../utils/sheet-utils.js";
 
 /**
  * Prepares header dashboard data: HP, shield, defenses, initiative, targets, owned characters, and focus.
@@ -172,5 +172,12 @@ export function prepareHeaderContext(actor, sheet, context) {
   );
 
   context.canvasDisabled = isMobileCanvasDisabled();
+
+  // Physical Dice Module Integration
+  const physicalActive = isPhysicalDiceActive();
+  const entryMethod = getDiceEntryMethod();
+  context.isPhysicalDiceActive = physicalActive;
+  context.diceEntryMethod = entryMethod;
+  context.isChatEntryMethod = entryMethod === "chat";
 }
 

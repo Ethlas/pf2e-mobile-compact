@@ -159,7 +159,6 @@ function extractRegisteredActions(scriptPath) {
 
 const sheetActions = extractRegisteredActions(path.join(rootDir, "scripts/apps/mobile-sheet.js"));
 const pickerActions = extractRegisteredActions(path.join(rootDir, "scripts/apps/compendium-picker.js"));
-const diceActions = extractRegisteredActions(path.join(rootDir, "scripts/apps/physical-dice-dialog.js"));
 // Actions handled via inline event listeners in ad-hoc dialogs (DialogV2 / Dialog) or CompendiumPickerApp _onRender
 const inlineDialogActions = new Set([
   "confirmPrepareSpell",
@@ -168,7 +167,7 @@ const inlineDialogActions = new Set([
   "updateRankFilter",
   "updateTraditionFilter"
 ]);
-const allActions = new Set([...sheetActions, ...pickerActions, ...diceActions, ...inlineDialogActions]);
+const allActions = new Set([...sheetActions, ...pickerActions, ...inlineDialogActions]);
 
 let totalBoundActionsChecked = 0;
 function checkActionsInTemplates(dir) {
@@ -1448,6 +1447,101 @@ try {
 } catch (err) {
   logFail(`Character overview verification threw an error: ${err.stack || err.message}`);
 }
+
+// Physical Dice Module Integration & Entry Method Toggle
+try {
+  const { isPhysicalDiceActive, getStoredRollMode, setStoredRollMode, getDiceEntryMethod, setDiceEntryMethod } = await import("../scripts/utils/sheet-utils.js");
+  const { onToggleRollMode, onToggleEntryMethod } = await import("../scripts/apps/sheet-helpers/header-handlers.js");
+  const { prepareHeaderContext } = await import("../scripts/apps/sheet-helpers/context-header.js");
+  const headerHbs = fs.readFileSync(path.join(rootDir, "templates/parts/header.hbs"), "utf-8");
+
+  // Setup mock physical-dice module environment
+  let physicalDiceRollMode = "digital";
+  let physicalDiceEntryMethod = "dialog";
+  globalThis.game = globalThis.game || {};
+  globalThis.game.modules = globalThis.game.modules || new Map();
+  globalThis.game.modules.get = (id) => {
+    if (id === "physical-dice") {
+      return {
+        active: true,
+        api: {
+          PhysicalDiceManager: {
+            activeContext: null,
+            isPhysicalModeActive: () => physicalDiceRollMode === "physical",
+            withPhysicalMode: async (ctx, fn) => fn()
+          }
+        }
+      };
+    }
+    return null;
+  };
+  globalThis.game.settings = globalThis.game.settings || { settings: new Map() };
+  globalThis.game.settings.settings.set("physical-dice.rollMode", {});
+  globalThis.game.settings.settings.set("physical-dice.entryMethod", {});
+  globalThis.game.settings.get = (_mod, key) => {
+    if (key === "rollMode") return physicalDiceRollMode;
+    if (key === "entryMethod") return physicalDiceEntryMethod;
+    return null;
+  };
+  globalThis.game.settings.set = async (_mod, key, val) => {
+    if (key === "rollMode") physicalDiceRollMode = val;
+    if (key === "entryMethod") physicalDiceEntryMethod = val;
+  };
+
+  // Test isPhysicalDiceActive
+  if (!isPhysicalDiceActive()) {
+    logFail("[Physical Dice Integration] isPhysicalDiceActive returned false when physical-dice module is active.");
+  } else {
+    logPass("[Physical Dice Integration] isPhysicalDiceActive correctly detects physical-dice module.");
+  }
+
+  // Test Roll Mode Synchronization
+  await setStoredRollMode("physical");
+  if (physicalDiceRollMode !== "physical" || getStoredRollMode() !== "physical") {
+    logFail("[Physical Dice Integration] setStoredRollMode failed to update physical-dice.rollMode setting.");
+  } else {
+    logPass("[Physical Dice Integration] setStoredRollMode synchronizes with physical-dice module setting.");
+  }
+
+  // Test Sheet Header onToggleRollMode
+  const testSheet = { _rollMode: "physical", render: () => {} };
+  await onToggleRollMode(testSheet, {}, {});
+  if (testSheet._rollMode !== "digital" || physicalDiceRollMode !== "digital") {
+    logFail("[Physical Dice Integration] onToggleRollMode failed to flip mode and sync to physical-dice.");
+  } else {
+    logPass("[Physical Dice Integration] onToggleRollMode successfully toggles and synchronizes physical-dice mode.");
+  }
+
+  // Test Entry Method Toggle (Dialog <-> Chat)
+  if (getDiceEntryMethod() !== "dialog") {
+    logFail("[Physical Dice Integration] getDiceEntryMethod expected 'dialog'.");
+  }
+  await onToggleEntryMethod(testSheet, {}, {});
+  if (physicalDiceEntryMethod !== "chat" || getDiceEntryMethod() !== "chat") {
+    logFail("[Physical Dice Integration] onToggleEntryMethod failed to switch to 'chat'.");
+  } else {
+    logPass("[Physical Dice Integration] onToggleEntryMethod successfully switched Entry Method from 'dialog' to 'chat'.");
+  }
+
+  // Test Header Context contains isPhysicalDiceActive and isChatEntryMethod
+  const mockContext = {};
+  prepareHeaderContext({ type: "character", system: {}, items: [] }, testSheet, mockContext);
+  if (!mockContext.isPhysicalDiceActive || !mockContext.isChatEntryMethod || mockContext.diceEntryMethod !== "chat") {
+    logFail("[Physical Dice Integration] prepareHeaderContext missing physical dice context fields.");
+  } else {
+    logPass("[Physical Dice Integration] Header context exposes isPhysicalDiceActive, diceEntryMethod, and isChatEntryMethod.");
+  }
+
+  // Test template includes toggleEntryMethod button inside header-menu-panel
+  if (!headerHbs.includes('data-action="toggleEntryMethod"')) {
+    logFail("[Physical Dice Integration] header.hbs is missing data-action='toggleEntryMethod' button.");
+  } else {
+    logPass("[Physical Dice Integration] header.hbs contains 'toggleEntryMethod' button under settings menu.");
+  }
+} catch (err) {
+  logFail(`Physical dice integration verification threw an error: ${err.stack || err.message}`);
+}
+
 
 // 7. Foundry VTT AI Content Policy Compliance Audit (https://foundryvtt.com/article/ai-policy/)
 console.log("\n--- 7. Foundry VTT AI Content Policy Compliance Audit ---");

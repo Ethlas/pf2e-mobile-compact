@@ -183,13 +183,27 @@ export function isIOSDevice() {
 }
 
 /**
+ * Checks whether the external 'physical-dice' module is installed and active.
+ * @returns {boolean}
+ */
+export function isPhysicalDiceActive() {
+  return Boolean(globalThis.game?.modules?.get("physical-dice")?.active);
+}
+
+/**
  * Returns the saved Digital/Physical roll mode for this browser.
- * Stored only in the client-scope setting "pf2e-mobile-compact.rollMode"; Foundry keeps
- * client settings in localStorage itself, so the choice survives reloads and logins.
+ * Checks the 'physical-dice' module setting first if active, falling back to
+ * 'pf2e-mobile-compact.rollMode' and defaulting to 'digital'.
  * @returns {"digital"|"physical"}
  */
 export function getStoredRollMode() {
   try {
+    if (isPhysicalDiceActive() && globalThis.game?.settings?.settings?.has?.("physical-dice.rollMode")) {
+      return game.settings.get("physical-dice", "rollMode") === "physical" ? "physical" : "digital";
+    }
+    if (globalThis.game?.settings?.settings?.has?.("physical-dice.rollMode")) {
+      return game.settings.get("physical-dice", "rollMode") === "physical" ? "physical" : "digital";
+    }
     if (globalThis.game?.settings?.settings?.has?.("pf2e-mobile-compact.rollMode")) {
       return game.settings.get("pf2e-mobile-compact", "rollMode") === "physical" ? "physical" : "digital";
     }
@@ -198,14 +212,48 @@ export function getStoredRollMode() {
 }
 
 /**
- * Saves the Digital/Physical roll mode for this browser (see getStoredRollMode).
+ * Saves the Digital/Physical roll mode for this browser.
+ * Persists to 'physical-dice.rollMode' (if installed) and synchronizes with
+ * 'pf2e-mobile-compact.rollMode'.
  * @param {"digital"|"physical"} mode
  * @returns {Promise<void>}
  */
 export async function setStoredRollMode(mode) {
   try {
+    if (globalThis.game?.settings?.settings?.has?.("physical-dice.rollMode")) {
+      await game.settings.set("physical-dice", "rollMode", mode);
+    }
+  } catch {}
+  try {
     if (globalThis.game?.settings?.settings?.has?.("pf2e-mobile-compact.rollMode")) {
       await game.settings.set("pf2e-mobile-compact", "rollMode", mode);
+    }
+  } catch {}
+}
+
+/**
+ * Returns the current manual dice entry method ("dialog" | "chat").
+ * Defaults to "dialog".
+ * @returns {"dialog"|"chat"}
+ */
+export function getDiceEntryMethod() {
+  try {
+    if (globalThis.game?.settings?.settings?.has?.("physical-dice.entryMethod")) {
+      return game.settings.get("physical-dice", "entryMethod") || "dialog";
+    }
+  } catch {}
+  return "dialog";
+}
+
+/**
+ * Persists the manual dice entry method ("dialog" | "chat") to physical-dice settings.
+ * @param {"dialog"|"chat"} method
+ * @returns {Promise<void>}
+ */
+export async function setDiceEntryMethod(method) {
+  try {
+    if (globalThis.game?.settings?.settings?.has?.("physical-dice.entryMethod")) {
+      await game.settings.set("physical-dice", "entryMethod", method);
     }
   } catch {}
 }

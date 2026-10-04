@@ -21,8 +21,7 @@ This guide provides procedures for developing and extending the PF2e Mobile Shee
   - `actions-handlers.js` (Strikes, Checks, Skill Rolls, Item Usage)
   - `spells-handlers.js` (Cast, Slot Mgmt, Daily Rest, Presets, Signature Spells)
 - **Headless Token Geometry & Canvas Adapter**: [`scripts/tokens/token-adapter.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/tokens/token-adapter.js)
-- **Physical Dice Engine**: [`scripts/rolls/physical-dice-interceptor.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/rolls/physical-dice-interceptor.js)
-- **Physical Dice Entry Dialog**: [`scripts/apps/physical-dice-dialog.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/apps/physical-dice-dialog.js)
+- **Physical Dice Adapter Bridge**: [`scripts/rolls/physical-dice-interceptor.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/rolls/physical-dice-interceptor.js) (delegates roll interception and prompts to external `physical-dice` module)
 - **Utilities**: [`scripts/utils/sheet-utils.js`](file:///d:/Dnd/coding/pf2e-mobile-compact/scripts/utils/sheet-utils.js)
 - **Templates**:
   - Main Frame: [`templates/mobile-sheet.hbs`](file:///d:/Dnd/coding/pf2e-mobile-compact/templates/mobile-sheet.hbs)

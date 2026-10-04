@@ -60,6 +60,12 @@
             <i class="fas {{#if canvasDisabled}}fa-eye-slash{{else}}fa-map{{/if}}"></i>
           </button>
 
+          {{#if isPhysicalDiceActive}}
+          <button type="button" class="header-btn m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="toggleEntryMethod" title="{{#if isChatEntryMethod}}Manual Dice Entry: In-Chat (Tap to switch to Popup Dialog){{else}}Manual Dice Entry: Popup Dialog (Tap to switch to In-Chat){{/if}}" aria-label="Toggle Manual Dice Entry Method">
+            <i class="fas {{#if isChatEntryMethod}}fa-comment-dots{{else}}fa-window-restore{{/if}}"></i>
+          </button>
+          {{/if}}
+
           <button type="button" class="header-btn btn-fullscreen m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="toggleFullscreen" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">
             <i class="fas fa-expand"></i>
           </button>
