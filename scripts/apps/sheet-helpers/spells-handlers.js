@@ -284,7 +284,8 @@ export async function onResetDailySpells(sheet, event, target) {
   // Trigger PF2e's native restForTheNight if available for full rest benefits (HP, conditions, etc.)
   if (typeof game.pf2e?.actions?.restForTheNight === "function") {
     try {
-      await game.pf2e.actions.restForTheNight({ actors: [sheet.actor] });
+      // We already asked for confirmation above, so skip pf2e's own second dialog
+      await game.pf2e.actions.restForTheNight({ actors: [sheet.actor], skipDialog: true });
     } catch (err) {
       console.warn("PF2e Mobile Compact | PF2e native restForTheNight encountered error:", err);
     }
@@ -292,10 +293,12 @@ export async function onResetDailySpells(sheet, event, target) {
 
   const entries = sheet.actor.spellcasting?.contents ?? [];
   for (const entry of entries) {
+    // pf2e-dailies adds a staff entry that is not an item (no system data); its charges are refreshed below
+    if (!entry.system?.slots) continue;
     const updates = {};
     for (let r = 0; r <= 10; r++) {
       const slotKey = `slot${r}`;
-      const slotData = entry.system.slots?.[slotKey];
+      const slotData = entry.system.slots[slotKey];
       if (slotData) {
         updates[`system.slots.${slotKey}.value`] = slotData.max ?? 0;
         if (slotData.prepared) {
