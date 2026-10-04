@@ -350,6 +350,20 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 #### Changed
 - **Header grid gets a column for the user button (`styles/pf2e-mobile.css`)**: user button | name | target | roll mode | cog. `.actor-identity-wrapper` now uses `display: contents` like `.header-controls-wrapper`, so the button takes room from both the name and the target select instead of only from the name. Checked at phone width in Chromium and Firefox.
 
+### Desktop Mode Isolation & Touchscreen Laptop Compatibility (Issue #20)
+
+#### Fixed
+- **Kingmaker CSS scoping and desktop modal isolation (`styles/kingdom.css`)**:
+  - Scoped all Kingmaker modal dialogs (`.pf2e-mobile-km-dialog`, `.application[id^="kmCheck-"]`, `.application[id^="kmStructureBrowser"]`) strictly under `body.pf2e-mobile-active`. This prevents `StructureBrowser` and check dialogs from being forced into 410px mobile-centered modals during desktop sessions.
+  - Removed all `body:has(.pf2e-mobile-sheet)` selectors that hid `.km-kingdom-sheet`, `.application[id^="kmInspectSettlement-"]`, and `.application[id^="kmConsumptionBreakdown-"]` whenever a mobile compact sheet was present in the DOM on desktop.
+- **Strict mobile check in `renderApplicationV2` (`scripts/pf2e-mobile.js`)**:
+  - Replaced the loose `shouldActivateMobile() || Boolean(document.querySelector(".pf2e-mobile-sheet"))` check with `!shouldActivateMobile()`, preventing desktop Kingdom Sheet rendering from being suppressed or hijacked into turn mode when a mobile sheet is opened on desktop.
+- **ApplicationV2 instance leak in `syncStylesheetState` (`scripts/pf2e-mobile.js`)**:
+  - Replaced the `(a.rendered || a.element)` check with `(a.rendered && a.element?.isConnected)`, resolving an issue where closed `ApplicationV2` instances retaining detached `this.element` references kept module stylesheets permanently enabled on desktop.
+- **Laptop touchscreen false positives & desktop restoration (`scripts/utils/sheet-utils.js`, `scripts/pf2e-mobile.js`)**:
+  - Updated `isTouchCompact` in `isMobileDevice()` to verify coarse pointer support (`pointer: coarse`) and exclude devices with fine primary pointing devices (`pointer: fine`). This prevents Windows/macOS/Linux laptops equipped with touchscreens (e.g. Surface, XPS, Yoga) from false-positively activating mobile layout when snapped side-by-side or zoomed below 1024px.
+  - Added `deactivateMobileEnvironment()` and updated the `resize` listener so that when a browser viewport is resized or rotated back to desktop dimensions, `body.pf2e-mobile-active` is removed, the PixiJS canvas ticker and stage rendering are resumed via `resumeCanvasFromMobile()`, wake locks are released, and Foundry's desktop UI is cleanly restored.
+
 ### Header Settings Menu & Shared Header Control Styles
 
 #### Changed
