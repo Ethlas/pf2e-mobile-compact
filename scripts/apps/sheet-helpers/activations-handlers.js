@@ -333,10 +333,13 @@ export async function onCastItemSpell(sheet, event, target) {
  */
 export async function onOpenDailies(sheet, event, target) {
   const dailiesApi = game.dailies?.api;
-  if (typeof dailiesApi?.openDailiesInterface === "function") {
-    await dailiesApi.openDailiesInterface(sheet.actor);
-  } else {
+  if (typeof dailiesApi?.openDailiesInterface !== "function") {
     ui.notifications?.info?.("PF2e Dailies module is not installed or active.");
+  } else if (dailiesApi.canPrepareDailies?.(sheet.actor) === false) {
+    // pf2e-dailies opens nothing (and says nothing) until the character has rested since the last preparation
+    ui.notifications?.info?.(`${sheet.actor.name} must Rest for the Night before preparing dailies again.`);
+  } else {
+    await dailiesApi.openDailiesInterface(sheet.actor);
   }
 }
 

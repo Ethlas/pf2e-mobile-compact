@@ -1,8 +1,9 @@
 /**
  * Context preparation helper for Spells (Cast View and Preparation View).
  */
-import { parseActionCostInfo } from "../../utils/sheet-utils.js";
+import { parseActionCostInfo, PROFICIENCY_RANK_LETTERS, PROFICIENCY_RANK_NAMES } from "../../utils/sheet-utils.js";
 import { isItemSpellcastingEntry } from "./context-activations.js";
+import { preparePreparationContext } from "./context-spell-preparation.js";
 
 /**
  * Format spell item details.
@@ -182,7 +183,239 @@ export async function formatSpell(actor, sheet, spell, entryId, extra = {}) {
 }
 
 /**
- * Helper to structure spells for both Cast View (unified by rank) and Preparation View (slots & presets).
+ * The header data of one spellcasting entry, like the top of an entry on pf2e's sheet: its name, spell DC,
+ * spell attack bonus, tradition and proficiency rank. Each entry has its own statistic (an entry granted by a
+ * feat can use another attribute or rank than the class entry), so the numbers come from entry.statistic.
+ * @param {object} entry  A spellcasting entry of actor.spellcasting
+ * @returns {{id: string, name: string, dc: number|null, attack: string, tradition: string, rank: number|null, rankLetter: string, rankName: string}}
+ */
+function describeEntry(entry) {
+  const statistic = entry.statistic ?? null;
+  const dc = statistic?.dc?.value ?? null;
+  const mod = statistic?.check?.mod ?? statistic?.mod ?? null;
+  const rank = statistic?.rank ?? entry.system?.proficiency?.value ?? null;
+  const traditionSlug = entry.tradition ?? entry.system?.tradition?.value ?? "";
+  const traditionKey = globalThis.CONFIG?.PF2E?.magicTraditions?.[traditionSlug];
+  const tradition = traditionKey
+    ? (game.i18n?.localize?.(traditionKey) ?? traditionKey)
+    : (traditionSlug ? traditionSlug.charAt(0).toUpperCase() + traditionSlug.slice(1) : "");
+  return {
+    id: entry.id,
+    name: entry.name ?? "",
+    dc: typeof dc === "number" ? dc : null,
+    attack: typeof mod === "number" ? `${mod >= 0 ? "+" : ""}${mod}` : "",
+    tradition,
+    rank: typeof rank === "number" ? rank : null,
+    rankLetter: typeof rank === "number" ? (PROFICIENCY_RANK_LETTERS[rank] ?? "") : "",
+    rankName: typeof rank === "number"
+      ? (game.i18n?.localize?.(`PF2E.ProficiencyLevel${rank}`) ?? PROFICIENCY_RANK_NAMES[rank] ?? "")
+      : ""
+  };
+}
+
+/**
+ * The spell groups of one spellcasting entry: Focus Spells, Cantrips and Rank 1-10, each with its own spells
+ * and (for spontaneous and flexible entries) the entry's own slot counter. Collapse keys are scoped to the
+ * entry ("<entryId>-<rank>", "<entryId>-focus"), so folding Rank 1 of one entry leaves the others open.
+ * @param {Actor} actor
+ * @param {object} sheet
+ * @param {object} entry  A spellcasting entry of actor.spellcasting
+ * @returns {Promise<object[]>}  The groups with spells or slots, Focus Spells first
+ */
+async function prepareEntryGroups(actor, sheet, entry) {
+  const entryId = entry.id;
+  const makeGroup = (rank, label) => {
+    const collapseKey = `${entryId}-${rank}`;
+    return {
+      rank,
+      label,
+      collapseKey,
+      isCollapsed: !!sheet._collapsedRankGroups?.has(collapseKey),
+      spells: [],
+      hasSlots: false,
+      slots: { value: 0, max: 0 },
+      entryId
+    };
+  };
+  const rankBuckets = Array.from({ length: 11 }, (_, r) => makeGroup(r, r === 0 ? "Cantrips" : `Rank ${r}`));
+  // Focus spells get their own group, above the Cantrips. Each spell keeps the rank it is cast at
+  // (castRank), so heightening and damage stay correct; the group itself has no rank.
+  const focusGroup = makeGroup("focus", "Focus Spells");
+
+  const isPrepared = entry.isPrepared || entry.system?.prepared?.value === "prepared";
+  const isSpontaneous = entry.isSpontaneous || entry.system?.prepared?.value === "spontaneous";
+  const isFocus = entry.isFocusPool || entry.system?.prepared?.value === "focus" || entry.system?.category === "focus";
+  const isInnate = entry.isInnate || entry.system?.prepared?.value === "innate" || entry.system?.category === "innate";
+
+  const systemData = entry.system ?? {};
+  const spells = entry.spells?.contents ?? [];
+
+  // Slot counters for ranks 1-10.
+  // Only spontaneous and flexible entries spend slots by count (slots.slotN.value). Prepared entries
+  // mark the prepared spell itself as expended, which the spell cards already show.
+  // Cantrips (rank 0) never get a counter: they are cast at will, and pf2e's slot0 holds how many
+  // cantrips the caster knows, not uses.
+  const usesSlotCount = isSpontaneous || Boolean(entry.isFlexible);
+  for (let r = 1; r <= 10; r++) {
+    const slotData = systemData.slots?.[`slot${r}`];
+    if (usesSlotCount && slotData && slotData.max > 0) {
+      const bucket = rankBuckets[r];
+      bucket.hasSlots = true;
+      bucket.slots.value = slotData.value ?? 0;
+      bucket.slots.max = slotData.max ?? 0;
+    }
+  }
+
+  if (isPrepared) {
+    // Check cantrip slots (slot0)
+    const slot0Prepared = systemData.slots?.slot0?.prepared;
+    if (slot0Prepared) {
+      const prepArr = Array.isArray(slot0Prepared) ? slot0Prepared : Object.values(slot0Prepared);
+      for (let sIdx = 0; sIdx < prepArr.length; sIdx++) {
+        const prepItem = prepArr[sIdx];
+        if (prepItem?.id) {
+          const spell = entry.spells?.get(prepItem.id) ?? actor.items.get(prepItem.id);
+          if (spell) {
+            const formatted = await formatSpell(actor, sheet, spell, entryId, {
+              isPrepared: true,
+              isExpended: !!prepItem.expended,
+              slotIndex: sIdx,
+              castRank: 0,
+              cardKey: `${spell.id}-0-${sIdx}`
+            });
+            rankBuckets[0].spells.push(formatted);
+          }
+        }
+      }
+    } else {
+      // If no slot0 prepared data, fallback to known cantrips
+      const cantrips = spells.filter(s => s.isCantrip);
+      for (const s of cantrips) {
+        const formatted = await formatSpell(actor, sheet, s, entryId, { isPrepared: true, castRank: 0, cardKey: `${s.id}-0` });
+        rankBuckets[0].spells.push(formatted);
+      }
+    }
+
+    // Check ranks 1 through 10
+    for (let r = 1; r <= 10; r++) {
+      const slotKey = `slot${r}`;
+      const slotPrepared = systemData.slots?.[slotKey]?.prepared;
+      if (slotPrepared) {
+        const prepArr = Array.isArray(slotPrepared) ? slotPrepared : Object.values(slotPrepared);
+        for (let sIdx = 0; sIdx < prepArr.length; sIdx++) {
+          const prepItem = prepArr[sIdx];
+          if (prepItem?.id) {
+            const spell = entry.spells?.get(prepItem.id) ?? actor.items.get(prepItem.id);
+            if (spell) {
+              const formatted = await formatSpell(actor, sheet, spell, entryId, {
+                isPrepared: true,
+                isExpended: !!prepItem.expended,
+                slotIndex: sIdx,
+                castRank: r,
+                cardKey: `${spell.id}-${r}-${sIdx}`
+              });
+              rankBuckets[r].spells.push(formatted);
+            }
+          }
+        }
+      } else {
+        const rankSpells = spells.filter(s => !s.isCantrip && (s.rank === r || s.system.level?.value === r));
+        for (const s of rankSpells) {
+          const formatted = await formatSpell(actor, sheet, s, entryId, { isPrepared: true, castRank: r, cardKey: `${s.id}-${r}` });
+          rankBuckets[r].spells.push(formatted);
+        }
+      }
+    }
+  } else {
+    // Spontaneous, Focus, Innate, Rituals
+    let maxSpellRank = 0;
+    if (isSpontaneous) {
+      maxSpellRank = typeof entry.highestRank === "number" ? entry.highestRank : 0;
+      for (let r = 10; r >= 1; r--) {
+        if ((systemData.slots?.[`slot${r}`]?.max ?? 0) > 0) {
+          maxSpellRank = Math.max(maxSpellRank, r);
+        }
+      }
+      for (const s of spells) {
+        if (!s.isCantrip) {
+          const sRank = s.rank ?? s.system.level?.value ?? 1;
+          maxSpellRank = Math.max(maxSpellRank, sRank);
+        }
+      }
+      maxSpellRank = Math.min(10, Math.max(1, maxSpellRank));
+    }
+
+    for (const spell of spells) {
+      // Defensive check: skip if spell originates from an item or staff
+      if (spell.system?.location?.value) {
+        const locEntry = actor.spellcasting?.get(spell.system.location.value);
+        if (locEntry && isItemSpellcastingEntry(locEntry, actor)) continue;
+      }
+
+      const traits = spell.system?.traits?.value ?? spell.traits?.value ?? [];
+      const traitLabels = Array.isArray(traits) ? traits.map(t => typeof t === "string" ? t.toLowerCase() : String(t?.value ?? t?.label ?? "").toLowerCase()) : [];
+      const isCantrip = spell.isCantrip || traitLabels.includes("cantrip") || spell.system?.level?.value === 0;
+      const isFocusSpell = isFocus || spell.isFocusSpell || traitLabels.includes("focus");
+      const isRitualSpell = spell.isRitual || traitLabels.includes("ritual");
+
+      const minRank = isCantrip ? 0 : (spell.baseRank ?? spell.system.level?.value ?? spell.rank ?? 1);
+      const assignedRank = isCantrip ? 0 : (spell.system.location?.heightenedLevel ?? spell.rank ?? minRank);
+      const isSignature = isSpontaneous && !isCantrip && !isFocusSpell && !isRitualSpell && !!(spell.system?.location?.signature || spell.isSignature);
+
+      if (isSignature) {
+        const startRank = Math.max(0, minRank);
+        const endRank = Math.min(10, Math.max(assignedRank, maxSpellRank));
+        for (let r = startRank; r <= endRank; r++) {
+          const isHeightened = r > minRank;
+          const formatted = await formatSpell(actor, sheet, spell, entryId, {
+            isSpontaneous,
+            isFocus: isFocusSpell,
+            isInnate,
+            isHeightened,
+            baseRank: minRank,
+            castRank: r,
+            cardKey: `${spell.id}-${r}`
+          });
+          rankBuckets[r].spells.push(formatted);
+        }
+      } else {
+        const targetRank = assignedRank;
+        if (targetRank >= 0 && targetRank <= 10) {
+          const isHeightened = targetRank > minRank;
+          const formatted = await formatSpell(actor, sheet, spell, entryId, {
+            isSpontaneous,
+            isFocus: isFocusSpell,
+            isInnate,
+            isHeightened,
+            baseRank: minRank,
+            castRank: targetRank,
+            cardKey: `${spell.id}-${targetRank}`
+          });
+          const group = isFocusSpell ? focusGroup : rankBuckets[targetRank];
+          group.spells.push(formatted);
+        }
+      }
+    }
+  }
+
+  const sortByName = (a, b) => a.name.localeCompare(b.name);
+  for (const b of [focusGroup, ...rankBuckets]) {
+    b.spells.sort(sortByName);
+  }
+
+  // Keep ranks that have spells OR slots with max > 0; the focus group (if it has spells) comes first.
+  const visibleGroups = rankBuckets.filter(b => b.spells.length > 0 || (b.hasSlots && b.slots.max > 0));
+  if (focusGroup.spells.length > 0) visibleGroups.unshift(focusGroup);
+  return visibleGroups.map(b => ({ ...b, spellCount: b.spells.length }));
+}
+
+/**
+ * Helper to structure spells for both Cast View (one section per spellcasting entry, by rank inside it) and
+ * Preparation View (slots & presets).
+ * The Cast View keeps each entry apart, like pf2e's sheet: the class's spells, a focus tradition, spells
+ * granted by a feat (e.g. Charm from Enthralling Allure) and a hand-made entry for staff spells each get their
+ * own section with their own DC and attack bonus. Entries of staves, wands and scrolls themselves stay on the
+ * Activations sub-tab (isItemSpellcastingEntry).
  * @param {Actor} actor
  * @param {object} sheet
  * @param {object} context
@@ -196,301 +429,15 @@ export async function prepareSpellsContext(actor, sheet, context) {
   const currentSubTab = sheet._spellSubTab || "spells";
   context.spellSubTab = (currentSubTab === "preparation" && !hasPreparedEntry) ? "spells" : currentSubTab;
 
-  // 1. GATHER ALL SPELLS ACROSS ALL ENTRIES
-  // We group by rank: 0 (Cantrips) to 10
-  const rankBuckets = Array.from({ length: 11 }, (_, r) => ({
-    rank: r,
-    label: r === 0 ? "Cantrips" : `Rank ${r}`,
-    isCollapsed: sheet._collapsedRankGroups?.has(r),
-    spells: [],
-    hasSlots: false,
-    slots: { value: 0, max: 0 },
-    entryId: null
-  }));
-
-  // Focus spells get their own group, shown above the Cantrips. Each spell keeps the rank it is
-  // cast at (castRank), so heightening and damage stay correct; the group itself has no rank,
-  // so its collapse key is the string "focus" instead of a number.
-  const focusGroup = {
-    rank: "focus",
-    label: "Focus Spells",
-    isCollapsed: sheet._collapsedRankGroups?.has("focus"),
-    spells: [],
-    hasSlots: false,
-    slots: { value: 0, max: 0 },
-    entryId: null
-  };
-
-  for (const entry of entries) {
-    const entryId = entry.id;
-    const isPrepared = entry.isPrepared || entry.system?.prepared?.value === "prepared";
-    const isSpontaneous = entry.isSpontaneous || entry.system?.prepared?.value === "spontaneous";
-    const isFocus = entry.isFocusPool || entry.system?.prepared?.value === "focus" || entry.system?.category === "focus";
-    const isInnate = entry.isInnate || entry.system?.prepared?.value === "innate" || entry.system?.category === "innate";
-
-    const systemData = entry.system ?? {};
-    const spells = entry.spells?.contents ?? [];
-
-    // Update slot trackers for ranks 1-10.
-    // Only spontaneous and flexible entries spend slots by count (slots.slotN.value). Prepared entries
-    // mark the prepared spell itself as expended, which the spell cards already show.
-    // Cantrips (rank 0) never get a counter: they are cast at will, and pf2e's slot0 holds how many
-    // cantrips the caster knows, not uses.
-    const usesSlotCount = isSpontaneous || Boolean(entry.isFlexible);
-    for (let r = 1; r <= 10; r++) {
-      const slotKey = `slot${r}`;
-      const slotData = systemData.slots?.[slotKey];
-      if (usesSlotCount && slotData && slotData.max > 0) {
-        const bucket = rankBuckets[r];
-        bucket.hasSlots = true;
-        bucket.slots.value = Math.max(bucket.slots.value, slotData.value ?? 0);
-        bucket.slots.max = Math.max(bucket.slots.max, slotData.max ?? 0);
-        if (!bucket.entryId) bucket.entryId = entryId;
-      }
-    }
-
-    if (isPrepared) {
-      // Check cantrip slots (slot0)
-      const slot0Prepared = systemData.slots?.slot0?.prepared;
-      if (slot0Prepared) {
-        const prepArr = Array.isArray(slot0Prepared) ? slot0Prepared : Object.values(slot0Prepared);
-        for (let sIdx = 0; sIdx < prepArr.length; sIdx++) {
-          const prepItem = prepArr[sIdx];
-          if (prepItem?.id) {
-            const spell = entry.spells?.get(prepItem.id) ?? actor.items.get(prepItem.id);
-            if (spell) {
-              const formatted = await formatSpell(actor, sheet, spell, entryId, {
-                isPrepared: true,
-                isExpended: !!prepItem.expended,
-                slotIndex: sIdx,
-                castRank: 0,
-                cardKey: `${spell.id}-0-${sIdx}`
-              });
-              rankBuckets[0].spells.push(formatted);
-            }
-          }
-        }
-      } else {
-        // If no slot0 prepared data, fallback to known cantrips
-        const cantrips = spells.filter(s => s.isCantrip);
-        for (const s of cantrips) {
-          const formatted = await formatSpell(actor, sheet, s, entryId, { isPrepared: true, castRank: 0, cardKey: `${s.id}-0` });
-          rankBuckets[0].spells.push(formatted);
-        }
-      }
-
-      // Check ranks 1 through 10
-      for (let r = 1; r <= 10; r++) {
-        const slotKey = `slot${r}`;
-        const slotPrepared = systemData.slots?.[slotKey]?.prepared;
-        if (slotPrepared) {
-          const prepArr = Array.isArray(slotPrepared) ? slotPrepared : Object.values(slotPrepared);
-          for (let sIdx = 0; sIdx < prepArr.length; sIdx++) {
-            const prepItem = prepArr[sIdx];
-            if (prepItem?.id) {
-              const spell = entry.spells?.get(prepItem.id) ?? actor.items.get(prepItem.id);
-              if (spell) {
-                const formatted = await formatSpell(actor, sheet, spell, entryId, {
-                  isPrepared: true,
-                  isExpended: !!prepItem.expended,
-                  slotIndex: sIdx,
-                  castRank: r,
-                  cardKey: `${spell.id}-${r}-${sIdx}`
-                });
-                rankBuckets[r].spells.push(formatted);
-              }
-            }
-          }
-        } else {
-          const rankSpells = spells.filter(s => !s.isCantrip && (s.rank === r || s.system.level?.value === r));
-          for (const s of rankSpells) {
-            const formatted = await formatSpell(actor, sheet, s, entryId, { isPrepared: true, castRank: r, cardKey: `${s.id}-${r}` });
-            rankBuckets[r].spells.push(formatted);
-          }
-        }
-      }
-    } else {
-      // Spontaneous, Focus, Innate, Rituals
-      let maxSpellRank = 0;
-      if (isSpontaneous) {
-        maxSpellRank = typeof entry.highestRank === "number" ? entry.highestRank : 0;
-        for (let r = 10; r >= 1; r--) {
-          if ((systemData.slots?.[`slot${r}`]?.max ?? 0) > 0) {
-            maxSpellRank = Math.max(maxSpellRank, r);
-          }
-        }
-        for (const s of spells) {
-          if (!s.isCantrip) {
-            const sRank = s.rank ?? s.system.level?.value ?? 1;
-            maxSpellRank = Math.max(maxSpellRank, sRank);
-          }
-        }
-        maxSpellRank = Math.min(10, Math.max(1, maxSpellRank));
-      }
-
-      for (const spell of spells) {
-        // Defensive check: skip if spell originates from an item or staff
-        if (spell.system?.location?.value) {
-          const locEntry = actor.spellcasting?.get(spell.system.location.value);
-          if (locEntry && isItemSpellcastingEntry(locEntry, actor)) continue;
-        }
-
-        const traits = spell.system?.traits?.value ?? spell.traits?.value ?? [];
-        const traitLabels = Array.isArray(traits) ? traits.map(t => typeof t === "string" ? t.toLowerCase() : String(t?.value ?? t?.label ?? "").toLowerCase()) : [];
-        const isCantrip = spell.isCantrip || traitLabels.includes("cantrip") || spell.system?.level?.value === 0;
-        const isFocusSpell = isFocus || spell.isFocusSpell || traitLabels.includes("focus");
-        const isRitualSpell = spell.isRitual || traitLabels.includes("ritual");
-
-        const minRank = isCantrip ? 0 : (spell.baseRank ?? spell.system.level?.value ?? spell.rank ?? 1);
-        const assignedRank = isCantrip ? 0 : (spell.system.location?.heightenedLevel ?? spell.rank ?? minRank);
-        const isSignature = isSpontaneous && !isCantrip && !isFocusSpell && !isRitualSpell && !!(spell.system?.location?.signature || spell.isSignature);
-
-        if (isSignature) {
-          const startRank = Math.max(0, minRank);
-          const endRank = Math.min(10, Math.max(assignedRank, maxSpellRank));
-          for (let r = startRank; r <= endRank; r++) {
-            const isHeightened = r > minRank;
-            const formatted = await formatSpell(actor, sheet, spell, entryId, {
-              isSpontaneous,
-              isFocus: isFocusSpell,
-              isInnate,
-              isHeightened,
-              baseRank: minRank,
-              castRank: r,
-              cardKey: `${spell.id}-${r}`
-            });
-            rankBuckets[r].spells.push(formatted);
-          }
-        } else {
-          const targetRank = assignedRank;
-          if (targetRank >= 0 && targetRank <= 10) {
-            const isHeightened = targetRank > minRank;
-            const formatted = await formatSpell(actor, sheet, spell, entryId, {
-              isSpontaneous,
-              isFocus: isFocusSpell,
-              isInnate,
-              isHeightened,
-              baseRank: minRank,
-              castRank: targetRank,
-              cardKey: `${spell.id}-${targetRank}`
-            });
-            const group = isFocusSpell ? focusGroup : rankBuckets[targetRank];
-            group.spells.push(formatted);
-          }
-        }
-      }
-    }
+  // 1. CAST VIEW: one section per entry, in pf2e's order (the entries' sort value)
+  const sortedEntries = [...entries].sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
+  const spellEntries = [];
+  for (const entry of sortedEntries) {
+    const groups = await prepareEntryGroups(actor, sheet, entry);
+    if (groups.length) spellEntries.push({ ...describeEntry(entry), groups });
   }
+  context.spellEntries = spellEntries;
 
-  const sortByName = (a, b) => a.name.localeCompare(b.name);
-  for (const b of [focusGroup, ...rankBuckets]) {
-    b.spells.sort(sortByName);
-  }
-
-  // Filter rankBuckets: keep ranks that have spells OR slots with max > 0.
-  // The focus group (if it has spells) comes first, above the Cantrips.
-  const visibleGroups = rankBuckets.filter(b => b.spells.length > 0 || (b.hasSlots && b.slots.max > 0));
-  if (focusGroup.spells.length > 0) visibleGroups.unshift(focusGroup);
-  context.spellRanks = visibleGroups.map(b => ({
-    ...b,
-    spellCount: b.spells.length
-  }));
-
-  // 2. PREPARATION VIEW DATA (Slots by rank for prepared entries)
-  if (hasPreparedEntry) {
-    const preparedEntries = [];
-    for (const entry of entries) {
-      const isPrepared = entry.isPrepared || entry.system?.prepared?.value === "prepared";
-      if (!isPrepared) continue;
-
-      const systemData = entry.system ?? {};
-      const ranks = [];
-
-      // Check cantrips (rank 0)
-      const slot0Data = systemData.slots?.slot0;
-      const maxCantripSlots = slot0Data?.max ?? 0;
-      const cantripPrepArr = slot0Data?.prepared ? (Array.isArray(slot0Data.prepared) ? slot0Data.prepared : Object.values(slot0Data.prepared)) : [];
-      if (maxCantripSlots > 0 || cantripPrepArr.length > 0) {
-        const slotCount = Math.max(maxCantripSlots, cantripPrepArr.length);
-        const slots = [];
-        for (let i = 0; i < slotCount; i++) {
-          const pItem = cantripPrepArr[i];
-          let spell = null;
-          if (pItem?.id) {
-            const sDoc = entry.spells?.get(pItem.id) ?? actor.items.get(pItem.id);
-            if (sDoc) {
-              spell = await formatSpell(actor, sheet, sDoc, entry.id);
-            }
-          }
-          slots.push({
-            slotNumber: i + 1,
-            slotIndex: i,
-            isEmpty: !spell,
-            isExpended: !!pItem?.expended,
-            spell
-          });
-        }
-        ranks.push({
-          rank: 0,
-          label: "Cantrips",
-          maxSlots: slotCount,
-          preparedCount: slots.filter(s => !s.isEmpty).length,
-          slots
-        });
-      }
-
-      // Check ranks 1 through 10
-      for (let r = 1; r <= 10; r++) {
-        const slotKey = `slot${r}`;
-        const slotData = systemData.slots?.[slotKey];
-        const maxSlots = slotData?.max ?? 0;
-        const prepArr = slotData?.prepared ? (Array.isArray(slotData.prepared) ? slotData.prepared : Object.values(slotData.prepared)) : [];
-
-        if (maxSlots > 0 || prepArr.length > 0) {
-          const slotCount = Math.max(maxSlots, prepArr.length);
-          const slots = [];
-          for (let i = 0; i < slotCount; i++) {
-            const pItem = prepArr[i];
-            let spell = null;
-            if (pItem?.id) {
-              const sDoc = entry.spells?.get(pItem.id) ?? actor.items.get(pItem.id);
-              if (sDoc) {
-                spell = await formatSpell(actor, sheet, sDoc, entry.id);
-              }
-            }
-            slots.push({
-              slotNumber: i + 1,
-              slotIndex: i,
-              isEmpty: !spell,
-              isExpended: !!pItem?.expended,
-              spell
-            });
-          }
-          ranks.push({
-            rank: r,
-            label: `Rank ${r}`,
-            maxSlots: slotCount,
-            preparedCount: slots.filter(s => !s.isEmpty).length,
-            slots
-          });
-        }
-      }
-
-      preparedEntries.push({
-        id: entry.id,
-        name: entry.name,
-        ranks
-      });
-    }
-
-    context.preparedEntries = preparedEntries;
-
-    // Saved Presets
-    const presets = actor.getFlag("pf2e-mobile-compact", "spellPresets") ?? [];
-    context.spellPresets = presets;
-  } else {
-    context.preparedEntries = [];
-    context.spellPresets = [];
-  }
+  // 2. PREPARATION VIEW: slots by rank for prepared entries, and the saved presets
+  await preparePreparationContext(actor, sheet, context, entries, hasPreparedEntry);
 }
-
