@@ -6,6 +6,26 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Spells Tab: One Section per Spellcasting Entry (`scripts/apps/sheet-helpers/context-spells.js`, `scripts/apps/sheet-helpers/context-spell-preparation.js`, `templates/parts/spells.hbs`, `styles/pf2e-mobile.css`)
+
+#### Changed
+- **Spells are grouped by spellcasting entry, then by rank**, like pf2e's own sheet. Before, every entry's spells were merged into one list per rank, so a hand-made staff entry ("Other Spells (Staves etc)"), a spell granted by a feat (e.g. Charm from Enthralling Allure) and the class's own spells sat together, and prepared and spontaneous spells could share a rank. Now each entry gets its own section in pf2e's order (the entries' sort value).
+- **Each section starts with the entry's header**, separated from the entry above by a double line across the tab in the warning colour (`--m-warning-border`, no background): its name, tradition and proficiency rank (the skills' rank badge), and its own Spell DC and Spell Attack bonus, read from the entry's statistic (`entry.statistic.dc.value`, `entry.statistic.check.mod`). An entry granted by a feat can use another attribute or rank than the class's entry, so each list shows the numbers its spells actually use.
+- **Slot counters belong to their own entry**: a rank's counter shows that entry's slots. Before, the merged rank showed the highest value and maximum of all entries.
+- **Rank headings (Cantrips, Rank 1 ..., Focus Spells, and the staff's ranks) are dim grey** (`m-color-dim`) instead of orange: the entry header now marks the sections, and the colour stays free to highlight something else later.
+- **A rank group's fold is remembered per entry** (key `<entryId>-<rank>`, `<entryId>-focus`), so folding Rank 1 of one entry leaves the other entries' Rank 1 open.
+- Staves, wands and scrolls (the item entries) stay on the Activations sub-tab, as before.
+
+#### Refactored
+- The Preparation view's data (prepared slots by rank and the saved presets) moved from `context-spells.js` into `context-spell-preparation.js` (`preparePreparationContext`), so `context-spells.js` stays under the size limit. `prepareEntryGroups` builds one entry's groups and `describeEntry` its header data.
+
+### Daily Rest and Dailies Buttons (`scripts/apps/sheet-helpers/spells-handlers.js`, `scripts/apps/sheet-helpers/activations-handlers.js`)
+
+#### Fixed
+- **Daily Rest stopped halfway for a character with a staff**: pf2e-dailies adds a staff spellcasting entry to `actor.spellcasting` that is not an item and has no `system` data, so reading its slots threw (`entry.system is undefined`). Focus points, staff charges and the "Daily rest complete" notice were then skipped. Entries without slots are now passed over; the staff's charges are still refreshed by the step after the loop.
+- **Daily Rest asked twice**: after our own confirmation, pf2e's Rest for the Night opened a second one. It is now called with `skipDialog: true`.
+- **Dailies button did nothing after preparing**: pf2e-dailies opens no window and shows no message until the character has rested since the last preparation (its `canPrepareDailies` check, the "Rest Required" state on pf2e's sheet). The button now checks `game.dailies.api.canPrepareDailies` first and says the character must Rest for the Night.
+
 ### Roll-Option Toggles: Blood Magic, Spellshape, Debilitation, Specials (`scripts/apps/sheet-helpers/context-toggles.js`, `scripts/apps/sheet-helpers/toggles-handlers.js`, `templates/parts/toggles.hbs`, `templates/parts/actions.hbs`, `templates/parts/spells.hbs`, `templates/parts/character.hbs`, `styles/pf2e-mobile.css`)
 
 #### Added

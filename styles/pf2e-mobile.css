@@ -551,7 +551,7 @@ body.pf2e-mobile-active textarea {
 .pf2e-mobile-sheet .btn-primary {
   background: var(--m-info-solid);
   border: 1px solid var(--m-hue-info);
-  padding: 8px 12px;
+  padding: 4px 10px;
 }
 .pf2e-mobile-sheet .btn-cast,
 .pf2e-mobile-sheet .btn-consume,
@@ -830,8 +830,11 @@ body.pf2e-mobile-active textarea {
   padding: 12px;
   padding-top: 12px;
   padding-bottom: 24px;
-  padding-left: max(12px, env(safe-area-inset-left, 0px));
-  padding-right: max(12px, env(safe-area-inset-right, 0px));
+  /* The side padding as variables, so a child can reach the tab's edges (e.g. .spell-entry-header) */
+  --tab-gutter-left: max(12px, env(safe-area-inset-left, 0px));
+  --tab-gutter-right: max(12px, env(safe-area-inset-right, 0px));
+  padding-left: var(--tab-gutter-left);
+  padding-right: var(--tab-gutter-right);
 }
 .pf2e-mobile-sheet .tab-action-bar {
   margin-bottom: 12px;
@@ -1374,6 +1377,19 @@ body.pf2e-mobile-active textarea {
 .pf2e-mobile-sheet .spell-rank-group {
   margin-bottom: 16px;
 }
+/* A spellcasting entry's header above its rank groups (name, tradition, proficiency, spell DC and attack):
+   no background, a double warning-coloured line across the full width of the tab that separates one entry
+   from the next.
+   The side margins cancel the tab's padding (--tab-gutter-*, set on .mobile-tab-content) so the line reaches
+   both edges; the padding puts the text back 10px inside the tab's content. Outside the tab (style guide)
+   the variables are unset and the header keeps its own width. */
+.pf2e-mobile-sheet .spell-entry-header {
+  margin-bottom: 8px;
+  margin-left: calc(-1 * var(--tab-gutter-left, 0px));
+  margin-right: calc(-1 * var(--tab-gutter-right, 0px));
+  padding: 6px calc(var(--tab-gutter-right, 0px) + 10px) 6px calc(var(--tab-gutter-left, 0px) + 10px);
+  border-top: 3px double var(--m-warning-border);
+}
 .pf2e-mobile-sheet .slot-counter button {
   min-width: 40px;
   min-height: 40px;
@@ -1726,7 +1742,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
 }
 .pf2e-mobile-sheet .spell-rank-header {
   min-height: 44px;
-  padding: 4px 4px;
+  padding: 0 4px;
   background: transparent;
   border: none;
   border-radius: 6px;

@@ -1290,7 +1290,7 @@ try {
   };
   const slotCtx = {};
   await prepareSpellsContext(slotActor, { _collapsedRankGroups: new Set() }, slotCtx);
-  const slotGroups = (slotCtx.spellRanks ?? []).map(g => `${g.rank}:${g.hasSlots ? `${g.slots.value}/${g.slots.max}` : "-"}`).join(",");
+  const slotGroups = (slotCtx.spellEntries ?? []).flatMap(e => e.groups).map(g => `${g.rank}:${g.hasSlots ? `${g.slots.value}/${g.slots.max}` : "-"}`).join(",");
   if (slotGroups !== "1:2/3") {
     logFail(`[Slot Counter] Expected only rank 1 with a 2/3 counter and no cantrip counter, got: ${slotGroups}`);
   } else {

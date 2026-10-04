@@ -23,7 +23,7 @@
 
   <!-- Action Bar: Add Spell from SRD, Daily Prep Reset, Dailies (focus points are in the Focus Spells header) -->
   <div class="tab-action-bar m-flex-row m-align-center m-justify-between m-gap-8">
-    <button type="button" class="btn-primary m-bold m-color-strong" data-action="openCompendiumPicker" data-type="spells">
+    <button type="button" class="btn-primary m-compact m-bold m-color-strong" data-action="openCompendiumPicker" data-type="spells">
       <i class="fas fa-plus"></i> Add Spell
     </button>
     <button type="button" class="btn-daily-reset m-compact m-inline-flex m-align-center m-gap-6 m-text-md m-semibold" data-action="resetDailySpells" title="Restore all expended spell slots and focus points">
@@ -38,18 +38,40 @@
 
   {{#if (or (eq spellSubTab "spells") (and (not (eq spellSubTab "preparation")) (not (eq spellSubTab "activations"))))}}
   <!-- ======================================================== -->
-  <!-- 1. CAST VIEW: Unified Spells by Rank                    -->
+  <!-- 1. CAST VIEW: Spells by Entry, then by Rank             -->
   <!-- ======================================================== -->
   <div class="spells-cast-view">
     <!-- pf2e's roll-option toggles for spellcasting (Blood Magic, Spellshape ...) -->
     {{#if toggles.spellcasting.length}}{{> "modules/pf2e-mobile-compact/templates/parts/toggles.hbs" toggles=toggles.spellcasting key="toggles-spellcasting" collapsed=togglesCollapsed.spellcasting title="Special Abilities" icon="fa-star"}}{{/if}}
-    {{#each spellRanks as |group|}}
-    <section class="m-group spell-rank-group" data-rank="{{group.rank}}">
+    {{!-- One section per spellcasting entry (class, focus tradition, feat, staff entry ...), like pf2e's sheet:
+          a header with the entry's name, tradition and proficiency, and its own spell DC and attack bonus
+          (entries can use another attribute or rank), then the entry's spell groups. A group's collapse key
+          is scoped to its entry (collapseKey "<entryId>-<rank>"); data-rank on the -/+ slot buttons stays
+          the rank itself. --}}
+    {{#each spellEntries as |spellEntry|}}
+    <div class="spell-entry m-flex-col" data-entry-id="{{spellEntry.id}}">
+    <div class="spell-entry-header m-flex-col m-gap-4">
+      <div class="m-flex-row m-align-center m-justify-between m-gap-8">
+        <h3 class="rank-title m-flex-row m-align-center m-gap-6 m-min-w-0 m-text-xl m-bold m-color-accent"><i class="fas fa-book"></i> <span class="m-truncate">{{spellEntry.name}}</span></h3>
+        <div class="m-flex-row m-align-center m-gap-6 m-shrink-0">
+          {{#if spellEntry.tradition}}<span class="m-text-md m-color-soft">{{spellEntry.tradition}}</span>{{/if}}
+          {{#if spellEntry.rankLetter}}<span class="skill-rank-badge rank-{{spellEntry.rank}} m-text-xs m-bold m-inline-flex m-align-center m-justify-center m-shrink-0" title="{{spellEntry.rankName}}">{{spellEntry.rankLetter}}</span>{{/if}}
+        </div>
+      </div>
+      {{#if (or spellEntry.dc spellEntry.attack)}}
+      <div class="m-flex-row m-align-center m-gap-12 m-text-md m-color-soft">
+        {{#if spellEntry.dc}}<span><strong class="m-text-xl m-color-strong">{{spellEntry.dc}}</strong> Spell DC</span>{{/if}}
+        {{#if spellEntry.attack}}<span><strong class="m-text-xl m-color-strong">{{spellEntry.attack}}</strong> Spell Attack</span>{{/if}}
+      </div>
+      {{/if}}
+    </div>
+    {{#each spellEntry.groups as |group|}}
+    <section class="m-group spell-rank-group" data-rank="{{group.collapseKey}}">
       <!-- Collapsible Rank Header -->
-      <div class="spell-rank-header m-flex-row m-align-center m-justify-between" data-action="toggleRankGroup" data-rank="{{group.rank}}" title="Toggle {{group.label}}">
+      <div class="spell-rank-header m-flex-row m-align-center m-justify-between" data-action="toggleRankGroup" data-rank="{{group.collapseKey}}" title="Toggle {{group.label}}">
         <div class="m-flex-row m-align-center m-gap-8">
           <i class="fas fa-chevron-down rank-expand-icon m-text-md m-color-dim {{#if group.isCollapsed}}collapsed{{/if}}"></i>
-          <h3 class="rank-title m-text-xl m-bold m-color-accent">{{group.label}}</h3>
+          <h3 class="rank-title m-text-xl m-bold m-color-dim">{{group.label}}</h3>
           <span class="rank-count-badge m-text-xs m-bold m-color-normal">{{group.spellCount}}</span>
         </div>
 
@@ -105,6 +127,8 @@
         {{/each}}
       </div>
     </section>
+    {{/each}}
+    </div>
     {{else}}
     <p class="empty-hint">No spellcasting entries or spells configured on this character.</p>
     {{/each}}
@@ -266,7 +290,7 @@
             <div class="spell-rank-header m-flex-row m-align-center m-justify-between" data-action="toggleRankGroup" data-rank="staff-{{group.rank}}" title="Toggle {{group.label}}">
               <div class="m-flex-row m-align-center m-gap-8">
                 <i class="fas fa-chevron-down rank-expand-icon m-text-md m-color-dim {{#if group.isCollapsed}}collapsed{{/if}}"></i>
-                <h4 class="rank-title m-text-xl m-bold m-color-accent">{{group.label}}</h4>
+                <h4 class="rank-title m-text-xl m-bold m-color-dim">{{group.label}}</h4>
                 <span class="rank-count-badge m-text-xs m-bold m-color-normal">{{group.spellCount}}</span>
               </div>
             </div>
