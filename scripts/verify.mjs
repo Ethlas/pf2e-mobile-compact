@@ -1538,6 +1538,26 @@ try {
   } else {
     logPass("[Physical Dice Integration] header.hbs contains 'toggleEntryMethod' button under settings menu.");
   }
+
+  // Test roll mode toggle is hidden without the physical-dice module, and the mode falls back to digital
+  if (!/\{\{#if isPhysicalDiceActive\}\}\s*<button[^>]*data-action="toggleRollMode"/.test(headerHbs)) {
+    logFail("[Physical Dice Integration] header.hbs shows the toggleRollMode button without {{#if isPhysicalDiceActive}}.");
+  } else {
+    logPass("[Physical Dice Integration] header.hbs only shows the roll mode button when physical-dice is active.");
+  }
+  physicalDiceRollMode = "physical";
+  const activeModules = globalThis.game.modules.get;
+  globalThis.game.modules.get = () => null;
+  const inactiveMode = getStoredRollMode();
+  const inactiveContext = {};
+  prepareHeaderContext({ type: "character", system: {}, items: [] }, testSheet, inactiveContext);
+  globalThis.game.modules.get = activeModules;
+  physicalDiceRollMode = "digital";
+  if (inactiveMode !== "digital" || inactiveContext.isPhysicalDiceActive) {
+    logFail("[Physical Dice Integration] Without physical-dice, getStoredRollMode must return 'digital' and isPhysicalDiceActive be false.");
+  } else {
+    logPass("[Physical Dice Integration] Without physical-dice, rolls stay digital and the header context hides the roll mode button.");
+  }
 } catch (err) {
   logFail(`Physical dice integration verification threw an error: ${err.stack || err.message}`);
 }

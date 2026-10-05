@@ -191,21 +191,15 @@ export function isPhysicalDiceActive() {
 }
 
 /**
- * Returns the saved Digital/Physical roll mode for this browser.
- * Checks the 'physical-dice' module setting first if active, falling back to
- * 'pf2e-mobile-compact.rollMode' and defaulting to 'digital'.
+ * Returns the saved Digital/Physical roll mode for this browser: the 'physical-dice' module's setting.
+ * Without that module active it is always "digital": the module does the manual rolling, so a "physical"
+ * mode left in a setting would only switch the roll prompts off without asking for dice.
  * @returns {"digital"|"physical"}
  */
 export function getStoredRollMode() {
   try {
     if (isPhysicalDiceActive() && globalThis.game?.settings?.settings?.has?.("physical-dice.rollMode")) {
       return game.settings.get("physical-dice", "rollMode") === "physical" ? "physical" : "digital";
-    }
-    if (globalThis.game?.settings?.settings?.has?.("physical-dice.rollMode")) {
-      return game.settings.get("physical-dice", "rollMode") === "physical" ? "physical" : "digital";
-    }
-    if (globalThis.game?.settings?.settings?.has?.("pf2e-mobile-compact.rollMode")) {
-      return game.settings.get("pf2e-mobile-compact", "rollMode") === "physical" ? "physical" : "digital";
     }
   } catch {}
   return "digital";
