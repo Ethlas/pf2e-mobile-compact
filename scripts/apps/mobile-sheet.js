@@ -42,7 +42,7 @@ import { onUseConsumable, onApplyPoison, onDetachSubitem, onChangeCarryType, onT
 import { onSwitchSpellSubTab, onToggleRankGroup, onOpenSpellPrepPicker, prepareSlot, onUnprepareSlot, onToggleSlotExpended, onResetDailySpells, onSaveSpellPreset, onApplySpellPreset, onDeleteSpellPreset, onOpenCompendiumPicker, onAdjustSlot, onAdjustFocus, onCastSpell, onRollSpellDamage, onToggleSignatureSpell, onRemoveSpell } from "./sheet-helpers/spells-handlers.js";
 import { onMoveSpellEntry } from "./sheet-helpers/spell-entry-order-handlers.js";
 import { onCastStaffSpell, onAdjustStaffCharges, onCastItemSpell, onOpenDailies } from "./sheet-helpers/activations-handlers.js";
-import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleEntryMethod, onToggleHeaderMenu, onToggleCanvasMode, onToggleFullscreen, onSwitchActor } from "./sheet-helpers/header-handlers.js";
+import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleEntryMethod, onToggleHeaderMenu, onToggleCanvasMode, onToggleFullscreen, onSwitchToDesktopView, onSwitchActor } from "./sheet-helpers/header-handlers.js";
 import { disableChatInputs, dockChatElement, restoreChatElement, scrollChatToBottom, setupScrollBottomListener, registerChatListener, unregisterChatListener, updateChatBadge } from "./sheet-helpers/chat-handler.js";
 
 /**
@@ -112,6 +112,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       rollSpellDamage: PF2eMobileSheet._onRollSpellDamage,
       switchActor: PF2eMobileSheet._onSwitchActor,
       toggleFullscreen: PF2eMobileSheet._onToggleFullscreen,
+      switchToDesktopView: PF2eMobileSheet._onSwitchToDesktopView,
       switchActionSubTab: PF2eMobileSheet._onSwitchActionSubTab,
       toggleActionSummary: PF2eMobileSheet._onToggleActionSummary,
       switchSpellSubTab: PF2eMobileSheet._onSwitchSpellSubTab,
@@ -563,6 +564,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onSetRollOption(event, target) { return onSetRollOption(this, event, target); }
   static async _onToggleCanvasMode(event, target) { return onToggleCanvasMode(this, event, target); }
   static async _onToggleFullscreen(event, target) { return onToggleFullscreen(this, event, target); }
+  static async _onSwitchToDesktopView() { return onSwitchToDesktopView(this); }
   static async _onScrollChatToBottom() { this._scrollChatToBottom(true); }
 
   /**

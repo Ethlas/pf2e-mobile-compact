@@ -164,10 +164,10 @@ export function isMobileDevice() {
   const isStandaloneApp = window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator?.standalone === true;
   const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || "");
   const isIPad = (navigator.platform === "MacIntel" || /Macintosh/i.test(navigator.userAgent || "")) && (navigator.maxTouchPoints > 1);
-  const isMobileViewport = window.innerWidth < 768;
-  const isTouchCompact = (navigator.maxTouchPoints > 0 || "ontouchstart" in window) && window.innerWidth < 1024;
+  const isMobileViewport = Math.min(window.innerWidth, window.innerHeight) < 768;
+  const isTouchCompact = (navigator.maxTouchPoints > 0 || "ontouchstart" in window) && isMobileViewport;
 
-  return Boolean(isStandaloneApp || isMobileUA || isIPad || isMobileViewport || isTouchCompact);
+  return isStandaloneApp || isMobileUA || isIPad || isTouchCompact;
 }
 
 /**

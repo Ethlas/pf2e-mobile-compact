@@ -52,8 +52,9 @@
       </button>
       {{/if}}
 
-      <!-- Settings menu: the cog shows the canvas and fullscreen controls in a small popover.
-           Using either of them closes it again (closeHeaderMenu in header-handlers.js). -->
+      <!-- Settings menu: the cog shows the canvas, dice entry method, desktop view and fullscreen controls in a small popover;
+           fullscreen stays the last (right-most) button. Using any of them closes it again
+           (closeHeaderMenu in header-handlers.js). -->
       <div class="header-menu">
         <button type="button" class="header-btn header-menu-toggle m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="toggleHeaderMenu" title="Settings" aria-label="Settings" aria-expanded="false">
           <i class="fas fa-cog"></i>
@@ -68,6 +69,10 @@
             <i class="fas {{#if isChatEntryMethod}}fa-comment-dots{{else}}fa-window-restore{{/if}}"></i>
           </button>
           {{/if}}
+
+          <button type="button" class="header-btn m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="switchToDesktopView" title="Switch to desktop view" aria-label="Switch to Desktop View">
+            <i class="fas fa-desktop"></i>
+          </button>
 
           <button type="button" class="header-btn btn-fullscreen m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="toggleFullscreen" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">
             <i class="fas fa-expand"></i>

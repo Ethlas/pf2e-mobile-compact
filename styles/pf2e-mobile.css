@@ -124,7 +124,7 @@ body.pf2e-fullscreen .pf2e-mobile-sheet,
   background: var(--pf2e-theme-bg, #1a1a1a);
 }
 /* Ensure full bleed on narrow mobile viewports even if body class is delayed */
-@media (max-width: 768px) {
+@media (max-width: 768px), (pointer: coarse) and (hover: none) and (max-height: 768px) {
   .pf2e-mobile-sheet {
     position: fixed !important;
     inset: 0 !important;
