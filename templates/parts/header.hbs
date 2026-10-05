@@ -43,11 +43,14 @@
       {{/unless}}
 
       <!-- Roll mode toggle: a die with a small coloured corner icon for who rolls it
-           (blue chip = digital, yellow hand = your own dice). -->
+           (blue chip = digital, yellow hand = your own dice). Only with the physical-dice module active:
+           it does the manual rolling, so without it the toggle would do nothing. -->
+      {{#if isPhysicalDiceActive}}
       <button type="button" class="header-btn m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="toggleRollMode" title="{{#if isPhysicalRollMode}}Manual dice: you roll and enter the result (tap for digital){{else}}Digital dice (tap for manual){{/if}}" aria-label="Toggle Roll Mode">
         <i class="fas fa-dice"></i>
         <span class="header-btn-badge m-text-sm"><i class="fas {{#if isPhysicalRollMode}}fa-hand{{else}}fa-microchip{{/if}}"></i></span>
       </button>
+      {{/if}}
 
       <!-- Settings menu: the cog shows the canvas and fullscreen controls in a small popover.
            Using either of them closes it again (closeHeaderMenu in header-handlers.js). -->

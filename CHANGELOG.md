@@ -4,6 +4,15 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [Unreleased]
+
+### Roll Mode Button Only with the Physical Dice Module (`templates/parts/header.hbs`, `scripts/utils/sheet-utils.js`, `scripts/verify.mjs`)
+
+#### Fixed
+- **The header's roll mode button did nothing without `physical-dice`**: since 1.0.30 the manual rolling is done by the `physical-dice` module, but the button was still shown without it. Switching it to manual then gave digital rolls with no prompt for dice. The button is now only shown when `physical-dice` is active (`isPhysicalDiceActive`), like the entry method button in the cog menu.
+- **A saved "physical" mode no longer lingers without the module**: `getStoredRollMode()` now only reads `physical-dice.rollMode` while that module is active and returns `digital` otherwise. Before, it fell back to the module's own old `pf2e-mobile-compact.rollMode` setting, so a client that had manual mode on before 1.0.30 stayed in it (and the kingdom check dialog still prepared a manual roll).
+- `verify.mjs` checks both: the button sits inside `{{#if isPhysicalDiceActive}}`, and without the module the roll mode is `digital`.
+
 ## [1.0.30] - 2026-10-04
 
 ### Physical Dice Module Integration & Engine Migration (`scripts/rolls/physical-dice-interceptor.js`, `scripts/utils/sheet-utils.js`, `scripts/apps/sheet-helpers/context-header.js`, `scripts/apps/sheet-helpers/header-handlers.js`, `scripts/apps/mobile-sheet.js`, `templates/parts/header.hbs`, `styles/pf2e-mobile.css`)
