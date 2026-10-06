@@ -1384,11 +1384,52 @@ body.pf2e-mobile-active textarea {
    both edges; the padding puts the text back 10px inside the tab's content. Outside the tab (style guide)
    the variables are unset and the header keeps its own width. */
 .pf2e-mobile-sheet .spell-entry-header {
-  margin-bottom: 8px;
+  position: relative;
+  margin-bottom: 2px;
   margin-left: calc(-1 * var(--tab-gutter-left, 0px));
   margin-right: calc(-1 * var(--tab-gutter-right, 0px));
   padding: 6px calc(var(--tab-gutter-right, 0px) + 10px) 6px calc(var(--tab-gutter-left, 0px) + 10px);
   border-top: 3px double var(--m-warning-border);
+}
+/* The ▲/▼ arrows that move a spellcasting entry: small chevrons in the colour of the header's top border,
+   sitting on that border at the right. Each chevron is a round chip in the sheet background that cuts a gap in
+   the line, so it stays quiet but visible. Each button is a 38px touch target that reaches mostly down into the
+   header (not up into the section above); its chip sits at the top right of the button, centred on the border
+   line (container top -14px + 1px padding + half of the 23px chip = the line's centre), so the last chip ends
+   4px from the tab's right edge. An arrow that can't move (the first entry's up, the last entry's down) is
+   greyed out; with only one entry the template leaves the arrows out. */
+.pf2e-mobile-sheet .spell-entry-move {
+  position: absolute;
+  top: -14px;
+  right: 4px;
+}
+.pf2e-mobile-sheet .btn-entry-move {
+  align-items: flex-start;
+  justify-content: flex-end;
+  min-width: 38px;
+  min-height: 38px;
+  width: 38px;
+  height: 38px;
+  padding: 1px 0 0;
+  background: transparent;
+  border: none;
+  color: var(--m-warning-border);
+  line-height: 1;
+}
+/* width auto and content-box: Font Awesome 7 (Foundry v14) gives icons a fixed 1.25em width, and Foundry sets
+   border-box on everything, which squeezed the padding into that width and hid the chevron. */
+.pf2e-mobile-sheet .btn-entry-move i {
+  box-sizing: content-box;
+  width: auto;
+  padding: 6px;
+  background: var(--pf2e-theme-bg, var(--m-surface-1));
+  border-radius: 20px;
+}
+.pf2e-mobile-sheet .btn-entry-move:active {
+  color: var(--m-accent);
+}
+.pf2e-mobile-sheet .btn-entry-move:disabled {
+  color: var(--m-text-faint);
 }
 .pf2e-mobile-sheet .slot-counter button {
   min-width: 40px;
@@ -1645,7 +1686,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   color: var(--m-text-faint);
 }
 .pf2e-mobile-sheet .rank-title {
-  margin: 0;
+  margin: 4px 0 0 0;
 }
 .pf2e-mobile-sheet .rank-count-badge {
   background: var(--m-surface-4);

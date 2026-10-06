@@ -156,6 +156,7 @@ export async function formatSpell(actor, sheet, spell, entryId, extra = {}) {
     cardKey,
     entryId,
     name: spell.name,
+    sort: spell.sort ?? 0,
     img: spell.img || "systems/pf2e/icons/default-icons/spell.svg",
     glyph,
     castActions,
@@ -398,9 +399,22 @@ async function prepareEntryGroups(actor, sheet, entry) {
     }
   }
 
-  const sortByName = (a, b) => a.name.localeCompare(b.name);
+  // Spell order inside a group follows pf2e's sheet (SpellCollection#getSpellData): prepared slots keep their
+  // slot order; otherwise by the spell's sort value (set by dragging spells on pf2e's sheet), then by name.
+  // Heightened copies of signature spells come after a rank's own spells, as pf2e appends them.
+  const lang = game.i18n?.lang;
+  const isSignatureCopy = s => !!(s.isSignature && s.isHeightened && !s.isPrepared);
+  const bySheetOrder = (a, b) => {
+    if (Number.isInteger(a.slotIndex) && Number.isInteger(b.slotIndex)) return a.slotIndex - b.slotIndex;
+    // Booleans subtract as numbers: true - false = 1 (a is the copy, so a goes after b), false - true = -1
+    // (b is the copy, so a goes first), and 0 when both or neither are copies.
+    const copyOrder = isSignatureCopy(a) - isSignatureCopy(b);
+    if (copyOrder) return copyOrder;
+    if (isSignatureCopy(a)) return a.name.localeCompare(b.name, lang);
+    return (a.sort - b.sort) || a.name.localeCompare(b.name, lang);
+  };
   for (const b of [focusGroup, ...rankBuckets]) {
-    b.spells.sort(sortByName);
+    b.spells.sort(bySheetOrder);
   }
 
   // Keep ranks that have spells OR slots with max > 0; the focus group (if it has spells) comes first.
