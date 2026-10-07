@@ -357,6 +357,11 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 :is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-12 {
   gap: 12px;
 }
+/* Margin above an element (mt = margin-top). Put it on an element without a margin of its own: a component
+   rule that sets margin (e.g. .rank-title) comes later in this file and would win over it. */
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-mt-4 {
+  margin-top: 4px;
+}
 /* For children of a flex container: take the free room (m-flex-1 shares it out evenly, m-flex-auto starts from the
    content's own size), may shrink below their content (so text can truncate), or keep their size */
 :is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-flex-1 {
@@ -1686,7 +1691,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   color: var(--m-text-faint);
 }
 .pf2e-mobile-sheet .rank-title {
-  margin: 4px 0 0 0;
+  margin: 0;
 }
 .pf2e-mobile-sheet .rank-count-badge {
   background: var(--m-surface-4);
