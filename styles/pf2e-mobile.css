@@ -223,10 +223,11 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
    one set of greys to tune. Surfaces go from dark to light by layer: 0 chrome and wells (header, nav, image and
    input wells), 1 the sheet and group frames, 2 cards and panels, 3 controls on a card (buttons, pills, inputs),
    4 raised and hover, 5 pressed. Tinted backgrounds that carry meaning (expended spells, the staff drawer) keep
-   their own colour. Also defined on the compendium picker and the spell picker dialog, which Foundry renders outside the sheet. */
+   their own colour. Also defined on the compendium picker and the spell picker and carry type dialogs, which Foundry renders outside the sheet. */
 .pf2e-mobile-sheet,
 .pf2e-mobile-compendium-picker,
-.spell-picker-dialog {
+.spell-picker-dialog,
+.carry-type-dialog {
   --m-surface-0: #111;
   --m-surface-1: #1a1a1a;
   --m-surface-2: #222;
@@ -309,75 +310,75 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
    Prefixed with "m-" so they cannot clash with Foundry, pf2e or other module classes.
    They come before the component rules on purpose: a component rule with the same specificity that sets
    the same property later in this file wins, so a utility never silently overrides a component.
-   Scoped to the sheet and to the two windows the module opens outside it (the compendium picker and the
-   spell picker dialog). :is() takes the specificity of its strongest argument, one class, so they weigh
+   Scoped to the sheet and to the windows the module opens outside it (the compendium picker, the spell
+   picker dialog and the carry type dialog). :is() takes the specificity of its strongest argument, one class, so they weigh
    exactly as much as a plain .pf2e-mobile-sheet rule. */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-flex-row {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-flex-row {
   display: flex;
   flex-direction: row;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-flex-col {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-flex-col {
   display: flex;
   flex-direction: column;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-align-baseline {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-align-baseline {
   align-items: baseline;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-align-center {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-align-center {
   align-items: center;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-inline-flex {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-inline-flex {
   display: inline-flex;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-justify-center {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-justify-center {
   justify-content: center;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-justify-between {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-justify-between {
   justify-content: space-between;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-wrap {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-wrap {
   flex-wrap: wrap;
 }
 /* Gaps: only these steps; other values stay in the component's own rule */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-2 {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-gap-2 {
   gap: 2px;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-4 {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-gap-4 {
   gap: 4px;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-6 {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-gap-6 {
   gap: 6px;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-8 {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-gap-8 {
   gap: 8px;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-10 {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-gap-10 {
   gap: 10px;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-gap-12 {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-gap-12 {
   gap: 12px;
 }
 /* Margin above an element (mt = margin-top). Put it on an element without a margin of its own: a component
    rule that sets margin (e.g. .rank-title) comes later in this file and would win over it. */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-mt-4 {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-mt-4 {
   margin-top: 4px;
 }
 /* For children of a flex container: take the free room (m-flex-1 shares it out evenly, m-flex-auto starts from the
    content's own size), may shrink below their content (so text can truncate), or keep their size */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-flex-1 {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-flex-1 {
   flex: 1;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-flex-auto {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-flex-auto {
   flex: 1 1 auto;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-min-w-0 {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-min-w-0 {
   min-width: 0;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-shrink-0 {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-shrink-0 {
   flex-shrink: 0;
 }
 /* One line of text that ends in "…" when it does not fit (needs a width limit, e.g. m-min-w-0 in a flex row) */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-truncate {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-truncate {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -447,12 +448,12 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
    Badge Tones rules or the badge's own rule. m-badge-neutral is the same badge with the neutral look of
    badges without a role colour. Layout (m-inline-flex etc.), text size (m-text-*) and text colour
    (m-color-*) come from utilities. */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-badge,
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-badge-neutral {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-badge,
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-badge-neutral {
   padding: 2px 6px;
   border-radius: 4px;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-badge-neutral {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-badge-neutral {
   background: var(--m-surface-3);
   border: 1px solid var(--m-border);
 }
@@ -460,84 +461,84 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
    defaults above, so a button can take a smaller size. Inputs and selects keep 16px (iOS zooms in on smaller
    fields, enforced with !important), and the few larger titles, numbers and icons keep their own size. */
 /* 11px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-xs {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-text-xs {
   font-size: 0.6875rem;
 }
 /* 12px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-sm {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-text-sm {
   font-size: 0.75rem;
 }
 /* 13px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-md {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-text-md {
   font-size: 0.8125rem;
 }
 /* 14px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-base {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-text-base {
   font-size: 0.875rem;
 }
 /* 15px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-xl {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-text-xl {
   font-size: 0.9375rem;
 }
 /* 16px */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-text-full {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-text-full {
   font-size: 1rem;
 }
 /* Font weights */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-medium {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-medium {
   font-weight: 500;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-semibold {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-semibold {
   font-weight: 600;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-bold {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-bold {
   font-weight: bold;
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-normal {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-normal {
   font-weight: normal;
 }
 /* Text colours: the six text greys of the palette (strong to faint), the accent, and the light text of each role */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-strong {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-color-strong {
   color: var(--m-text-strong);
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-normal {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-color-normal {
   color: var(--m-text);
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-soft {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-color-soft {
   color: var(--m-text-soft);
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-muted {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-color-muted {
   color: var(--m-text-muted);
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-dim {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-color-dim {
   color: var(--m-text-dim);
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-faint {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-color-faint {
   color: var(--m-text-faint);
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-accent {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-color-accent {
   color: var(--m-accent);
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-info {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-color-info {
   color: var(--m-info-text);
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-success {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-color-success {
   color: var(--m-success-text);
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-danger {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-color-danger {
   color: var(--m-danger-text);
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-warning {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-color-warning {
   color: var(--m-warning-text);
 }
 /* Colours of a few fixed elements: the shield and heightened cyan, staff charges, spell slots */
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-cyan {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-color-cyan {
   color: var(--m-hue-cyan);
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-charge {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-color-charge {
   color: var(--m-charge-text);
 }
-:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-color-slot {
+:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-color-slot {
   color: var(--m-slot-number);
 }
 /* Prevent iOS Safari auto-zoom on focus (requires computed font-size >= 16px on all inputs/selects) */
@@ -1486,10 +1487,6 @@ body.pf2e-mobile-active textarea {
   background: var(--m-surface-3);
   border: 1px solid var(--m-border-strong);
 }
-.pf2e-mobile-sheet .item-badge.stowed-badge {
-  background: var(--m-surface-2);
-  border: 1px solid var(--m-border);
-}
 .pf2e-mobile-sheet .badge-btn.carry-badge {
   padding: 0 8px;
   background: var(--m-surface-2);
@@ -1532,14 +1529,39 @@ body.pf2e-mobile-active textarea {
   background: #4527a0;
   color: var(--m-text-strong);
 }
-.pf2e-mobile-sheet .badge-btn.invest-badge,
-.pf2e-mobile-sheet .badge-btn.equip-badge {
+.pf2e-mobile-sheet .badge-btn.invest-badge {
   padding: 0 8px;
   background: var(--m-surface-2);
   border: 1px solid var(--m-border);
 }
 .pf2e-mobile-sheet .badge-btn.invest-badge.invested {
   box-shadow: 0 0 6px rgba(63, 81, 181, 0.4);
+}
+/* ----------------------------------------- */
+/* Carry Type Dialog                         */
+/* ----------------------------------------- */
+/* The picker behind an item's carry badge on the Gear tab (templates/parts/carry-type-dialog.hbs). */
+.carry-type-dialog .carry-type-img {
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid var(--m-border);
+  background: var(--m-surface-0);
+}
+.carry-type-dialog .carry-type-option {
+  height: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  text-align: left;
+  background: var(--m-surface-2);
+  border: 1px solid var(--m-border);
+  border-radius: 6px;
+  touch-action: manipulation;
+}
+.carry-type-dialog .carry-type-option.selected {
+  border-color: var(--m-accent);
+}
+.carry-type-dialog .carry-type-option:active {
+  background: var(--m-surface-4);
 }
 /* ----------------------------------------- *//* Compendium Picker Drawer / Modal          *//* ----------------------------------------- */
 body.pf2e-mobile-active .pf2e-mobile-compendium-picker,
@@ -3061,12 +3083,11 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border: 1px solid var(--m-info-border);
   color: var(--m-info-text);
 }
-/* green: rolled initiative, poison, equipped, held, innate, restore slot, save preset, staff held, skill pills */
+/* green: rolled initiative, poison, equipped, innate, restore slot, save preset, staff held, skill pills */
 .pf2e-mobile-sheet .perception-init-select.combat-rolled,
 .pf2e-mobile-sheet .item-badge.poison-badge,
 .pf2e-mobile-sheet .item-badge.equipped-badge,
-.pf2e-mobile-sheet .badge-btn.carry-badge.held,
-.pf2e-mobile-sheet .badge-btn.equip-badge.equipped,
+.pf2e-mobile-sheet .badge-btn.carry-badge.equipped,
 .pf2e-mobile-sheet .spell-source-badge.badge-innate,
 .pf2e-mobile-sheet .btn-restore-slot,
 .pf2e-mobile-sheet .spells-preparation-view .btn-save-preset,

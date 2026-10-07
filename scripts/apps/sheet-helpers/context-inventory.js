@@ -5,6 +5,7 @@
  */
 
 import { getPropertyRuneLabel } from "./rune-data.js";
+import { getCarryState } from "./carry-type.js";
 
 const PHYSICAL_ITEM_TYPES = new Set([
   "ammo",
@@ -137,8 +138,6 @@ export async function prepareInventoryContext(actor, sheet, context) {
   // 2. Weapons & Attached Subitems (Poisons, Loaded Ammo) & Runes
   const weapons = await Promise.all(physicalItems.filter(i => typeof i.isOfType === "function" ? i.isOfType("weapon") : i.type === "weapon").map(async w => {
     const equipped = w.system?.equipped ?? {};
-    const carryType = equipped.carryType ?? "worn";
-    const handsHeld = equipped.handsHeld ?? 0;
 
     // Check attached subitems for poisons or ammunition
     const subitems = (w.subitems?.contents ?? []).map(s => {
@@ -164,12 +163,9 @@ export async function prepareInventoryContext(actor, sheet, context) {
       img: w.img,
       quantity: w.quantity ?? w.system?.quantity ?? 1,
       bulk: w.system?.bulk?.value ?? "-",
-      isEquipped: w.isEquipped ?? (carryType === "held" || carryType === "worn"),
+      carry: getCarryState(w),
       isInvestable: isInvestableItem(w),
       isInvested: w.isInvested ?? (equipped.invested ?? false),
-      carryType,
-      handsHeld,
-      carryLabel: formatCarryLabel(carryType, handsHeld),
       subitems,
       poison,
       isPoisoned: Boolean(poison),
@@ -184,10 +180,7 @@ export async function prepareInventoryContext(actor, sheet, context) {
   const armor = await Promise.all(physicalItems.filter(i => typeof i.isOfType === "function" ? i.isOfType("armor", "shield") : (i.type === "armor" || i.type === "shield")).map(async a => {
     const isShield = typeof a.isOfType === "function" ? a.isOfType("shield") : a.type === "shield";
     const equipped = a.system?.equipped ?? {};
-    const carryType = equipped.carryType ?? "worn";
-    const isEquipped = a.isEquipped ?? (isShield ? (carryType === "held" && (equipped.handsHeld ?? 0) > 0) : (carryType === "worn" && equipped.inSlot !== false));
     const runesSummary = isShield ? formatShieldRunes(a.system?.runes) : formatArmorRunes(a.system?.runes);
-    const equipLabel = isEquipped ? (isShield ? "Held" : "Worn") : (isShield ? "Hold" : "Wear");
     const description = await enrichItemDescription(a, actor);
 
     return {
@@ -196,8 +189,7 @@ export async function prepareInventoryContext(actor, sheet, context) {
       img: a.img,
       bulk: a.system?.bulk?.value ?? "-",
       isShield,
-      isEquipped,
-      equipLabel,
+      carry: getCarryState(a),
       isInvested: a.isInvested ?? (equipped.invested ?? false),
       isInvestable: isInvestableItem(a),
       hp: a.system?.hp?.value,
@@ -206,7 +198,6 @@ export async function prepareInventoryContext(actor, sheet, context) {
       acBonus: a.system?.acBonus ?? (a.system?.armor?.value ?? 0),
       runesSummary,
       canHaveRunes: true,
-      canBeWorn: true,
       description,
       isExpanded: Boolean(sheet._expandedActionIds?.has(a.id))
     };
@@ -221,10 +212,6 @@ export async function prepareInventoryContext(actor, sheet, context) {
   }).map(async g => {
     const isContainer = typeof g.isOfType === "function" ? g.isOfType("backpack") : g.type === "backpack";
     const equipped = g.system?.equipped ?? {};
-    const usageType = g.system?.usage?.type ?? "";
-    const usageValue = g.system?.usage?.value ?? "";
-    const isWornUsage = usageType === "worn" || usageValue.startsWith("worn") || equipped.carryType === "worn" || g.type === "equipment";
-    const isEquipped = g.isEquipped ?? (equipped.carryType === "worn" && equipped.inSlot !== false);
     const description = await enrichItemDescription(g, actor);
 
     return {
@@ -236,11 +223,7 @@ export async function prepareInventoryContext(actor, sheet, context) {
       isContainer,
       isInvested: g.isInvested ?? (equipped.invested ?? false),
       isInvestable: isInvestableItem(g),
-      isEquipped,
-      equipLabel: isEquipped ? "Worn" : "Wear",
-      canBeWorn: isWornUsage && !isContainer,
-      isStowed: g.isStowed ?? false,
-      containerName: g.container?.name ?? null,
+      carry: getCarryState(g),
       heldItemsCount: isContainer ? (g.contents?.size ?? g.contents?.length ?? 0) : 0,
       description,
       isExpanded: Boolean(sheet._expandedActionIds?.has(g.id))
@@ -280,27 +263,6 @@ function formatCategoryLabel(category) {
     toolkit: "Toolkit"
   };
   return map[category] ?? (category.charAt(0).toUpperCase() + category.slice(1));
-}
-
-/**
- * Format carry type into concise badge text.
- * @param {string} carryType
- * @param {number} handsHeld
- * @returns {string}
- */
-function formatCarryLabel(carryType, handsHeld) {
-  switch (carryType) {
-    case "held":
-      return handsHeld === 2 ? "Held (2H)" : "Held (1H)";
-    case "worn":
-      return "Worn";
-    case "stowed":
-      return "Stowed";
-    case "dropped":
-      return "Dropped";
-    default:
-      return "Carried";
-  }
 }
 
 /**

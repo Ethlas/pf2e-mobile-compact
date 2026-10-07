@@ -70,9 +70,7 @@
       {{#> "modules/pf2e-mobile-compact/templates/parts/inventory/item-card.hbs" item=weapon showBulk=true}}
       {{!-- Slots can only use the card's parameters (item) and @root, see inventory/item-card.hbs --}}
         {{#*inline "badges"}}
-          <button type="button" class="badge-btn carry-badge m-compact m-inline-flex m-align-center m-justify-center m-text-sm m-semibold m-color-soft {{item.carryType}}" data-action="changeCarryType" data-item-id="{{item.id}}" title="Tap to toggle carry state">
-            {{item.carryLabel}}
-          </button>
+          {{> "modules/pf2e-mobile-compact/templates/parts/inventory/carry-badge.hbs" item=item}}
           {{#if item.runesSummary}}
           <span class="item-badge runes-badge m-badge m-inline-flex m-align-center m-gap-4 m-text-xs m-semibold" title="Runes: {{item.runesSummary}}">
             <i class="fas fa-gem"></i> {{item.runesSummary}}
@@ -126,9 +124,7 @@
           {{else}}
           <span class="item-badge armor-badge m-badge m-inline-flex m-align-center m-gap-4 m-text-xs m-color-normal">+{{item.acBonus}} AC</span>
           {{/if}}
-          <button type="button" class="badge-btn equip-badge m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-text-sm m-semibold m-color-muted {{#if item.isEquipped}}equipped{{/if}}" data-action="toggleEquipped" data-item-id="{{item.id}}" title="Toggle Equipped / Worn">
-            <i class="fas fa-shirt"></i> {{item.equipLabel}}
-          </button>
+          {{> "modules/pf2e-mobile-compact/templates/parts/inventory/carry-badge.hbs" item=item}}
           {{#if item.runesSummary}}
           <span class="item-badge runes-badge m-badge m-inline-flex m-align-center m-gap-4 m-text-xs m-semibold" title="Runes: {{item.runesSummary}}">
             <i class="fas fa-gem"></i> {{item.runesSummary}}
@@ -167,11 +163,7 @@
       {{#> "modules/pf2e-mobile-compact/templates/parts/inventory/item-card.hbs" item=gearItem showQuantity=true showBulk=true}}
       {{!-- Slots can only use the card's parameters (item) and @root, see inventory/item-card.hbs --}}
         {{#*inline "badges"}}
-          {{#if item.canBeWorn}}
-          <button type="button" class="badge-btn equip-badge m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-text-sm m-semibold m-color-muted {{#if item.isEquipped}}equipped{{/if}}" data-action="toggleEquipped" data-item-id="{{item.id}}" title="Toggle Worn / Stowed">
-            <i class="fas fa-shirt"></i> {{item.equipLabel}}
-          </button>
-          {{/if}}
+          {{> "modules/pf2e-mobile-compact/templates/parts/inventory/carry-badge.hbs" item=item}}
           {{#if item.isInvestable}}
           <button type="button" class="badge-btn invest-badge m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-text-sm m-semibold m-color-muted {{#if item.isInvested}}invested{{/if}}" data-action="toggleInvested" data-item-id="{{item.id}}" title="Toggle Investiture">
             <i class="fas fa-sparkles"></i> {{#if item.isInvested}}Invested{{else}}Invest{{/if}}
@@ -179,9 +171,6 @@
           {{/if}}
           {{#if item.isContainer}}
           <span class="item-badge container-badge m-badge m-inline-flex m-align-center m-gap-4 m-text-xs"><i class="fas fa-box-open"></i> Container ({{item.heldItemsCount}})</span>
-          {{/if}}
-          {{#if item.isStowed}}
-          <span class="item-badge stowed-badge m-badge m-inline-flex m-align-center m-gap-4 m-text-xs m-color-soft"><i class="fas fa-box"></i> in {{item.containerName}}</span>
           {{/if}}
         {{/inline}}
       {{/"modules/pf2e-mobile-compact/templates/parts/inventory/item-card.hbs"}}

@@ -147,42 +147,6 @@ export async function onDetachSubitem(sheet, event, target) {
 }
 
 /**
- * Action handler: Change carry type for an inventory item (Held 1H, Held 2H, Worn, Stowed).
- * @param {object} sheet - Mobile sheet instance
- * @param {Event} event
- * @param {HTMLElement} target
- */
-export async function onChangeCarryType(sheet, event, target) {
-  const itemId = target.dataset.itemId ?? target.closest("[data-item-id]")?.dataset.itemId;
-  const item = sheet.actor.items.get(itemId);
-  if (!item || typeof sheet.actor.changeCarryType !== "function") return;
-
-  const currentEquipped = item.system.equipped ?? {};
-  const currentType = currentEquipped.carryType ?? "worn";
-  const handsHeld = currentEquipped.handsHeld ?? 0;
-
-  let newCarryType = "worn";
-  let newHands = 0;
-
-  if (currentType === "worn") {
-    newCarryType = "held";
-    newHands = 1;
-  } else if (currentType === "held" && handsHeld === 1 && (item.traits?.has("two-hand-d8") || item.traits?.has("two-hand-d10") || item.traits?.has("two-hand-d12") || item.system.usage?.value === "held-in-two-hands")) {
-    newCarryType = "held";
-    newHands = 2;
-  } else if (currentType === "held") {
-    newCarryType = "worn";
-    newHands = 0;
-  } else {
-    newCarryType = "held";
-    newHands = 1;
-  }
-
-  await sheet.actor.changeCarryType(item, { carryType: newCarryType, handsHeld: newHands });
-  sheet.render();
-}
-
-/**
  * Action handler: Toggle collapsible state of an inventory section.
  * @param {object} sheet - Mobile sheet instance
  * @param {Event} event
@@ -241,57 +205,3 @@ export async function onToggleInvested(sheet, event, target) {
     sheet.render();
   }
 }
-
-/**
- * Action handler: Toggle equipped / worn state of an item (armor, shield, or worn equipment).
- * @param {object} sheet - Mobile sheet instance
- * @param {Event} event
- * @param {HTMLElement} target
- */
-export async function onToggleEquipped(sheet, event, target) {
-  const itemId = target.dataset.itemId ?? target.closest("[data-item-id]")?.dataset.itemId;
-  const item = sheet.actor.items.get(itemId);
-  if (!item || typeof sheet.actor.changeCarryType !== "function") return;
-
-  if (item.isOfType?.("weapon") || item.type === "weapon") {
-    return onChangeCarryType(sheet, event, target);
-  }
-
-  const isShield = typeof item.isOfType === "function" ? item.isOfType("shield") : item.type === "shield";
-  const isArmor = typeof item.isOfType === "function" ? item.isOfType("armor") : item.type === "armor";
-  const isEquipped = item.isEquipped ?? false;
-
-  if (isArmor) {
-    if (isEquipped) {
-      await sheet.actor.changeCarryType(item, { carryType: "worn", inSlot: false });
-      ui.notifications?.info(`Removed ${item.name}.`);
-    } else {
-      await sheet.actor.changeCarryType(item, { carryType: "worn", inSlot: true });
-      ui.notifications?.info(`Donned ${item.name}.`);
-    }
-  } else if (isShield) {
-    if (isEquipped) {
-      await sheet.actor.changeCarryType(item, { carryType: "worn", handsHeld: 0 });
-      ui.notifications?.info(`Lowered/Wore ${item.name}.`);
-    } else {
-      await sheet.actor.changeCarryType(item, { carryType: "held", handsHeld: 1 });
-      ui.notifications?.info(`Equipped ${item.name} in hand.`);
-    }
-  } else {
-    if (isEquipped) {
-      try {
-        await sheet.actor.changeCarryType(item, { carryType: "stowed" });
-        ui.notifications?.info(`Stowed ${item.name}.`);
-      } catch {
-        await sheet.actor.changeCarryType(item, { carryType: "dropped" });
-        ui.notifications?.info(`Unequipped ${item.name}.`);
-      }
-    } else {
-      await sheet.actor.changeCarryType(item, { carryType: "worn" });
-      ui.notifications?.info(`Wore ${item.name}.`);
-    }
-  }
-  sheet.render();
-}
-
-
