@@ -6,12 +6,15 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
-### Escape the Mobile View from the Phone (`scripts/utils/view-mode.js`, `scripts/apps/sheet-helpers/header-handlers.js`, `scripts/apps/mobile-sheet.js`, `scripts/pf2e-mobile.js`, `templates/parts/header.hbs`)
+### Escape the Mobile View from the Phone (`scripts/utils/view-mode.js`, `scripts/apps/sheet-helpers/header-handlers.js`, `scripts/apps/mobile-sheet.js`, `scripts/pf2e-mobile.js`, `scripts/utils/sheet-utils.js`, `templates/parts/header.hbs`, `styles/pf2e-mobile.css`)
 
 #### Added
 - **Desktop view button in the header's cog menu**: switches this device to Foundry's desktop view. Before, the only way out of the mobile sheet was the "Mobile Activation Mode" setting, which sits in Configure Settings behind the full-screen sheet, so a phone couldn't leave the mobile view at all.
 - **Floating "Mobile view" button**: a mobile device in the desktop view gets a round button bottom-left that switches back.
 - Both ask for confirmation, then set Mobile Activation Mode (`never` for the desktop view, `auto` for the mobile view). It is a client setting, so it only changes the view on this device, and its existing `onChange` reloads the page: the body class, sheet routing and stylesheet are decided at load. The floating button is styled inline, because the module stylesheet is off in the desktop view. The setting's hint mentions both buttons.
+
+#### Changed
+- **Mobile detection (`isMobileDevice()`) by the screen's short side and the kind of pointer**: the viewport test now uses the shorter side (`min(width, height) < 768`), so a phone in landscape stays in the mobile view, and it needs a touch screen whose primary pointer is coarse (a finger) and not fine (`pointer: coarse`, not `pointer: fine`). A narrow desktop browser window and a touchscreen laptop with a touchpad or mouse no longer count as mobile, also when the window is short. Phones and tablets are still recognised by their user agent first. The same pointer check is used in Ethlas's open PR #25. The stylesheet's full-bleed fallback media query also covers a coarse-pointer device in landscape.
 
 ### Spell Order Follows pf2e's Sheet; Move Entries from the Phone (`scripts/apps/sheet-helpers/context-spells.js`, `scripts/apps/sheet-helpers/spell-entry-order-handlers.js`, `scripts/apps/mobile-sheet.js`, `templates/parts/spells.hbs`, `styles/pf2e-mobile.css`, `docs/style-guide.html`)
 

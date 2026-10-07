@@ -567,9 +567,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onSwitchToDesktopView() { return onSwitchToDesktopView(this); }
   static async _onScrollChatToBottom() { this._scrollChatToBottom(true); }
 
-  /**
-   * Action handler: switch active tab.
-   */
+  /** Action handler: switch active tab. */
   static async _onSwitchTab(event, target) {
     const newTab = target.dataset.tab;
     if (newTab === "chat" && this._activeTab === "chat") {

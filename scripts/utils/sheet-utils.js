@@ -157,6 +157,9 @@ export function parseActionCostInfo(itemOrSpell, fallbackCost = null, options = 
 /**
  * Check if the client is running in a mobile context via standalone app mode,
  * mobile user-agent inspection, or touch screen compact viewport.
+ * The viewport test uses the short side, so a phone in landscape still counts, and needs a touch screen
+ * whose only pointer is coarse (a finger), so a narrow desktop window or a touchscreen laptop with a
+ * touchpad or mouse (pointer: fine) does not.
  * @returns {boolean}
  */
 export function isMobileDevice() {
@@ -165,7 +168,10 @@ export function isMobileDevice() {
   const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || "");
   const isIPad = (navigator.platform === "MacIntel" || /Macintosh/i.test(navigator.userAgent || "")) && (navigator.maxTouchPoints > 1);
   const isMobileViewport = Math.min(window.innerWidth, window.innerHeight) < 768;
-  const isTouchCompact = (navigator.maxTouchPoints > 0 || "ontouchstart" in window) && isMobileViewport;
+  const hasTouch = navigator.maxTouchPoints > 0 || "ontouchstart" in window;
+  const hasCoarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches ?? hasTouch;
+  const hasFinePointer = window.matchMedia?.("(pointer: fine)")?.matches ?? false;
+  const isTouchCompact = hasTouch && hasCoarsePointer && !hasFinePointer && isMobileViewport;
 
   return isStandaloneApp || isMobileUA || isIPad || isTouchCompact;
 }
