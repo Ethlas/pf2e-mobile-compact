@@ -40,6 +40,7 @@ import { resolveTargetForAction, promptTargetSelection, promptVariantSelection, 
 import { onExecuteStrike, onExecuteDamage, onExecuteCritical, onExecuteAuxiliaryAction, onItemToChat, onUseAction, onRollActionCheck, onRollSkill, onToggleActionSummary } from "./sheet-helpers/actions-handlers.js";
 import { onUseConsumable, onApplyPoison, onDetachSubitem, onChangeCarryType, onToggleInventorySection, onConfigureRunes, onToggleInvested, onToggleEquipped } from "./sheet-helpers/inventory-handlers.js";
 import { onSwitchSpellSubTab, onToggleRankGroup, onOpenSpellPrepPicker, prepareSlot, onUnprepareSlot, onToggleSlotExpended, onResetDailySpells, onSaveSpellPreset, onApplySpellPreset, onDeleteSpellPreset, onOpenCompendiumPicker, onAdjustSlot, onAdjustFocus, onCastSpell, onRollSpellDamage, onToggleSignatureSpell, onRemoveSpell } from "./sheet-helpers/spells-handlers.js";
+import { onMoveSpellEntry } from "./sheet-helpers/spell-entry-order-handlers.js";
 import { onCastStaffSpell, onAdjustStaffCharges, onCastItemSpell, onOpenDailies } from "./sheet-helpers/activations-handlers.js";
 import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleEntryMethod, onToggleHeaderMenu, onToggleCanvasMode, onToggleFullscreen, onSwitchActor } from "./sheet-helpers/header-handlers.js";
 import { disableChatInputs, dockChatElement, restoreChatElement, scrollChatToBottom, setupScrollBottomListener, registerChatListener, unregisterChatListener, updateChatBadge } from "./sheet-helpers/chat-handler.js";
@@ -124,6 +125,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       deleteSpellPreset: PF2eMobileSheet._onDeleteSpellPreset,
       toggleSignatureSpell: PF2eMobileSheet._onToggleSignatureSpell,
       removeSpell: PF2eMobileSheet._onRemoveSpell,
+      moveSpellEntry: PF2eMobileSheet._onMoveSpellEntry,
       castStaffSpell: PF2eMobileSheet._onCastStaffSpell,
       adjustStaffCharges: PF2eMobileSheet._onAdjustStaffCharges,
       castItemSpell: PF2eMobileSheet._onCastItemSpell,
@@ -644,6 +646,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onRollSpellDamage(event, target) { return onRollSpellDamage(this, event, target); }
   static async _onToggleSignatureSpell(event, target) { return onToggleSignatureSpell(this, event, target); }
   static async _onRemoveSpell(event, target) { return onRemoveSpell(this, event, target); }
+  static async _onMoveSpellEntry(event, target) { return onMoveSpellEntry(this, event, target); }
 
   // --- Delegated Activations Handlers ---
   static async _onCastStaffSpell(event, target) { return onCastStaffSpell(this, event, target); }

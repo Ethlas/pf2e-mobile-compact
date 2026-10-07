@@ -50,18 +50,29 @@
           the rank itself. --}}
     {{#each spellEntries as |spellEntry|}}
     <div class="spell-entry m-flex-col" data-entry-id="{{spellEntry.id}}">
-    <div class="spell-entry-header m-flex-col m-gap-4">
-      <div class="m-flex-row m-align-center m-justify-between m-gap-8">
-        <h3 class="rank-title m-flex-row m-align-center m-gap-6 m-min-w-0 m-text-xl m-bold m-color-accent"><i class="fas fa-book"></i> <span class="m-truncate">{{spellEntry.name}}</span></h3>
+    <div class="spell-entry-header m-flex-col m-gap-8">
+      {{!-- Move the entry up or down (its sort value, like dragging an entry on pf2e's sheet): two small arrows
+            sitting in the header's top border, at the right edge. The first entry's up and the last entry's down are
+            disabled and greyed out; with only one entry there are no arrows. --}}
+      {{#if (gt @root.spellEntries.length 1)}}
+      <div class="spell-entry-move m-flex-row">
+        <button type="button" class="btn-entry-move m-flex-row m-text-xs" data-action="moveSpellEntry" data-entry-id="{{spellEntry.id}}" data-direction="up" title="Move up" aria-label="Move {{spellEntry.name}} up" {{#if @first}}disabled{{/if}}><i class="fas fa-chevron-up"></i></button>
+        <button type="button" class="btn-entry-move m-flex-row m-text-xs" data-action="moveSpellEntry" data-entry-id="{{spellEntry.id}}" data-direction="down" title="Move down" aria-label="Move {{spellEntry.name}} down" {{#if @last}}disabled{{/if}}><i class="fas fa-chevron-down"></i></button>
+      </div>
+      {{/if}}
+      <div class="m-flex-row m-align-center m-gap-8">
+        <h3 class="rank-title m-flex-row m-align-center m-min-w-0 m-text-xl m-bold m-color-accent"><i class="fas fa-book"></i> <span class="m-truncate">{{spellEntry.name}}</span></h3>
+      </div>
+      {{#if (or spellEntry.dc spellEntry.attack spellEntry.tradition spellEntry.rankLetter)}}
+      <div class="m-flex-row m-align-center m-justify-between m-gap-8 m-text-md m-color-soft">
+        <div class="m-flex-row m-align-center m-gap-12 m-min-w-0">
+          {{#if spellEntry.dc}}<span><strong class="m-text-xl m-color-strong">{{spellEntry.dc}}</strong> Spell DC</span>{{/if}}
+          {{#if spellEntry.attack}}<span><strong class="m-text-xl m-color-strong">{{spellEntry.attack}}</strong> Spell Attack</span>{{/if}}
+        </div>
         <div class="m-flex-row m-align-center m-gap-6 m-shrink-0">
-          {{#if spellEntry.tradition}}<span class="m-text-md m-color-soft">{{spellEntry.tradition}}</span>{{/if}}
+          {{#if spellEntry.tradition}}<span>{{spellEntry.tradition}}</span>{{/if}}
           {{#if spellEntry.rankLetter}}<span class="skill-rank-badge rank-{{spellEntry.rank}} m-text-xs m-bold m-inline-flex m-align-center m-justify-center m-shrink-0" title="{{spellEntry.rankName}}">{{spellEntry.rankLetter}}</span>{{/if}}
         </div>
-      </div>
-      {{#if (or spellEntry.dc spellEntry.attack)}}
-      <div class="m-flex-row m-align-center m-gap-12 m-text-md m-color-soft">
-        {{#if spellEntry.dc}}<span><strong class="m-text-xl m-color-strong">{{spellEntry.dc}}</strong> Spell DC</span>{{/if}}
-        {{#if spellEntry.attack}}<span><strong class="m-text-xl m-color-strong">{{spellEntry.attack}}</strong> Spell Attack</span>{{/if}}
       </div>
       {{/if}}
     </div>

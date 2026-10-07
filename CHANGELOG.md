@@ -6,6 +6,15 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Spell Order Follows pf2e's Sheet; Move Entries from the Phone (`scripts/apps/sheet-helpers/context-spells.js`, `scripts/apps/sheet-helpers/spell-entry-order-handlers.js`, `scripts/apps/mobile-sheet.js`, `templates/parts/spells.hbs`, `styles/pf2e-mobile.css`, `docs/style-guide.html`)
+
+#### Added
+- **▲/▼ arrows in each spellcasting entry's header** (small chevrons in the colour of the header's top border, sitting on that border at the right in a round gap of the sheet background, each with a 38px touch target) move the entry up or down on the Spells tab, for example to put Focus Spells above the class entry. Before, the order could only be changed by dragging entries on pf2e's desktop sheet. The buttons do the same as that drag (`sortRelative` on the entry's `sort` value), so the order is stored on the actor and pf2e's sheet shows it too. Entries not shown on the tab (staves, wands, scrolls, empty entries) keep their place. The first entry's ▲ and the last entry's ▼ are greyed out, and there are no arrows when there is only one entry. The handler lives in its own small module because `spells-handlers.js` is already over 700 lines.
+
+#### Changed
+- **Entry header layout**: the tradition and proficiency rank badge moved from the name row to the right end of the Spell DC / Spell Attack row, so the name row has room for the full entry name below the move arrows.
+- **Spells inside a group are in pf2e's order instead of alphabetical**: the order you set by dragging spells on pf2e's character sheet (the spell's `sort` value) is now used, with the name as tie-breaker, like `SpellCollection#getSpellData`. Prepared spells keep their slot order, and heightened copies of signature spells come after a rank's own spells, as on pf2e's sheet. The order of the entries (by the entry's `sort`) and of the groups (Focus Spells, Cantrips, Rank 1–10) is unchanged.
+
 ### Roll Mode Button Only with the Physical Dice Module (`templates/parts/header.hbs`, `scripts/utils/sheet-utils.js`, `scripts/verify.mjs`)
 
 #### Fixed
