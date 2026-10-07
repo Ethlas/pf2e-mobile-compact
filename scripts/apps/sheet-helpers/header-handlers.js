@@ -2,6 +2,7 @@ import { clamp, isIOSDevice, isMobileCanvasDisabled, setMobileCanvasDisabled, ge
 import { PhysicalDiceManager } from "../../rolls/physical-dice-interceptor.js";
 import { setTargetToken } from "../../tokens/token-adapter.js";
 import { promptMultiTargetSelection } from "./sheet-prompts.js";
+import { setMobileViewEnabled } from "../../utils/view-mode.js";
 
 /**
  * Action handler: Apply delta damage (-) or heal (+) from the left-hand delta input.
@@ -458,6 +459,16 @@ export async function onToggleCanvasMode(sheet, event, target) {
       window.location.reload();
     }
   }, 250);
+}
+
+/**
+ * Action handler: the desktop button in the header settings menu switches this device to Foundry's desktop
+ * view (Mobile Activation Mode "never", see utils/view-mode.js).
+ * @param {object} sheet
+ */
+export async function onSwitchToDesktopView(sheet) {
+  closeHeaderMenu(sheet);
+  await setMobileViewEnabled(false);
 }
 
 let iosFullscreenTipShown = false;

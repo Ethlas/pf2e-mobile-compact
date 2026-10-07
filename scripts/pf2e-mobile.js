@@ -4,6 +4,7 @@
 import { PF2eMobileSheet } from "./apps/mobile-sheet.js";
 import { isMobileDevice, isIOSDevice, getStoredRollMode } from "./utils/sheet-utils.js";
 import { migrateActorPropertyRunes } from "./apps/sheet-helpers/rune-handlers.js";
+import { ensureMobileViewButton } from "./utils/view-mode.js";
 
 export { isMobileDevice, isIOSDevice };
 
@@ -539,7 +540,7 @@ Hooks.once("init", async () => {
   // Client Setting: Mobile Activation Mode (Registered first so shouldActivateMobile() reads it accurately during init)
   game.settings.register("pf2e-mobile-compact", "mobileActivationMode", {
     name: "Mobile Activation Mode",
-    hint: "Controls when mobile UI overrides, canvas suppression, and the mobile compact sheet are activated.",
+    hint: "Controls when mobile UI overrides, canvas suppression, and the mobile compact sheet are activated. On a phone, the cog menu in the mobile sheet switches to the desktop view, and a floating button switches back.",
     scope: "client",
     config: true,
     type: String,
@@ -805,6 +806,8 @@ Hooks.once("ready", () => {
     }
   } else {
     console.log("PF2e Mobile Compact | Desktop environment active. Mobile overrides dormant.");
+    // A mobile device switched to the desktop view gets a button to switch back (utils/view-mode.js)
+    ensureMobileViewButton();
   }
 
   // Keep fullscreen icon and classes synchronized across window changes in all environments
