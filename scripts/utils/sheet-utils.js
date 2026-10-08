@@ -291,6 +291,7 @@ export function applyMobileCanvasState() {
   if (typeof CONFIG !== "undefined" && CONFIG.Canvas) {
     CONFIG.Canvas.disabled = disableCanvas;
   }
+  ensureSafeCanvasTokens();
   try {
     localStorage.setItem("core.noCanvas", disableCanvas ? "true" : "false");
   } catch {}
@@ -355,6 +356,59 @@ export async function setMobileCanvasDisabled(disabled) {
   } catch {}
   applyMobileCanvasState();
   return nextState;
+}
+
+/**
+ * Ensures canvas.tokens exists and has safe defaults ({ controlled: [], placeables: [] })
+ * to prevent third-party modules (such as pf2e-kingmaker-tools) from throwing TypeErrors
+ * when canvas is disabled, uninitialized, or running headless on mobile.
+ */
+export function ensureSafeCanvasTokens() {
+  const canvasObj = typeof canvas !== "undefined" ? canvas : null;
+  if (canvasObj) {
+    if (!canvasObj.tokens) {
+      const mockTokens = {
+        controlled: [],
+        placeables: [],
+        get: () => null,
+        releaseAll: () => {},
+        select: () => {}
+      };
+      try {
+        canvasObj.tokens = mockTokens;
+      } catch {
+        try {
+          Object.defineProperty(canvasObj, "tokens", {
+            get() { return this._safeTokensShim ??= mockTokens; },
+            set(v) { this._safeTokensShim = v; },
+            configurable: true,
+            enumerable: true
+          });
+        } catch {}
+      }
+    } else {
+      if (!Array.isArray(canvasObj.tokens.controlled)) {
+        try { canvasObj.tokens.controlled = []; } catch {}
+      }
+      if (!Array.isArray(canvasObj.tokens.placeables)) {
+        try { canvasObj.tokens.placeables = []; } catch {}
+      }
+    }
+  }
+
+  if (typeof game !== "undefined" && game?.canvas) {
+    if (!game.canvas.tokens) {
+      try {
+        game.canvas.tokens = canvasObj?.tokens ?? {
+          controlled: [],
+          placeables: [],
+          get: () => null,
+          releaseAll: () => {},
+          select: () => {}
+        };
+      } catch {}
+    }
+  }
 }
 
 

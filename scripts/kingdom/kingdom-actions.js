@@ -6,6 +6,7 @@
  */
 
 import { PhysicalDiceManager } from "../rolls/physical-dice-interceptor.js";
+import { ensureSafeCanvasTokens } from "../utils/sheet-utils.js";
 import { getPartyActor, getKingdomName, getOrInitKingdomApp } from "./kingdom-context.js";
 
 /**
@@ -22,40 +23,71 @@ export async function dispatchKingdomSheetAction(sheet, event, actionData, rollT
   const partyActor = getPartyActor(sheet.actor) || sheet.actor;
   if (!partyActor) return;
 
+  // Guarantee canvas.tokens exists and has safe defaults with zero controlled tokens
+  // so Kingdom turn checks never query, require, or roll from a token.
+  ensureSafeCanvasTokens();
+
   const kmApp = await getOrInitKingdomApp(partyActor, true);
 
-  // --- Tier 1: pf2e-kingmaker-tools delegation with proper DOM attachment ---
-  if (kmApp && typeof kmApp._onClickAction === "function") {
-    const targetParent = kmApp.form || kmApp.element;
-    const fakeBtn = typeof document !== "undefined" && typeof document.createElement === "function"
-      ? document.createElement("button")
-      : { dataset: {} };
+  // --- Tier 1: Delegate directly to pf2e-kingmaker-tools buttons/action handlers ---
+  if (kmApp && (typeof kmApp._onClickAction === "function" || kmApp.element)) {
+    let targetBtn = null;
+    let isTempBtn = false;
 
-    for (const [key, val] of Object.entries(actionData)) {
-      if (val !== undefined && val !== null) {
-        fakeBtn.dataset[key] = String(val);
+    // 1. Look for existing button matching this action in kmApp's rendered DOM
+    if (kmApp.element?.querySelector) {
+      let found = null;
+      if (actionData.skill) {
+        found = kmApp.element.querySelector(`[data-action="${actionData.action}"][data-skill="${actionData.skill}"]`);
+      } else if (actionData.activity) {
+        found = kmApp.element.querySelector(`[data-action="${actionData.action}"][data-activity="${actionData.activity}"]`);
+      } else if (actionData.id) {
+        found = kmApp.element.querySelector(`[data-action="${actionData.action}"][data-id="${actionData.id}"]`);
+      } else if (actionData.index !== undefined) {
+        found = kmApp.element.querySelector(`[data-action="${actionData.action}"][data-index="${actionData.index}"]`);
+      } else {
+        found = kmApp.element.querySelector(`[data-action="${actionData.action}"]`);
+      }
+      if (found?.dataset && found.dataset.action === actionData.action) {
+        targetBtn = found;
       }
     }
 
-    // Attach to kmApp DOM if available so .closest("form") or .closest(".activity-card") resolve
-    if (targetParent && typeof targetParent.appendChild === "function") {
-      try {
-        targetParent.appendChild(fakeBtn);
-      } catch {}
+    // 2. If button is not currently rendered in kmApp DOM, create and attach temporary button
+    if (!targetBtn) {
+      targetBtn = typeof document !== "undefined" && typeof document.createElement === "function"
+        ? document.createElement("button")
+        : { dataset: {} };
+      isTempBtn = true;
+
+      const targetParent = kmApp.form || kmApp.element;
+      if (targetParent && typeof targetParent.appendChild === "function") {
+        try {
+          targetParent.appendChild(targetBtn);
+        } catch {}
+      }
+    }
+
+    targetBtn.dataset ??= {};
+    for (const [key, val] of Object.entries(actionData)) {
+      if (val !== undefined && val !== null) {
+        targetBtn.dataset[key] = String(val);
+      }
     }
 
     // Synchronize active leader and active settlement dropdowns on kmApp if set
     try {
+      const targetParent = kmApp.form || kmApp.element;
       if (sheet._activeKingdomLeader && targetParent?.querySelector) {
         const leaderSelect = targetParent.querySelector('select[name="activeLeader"]');
-        if (leaderSelect) {
+        if (leaderSelect && leaderSelect.value !== sheet._activeKingdomLeader) {
           leaderSelect.value = sheet._activeKingdomLeader;
           leaderSelect.dispatchEvent(new Event("change", { bubbles: true }));
         }
       }
       if (sheet._activeKingdomSettlement && targetParent?.querySelector) {
         const settleSelect = targetParent.querySelector('select[name="activeSettlement"]');
-        if (settleSelect) {
+        if (settleSelect && settleSelect.value !== sheet._activeKingdomSettlement) {
           settleSelect.value = sheet._activeKingdomSettlement;
           settleSelect.dispatchEvent(new Event("change", { bubbles: true }));
         }
@@ -64,13 +96,13 @@ export async function dispatchKingdomSheetAction(sheet, event, actionData, rollT
 
     sheet._pendingKingdomRollTitle = rollTitle;
 
-    // Create a safe synthetic event so kmApp does not inspect mobile sheet event targets
+    // Create a safe synthetic event matching Foundry's ApplicationV2 action dispatch
     const syntheticEvent = {
       preventDefault: () => {},
       stopPropagation: () => {},
       stopImmediatePropagation: () => {},
-      target: fakeBtn,
-      currentTarget: fakeBtn,
+      target: targetBtn,
+      currentTarget: targetBtn,
       shiftKey: Boolean(event?.shiftKey),
       ctrlKey: Boolean(event?.ctrlKey),
       metaKey: Boolean(event?.metaKey),
@@ -78,7 +110,25 @@ export async function dispatchKingdomSheetAction(sheet, event, actionData, rollT
     };
 
     const runAction = async () => {
-      await kmApp._onClickAction(syntheticEvent, fakeBtn);
+      ensureSafeCanvasTokens();
+      // Ensure canvas has zero controlled tokens during kingdom action execution so checks
+      // originate strictly from the sheet without requiring or querying any token.
+      const canvasObj = typeof canvas !== "undefined" ? canvas : null;
+      const origControlled = canvasObj?.tokens?.controlled;
+      try {
+        if (canvasObj?.tokens) {
+          canvasObj.tokens.controlled = [];
+        }
+        if (typeof kmApp._onClickAction === "function") {
+          await kmApp._onClickAction(syntheticEvent, targetBtn);
+        } else if (typeof targetBtn.click === "function") {
+          targetBtn.click();
+        }
+      } finally {
+        if (canvasObj?.tokens && origControlled) {
+          canvasObj.tokens.controlled = origControlled;
+        }
+      }
     };
 
     try {
@@ -90,29 +140,40 @@ export async function dispatchKingdomSheetAction(sheet, event, actionData, rollT
       } else {
         await runAction();
       }
+
+      // Check if a modal dialog opened to avoid synchronous re-render collision
+      const hasOpenDialog = Array.from(foundry.applications?.instances?.values?.() ?? [])
+        .some((app) => app?.constructor?.name === "KingdomCheckDialog" || app?.element?.querySelector?.(".km-check-dialog"));
+
+      if (!hasOpenDialog && sheet.rendered) {
+        sheet.render({ parts: ["header", "sheet"] });
+      }
+      return;
+    } catch (err) {
+      console.warn("PF2e Mobile Compact | pf2e-kingmaker-tools action failed; falling back to sheet campaign roll:", err);
     } finally {
-      // Remove temporary fake button from DOM
-      if (fakeBtn?.parentNode) {
+      if (isTempBtn && targetBtn?.parentNode) {
         try {
-          fakeBtn.parentNode.removeChild(fakeBtn);
+          targetBtn.parentNode.removeChild(targetBtn);
         } catch {}
       }
     }
-
-    // Check if a modal dialog opened to avoid synchronous re-render collision
-    const hasOpenDialog = Array.from(foundry.applications?.instances?.values?.() ?? [])
-      .some((app) => app?.constructor?.name === "KingdomCheckDialog" || app?.element?.querySelector?.(".km-check-dialog"));
-
-    if (!hasOpenDialog && sheet.rendered) {
-      sheet.render({ parts: ["header", "sheet"] });
-    }
-    return;
   }
 
-  // --- Tier 2: Native PF2e Campaign Fallback ---
+  // --- Tier 2: Native PF2e Campaign Fallback (Direct from Sheet) ---
+  await fallbackNativeKingdomRoll(partyActor, actionData, event);
+  if (sheet.rendered) {
+    sheet.render({ parts: ["header", "sheet"] });
+  }
+}
+
+/**
+ * Native PF2e fallback that rolls directly from the Party actor's sheet without tokens.
+ */
+async function fallbackNativeKingdomRoll(partyActor, actionData, event) {
   const campaign = partyActor.campaign || partyActor.system?.campaign;
   if (!campaign) {
-    ui.notifications?.warn?.("Kingdom Sheet is not available (neither pf2e-kingmaker-tools nor native campaign found).");
+    ui.notifications?.warn?.("Kingdom campaign data is not available on this party actor.");
     return;
   }
 
@@ -122,7 +183,7 @@ export async function dispatchKingdomSheetAction(sheet, event, actionData, rollT
     const stat = campaign.skills?.[slug] || campaign.skills?.[actionData.skill];
     if (stat) {
       if (typeof stat.roll === "function") {
-        return stat.roll(event);
+        return stat.roll({ event });
       }
       if (typeof stat.check?.roll === "function") {
         return stat.check.roll({ event });
@@ -136,14 +197,12 @@ export async function dispatchKingdomSheetAction(sheet, event, actionData, rollT
     if (typeof campaign.rollAction === "function") {
       return campaign.rollAction(event, actId);
     }
-    // Search on party actor items or campaign features
     const item = partyActor.items?.get?.(actId)
       || partyActor.itemTypes?.campaignFeature?.find?.((i) => i.id === actId || i.slug === actId);
     if (item) {
       if (typeof item.roll === "function") return item.roll(event);
       if (typeof item.toMessage === "function") return item.toMessage(event);
     }
-    // Search in official PF2e Kingmaker compendium
     const pack = game.packs?.get?.("pf2e.kingmaker-features");
     if (pack) {
       const compItem = await pack.getDocument(actId).catch(() => null);
@@ -154,7 +213,7 @@ export async function dispatchKingdomSheetAction(sheet, event, actionData, rollT
     }
   }
 
-  ui.notifications?.warn?.(`Action "${actionData.action}" could not be completed without pf2e-kingmaker-tools.`);
+  ui.notifications?.warn?.(`Action "${actionData.action}" could not be completed.`);
 }
 
 /**

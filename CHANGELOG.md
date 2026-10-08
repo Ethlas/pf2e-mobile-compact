@@ -19,8 +19,11 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
   - Administrative activities feature `btn-action-use` (`fa-play`).
   - All activities feature `btn-action-chat` (`postKingdomActivityChat`) to post rules, requirements, and degree-of-success details directly into chat.
 - **Robust Dual-Tier Execution Engine & Native PF2e Fallback**:
-  - `dispatchKingdomSheetAction` creates a properly attached button element within `kmApp.form || kmApp.element` and dispatches safe synthetic events to prevent null form context or mobile event target collisions.
-  - If `pf2e-kingmaker-tools` is not installed or unavailable, rolls seamlessly fall back to PF2e's native campaign engine (`partyActor.campaign.skills[skillSlug].roll(event)` or native activity checks).
+  - `dispatchKingdomSheetAction` invokes the exact buttons and actions of `pf2e-kingmaker-tools` matching desktop behavior, querying `kmApp.element` and attaching properly populated elements to `kmApp.form || kmApp.element`.
+  - **Sheet-Only Kingdom Rolling & Zero Token Worry**:
+    - Added `ensureSafeCanvasTokens` in `scripts/utils/sheet-utils.js` and hooked into mobile initialization and canvas state handlers. This prevents third-party modules (like `pf2e-kingmaker-tools`'s `getSelectedArmies` in `Armies.kt`) from throwing unhandled TypeErrors when canvas is disabled or headless on mobile.
+    - Kingdom turn rolls are strictly decoupled from tokens by enforcing empty controlled tokens during Kingdom checks, ensuring rolls originate 100% from the Kingdom sheet without requiring or being affected by tokens on canvas.
+  - If `pf2e-kingmaker-tools` encounters an internal error or is unavailable, rolls seamlessly fall back to PF2e's native campaign engine (`partyActor.campaign.skills[skillSlug].roll({ event })` or native activity checks).
   - Synchronous re-render collisions are avoided when modal check dialogs open.
 - **Universal Application Dialog Interception**:
   - `styleKingdomDialog` hooks into both `renderApplication` and `renderApplicationV2` (as well as `renderDialog`), ensuring `KingdomCheckDialog` and related modals are formatted for mobile screens ($\le 390\text{px}$) and bind to `PhysicalDiceManager`.

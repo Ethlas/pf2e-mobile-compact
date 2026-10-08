@@ -2,7 +2,7 @@
  * Entry point for pf2e-mobile-compact module.
  */
 import { PF2eMobileSheet } from "./apps/mobile-sheet.js";
-import { isMobileDevice, isIOSDevice, getStoredRollMode } from "./utils/sheet-utils.js";
+import { isMobileDevice, isIOSDevice, getStoredRollMode, ensureSafeCanvasTokens } from "./utils/sheet-utils.js";
 import { migrateActorPropertyRunes } from "./apps/sheet-helpers/rune-handlers.js";
 import { ensureMobileViewButton } from "./utils/view-mode.js";
 
@@ -156,6 +156,7 @@ export async function setMobileCanvasDisabled(disabled) {
  * update natively. If the user enables the `disableCanvas` setting, suspends the ticker and stage rendering.
  */
 export function optimizeCanvasForMobile() {
+  ensureSafeCanvasTokens();
   const disableCanvas = isMobileCanvasDisabled();
   if (typeof document !== "undefined" && document.body) {
     document.body.classList.toggle("pf2e-canvas-disabled", disableCanvas);
@@ -617,6 +618,7 @@ Hooks.once("init", async () => {
     optimizeCanvasForMobile();
     suppressResolutionWarnings();
     patchMediaElements();
+    ensureSafeCanvasTokens();
     patchUserActiveTokens();
   }
 
@@ -745,6 +747,7 @@ export function activateMobileEnvironment() {
   suppressResolutionWarnings();
   patchMediaElements();
   sweepResolutionNotifications();
+  ensureSafeCanvasTokens();
   patchUserActiveTokens();
 }
 
@@ -924,6 +927,7 @@ Hooks.on("renderDialog", (dialog, html) => {
 
 // Re-optimize ticker whenever scene transitions or canvas re-draws (mobile only)
 Hooks.on("canvasReady", () => {
+  ensureSafeCanvasTokens();
   if (shouldActivateMobile()) {
     optimizeCanvasForMobile();
   }

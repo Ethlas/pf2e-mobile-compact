@@ -4,6 +4,8 @@
  * pf2e-kingmaker-tools and native PF2e actor.system.campaign data.
  */
 
+import { ensureSafeCanvasTokens } from "../utils/sheet-utils.js";
+
 /**
  * Resolves the active Party Actor from any actor (either the party actor itself,
  * one of the character's parties, or the game's active party).
@@ -78,6 +80,7 @@ export function findExistingKingdomApp(partyActor) {
  */
 export async function getOrInitKingdomApp(partyActor, openIfMissing = true) {
   if (!partyActor || typeof foundry === "undefined") return null;
+  ensureSafeCanvasTokens();
   let kmApp = findExistingKingdomApp(partyActor);
 
   if (!kmApp && openIfMissing && game.pf2eKingmakerTools?.macros?.openSheet) {
