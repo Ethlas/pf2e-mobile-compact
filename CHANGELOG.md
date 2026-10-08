@@ -4,7 +4,39 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
-## [Unreleased]
+## [1.0.31] - 2026-10-08
+
+### Kingdom Page Dice & Activity Execution Overhaul, Removal of Gaining Experience Section (`templates/kingdom/kingdom-turn.hbs`, `scripts/kingdom/`, `scripts/pf2e-mobile.js`, `scripts/apps/mobile-sheet.js`, `styles/kingdom.css`, `scripts/verify.mjs`)
+
+#### Added
+- **Dedicated Resource Dice Roll Buttons (`rollKingdomResourceDice`)**:
+  - Upkeep Step 3 ("Collect Resources: Roll Xd6") now features an interactive d6 roll button (`btn-action-roll m-compact`) to roll the Kingdom's Resource Dice (`(level + 4)d6 + bonus`) directly to chat.
+  - The Resource Dice pill in Status & Resources is now interactive with a tap-to-roll button.
+  - Fully supports both Digital and Physical dice modes via `PhysicalDiceManager.withPhysicalMode`.
+- **Kingdom Activity Action Card Buttons & Chat Output**:
+  - Activities in Turn Flow now use the unified action card pattern (`m-action-card`, `m-compact` touch targets).
+  - Activities with checks feature `btn-action-roll` (`fa-dice-d20`).
+  - Administrative activities feature `btn-action-use` (`fa-play`).
+  - All activities feature `btn-action-chat` (`postKingdomActivityChat`) to post rules, requirements, and degree-of-success details directly into chat.
+- **Robust Dual-Tier Execution Engine & Native PF2e Fallback**:
+  - `dispatchKingdomSheetAction` creates a properly attached button element within `kmApp.form || kmApp.element` and dispatches safe synthetic events to prevent null form context or mobile event target collisions.
+  - If `pf2e-kingmaker-tools` is not installed or unavailable, rolls seamlessly fall back to PF2e's native campaign engine (`partyActor.campaign.skills[skillSlug].roll(event)` or native activity checks).
+  - Synchronous re-render collisions are avoided when modal check dialogs open.
+- **Universal Application Dialog Interception**:
+  - `styleKingdomDialog` hooks into both `renderApplication` and `renderApplicationV2` (as well as `renderDialog`), ensuring `KingdomCheckDialog` and related modals are formatted for mobile screens ($\le 390\text{px}$) and bind to `PhysicalDiceManager`.
+
+#### Removed
+- **Removed Entirely the Section About Gaining Experience**:
+  - Removed the ad-hoc XP award buttons (`+1 Hex XP`, `+2 Hexes XP`, `Farm/Worksite (+10 XP)`, `Bridge/Road (+5 XP)`, `Structure XP`, `Unused Solution XP`, `Convert RP to XP`) from the mobile Turn Flow.
+  - Streamlined the final Turn card into an "End Kingdom Turn" card (`.km-end-turn-card`) containing only Level Up and End Kingdom Turn actions.
+
+#### Refactored
+- **Modular Kingdom Domain Architecture (`AGENTS.md` File-Size Compliance)**:
+  - Refactored `scripts/kingdom/kingdom-handlers.js` (previously 1028 lines) into dedicated domain modules:
+    - `scripts/kingdom/kingdom-context.js` (< 450 lines): context preparation, normalization, and fallback.
+    - `scripts/kingdom/kingdom-actions.js` (< 350 lines): dice rolling, activity execution, and field synchronization.
+    - `scripts/kingdom/kingdom-dialogs.js` (< 200 lines): mobile modals, consumption breakdown, and settlement inspection.
+    - `scripts/kingdom/kingdom-handlers.js` (< 170 lines): clean facade and backwards-compatible re-export barrier.
 
 ### Money Bar on the Gear Tab; Treasure in Its Own Section; Working Bulk; Carried Items Not Shown as Equipped (`scripts/apps/sheet-helpers/currency-handlers.js`, `scripts/apps/sheet-helpers/context-inventory.js`, `scripts/apps/sheet-helpers/inventory-handlers.js`, `scripts/apps/sheet-helpers/carry-type.js`, `scripts/apps/mobile-sheet.js`, `scripts/pf2e-mobile.js`, `templates/parts/inventory.hbs`, `templates/parts/currency-dialog.hbs`, `templates/parts/carry-type-dialog.hbs`, `styles/pf2e-mobile.css`, `docs/style-guide.html`, `AGENTS.md`)
 

@@ -929,6 +929,50 @@ Hooks.on("canvasReady", () => {
   }
 });
 
+function styleKingdomDialog(app, rawElement) {
+  const element = rawElement?.[0] || rawElement;
+  if (!element || typeof element.querySelector !== "function") return;
+
+  const isKmDialog = element.classList?.contains("km-dialog-form")
+    || Boolean(element.querySelector?.(".km-check-dialog"))
+    || app?.constructor?.name === "KingdomCheckDialog"
+    || String(app?.id || "").startsWith("kmCheck-");
+
+  if (!isKmDialog) return;
+
+  element.classList.add("pf2e-mobile-km-dialog", "compact-theme");
+  const rollBtn = element.querySelector?.('button[data-action="roll"]')
+    || element.querySelector?.('button[name="roll"]')
+    || element.querySelector?.('.dialog-button.roll');
+
+  if (rollBtn && !rollBtn.dataset.mobilePhysicalBound) {
+    rollBtn.dataset.mobilePhysicalBound = "true";
+    rollBtn.addEventListener("click", () => {
+      const openMobileSheet = Array.from(foundry.applications?.instances?.values?.() ?? [])
+        .find((inst) => inst instanceof PF2eMobileSheet);
+      const isPhys = openMobileSheet?.rollMode === "physical"
+        || getStoredRollMode() === "physical";
+      if (isPhys) {
+        import("./rolls/physical-dice-interceptor.js").then(({ PhysicalDiceManager }) => {
+          PhysicalDiceManager.activeContext = {
+            title: openMobileSheet?._pendingKingdomRollTitle || app?.title || "Kingdom Check",
+            actor: openMobileSheet?.actor,
+            isPhysical: true
+          };
+          setTimeout(() => {
+            if (PhysicalDiceManager.activeContext?.isPhysical) {
+              PhysicalDiceManager.activeContext = null;
+            }
+            if (openMobileSheet?.rendered) {
+              openMobileSheet.render({ parts: ["header", "sheet"] });
+            }
+          }, 15000);
+        });
+      }
+    }, true);
+  }
+}
+
 // Intercept pf2e-kingmaker-tools ApplicationV2 windows on mobile:
 // 1. Keep the desktop KingdomSheet (.km-kingdom-sheet) hidden and route/sync to PF2eMobileSheet.
 // 2. Apply mobile compact styling and PhysicalDiceManager context to KingdomCheckDialog / StructureBrowser modals.
@@ -974,36 +1018,19 @@ Hooks.on("renderApplicationV2", (app, element) => {
     return;
   }
 
-  if (element.classList?.contains("km-dialog-form") || element.querySelector?.(".km-check-dialog")) {
-    element.classList.add("pf2e-mobile-km-dialog", "compact-theme");
-    const rollBtn = element.querySelector?.('button[data-action="roll"]');
-    if (rollBtn && !rollBtn.dataset.mobilePhysicalBound) {
-      rollBtn.dataset.mobilePhysicalBound = "true";
-      rollBtn.addEventListener("click", () => {
-        const openMobileSheet = Array.from(foundry.applications?.instances?.values?.() ?? [])
-          .find((inst) => inst instanceof PF2eMobileSheet);
-        const isPhys = openMobileSheet?.rollMode === "physical"
-          || getStoredRollMode() === "physical";
-        if (isPhys) {
-          import("./rolls/physical-dice-interceptor.js").then(({ PhysicalDiceManager }) => {
-            PhysicalDiceManager.activeContext = {
-              title: openMobileSheet?._pendingKingdomRollTitle || app?.title || "Kingdom Check",
-              actor: openMobileSheet?.actor,
-              isPhysical: true
-            };
-            setTimeout(() => {
-              if (PhysicalDiceManager.activeContext?.isPhysical) {
-                PhysicalDiceManager.activeContext = null;
-              }
-              if (openMobileSheet?.rendered) {
-                openMobileSheet.render({ parts: ["header", "sheet"] });
-              }
-            }, 15000);
-          });
-        }
-      }, true);
-    }
-  }
+  styleKingdomDialog(app, element);
+});
+
+Hooks.on("renderApplication", (app, html) => {
+  const isMobile = shouldActivateMobile() || Boolean(document.querySelector(".pf2e-mobile-sheet"));
+  if (!isMobile) return;
+  styleKingdomDialog(app, html);
+});
+
+Hooks.on("renderDialog", (app, html) => {
+  const isMobile = shouldActivateMobile() || Boolean(document.querySelector(".pf2e-mobile-sheet"));
+  if (!isMobile) return;
+  styleKingdomDialog(app, html);
 });
 
 

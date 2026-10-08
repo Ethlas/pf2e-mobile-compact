@@ -49,10 +49,10 @@
             <span class="km-rp-label">RP Next Turn</span>
             <span class="km-rp-val">{{km.rpNextInput.value}} RP</span>
           </div>
-          <div class="km-rp-pill">
+          <button type="button" class="km-rp-pill clickable m-flex-col m-align-center" data-action="rollKingdomResourceDice" title="Roll Resource Dice ({{km.rdNowDisplay}})">
             <span class="km-rp-label">Resource Dice</span>
-            <span class="km-rp-val">{{km.rdNowDisplay}}</span>
-          </div>
+            <span class="km-rp-val">{{km.rdNowDisplay}} <i class="fa-solid fa-dice-d6"></i></span>
+          </button>
         </div>
 
         <div class="km-commodities-grid">
@@ -216,7 +216,13 @@
                 <div class="km-upkeep-grid">
                   <div class="km-upkeep-step"><strong>1. Assign Leadership:</strong> Check vacancies &amp; new roles</div>
                   <div class="km-upkeep-step"><strong>2. Adjust Unrest:</strong> Current Unrest {{../kingdomHeader.unrest}} ({{../kingdomHeader.unrestPenalty}})</div>
-                  <div class="km-upkeep-step"><strong>3. Collect Resources:</strong> Roll {{../km.rdNowDisplay}} (+1 {{../kingdomHeader.fameType}})</div>
+                  <div class="km-upkeep-step m-flex-row m-align-center m-justify-between">
+                    <span><strong>3. Collect Resources:</strong> Roll {{../km.rdNowDisplay}} (+1 {{../kingdomHeader.fameType}})</span>
+                    <button type="button" class="btn-action-roll m-compact m-inline-flex m-align-center m-justify-center m-text-base m-semibold m-color-strong"
+                            data-action="rollKingdomResourceDice" title="Roll Resource Dice ({{../km.rdNowDisplay}})">
+                      <i class="fa-solid fa-dice-d6"></i>
+                    </button>
+                  </div>
                   <div class="km-upkeep-step"><strong>4. Pay Consumption:</strong> {{#if ../km.consumption.total}}{{../km.consumption.total}}{{else}}{{../km.consumption}}{{/if}} Food</div>
                 </div>
               </div>
@@ -235,45 +241,79 @@
 
             <div class="km-activities-list">
               {{#each this.activities}}
-                <div class="km-activity-card {{#if this.isExpanded}}is-expanded{{/if}}">
-                  <div class="km-activity-header" data-action="toggleKingdomActivity" data-activity-id="{{this.id}}">
-                    <div class="km-activity-info">
-                      <span class="km-activity-name">{{this.displayName}}</span>
-                      <span class="km-activity-skills">
-                        {{#each this.skills}}{{this.label}}{{#unless @last}}, {{/unless}}{{/each}}
-                      </span>
+                <div class="m-action-card m-card km-activity-card {{#if this.isExpanded}}expanded{{/if}}" data-activity-id="{{this.id}}">
+                  <div class="m-card-line m-flex-row m-align-center" data-action="toggleKingdomActivity" data-activity-id="{{this.id}}">
+                    <div class="m-card-main m-flex-col m-min-w-0">
+                      <div class="m-card-title m-flex-row m-align-center m-gap-4">
+                        <span class="activity-name m-min-w-0 m-truncate m-bold m-text-base m-color-strong">
+                          {{this.displayName}}
+                        </span>
+                      </div>
+                      {{#if this.skills.length}}
+                      <div class="activity-skills m-flex-row m-wrap m-gap-4">
+                        {{#each this.skills}}
+                        <span class="m-badge-neutral m-text-xs m-color-soft">{{this.label}}</span>
+                        {{/each}}
+                      </div>
+                      {{/if}}
                     </div>
-                    <div class="km-activity-actions">
+
+                    <div class="action-btn-group m-flex-row m-align-center m-gap-6 m-shrink-0">
                       {{#unless ../this.isUpkeep}}
-                        <button type="button" class="km-perform-btn" data-action="performKingdomActivity"
-                                data-activity-id="{{this.id}}" data-activity-name="{{this.displayName}}"
+                        {{#if this.hasCheck}}
+                        <button type="button" 
+                                class="btn-action-roll m-compact m-inline-flex m-align-center m-justify-center m-text-base m-semibold m-color-strong"
+                                data-action="performKingdomActivity" 
+                                data-activity-id="{{this.id}}" 
+                                data-activity-name="{{this.displayName}}"
+                                data-roll-type="check"
+                                title="Roll Check ({{this.displayName}})"
                                 {{#if this.disabled}}disabled{{/if}}>
-                          <i class="fa-solid {{#if this.hasCheck}}fa-dice-d20{{else}}fa-play{{/if}}"></i> Perform
+                          <i class="fa-solid fa-dice-d20"></i>
                         </button>
+                        {{else}}
+                        <button type="button" 
+                                class="btn-action-use m-compact m-inline-flex m-align-center m-justify-center m-text-base m-semibold m-color-strong"
+                                data-action="performKingdomActivity" 
+                                data-activity-id="{{this.id}}" 
+                                data-activity-name="{{this.displayName}}"
+                                data-roll-type="action"
+                                title="Perform {{this.displayName}}"
+                                {{#if this.disabled}}disabled{{/if}}>
+                          <i class="fa-solid fa-play"></i>
+                        </button>
+                        {{/if}}
                       {{/unless}}
-                      <i class="fa-solid fa-chevron-down km-act-chevron"></i>
+
+                      <button type="button" 
+                              class="btn-action-chat m-compact m-inline-flex m-align-center m-justify-center m-text-base m-color-strong"
+                              data-action="postKingdomActivityChat" 
+                              data-activity-id="{{this.id}}"
+                              title="Post to Chat">
+                        <i class="fa-solid fa-message"></i>
+                      </button>
                     </div>
                   </div>
 
-                  <div class="km-activity-details">
+                  <div class="m-card-drawer km-activity-details {{#if this.isExpanded}}expanded{{else}}collapsed{{/if}}">
                     {{#if this.requirement}}
-                      <p class="km-act-req"><strong>Requirement:</strong> {{this.requirement}}</p>
+                      <p class="km-act-req m-text-sm m-color-normal"><strong>Requirement:</strong> {{this.requirement}}</p>
                     {{/if}}
                     {{#if this.automationNotes}}
-                      <p class="km-act-req"><strong>Automation:</strong> {{this.automationNotes}}</p>
+                      <p class="km-act-req m-text-sm m-color-normal"><strong>Automation:</strong> {{this.automationNotes}}</p>
                     {{/if}}
                     {{#if this.description}}
-                      <div class="km-act-desc">{{{this.description}}}</div>
+                      <div class="km-act-desc m-text-sm m-color-normal">{{{this.description}}}</div>
                     {{/if}}
-                    <div class="km-act-degrees">
-                      {{#if this.criticalSuccess}}<div class="km-deg cs"><strong>Crit Success:</strong> {{{this.criticalSuccess}}}</div>{{/if}}
-                      {{#if this.success}}<div class="km-deg s"><strong>Success:</strong> {{{this.success}}}</div>{{/if}}
-                      {{#if this.failure}}<div class="km-deg f"><strong>Failure:</strong> {{{this.failure}}}</div>{{/if}}
-                      {{#if this.criticalFailure}}<div class="km-deg cf"><strong>Crit Failure:</strong> {{{this.criticalFailure}}}</div>{{/if}}
+                    <div class="km-act-degrees m-flex-col m-gap-4">
+                      {{#if this.criticalSuccess}}<div class="km-deg cs m-text-xs"><strong>Crit Success:</strong> {{{this.criticalSuccess}}}</div>{{/if}}
+                      {{#if this.success}}<div class="km-deg s m-text-xs"><strong>Success:</strong> {{{this.success}}}</div>{{/if}}
+                      {{#if this.failure}}<div class="km-deg f m-text-xs"><strong>Failure:</strong> {{{this.failure}}}</div>{{/if}}
+                      {{#if this.criticalFailure}}<div class="km-deg cf m-text-xs"><strong>Crit Failure:</strong> {{{this.criticalFailure}}}</div>{{/if}}
                     </div>
                     {{#if this.isCollectTaxes}}
-                      <div class="km-collect-taxes-extra">
-                        <button type="button" class="km-btn-secondary" data-action="skipCollectTaxes"
+                      <div class="km-collect-taxes-extra m-mt-4">
+                        <button type="button" class="btn-action-use m-compact m-inline-flex m-align-center m-justify-center m-gap-6 m-text-sm m-semibold" data-action="skipCollectTaxes"
                                 {{#if ../../km.collectTaxesReduceUnrestDisabled}}disabled{{/if}}>
                           <i class="fa-solid fa-hand-holding-heart"></i> Skip Taxes &amp; Roll to Reduce Unrest
                         </button>
@@ -287,28 +327,17 @@
         </div>
       {{/each}}
 
-      {{!-- XP, Homebrew V&K XP & End Turn Card --}}
-      <div class="km-card" style="margin-top:8px;">
-        <div class="km-card-header">
-          <span><i class="fa-solid fa-star"></i> Turn XP &amp; End Turn</span>
+      {{!-- End Kingdom Turn Card (Experience Gaining Section Removed) --}}
+      <div class="m-card km-end-turn-card m-mt-8">
+        <div class="m-card-header m-flex-row m-align-center m-justify-between">
+          <span class="m-bold m-text-base m-color-strong"><i class="fa-solid fa-flag-checkered"></i> End Kingdom Turn</span>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
-          <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="hex-xp" data-hexes="1">+1 Hex XP</button>
-          <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="hex-xp" data-hexes="2">+2 Hexes XP</button>
-          {{#if km.vkXp}}
-            <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="gain-xp" data-xp="10">Farm/Worksite (+10 XP)</button>
-            <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="gain-xp" data-xp="5">Bridge/Road (+5 XP)</button>
-            <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="structure-xp">Structure XP</button>
-          {{/if}}
-          <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="solution-xp">Unused Solution XP</button>
-          <button type="button" class="km-btn-sm" data-action="dispatchKingdomNativeAction" data-km-action="rp-xp">Convert RP to XP</button>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button type="button" class="km-btn-secondary" style="flex:1;" data-action="dispatchKingdomNativeAction" data-km-action="level-up" {{#unless km.canLevelUp}}disabled{{/unless}}>
+        <div class="m-flex-row m-align-center m-gap-8 m-mt-4">
+          <button type="button" class="btn-action-use m-compact m-flex-1 m-inline-flex m-align-center m-justify-center m-gap-6 m-text-base m-semibold" data-action="dispatchKingdomNativeAction" data-km-action="level-up" {{#unless km.canLevelUp}}disabled{{/unless}} title="Level Up Kingdom">
             <i class="fa-solid fa-arrow-up"></i> Level Up
           </button>
-          <button type="button" class="km-perform-btn" style="flex:1;" data-action="dispatchKingdomNativeAction" data-km-action="end-turn">
-            <i class="fa-solid fa-flag-checkered"></i> End Kingdom Turn
+          <button type="button" class="btn-action-roll m-compact m-flex-1 m-inline-flex m-align-center m-justify-center m-gap-6 m-text-base m-semibold" data-action="dispatchKingdomNativeAction" data-km-action="end-turn" title="End Kingdom Turn">
+            <i class="fa-solid fa-flag-checkered"></i> End Turn
           </button>
         </div>
       </div>

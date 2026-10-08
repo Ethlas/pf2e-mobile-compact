@@ -560,6 +560,8 @@ try {
     onUpdateKingdomField,
     onRollKingdomSkillCheck,
     onPerformKingdomActivity,
+    onRollKingdomResourceDice,
+    onPostKingdomActivityChat,
     onSkipCollectTaxes,
     onClaimKingdomRefuge,
     onClaimKingdomLandmark,
@@ -682,6 +684,27 @@ try {
   } else {
     logPass("[Turn Tab] Activity Perform buttons ('performKingdomActivity') execute Official & Homebrew activities with Physical Dice interception.");
   }
+
+  let resourceDiceRolled = false;
+  global.Roll = class {
+    constructor(formula) { this.formula = formula; }
+    async evaluate() { return this; }
+    async toMessage() { resourceDiceRolled = true; return {}; }
+  };
+  global.ChatMessage = {
+    getSpeaker: () => ({}),
+    create: async () => ({})
+  };
+
+  await onRollKingdomResourceDice(mockPartySheet, {});
+  if (!resourceDiceRolled) {
+    logFail("[Turn Tab] onRollKingdomResourceDice failed to evaluate and post roll.");
+  } else {
+    logPass("[Turn Tab] Resource Dice button ('rollKingdomResourceDice') rolled and posted to chat.");
+  }
+
+  await onPostKingdomActivityChat(mockPartySheet, {}, { dataset: { activityId: "naval-support" } });
+  logPass("[Turn Tab] Activity Chat button ('postKingdomActivityChat') executed.");
 
   await onSkipCollectTaxes(mockPartySheet, {});
   await onClaimKingdomRefuge(mockPartySheet, {});
