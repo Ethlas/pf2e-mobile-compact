@@ -6,6 +6,22 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Carry Items Like pf2e's Sheet: Hold a Torch, Wear a Belt in Its Slot (`scripts/apps/sheet-helpers/carry-type.js`, `scripts/apps/sheet-helpers/context-inventory.js`, `scripts/apps/sheet-helpers/inventory-handlers.js`, `scripts/apps/mobile-sheet.js`, `templates/parts/inventory.hbs`, `templates/parts/inventory/carry-badge.hbs`, `templates/parts/carry-type-dialog.hbs`, `styles/pf2e-mobile.css`, `docs/style-guide.html`, `scripts/verify.mjs`)
+
+#### Added
+- **Carry type picker**: every weapon, armor, shield and gear item on the Gear tab has one carry badge showing how it is carried (Held 1H, Held 2H, Worn (Belt), Worn, In Backpack, Dropped). Tapping it opens a picker with the same choices as pf2e's carry menu on its own sheet: held in one or two hands, implanted (for implants), worn in the item's slot (only for items with one), worn, stowed (only when the character has a container), dropped, and attached for attachable items. The picker shows pf2e's usage of the item ("Held in One Hand", ...), so you can see how it has to be carried to work. The choice goes to pf2e's `actor.changeCarryType`, and the labels are pf2e's own (`PF2E.CarryType.*`), so they follow the Foundry language.
+
+#### Fixed
+- **Gear that is held, such as a torch or lantern, could not be equipped**: the gear's only button was "Wear", which set the item to worn. pf2e counts an item as equipped only when it is carried the way its usage says, so a torch stayed unequipped. It can now be held.
+- **"Wear" did nothing for most worn magic items**: items with a worn slot (belt, gloves, boots, cloak, ...) only count as equipped when worn *in* that slot (`inSlot`), which the old button never set. The picker offers "Worn (Belt)" etc.
+- **Taking gear off failed silently without a container**: the old button stowed the item, which pf2e skips when there is no container to put it in. Stowed is now only offered when there is one; Worn and Dropped always are.
+- **Weapons could not be stowed or dropped from the phone**: their badge only cycled worn → held 1H → held 2H.
+- The badge is green when pf2e counts the item as equipped (`item.isEquipped`), instead of the module guessing from the carry type.
+
+#### Changed
+- The separate "Wear"/"Hold" equip button (`equip-badge`, action `toggleEquipped`) and the "in <container>" badge (`stowed-badge`) are replaced by the carry badge; a stowed item's badge reads "In Backpack". The carry logic moved out of `inventory-handlers.js` into `carry-type.js`.
+- The palette and the layout utilities are also scoped to the new `.carry-type-dialog`, like the spell picker dialog.
+
 ### Escape the Mobile View from the Phone (`scripts/utils/view-mode.js`, `scripts/apps/sheet-helpers/header-handlers.js`, `scripts/apps/mobile-sheet.js`, `scripts/pf2e-mobile.js`, `scripts/utils/sheet-utils.js`, `templates/parts/header.hbs`, `styles/pf2e-mobile.css`)
 
 #### Added

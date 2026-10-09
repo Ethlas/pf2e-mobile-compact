@@ -1,0 +1,25 @@
+{{!--
+  Carry type picker: the choices of pf2e's carry menu for one item, as touch buttons.
+  Rendered by promptCarryType() in sheet-helpers/carry-type.js.
+    item     { name, img }
+    usage    pf2e's usage label of the item ("Held in One Hand", "Worn Belt", ...), or ""
+    options  from getCarryOptions(): { label, icon, selected }; the button's index picks the option
+--}}
+<div class="carry-type-dialog m-flex-col m-gap-8">
+  <div class="m-flex-row m-align-center m-gap-10">
+    <img class="carry-type-img m-shrink-0" src="{{item.img}}" alt="{{item.name}}" width="38" height="38" />
+    <div class="m-flex-col m-min-w-0">
+      <span class="m-truncate m-text-base m-bold m-color-strong">{{item.name}}</span>
+      {{#if usage}}<span class="m-text-sm m-color-dim">{{usage}}</span>{{/if}}
+    </div>
+  </div>
+  <div class="m-flex-col m-gap-6">
+    {{#each options as |option|}}
+    <button type="button" class="carry-type-option m-flex-row m-align-center m-gap-10 m-text-base m-semibold m-color-normal {{#if option.selected}}selected{{/if}}" data-action="chooseCarryType" data-index="{{@index}}">
+      <i class="fa-solid fa-fw {{option.icon}}"></i>
+      <span class="m-flex-1">{{option.label}}</span>
+      {{#if option.selected}}<i class="fa-solid fa-check m-color-accent"></i>{{/if}}
+    </button>
+    {{/each}}
+  </div>
+</div>

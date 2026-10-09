@@ -105,9 +105,8 @@
     <div class="sg-item"><div class="sg-sample spells-preparation-view"><button class="btn-delete-preset m-compact">Delete</button></div></div>
     <div class="sg-item"><div class="sg-sample"><button class="btn-restore-slot m-compact m-inline-flex m-align-center m-justify-center m-gap-4"><i class="fas fa-arrow-rotate-left"></i> Restore</button></div></div>
     <div class="sg-item"><div class="sg-sample strike-card"><button class="map-button">−5</button></div></div>
-    <div class="sg-item"><div class="sg-sample"><button class="badge-btn equip-badge m-compact equipped">Equipped</button></div></div>
     <div class="sg-item"><div class="sg-sample"><button class="badge-btn invest-badge m-compact invested">Invested</button></div></div>
-    <div class="sg-item"><div class="sg-sample"><button class="badge-btn carry-badge m-compact held">Held</button></div></div>
+    <div class="sg-item"><div class="sg-sample"><button class="badge-btn carry-badge m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-text-sm m-semibold m-color-soft equipped"><i class="fa-solid fa-hand-back-fist"></i> Held 1H</button> <button class="badge-btn carry-badge m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-text-sm m-semibold m-color-soft"><i class="fa-solid fa-shirt"></i> Worn</button></div></div>
     <div class="sg-item"><div class="sg-sample spell-drawer-footer"><button class="btn-toggle-signature active">Signature</button></div></div>
     <div class="sg-item"><div class="sg-sample spell-drawer-footer"><button class="btn-remove-spell">Remove</button></div></div>
   </div>
@@ -256,6 +255,21 @@
         </div>
       </div>
     </div></div>
+    <div class="sg-item"><div class="sg-sample" style="display: block;">
+      <div class="carry-type-dialog m-flex-col m-gap-8" title="carry-type-dialog (parts/carry-type-dialog.hbs)">
+        <div class="m-flex-row m-align-center m-gap-10">
+          <img class="carry-type-img m-shrink-0" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="" width="38" height="38" />
+          <div class="m-flex-col m-min-w-0">
+            <span class="m-truncate m-text-base m-bold m-color-strong">carry-type-dialog</span>
+            <span class="m-text-sm m-color-dim">Held in One Hand</span>
+          </div>
+        </div>
+        <div class="m-flex-col m-gap-6">
+          <button type="button" class="carry-type-option m-flex-row m-align-center m-gap-10 m-text-base m-semibold m-color-normal selected"><i class="fa-solid fa-fw fa-hand-back-fist"></i><span class="m-flex-1">carry-type-option.selected</span><i class="fa-solid fa-check m-color-accent"></i></button>
+          <button type="button" class="carry-type-option m-flex-row m-align-center m-gap-10 m-text-base m-semibold m-color-normal"><i class="fa-solid fa-fw fa-shirt"></i><span class="m-flex-1">carry-type-option</span></button>
+        </div>
+      </div>
+    </div></div>
     <div class="sg-item"><div class="sg-sample" style="display: block;"><div class="m-panel" style="padding: 8px 10px;">m-panel: flat panel</div></div></div>
     <div class="sg-item"><div class="sg-sample" style="display: block;"><div class="m-action-card">m-action-card: card base (stash items, wands and scrolls; m-card and m-panel cards build on it)</div></div></div>
     <div class="sg-item"><div class="sg-sample"><button class="m-compact">m-compact (38px)</button> <button>default (48px)</button></div></div>
@@ -342,7 +356,7 @@
   }).join("");
 
   // Every m-* class rule with its declarations
-  // Layout utilities are scoped as :is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog) .m-x;
+  // Layout utilities are scoped as :is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-x;
   // input components as .pf2e-mobile-sheet input.m-x
   const utilRules = styleRules.filter(r => /^(\.pf2e-mobile-sheet|:is\([^)]*\)) [a-z]*\.m-[\w-]+/.test(r.selectorText));
   document.getElementById("sg-utils").innerHTML = utilRules.map(r => {

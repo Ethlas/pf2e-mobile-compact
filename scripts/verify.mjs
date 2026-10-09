@@ -162,6 +162,7 @@ const pickerActions = extractRegisteredActions(path.join(rootDir, "scripts/apps/
 // Actions handled via inline event listeners in ad-hoc dialogs (DialogV2 / Dialog) or CompendiumPickerApp _onRender
 const inlineDialogActions = new Set([
   "confirmPrepareSpell",
+  "chooseCarryType",
   "updateStagedEntry",
   "updateStagedRank",
   "updateRankFilter",

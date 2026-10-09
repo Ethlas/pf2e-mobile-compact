@@ -1,0 +1,8 @@
+{{!--
+  Carry badge: the carry state of an inventory item (Held 1H, Worn (Belt), In Backpack, ...). Green when pf2e
+  counts the item as equipped; tapping it opens the carry type picker (sheet-helpers/carry-type.js).
+    item  Item from prepareInventoryContext(), with carry = getCarryState()
+--}}
+<button type="button" class="badge-btn carry-badge m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-text-sm m-semibold m-color-soft {{#if item.carry.isEquipped}}equipped{{/if}}" data-action="changeCarryType" data-item-id="{{item.id}}" title="Change how {{item.name}} is carried">
+  <i class="fa-solid {{item.carry.icon}}"></i> {{item.carry.label}}
+</button>

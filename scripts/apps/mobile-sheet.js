@@ -38,7 +38,8 @@ import { prepareActivationsContext } from "./sheet-helpers/context-activations.j
 import { onTransferStashItem, onSendToPartyStash, onOpenPartyStash, onSwitchToPartyMember, onTransferCoins } from "./sheet-helpers/party-handlers.js";
 import { resolveTargetForAction, promptTargetSelection, promptVariantSelection, promptStatisticSelection, promptStrikeSelection } from "./sheet-helpers/sheet-prompts.js";
 import { onExecuteStrike, onExecuteDamage, onExecuteCritical, onExecuteAuxiliaryAction, onItemToChat, onUseAction, onRollActionCheck, onRollSkill, onToggleActionSummary } from "./sheet-helpers/actions-handlers.js";
-import { onUseConsumable, onApplyPoison, onDetachSubitem, onChangeCarryType, onToggleInventorySection, onConfigureRunes, onToggleInvested, onToggleEquipped } from "./sheet-helpers/inventory-handlers.js";
+import { onUseConsumable, onApplyPoison, onDetachSubitem, onToggleInventorySection, onConfigureRunes, onToggleInvested } from "./sheet-helpers/inventory-handlers.js";
+import { onChangeCarryType } from "./sheet-helpers/carry-type.js";
 import { onSwitchSpellSubTab, onToggleRankGroup, onOpenSpellPrepPicker, prepareSlot, onUnprepareSlot, onToggleSlotExpended, onResetDailySpells, onSaveSpellPreset, onApplySpellPreset, onDeleteSpellPreset, onOpenCompendiumPicker, onAdjustSlot, onAdjustFocus, onCastSpell, onRollSpellDamage, onToggleSignatureSpell, onRemoveSpell } from "./sheet-helpers/spells-handlers.js";
 import { onMoveSpellEntry } from "./sheet-helpers/spell-entry-order-handlers.js";
 import { onCastStaffSpell, onAdjustStaffCharges, onCastItemSpell, onOpenDailies } from "./sheet-helpers/activations-handlers.js";
@@ -107,7 +108,6 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       toggleInventorySection: PF2eMobileSheet._onToggleInventorySection,
       configureRunes: PF2eMobileSheet._onConfigureRunes,
       toggleInvested: PF2eMobileSheet._onToggleInvested,
-      toggleEquipped: PF2eMobileSheet._onToggleEquipped,
       castSpell: PF2eMobileSheet._onCastSpell,
       rollSpellDamage: PF2eMobileSheet._onRollSpellDamage,
       switchActor: PF2eMobileSheet._onSwitchActor,
@@ -625,7 +625,6 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static _onToggleInventorySection(event, target) { return onToggleInventorySection(this, event, target); }
   static async _onConfigureRunes(event, target) { return onConfigureRunes(this, event, target); }
   static async _onToggleInvested(event, target) { return onToggleInvested(this, event, target); }
-  static async _onToggleEquipped(event, target) { return onToggleEquipped(this, event, target); }
   static _onToggleActionSummary(event, target) { return onToggleActionSummary(this, event, target); }
 
   // --- Delegated Spell Handlers ---
