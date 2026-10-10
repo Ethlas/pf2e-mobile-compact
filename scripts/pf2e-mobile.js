@@ -716,6 +716,7 @@ Hooks.once("init", async () => {
     "modules/pf2e-mobile-compact/templates/parts/inventory/item-card.hbs",
     "modules/pf2e-mobile-compact/templates/parts/inventory/carry-badge.hbs",
     "modules/pf2e-mobile-compact/templates/parts/carry-type-dialog.hbs",
+    "modules/pf2e-mobile-compact/templates/parts/currency-dialog.hbs",
     "modules/pf2e-mobile-compact/templates/parts/party-overview.hbs",
     "modules/pf2e-mobile-compact/templates/parts/party-stash.hbs",
     "modules/pf2e-mobile-compact/templates/parts/chat.hbs",

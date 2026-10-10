@@ -1,26 +1,41 @@
 <div class="tab-pane inventory-tab" data-tab="inventory">
-  <!-- Bulk & Encumbrance Status Bar -->
-  <div class="inventory-status-bar m-flex-row m-align-center m-justify-between">
-    <div class="bulk-info">
-      <span>Bulk: <strong>{{encumbrance.bulk}} / {{encumbrance.max}}</strong></span>
-      {{#if encumbrance.isEncumbered}}
-      <span class="encumbered-badge warning m-badge">Encumbered</span>
-      {{/if}}
-      {{#if encumbrance.isOverLimit}}
-      <span class="encumbered-badge danger m-badge">Over Limit</span>
+  <!-- Gear buttons: party stash and Add Gear (the bulk line is at the bottom of the tab) -->
+  <div class="m-flex-row m-align-center m-justify-end m-gap-6 m-mb-12">
+    {{#if partyStash}}
+    <button type="button" class="btn-party-stash m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-semibold m-color-strong" data-action="openPartyStash" data-party-id="{{partyStash.id}}" title="Open {{partyStash.name}} Stash">
+      <i class="fas fa-box-archive"></i> Party stash ({{partyStash.itemsCount}})
+    </button>
+    {{/if}}
+    <button type="button" class="btn-primary m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-semibold m-color-strong" data-action="openCompendiumPicker" data-type="equipment" title="Add Gear from Compendium">
+      <i class="fas fa-plus"></i> Add Gear
+    </button>
+  </div>
+
+  <!-- Money bar: coin counts and add / remove coins, like pf2e's currency row (currency-handlers.js); Sell All Treasure is in the Treasure section's header -->
+  {{#if inventory.currency}}
+  <div class="currency-bar m-flex-col m-gap-6">
+    <div class="m-flex-row m-align-center m-gap-6">
+      <div class="m-flex-row m-align-center m-justify-between m-gap-4 m-flex-1 m-min-w-0">
+        {{#each inventory.currency.units as |unit|}}
+        <span class="currency-unit m-flex-row m-align-center m-gap-4 m-min-w-0" title="{{unit.label}}">
+          <img class="currency-coin m-shrink-0" src="{{unit.img}}" alt="{{unit.label}}" width="24" height="24" />
+          <span class="m-truncate m-text-base m-bold m-color-strong">{{unit.value}}</span>
+        </span>
+        {{/each}}
+      </div>
+      {{#if @root.editable}}
+      <div class="m-flex-row m-align-center m-gap-4 m-shrink-0">
+        <button type="button" class="btn-coins m-compact m-inline-flex m-align-center m-justify-center m-text-md m-color-soft" data-action="manageCoins" data-mode="add" title="Add Coins" aria-label="Add Coins"><i class="fas fa-plus"></i></button>
+        <button type="button" class="btn-coins m-compact m-inline-flex m-align-center m-justify-center m-text-md m-color-soft" data-action="manageCoins" data-mode="remove" title="Remove Coins" aria-label="Remove Coins"><i class="fas fa-minus"></i></button>
+      </div>
       {{/if}}
     </div>
-    <div class="m-flex-row m-align-center m-gap-6">
-      {{#if partyStash}}
-      <button type="button" class="btn-party-stash m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-semibold m-color-strong" data-action="openPartyStash" data-party-id="{{partyStash.id}}" title="Open {{partyStash.name}} Stash">
-        <i class="fas fa-box-archive"></i> Stash ({{partyStash.itemsCount}})
-      </button>
-      {{/if}}
-      <button type="button" class="btn-primary m-bold m-color-strong" data-action="openCompendiumPicker" data-type="equipment">
-        <i class="fas fa-plus"></i> Add Gear
-      </button>
+    <div class="m-flex-row m-wrap m-align-center m-justify-between m-gap-8 m-text-sm m-color-soft">
+      <span><i class="fas fa-coins"></i> Total Currency <strong class="m-color-strong">{{inventory.currency.totalCurrency}}</strong></span>
+      <span><i class="fas fa-scale-unbalanced"></i> Total Wealth <strong class="m-color-strong">{{inventory.currency.totalWealth}}</strong></span>
     </div>
   </div>
+  {{/if}}
 
   <!-- Consumables Section -->
   <section class="m-group inventory-section">
@@ -180,4 +195,49 @@
     </div>
     {{/unless}}
   </section>
+
+  <!-- Treasure Section: gems, art objects and other valuables (coins are in the money bar at the top) -->
+  <section class="m-group inventory-section">
+    <h3 class="section-title touch-header m-flex-row m-align-center m-justify-between m-bold m-color-accent" data-action="toggleInventorySection" data-section="treasure">
+      <span><i class="fas fa-coins"></i> Treasure ({{inventory.treasure.length}})</span>
+      <span class="m-flex-row m-align-center m-gap-8">
+        {{#if (and @root.editable inventory.treasure.length)}}
+        <button type="button" class="btn-coins m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-text-sm m-semibold m-color-normal" data-action="manageCoins" data-mode="sell" title="Sell All Treasure: turn every treasure item into its value in coins"><i class="fas fa-coins"></i> Sell all</button>
+        {{/if}}
+        <i class="fas fa-chevron-down section-expand-icon m-text-base m-color-muted {{#if inventory.isTreasureCollapsed}}collapsed{{/if}}"></i>
+      </span>
+    </h3>
+    {{#unless inventory.isTreasureCollapsed}}
+    <div class="m-group-list inventory-list">
+      {{#each inventory.treasure as |treasureItem|}}
+      {{#> "modules/pf2e-mobile-compact/templates/parts/inventory/item-card.hbs" item=treasureItem showQuantity=true showBulk=true}}
+      {{!-- Slots can only use the card's parameters (item) and @root, see inventory/item-card.hbs --}}
+        {{#*inline "badges"}}
+          {{> "modules/pf2e-mobile-compact/templates/parts/inventory/carry-badge.hbs" item=item}}
+          {{#if item.value}}
+          <span class="m-badge-neutral m-inline-flex m-align-center m-gap-4 m-text-xs m-color-soft" title="Value"><i class="fas fa-coins"></i> {{item.value}}</span>
+          {{/if}}
+        {{/inline}}
+      {{/"modules/pf2e-mobile-compact/templates/parts/inventory/item-card.hbs"}}
+      {{else}}
+      <p class="empty-hint">No treasure besides coins.</p>
+      {{/each}}
+    </div>
+    {{/unless}}
+  </section>
+
+  <!-- Bulk: what the character carries, as pf2e computes it; the limits' breakdown (5 / 10 + Str) is in the tooltips -->
+  {{#if encumbrance}}
+  <div class="bulk-bar m-panel m-flex-row m-wrap m-align-center m-justify-between m-gap-8 m-text-md m-color-soft">
+    <span class="m-flex-row m-align-center m-gap-6"><i class="fas fa-weight-hanging"></i> Bulk <strong class="m-text-base m-color-strong">{{encumbrance.bulk}}</strong>
+      {{#if encumbrance.isOverLimit}}<span class="encumbered-badge danger m-badge">Over Limit</span>{{else if encumbrance.isEncumbered}}<span class="encumbered-badge warning m-badge">Encumbered</span>{{/if}}
+    </span>
+    {{#if encumbrance.hasLimits}}
+    <span class="m-flex-row m-align-center m-gap-8 m-text-sm">
+      <span title="Encumbered above {{encumbrance.encumberedAfterBreakdown}}">Encumbered: <strong class="m-color-normal">{{encumbrance.encumberedAfter}}</strong></span>
+      <span title="Maximum {{encumbrance.maxBreakdown}}">Max: <strong class="m-color-normal">{{encumbrance.max}}</strong></span>
+    </span>
+    {{/if}}
+  </div>
+  {{/if}}
 </div>

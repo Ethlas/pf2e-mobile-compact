@@ -6,6 +6,24 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Money Bar on the Gear Tab; Treasure in Its Own Section; Working Bulk; Carried Items Not Shown as Equipped (`scripts/apps/sheet-helpers/currency-handlers.js`, `scripts/apps/sheet-helpers/context-inventory.js`, `scripts/apps/sheet-helpers/inventory-handlers.js`, `scripts/apps/sheet-helpers/carry-type.js`, `scripts/apps/mobile-sheet.js`, `scripts/pf2e-mobile.js`, `templates/parts/inventory.hbs`, `templates/parts/currency-dialog.hbs`, `templates/parts/carry-type-dialog.hbs`, `styles/pf2e-mobile.css`, `docs/style-guide.html`, `AGENTS.md`)
+
+#### Added
+- **Money bar at the top of the Gear tab**, like the currency row of pf2e's inventory, framed like the sections below it (sheet background, light border): the platinum, gold, silver and copper counts with pf2e's coin images, the total currency and total wealth, and two square buttons with a border and no background:
+  - **+ / −** open a touch dialog with a number field per coin and pf2e's option ("Combine Stacks" when adding, "Remove by value" to make change when removing). They call pf2e's `actor.inventory.addCurrency` / `removeCurrency`, the same as pf2e's own dialog; removing more than the character has shows pf2e's "Insufficient Coins" warning.
+  - **Sell all** (pf2e's "Sell All Treasure") sits in the header of the Treasure section, because the money bar has no room for a third button on a phone. It asks for confirmation and calls pf2e's `actor.inventory.sellAllTreasure()`, which turns every non-coin treasure item into its value in coins. It is only shown when there is such treasure.
+  - The buttons are only shown when the sheet is editable. The amounts come from pf2e (`actor.inventory.currency` and `totalWealth`), formatted by pf2e's `Coins#toString()`. The logic is in a new module, `currency-handlers.js`; its one action (`manageCoins`, with `data-mode` add / remove / sell) is re-exported from `inventory-handlers.js` to keep `mobile-sheet.js` under 700 lines.
+- **Treasure section on the Gear tab**: gems, art objects and other treasure items moved out of Other Gear into their own collapsible section, by name, each with a badge showing its value (pf2e's `item.assetValue`) and its carry badge. Coins are not listed there; the money bar shows them.
+- **`m-dialog`**: a dialog whose content root has this class gets the palette and the layout utilities, like the sheet. It replaces the separate `.carry-type-dialog` scope; the carry type and coins dialogs use it. Documented in `AGENTS.md` and the style guide.
+
+#### Fixed
+- **Bulk always showed "0.0 / 10"**: it was read from `system.attributes.encumbrance`, which pf2e does not have, so the "Encumbered" and "Over Limit" badges never appeared either. It now comes from pf2e's `actor.inventory.bulk`: the carried total as pf2e writes it ("4; 3L"), encumbered above 5 + Strength and the maximum of 10 + Strength (both including bonuses from rule elements), and pf2e's own encumbered / over-maximum checks.
+
+#### Changed
+- **Add Gear button** in the bar at the top of the Gear tab has the same size and text as the Stash button next to it, instead of a full-size button (38px, `m-compact`). The two buttons sit on the right, on the sheet background instead of a filled bar: the `inventory-status-bar` rule is gone, replaced by two new utilities, `m-justify-end` and `m-mb-12` (margin-bottom, the 12px gap between sections).
+- **The bulk line moved to the bottom of the Gear tab**, under the Treasure section: Bulk with the carried total, then "Encumbered: 5" and "Max: 10" (worded like pf2e's sheet), with pf2e's breakdown (5 / 10 + Strength) in their tooltips. An "Encumbered" (orange) or "Over Limit" (red) badge appears next to the total.
+- **The carry badge is no longer green for items whose usage is "carried"** (most treasure, plain gear without a usage). pf2e counts those as equipped however they are carried (only dropping them unequips them), so green there said nothing. Green now means the item is carried the way its usage needs: held for a torch, worn in its slot for a belt, and so on.
+
 ### Carry Items Like pf2e's Sheet: Hold a Torch, Wear a Belt in Its Slot (`scripts/apps/sheet-helpers/carry-type.js`, `scripts/apps/sheet-helpers/context-inventory.js`, `scripts/apps/sheet-helpers/inventory-handlers.js`, `scripts/apps/mobile-sheet.js`, `templates/parts/inventory.hbs`, `templates/parts/inventory/carry-badge.hbs`, `templates/parts/carry-type-dialog.hbs`, `styles/pf2e-mobile.css`, `docs/style-guide.html`, `scripts/verify.mjs`)
 
 #### Added

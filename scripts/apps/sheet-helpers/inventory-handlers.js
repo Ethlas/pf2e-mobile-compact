@@ -5,6 +5,9 @@ import {
 } from "./sheet-prompts.js";
 import { promptRuneConfiguration } from "./rune-handlers.js";
 
+// The money bar's action lives with the coin logic; re-exported here so the sheet imports all Gear tab actions from one place
+export { onManageCoins } from "./currency-handlers.js";
+
 /**
  * Domain handlers for inventory, physical items, consumables, and weapon attachments.
  */
