@@ -256,7 +256,7 @@
       </div>
     </div></div>
     <div class="sg-item"><div class="sg-sample" style="display: block;">
-      <div class="carry-type-dialog m-flex-col m-gap-8" title="carry-type-dialog (parts/carry-type-dialog.hbs)">
+      <div class="m-dialog carry-type-dialog m-flex-col m-gap-8" title="m-dialog carry-type-dialog (parts/carry-type-dialog.hbs)">
         <div class="m-flex-row m-align-center m-gap-10">
           <img class="carry-type-img m-shrink-0" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="" width="38" height="38" />
           <div class="m-flex-col m-min-w-0">
@@ -271,6 +271,23 @@
       </div>
     </div></div>
     <div class="sg-item"><div class="sg-sample" style="display: block;"><div class="m-panel" style="padding: 8px 10px;">m-panel: flat panel</div></div></div>
+    <div class="sg-item"><div class="sg-sample" style="display: block;">
+      <div class="currency-bar m-flex-col m-gap-6" title="currency-bar + btn-coins (parts/inventory.hbs); btn-coins also in the Treasure header">
+        <div class="m-flex-row m-align-center m-gap-6">
+          <div class="m-flex-row m-align-center m-justify-between m-gap-4 m-flex-1 m-min-w-0"><span class="currency-unit m-flex-row m-align-center m-gap-4 m-min-w-0"><img class="currency-coin m-shrink-0" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23c9a33a'/%3E%3C/svg%3E" alt="" width="24" height="24" /><span class="m-truncate m-text-base m-bold m-color-strong">0</span></span><span class="currency-unit m-flex-row m-align-center m-gap-4 m-min-w-0"><img class="currency-coin m-shrink-0" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23c9a33a'/%3E%3C/svg%3E" alt="" width="24" height="24" /><span class="m-truncate m-text-base m-bold m-color-strong">12</span></span><span class="currency-unit m-flex-row m-align-center m-gap-4 m-min-w-0"><img class="currency-coin m-shrink-0" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23c9a33a'/%3E%3C/svg%3E" alt="" width="24" height="24" /><span class="m-truncate m-text-base m-bold m-color-strong">5</span></span><span class="currency-unit m-flex-row m-align-center m-gap-4 m-min-w-0"><img class="currency-coin m-shrink-0" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23c9a33a'/%3E%3C/svg%3E" alt="" width="24" height="24" /><span class="m-truncate m-text-base m-bold m-color-strong">7</span></span></div>
+          <div class="m-flex-row m-align-center m-gap-4 m-shrink-0"><button type="button" class="btn-coins m-compact m-inline-flex m-align-center m-justify-center m-text-md m-color-soft"><i class="fas fa-plus"></i></button><button type="button" class="btn-coins m-compact m-inline-flex m-align-center m-justify-center m-text-md m-color-soft"><i class="fas fa-minus"></i></button></div>
+        </div>
+        <div class="m-flex-row m-wrap m-align-center m-justify-between m-gap-8 m-text-sm m-color-soft"><span><i class="fas fa-coins"></i> Total Currency <strong class="m-color-strong">12.57 gp</strong></span><span><i class="fas fa-scale-unbalanced"></i> Total Wealth <strong class="m-color-strong">52.57 gp</strong></span></div>
+      </div>
+    </div></div>
+    <div class="sg-item"><div class="sg-sample" style="display: block;"><div class="bulk-bar m-panel m-flex-row m-wrap m-align-center m-justify-between m-gap-8 m-text-md m-color-soft"><span class="m-flex-row m-align-center m-gap-6"><i class="fas fa-weight-hanging"></i> Bulk <strong class="m-text-base m-color-strong">6; 3L</strong><span class="encumbered-badge warning m-badge">Encumbered</span></span><span class="m-flex-row m-align-center m-gap-8 m-text-sm"><span>Encumbered: <strong class="m-color-normal">5</strong></span><span>Max: <strong class="m-color-normal">10</strong></span></span></div></div></div>
+    <div class="sg-item"><div class="sg-sample"><button type="button" class="btn-coins m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-text-sm m-semibold m-color-normal"><i class="fas fa-coins"></i> Sell all</button></div></div>
+    <div class="sg-item"><div class="sg-sample" style="display: block;">
+      <div class="m-dialog currency-dialog m-flex-col m-gap-8" title="m-dialog currency-dialog (parts/currency-dialog.hbs)">
+        <label class="currency-dialog-row m-flex-row m-align-center m-gap-10"><img class="currency-coin m-shrink-0" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23c9a33a'/%3E%3C/svg%3E" alt="" width="28" height="28" /><span class="m-flex-1 m-min-w-0 m-text-base m-semibold m-color-strong">Gold Pieces <span class="m-text-sm m-normal m-color-dim">(12)</span></span><input type="number" class="currency-dialog-input m-text-full m-color-strong" placeholder="0" /></label>
+        <label class="currency-dialog-option m-flex-row m-align-center m-gap-8 m-text-base m-color-normal"><input type="checkbox" checked /> <span>Combine Stacks</span></label>
+      </div>
+    </div></div>
     <div class="sg-item"><div class="sg-sample" style="display: block;"><div class="m-action-card">m-action-card: card base (stash items, wands and scrolls; m-card and m-panel cards build on it)</div></div></div>
     <div class="sg-item"><div class="sg-sample"><button class="m-compact">m-compact (38px)</button> <button>default (48px)</button></div></div>
     <div class="sg-item"><div class="sg-sample"><span class="m-panel m-compact m-flex-row m-align-center m-gap-4" style="padding: 2px 8px;"><span class="m-text-sm m-bold m-color-info">m-pill-input</span> <input type="text" class="m-pill-input m-bold m-color-info" value="12" style="width: 38px;"></span></div></div>
@@ -285,6 +302,8 @@
     <div class="sg-item"><div class="sg-sample"><div class="m-flex-col m-gap-2"><span class="sg-box">a</span><span class="sg-box">b</span></div></div></div>
     <div class="sg-item"><div class="sg-sample"><span class="m-inline-flex m-align-center m-gap-6 sg-box">inline <i class="fas fa-star"></i></span></div></div>
     <div class="sg-item"><div class="sg-sample" style="width: 100%;"><div class="m-flex-row m-justify-between" style="width: 100%;"><span class="sg-box">start</span><span class="sg-box">end</span></div></div></div>
+    <div class="sg-item"><div class="sg-sample" style="width: 100%;"><div class="m-flex-row m-justify-end m-gap-4" style="width: 100%;"><span class="sg-box">m-justify-end</span></div></div></div>
+    <div class="sg-item"><div class="sg-sample" style="display: block;"><div class="m-mb-12"><span class="sg-box">m-mb-12</span></div><span class="sg-box">next</span></div></div>
     <div class="sg-item"><div class="sg-sample" style="width: 100%;"><div class="m-flex-row m-justify-center m-align-baseline m-gap-8" style="width: 100%;"><span class="sg-box">centred</span><small>baseline</small></div></div></div>
     <div class="sg-item"><div class="sg-sample" style="width: 100%;"><div class="m-flex-row m-wrap m-gap-10 m-gap-12" style="width: 100%;"><span class="sg-box">wraps</span><span class="sg-box">to the</span><span class="sg-box">next line</span><span class="sg-box">when full</span></div></div></div>
     <div class="sg-item"><div class="sg-sample" style="width: 100%;"><div class="m-flex-row m-gap-6" style="width: 100%;"><span class="sg-box m-flex-1">m-flex-1</span><span class="sg-box m-flex-auto">m-flex-auto</span><span class="sg-box m-shrink-0">m-shrink-0</span></div></div></div>
@@ -356,7 +375,7 @@
   }).join("");
 
   // Every m-* class rule with its declarations
-  // Layout utilities are scoped as :is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .carry-type-dialog) .m-x;
+  // Layout utilities are scoped as :is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .m-dialog) .m-x;
   // input components as .pf2e-mobile-sheet input.m-x
   const utilRules = styleRules.filter(r => /^(\.pf2e-mobile-sheet|:is\([^)]*\)) [a-z]*\.m-[\w-]+/.test(r.selectorText));
   document.getElementById("sg-utils").innerHTML = utilRules.map(r => {

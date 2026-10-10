@@ -1,11 +1,12 @@
 /**
  * Context preparation helper for Inventory items and Encumbrance.
  * Strictly separates physical items from character traits/feats and enriches
- * consumables, weapons, armor, and gear with mobile-ready status metadata.
+ * consumables, weapons, armor, gear and treasure with mobile-ready status metadata.
  */
 
 import { getPropertyRuneLabel } from "./rune-data.js";
 import { getCarryState } from "./carry-type.js";
+import { prepareCurrencyContext } from "./currency-handlers.js";
 
 const PHYSICAL_ITEM_TYPES = new Set([
   "ammo",
@@ -20,7 +21,7 @@ const PHYSICAL_ITEM_TYPES = new Set([
 ]);
 
 /**
- * Prepares inventory weapons, armor, consumables, gear, and bulk encumbrance.
+ * Prepares inventory weapons, armor, consumables, gear, treasure, and bulk encumbrance.
  * @param {Actor} actor
  * @param {object} sheet
  * @param {object} context
@@ -72,14 +73,20 @@ async function enrichItemDescription(item, actor) {
 }
 
 export async function prepareInventoryContext(actor, sheet, context) {
-  const system = actor.system ?? {};
-  const encumbrance = system.attributes?.encumbrance ?? {};
-  context.encumbrance = {
-    bulk: (encumbrance.bulk?.value ?? 0).toFixed(1),
-    max: encumbrance.bulk?.max ?? 10,
-    isEncumbered: encumbrance.isEncumbered ?? false,
-    isOverLimit: encumbrance.isOverLimit ?? false
-  };
+  // Bulk as pf2e computes it (actor.inventory.bulk, an InventoryBulk): the carried total ("4; 3L", from
+  // pf2e's Bulk#toString), encumbered above 5 + Str, and the maximum of 10 + Str. Actors without Strength
+  // (loot, party) have no limits (Infinity).
+  const inventoryBulk = actor.inventory?.bulk;
+  context.encumbrance = inventoryBulk ? {
+    bulk: inventoryBulk.value?.toString?.() ?? "0",
+    hasLimits: Number.isFinite(inventoryBulk.max),
+    encumberedAfter: inventoryBulk.encumberedAfter,
+    encumberedAfterBreakdown: inventoryBulk.encumberedAfterBreakdown ?? "",
+    max: inventoryBulk.max,
+    maxBreakdown: inventoryBulk.maxBreakdown ?? "",
+    isEncumbered: Boolean(inventoryBulk.isEncumbered),
+    isOverLimit: Boolean(inventoryBulk.isOverMax)
+  } : null;
 
   const party = Array.from(actor.parties ?? [])[0]
     ?? (game.actors.party?.members.some(m => m.id === actor.id) ? game.actors.party : null)
@@ -203,12 +210,12 @@ export async function prepareInventoryContext(actor, sheet, context) {
     };
   }));
 
-  // 4. Other Physical Gear (Equipment, Backpacks, Books, Treasure, Ammo)
+  // 4. Other Physical Gear (Equipment, Backpacks, Books, Ammo)
   const gear = await Promise.all(physicalItems.filter(i => {
     if (typeof i.isOfType === "function") {
-      return i.isOfType("equipment", "backpack", "book", "treasure", "ammo");
+      return i.isOfType("equipment", "backpack", "book", "ammo");
     }
-    return ["equipment", "backpack", "book", "treasure", "ammo"].includes(i.type);
+    return ["equipment", "backpack", "book", "ammo"].includes(i.type);
   }).map(async g => {
     const isContainer = typeof g.isOfType === "function" ? g.isOfType("backpack") : g.type === "backpack";
     const equipped = g.system?.equipped ?? {};
@@ -230,15 +237,34 @@ export async function prepareInventoryContext(actor, sheet, context) {
     };
   }));
 
+  // 5. Treasure: gems, art objects and other valuables. Coins are not listed here: the money bar at the top
+  // of the tab shows them (currency-handlers.js). The value is pf2e's item.assetValue, a Coins object whose
+  // toString() gives "12 gp, 5 sp".
+  const treasure = await Promise.all(physicalItems.filter(i => (typeof i.isOfType === "function" ? i.isOfType("treasure") : i.type === "treasure") && !i.isCurrency).map(async t => ({
+    id: t.id,
+    name: t.name,
+    img: t.img,
+    quantity: t.quantity ?? t.system?.quantity ?? 1,
+    bulk: t.system?.bulk?.value ?? "-",
+    value: t.assetValue?.toString?.() ?? "",
+    carry: getCarryState(t),
+    description: await enrichItemDescription(t, actor),
+    isExpanded: Boolean(sheet._expandedActionIds?.has(t.id))
+  })));
+  treasure.sort((a, b) => a.name.localeCompare(b.name, game.i18n?.lang));
+
   context.inventory = {
     consumables,
     weapons,
     armor,
     gear,
+    treasure,
+    currency: prepareCurrencyContext(actor),
     isConsumablesCollapsed: sheet._collapsedInventorySections?.has("consumables") ?? false,
     isWeaponsCollapsed: sheet._collapsedInventorySections?.has("weapons") ?? false,
     isArmorCollapsed: sheet._collapsedInventorySections?.has("armor") ?? false,
-    isGearCollapsed: sheet._collapsedInventorySections?.has("gear") ?? false
+    isGearCollapsed: sheet._collapsedInventorySections?.has("gear") ?? false,
+    isTreasureCollapsed: sheet._collapsedInventorySections?.has("treasure") ?? false
   };
 }
 

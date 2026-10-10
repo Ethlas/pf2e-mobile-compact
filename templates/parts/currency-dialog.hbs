@@ -1,0 +1,21 @@
+{{!--
+  Add / remove coins: one number field per denomination, and pf2e's option for the mode
+  ("Combine Stacks" when adding, "Remove by value" when removing).
+  Rendered by updateCoins() in sheet-helpers/currency-handlers.js; the dialog's form reads the fields by name.
+    units          from prepareCurrencyContext(): { key, label, value, img }
+    optionLabel    the option's label
+    optionChecked  whether the option starts checked
+--}}
+<div class="m-dialog currency-dialog m-flex-col m-gap-8">
+  {{#each units as |unit|}}
+  <label class="currency-dialog-row m-flex-row m-align-center m-gap-10">
+    <img class="currency-coin m-shrink-0" src="{{unit.img}}" alt="" width="28" height="28" />
+    <span class="m-flex-1 m-min-w-0 m-text-base m-semibold m-color-strong">{{unit.label}} <span class="m-text-sm m-normal m-color-dim">({{unit.value}})</span></span>
+    <input type="number" class="currency-dialog-input m-text-full m-color-strong" name="{{unit.key}}" min="0" step="1" inputmode="numeric" placeholder="0" />
+  </label>
+  {{/each}}
+  <label class="currency-dialog-option m-flex-row m-align-center m-gap-8 m-text-base m-color-normal">
+    <input type="checkbox" name="option" {{#if optionChecked}}checked{{/if}} />
+    <span>{{optionLabel}}</span>
+  </label>
+</div>

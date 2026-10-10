@@ -40,6 +40,9 @@ function wornInSlotLabel(where) {
 
 /**
  * The current carry state of an item, for its badge on the Gear tab.
+ * isEquipped (the badge turns green) is pf2e's item.isEquipped, except for items whose usage is "carried":
+ * pf2e counts those as equipped however they are carried (only dropping them unequips them), so there is
+ * no carry state that makes a difference to show.
  * @param {Item} item
  * @returns {{label: string, icon: string, isEquipped: boolean}}
  */
@@ -52,7 +55,7 @@ export function getCarryState(item) {
   else if (carryType === "worn" && where && equipped.inSlot) label = wornInSlotLabel(where);
   else if (carryType === "stowed" && item.container) label = `In ${item.container.name}`;
   else label = game.i18n.localize(`PF2E.CarryType.${carryType}`);
-  return { label, icon: CARRY_ICONS[carryType] ?? "fa-shirt", isEquipped: Boolean(item.isEquipped) };
+  return { label, icon: CARRY_ICONS[carryType] ?? "fa-shirt", isEquipped: Boolean(item.isEquipped) && item.system?.usage?.type !== "carried" };
 }
 
 /**
