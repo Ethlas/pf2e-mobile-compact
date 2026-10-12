@@ -617,21 +617,30 @@ body.pf2e-mobile-active textarea {
 .pf2e-mobile-sheet .header-top-row:not(:has(.header-target-group)) .actor-identity-wrapper > :first-child {
   grid-column: 1 / 4;
 }
-/* Shared header controls: .header-select for dropdowns, .header-btn for square icon buttons */
+/* Shared header controls. header-item is the box of every control in the header (selects, pills, badges and
+   save buttons): a step darker than the default button, with room for text; header-item-button is the same box
+   without padding, for the square icon buttons. They come before the controls' own rules, so a control can
+   still change the padding (the HP delta input) or the border (the saves). .header-select adds the dropdowns'
+   text, .header-btn the icon buttons' size and states. */
+.pf2e-mobile-sheet .mobile-header-dashboard :is(.header-item, .header-item-button) {
+  /*background: var(--m-surface-2);*/
+  background: var(--m-surface-1);
+  border: 1px solid var(--m-border);
+}
+.pf2e-mobile-sheet .mobile-header-dashboard .header-item {
+  padding: 2px 4px;
+}
+.pf2e-mobile-sheet .mobile-header-dashboard .header-item-button {
+  padding: 0;
+}
 .pf2e-mobile-sheet .mobile-header-dashboard .header-select {
   font-size: 16px;
-  background: var(--m-surface-2);
   color: var(--m-text);
-  border: 1px solid var(--m-border);
-  padding: 2px 4px;
 }
 .pf2e-mobile-sheet .mobile-header-dashboard .header-btn {
   position: relative;
   min-width: 38px;
   width: 38px;
-  background: var(--m-surface-2);
-  border: 1px solid var(--m-border);
-  padding: 0;
 }
 .pf2e-mobile-sheet .mobile-header-dashboard .header-btn.active {
   color: var(--m-success-text);
@@ -710,8 +719,8 @@ body.pf2e-mobile-active textarea {
 .pf2e-mobile-sheet .header-btn-badge .fa-bolt {
   color: var(--m-accent);
 }
-/* 1. Delta input: a plain m-compact input, centred in its 54px column, on the same surface as the HP and
-   Temp pills next to it */
+/* 1. Delta input: a plain m-compact input with the header-item box, centred in its 54px column; narrower
+   padding than header-item so "±Amt" fits */
 .pf2e-mobile-sheet .hp-delta-group {
   flex: 0 0 54px;
 }
@@ -719,7 +728,6 @@ body.pf2e-mobile-active textarea {
   width: 100%;
   padding: 0 2px;
   text-align: center;
-  background: var(--m-surface-2);
 }
 .pf2e-mobile-sheet .mobile-header-dashboard .hp-delta-input::placeholder {
   color: var(--m-text-dim);
@@ -728,9 +736,6 @@ body.pf2e-mobile-active textarea {
 }
 /* 2. Current & Max HP Pill */
 .pf2e-mobile-sheet .hp-direct-group {
-  background: var(--m-surface-2);
-  padding: 2px 8px;
-  border: 1px solid var(--m-border);
   flex: 1.2 1 0;
 }
 .pf2e-mobile-sheet .hp-direct-group .hp-label {
@@ -758,9 +763,6 @@ body.pf2e-mobile-active textarea {
 }
 /* 3. Temp HP Pill */
 .pf2e-mobile-sheet .temp-hp-direct-group {
-  background: var(--m-surface-2);
-  padding: 2px 8px;
-  border: 1px solid var(--m-border);
   flex: 1 1 0;
 }
 .pf2e-mobile-sheet .temp-hp-direct-group .temp-hp-label {
@@ -787,18 +789,14 @@ body.pf2e-mobile-active textarea {
   width: 100%;
 }
 .pf2e-mobile-sheet .defense-item.ac-badge {
-  padding: 2px 6px;
-  background: var(--m-surface-2);
-  border: 1px solid var(--m-border);
   white-space: nowrap;
   flex: 0 0 auto;
 }
+/* The saves keep a lighter border than the other header items */
 .pf2e-mobile-sheet .header-defenses-saves-row .save-item {
   flex: 1 1 0;
   min-width: 0;
-  background: var(--m-surface-2);
-  border: 1px solid var(--m-border-subtle);
-  padding: 2px 4px;
+  border-color: var(--m-border-subtle);
   white-space: nowrap;
 }
 .pf2e-mobile-sheet .header-defenses-saves-row .save-item strong {
@@ -814,9 +812,6 @@ body.pf2e-mobile-active textarea {
 }
 .pf2e-mobile-sheet .perception-init-select {
   width: 100%;
-  background: var(--m-surface-2);
-  border: 1px solid var(--m-border);
-  padding: 2px 4px;
 }
 .pf2e-mobile-sheet .perception-init-select.combat-active {
   box-shadow: 0 0 6px rgba(255, 152, 0, 0.4);
@@ -840,7 +835,6 @@ body.pf2e-mobile-active textarea {
   overflow-x: hidden;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  padding: 12px;
   padding-top: 12px;
   padding-bottom: 24px;
   /* The side padding as variables, so a child can reach the tab's edges (e.g. .spell-entry-header) */
