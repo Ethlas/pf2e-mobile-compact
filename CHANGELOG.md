@@ -116,6 +116,15 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
     - `scripts/kingdom/kingdom-dialogs.js` (< 200 lines): mobile modals, consumption breakdown, and settlement inspection.
     - `scripts/kingdom/kingdom-handlers.js` (< 170 lines): clean facade and backwards-compatible re-export barrier.
 
+### One Box for the Header Controls (`styles/pf2e-mobile.css`, `templates/parts/header.hbs`, `docs/style-guide.html`)
+
+#### Changed
+- **`header-item` and `header-item-button`**: the header's selects, HP / Temp HP pills, HP delta input, AC badge, saves and Perception/Initiative select shared the same background and border, but each control's rule repeated them. They now come from one rule:
+  - `header-item` has the box and 2px 4px padding;
+  - `header-item-button` has the same box without padding, for the square icon buttons (`header-btn`).
+- Each control keeps only what is its own: its size or share of the row, its text, its states. The HP delta input keeps its narrower 0 2px padding, and the saves keep their lighter border (`--m-border-subtle`).
+- Padding now comes from `header-item`: the HP and Temp HP pills go from 2px 8px and the AC badge from 2px 6px to 2px 4px, like the selects and saves already had.
+
 ### Money Bar on the Gear Tab; Treasure in Its Own Section; Working Bulk; Carried Items Not Shown as Equipped (`scripts/apps/sheet-helpers/currency-handlers.js`, `scripts/apps/sheet-helpers/context-inventory.js`, `scripts/apps/sheet-helpers/inventory-handlers.js`, `scripts/apps/sheet-helpers/carry-type.js`, `scripts/apps/mobile-sheet.js`, `scripts/pf2e-mobile.js`, `templates/parts/inventory.hbs`, `templates/parts/currency-dialog.hbs`, `templates/parts/carry-type-dialog.hbs`, `styles/pf2e-mobile.css`, `docs/style-guide.html`, `AGENTS.md`)
 
 #### Added

@@ -5,13 +5,13 @@
       {{!-- Character overview & feats: opens a view in the tab area instead of using a footer slot.
             It carries the 👤 that party and kingdom names have in front of them. --}}
       {{#unless (or isParty isKingdom)}}
-      <button type="button" class="header-btn m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal {{#if (eq activeTab "character")}}active{{/if}}" data-action="toggleCharacterOverview" title="Character overview & feats{{#if hasActiveEffects}} (effects active){{/if}}" aria-label="Character Overview">
+      <button type="button" class="header-btn header-item-button m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal {{#if (eq activeTab "character")}}active{{/if}}" data-action="toggleCharacterOverview" title="Character overview & feats{{#if hasActiveEffects}} (effects active){{/if}}" aria-label="Character Overview">
         👤
         {{#if hasActiveEffects}}<span class="header-btn-badge m-text-sm"><i class="fas fa-bolt"></i></span>{{/if}}
       </button>
       {{/unless}}
       {{#if hasMultipleCharacters}}
-      <select class="header-select actor-switcher m-compact m-truncate m-bold m-color-strong" data-change-action="switchActor" title="Switch Character / Party / Kingdom" aria-label="Switch Character">
+      <select class="header-select header-item actor-switcher m-compact m-truncate m-bold m-color-strong" data-change-action="switchActor" title="Switch Character / Party / Kingdom" aria-label="Switch Character">
         {{#each ownedCharacters as |char|}}
         <option value="{{char.id}}" {{#if char.selected}}selected{{/if}}>
           {{char.name}}
@@ -26,7 +26,7 @@
     <div class="header-controls-wrapper">
       {{#unless (or isParty isKingdom)}}
       <div class="header-target-group m-flex-row m-min-w-0">
-        <select name="target-select" class="header-select header-target-select m-compact m-truncate" data-change-action="selectTarget" aria-label="Select Target" title="{{#if hasMultipleTargets}}Targets ({{activeTargetCount}}): {{multiTargetNames}}{{else if activeTarget}}Target: {{activeTarget.displayName}}{{else}}Target Token{{/if}}">
+        <select name="target-select" class="header-select header-item header-target-select m-compact m-truncate" data-change-action="selectTarget" aria-label="Select Target" title="{{#if hasMultipleTargets}}Targets ({{activeTargetCount}}): {{multiTargetNames}}{{else if activeTarget}}Target: {{activeTarget.displayName}}{{else}}Target Token{{/if}}">
           <option value="">🎯 No Target</option>
           <option value="__pick_multi__">🎯 Multi-Target Picker...</option>
           {{#if hasMultipleTargets}}
@@ -46,7 +46,7 @@
            (blue chip = digital, yellow hand = your own dice). Only with the physical-dice module active:
            it does the manual rolling, so without it the toggle would do nothing. -->
       {{#if isPhysicalDiceActive}}
-      <button type="button" class="header-btn m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="toggleRollMode" title="{{#if isPhysicalRollMode}}Manual dice: you roll and enter the result (tap for digital){{else}}Digital dice (tap for manual){{/if}}" aria-label="Toggle Roll Mode">
+      <button type="button" class="header-btn header-item-button m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="toggleRollMode" title="{{#if isPhysicalRollMode}}Manual dice: you roll and enter the result (tap for digital){{else}}Digital dice (tap for manual){{/if}}" aria-label="Toggle Roll Mode">
         <i class="fas fa-dice"></i>
         <span class="header-btn-badge m-text-sm"><i class="fas {{#if isPhysicalRollMode}}fa-hand{{else}}fa-microchip{{/if}}"></i></span>
       </button>
@@ -56,25 +56,25 @@
            fullscreen stays the last (right-most) button. Using any of them closes it again
            (closeHeaderMenu in header-handlers.js). -->
       <div class="header-menu">
-        <button type="button" class="header-btn header-menu-toggle m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="toggleHeaderMenu" title="Settings" aria-label="Settings" aria-expanded="false">
+        <button type="button" class="header-btn header-item-button header-menu-toggle m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="toggleHeaderMenu" title="Settings" aria-label="Settings" aria-expanded="false">
           <i class="fas fa-cog"></i>
         </button>
         <div class="header-menu-panel m-gap-4">
-          <button type="button" class="header-btn m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal {{#unless canvasDisabled}}active{{/unless}}" data-action="toggleCanvasMode" title="{{#if canvasDisabled}}Canvas Disabled (Tap to Enable Canvas){{else}}Canvas Enabled (Tap to Disable Canvas){{/if}}" aria-label="Toggle Canvas">
+          <button type="button" class="header-btn header-item-button m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal {{#unless canvasDisabled}}active{{/unless}}" data-action="toggleCanvasMode" title="{{#if canvasDisabled}}Canvas Disabled (Tap to Enable Canvas){{else}}Canvas Enabled (Tap to Disable Canvas){{/if}}" aria-label="Toggle Canvas">
             <i class="fas {{#if canvasDisabled}}fa-eye-slash{{else}}fa-map{{/if}}"></i>
           </button>
 
           {{#if isPhysicalDiceActive}}
-          <button type="button" class="header-btn m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="toggleEntryMethod" title="{{#if isChatEntryMethod}}Manual Dice Entry: In-Chat (Tap to switch to Popup Dialog){{else}}Manual Dice Entry: Popup Dialog (Tap to switch to In-Chat){{/if}}" aria-label="Toggle Manual Dice Entry Method">
+          <button type="button" class="header-btn header-item-button m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="toggleEntryMethod" title="{{#if isChatEntryMethod}}Manual Dice Entry: In-Chat (Tap to switch to Popup Dialog){{else}}Manual Dice Entry: Popup Dialog (Tap to switch to In-Chat){{/if}}" aria-label="Toggle Manual Dice Entry Method">
             <i class="fas {{#if isChatEntryMethod}}fa-comment-dots{{else}}fa-window-restore{{/if}}"></i>
           </button>
           {{/if}}
 
-          <button type="button" class="header-btn m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="switchToDesktopView" title="Switch to desktop view" aria-label="Switch to Desktop View">
+          <button type="button" class="header-btn header-item-button m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="switchToDesktopView" title="Switch to desktop view" aria-label="Switch to Desktop View">
             <i class="fas fa-desktop"></i>
           </button>
 
-          <button type="button" class="header-btn btn-fullscreen m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="toggleFullscreen" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">
+          <button type="button" class="header-btn header-item-button btn-fullscreen m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="toggleFullscreen" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">
             <i class="fas fa-expand"></i>
           </button>
         </div>
@@ -116,11 +116,11 @@
   <div class="m-flex-row m-align-center m-justify-between m-gap-4">
     <!-- Quick Delta Box (+/-) on Left -->
     <div class="hp-delta-group m-flex-row m-align-center m-justify-center">
-      <input type="text" class="hp-delta-input m-compact m-bold" data-change-action="applyDeltaHP" placeholder="±Amt" title="Enter heal amount or -damage (e.g. 5 to heal, -5 for damage)" aria-label="HP Delta" />
+      <input type="text" class="hp-delta-input header-item m-compact m-bold" data-change-action="applyDeltaHP" placeholder="±Amt" title="Enter heal amount or -damage (e.g. 5 to heal, -5 for damage)" aria-label="HP Delta" />
     </div>
 
     <!-- Current & Max HP with Direct Edit -->
-    <div class="hp-direct-group hp-{{hp.state}} m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0">
+    <div class="hp-direct-group header-item hp-{{hp.state}} m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0">
       <span class="hp-label m-text-sm m-bold m-color-success">HP</span>
       <div class="m-flex-row m-align-center m-gap-2">
         <input type="text" class="hp-current-input m-pill-input m-bold" data-change-action="setDirectHP" value="{{hp.value}}" title="Current HP (type number to set, or +/- to change)" aria-label="Current HP" />
@@ -130,7 +130,7 @@
     </div>
 
     <!-- Temp HP with Direct Edit -->
-    <div class="temp-hp-direct-group m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0">
+    <div class="temp-hp-direct-group header-item m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0">
       <span class="temp-hp-label m-text-sm m-bold">TEMP</span>
       <div class="m-flex-row m-align-center">
         <input type="text" class="temp-hp-current-input m-pill-input m-bold" data-change-action="setDirectTempHP" value="{{hp.temp}}" title="Temp HP (type number to set, or +/- to change)" aria-label="Temporary HP" />
@@ -148,22 +148,22 @@
 
   <!-- Row 3: Defenses, Saves & Perception/Initiative Pill Strip -->
   <div class="header-defenses-saves-row m-flex-row m-align-center m-justify-between m-gap-4">
-    <span class="defense-item ac-badge m-compact m-inline-flex m-align-center m-justify-center m-gap-2 m-text-base m-semibold m-color-normal" title="Armor Class: {{defenses.ac.value}}">
+    <span class="defense-item ac-badge header-item m-compact m-inline-flex m-align-center m-justify-center m-gap-2 m-text-base m-semibold m-color-normal" title="Armor Class: {{defenses.ac.value}}">
       <strong class="m-color-info">AC</strong> {{defenses.ac.value}}
     </span>
 
-    <button type="button" class="save-item m-compact m-flex-row m-align-center m-justify-center m-text-base m-semibold m-color-normal" data-action="rollSave" data-save="fortitude" title="Roll Fortitude Save (+{{defenses.fortitude.mod}})">
+    <button type="button" class="save-item header-item m-compact m-flex-row m-align-center m-justify-center m-text-base m-semibold m-color-normal" data-action="rollSave" data-save="fortitude" title="Roll Fortitude Save (+{{defenses.fortitude.mod}})">
       <strong class="m-color-success">Fort</strong> +{{defenses.fortitude.mod}}
     </button>
-    <button type="button" class="save-item m-compact m-flex-row m-align-center m-justify-center m-text-base m-semibold m-color-normal" data-action="rollSave" data-save="reflex" title="Roll Reflex Save (+{{defenses.reflex.mod}})">
+    <button type="button" class="save-item header-item m-compact m-flex-row m-align-center m-justify-center m-text-base m-semibold m-color-normal" data-action="rollSave" data-save="reflex" title="Roll Reflex Save (+{{defenses.reflex.mod}})">
       <strong class="m-color-success">Ref</strong> +{{defenses.reflex.mod}}
     </button>
-    <button type="button" class="save-item m-compact m-flex-row m-align-center m-justify-center m-text-base m-semibold m-color-normal" data-action="rollSave" data-save="will" title="Roll Will Save (+{{defenses.will.mod}})">
+    <button type="button" class="save-item header-item m-compact m-flex-row m-align-center m-justify-center m-text-base m-semibold m-color-normal" data-action="rollSave" data-save="will" title="Roll Will Save (+{{defenses.will.mod}})">
       <strong class="m-color-success">Will</strong> +{{defenses.will.mod}}
     </button>
 
     <div class="perc-init-dropdown-wrapper m-flex-row m-min-w-0">
-      <select class="perception-init-select m-compact m-truncate m-text-base m-semibold m-color-normal {{#if combat.active}}{{#if combat.hasRolled}}combat-rolled{{else}}combat-active{{/if}}{{/if}}" data-change-action="rollPerceptionOrInitiative" title="Roll Perception Check or Initiative" aria-label="Roll Perception or Initiative">
+      <select class="perception-init-select header-item m-compact m-truncate m-text-base m-semibold m-color-normal {{#if combat.active}}{{#if combat.hasRolled}}combat-rolled{{else}}combat-active{{/if}}{{/if}}" data-change-action="rollPerceptionOrInitiative" title="Roll Perception Check or Initiative" aria-label="Roll Perception or Initiative">
         <option value="" selected disabled>
           {{#if combat.active}}
             {{#if combat.hasRolled}}⚔️ {{combat.initiative}}{{else}}⚔️ Init{{/if}}
