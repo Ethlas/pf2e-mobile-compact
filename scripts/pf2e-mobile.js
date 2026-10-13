@@ -801,65 +801,115 @@ export function activateMobileEnvironment() {
   patchUserActiveTokens();
 }
 
-Hooks.once("ready", async () => {
+/**
+ * Ensures the floating action button (FAB) exists in the DOM for mobile users.
+ * @returns {HTMLButtonElement|null}
+ */
+export function ensureMobileFab() {
+  if (!shouldActivateMobile()) return null;
+  if (typeof document === "undefined" || typeof document.getElementById !== "function") return null;
+  let fab = document.getElementById("pf2e-mobile-fab");
+  if (!fab) {
+    fab = document.createElement("button");
+    fab.id = "pf2e-mobile-fab";
+    fab.type = "button";
+    fab.title = "Open Mobile Sheet";
+    fab.innerHTML = '<i class="fas fa-user-shield"></i>';
+    fab.style.cssText = "position:fixed;bottom:calc(20px + env(safe-area-inset-bottom, 0px));right:calc(20px + env(safe-area-inset-right, 0px));z-index:9999;width:52px;height:52px;border-radius:50%;background:#e65100;color:#fff;border:2px solid #ffb74d;box-shadow:0 4px 12px rgba(0,0,0,0.6);font-size:22px;display:none;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;";
+    fab.addEventListener("click", () => {
+      const uChar = game.user?.character;
+      const isUCharValid = uChar && (uChar.isOwner || uChar.testUserPermission(game.user, "LIMITED"));
+
+      const char = (isUCharValid ? uChar : null)
+        ?? game.actors?.find?.(a => a.type === "character" && a.isOwner)
+        ?? game.actors?.find?.(a => a.type === "character" && a.testUserPermission(game.user, "LIMITED"))
+        ?? (game.user?.isGM ? game.actors?.find?.(a => a.type === "character") : null);
+      if (char) {
+        if (!char._mobileSheetInstance || !(char._mobileSheetInstance instanceof PF2eMobileSheet)) {
+          char._mobileSheetInstance = new PF2eMobileSheet({ document: char });
+        }
+        char._mobileSheetInstance.render({ force: true });
+      } else {
+        ui.notifications?.warn?.("PF2e Mobile: No character actor found for this user.");
+      }
+    });
+    document.body.appendChild(fab);
+  }
+  updateFabVisibility();
+  return fab;
+}
+
+/**
+ * Updates floating action button (FAB) visibility based on active sheet state.
+ */
+export function updateFabVisibility() {
+  if (typeof document === "undefined" || typeof document.getElementById !== "function") return;
+  const fab = document.getElementById("pf2e-mobile-fab");
+  if (!fab) return;
+  if (!shouldActivateMobile()) {
+    fab.style.display = "none";
+    return;
+  }
+  const sheets = Array.from(document.querySelectorAll?.(".pf2e-mobile-sheet") ?? []);
+  const isSheetVisible = sheets.some(el => {
+    return el.offsetParent !== null && (window?.getComputedStyle?.(el)?.display ?? "") !== "none" && (window?.getComputedStyle?.(el)?.visibility ?? "") !== "hidden";
+  });
+  fab.style.display = isSheetVisible ? "none" : "flex";
+}
+
+let mobileUiInitialized = false;
+
+/**
+ * Initializes mobile UI components, attaches floating launcher, and auto-opens
+ * the active character sheet if configured. Designed to execute safely even if
+ * third-party canvas exceptions delay or abort Foundry's core "ready" hook.
+ */
+export async function initMobileUI() {
+  if (mobileUiInitialized) return;
+  if (!shouldActivateMobile()) return;
+  if (!game?.user) return;
+  mobileUiInitialized = true;
+
+  console.log("PF2e Mobile Compact | Initializing mobile UI and launchers");
+  activateMobileEnvironment();
   syncStylesheetState();
+  ensureMobileFab();
 
-  if (shouldActivateMobile()) {
-    activateMobileEnvironment();
-
-    // Resolve assigned or owned character
+  // If auto-open setting is enabled, launch the assigned or owned character sheet
+  if (game.settings.get("pf2e-mobile-compact", "autoOpenSheet")) {
     const userChar = game.user.character;
     const isUserCharValid = userChar && (userChar.isOwner || userChar.testUserPermission(game.user, "LIMITED"));
 
     const character = (isUserCharValid ? userChar : null)
-      ?? game.actors.find(a => a.type === "character" && a.isOwner)
-      ?? game.actors.find(a => a.type === "character" && a.testUserPermission(game.user, "LIMITED"))
-      ?? (game.user.isGM ? game.actors.find(a => a.type === "character") : null);
+      ?? game.actors?.find?.(a => a.type === "character" && a.isOwner)
+      ?? game.actors?.find?.(a => a.type === "character" && a.testUserPermission(game.user, "LIMITED"))
+      ?? (game.user.isGM ? game.actors?.find?.(a => a.type === "character") : null);
 
-    // If auto-open setting is enabled, launch the assigned or owned character sheet
-    if (game.settings.get("pf2e-mobile-compact", "autoOpenSheet")) {
-      if (character) {
-        console.log(`PF2e Mobile Compact | Auto-opening mobile sheet for ${character.name}`);
-        try {
-          if (!character._mobileSheetInstance || !(character._mobileSheetInstance instanceof PF2eMobileSheet)) {
-            character._mobileSheetInstance = new PF2eMobileSheet({ document: character });
-          }
-          character._mobileSheetInstance.render({ force: true });
-        } catch (err) {
-          console.error("PF2e Mobile Compact | Error auto-opening mobile sheet:", err);
-          character.sheet?.render?.({ force: true });
+    if (character) {
+      console.log(`PF2e Mobile Compact | Auto-opening mobile sheet for ${character.name}`);
+      try {
+        if (!character._mobileSheetInstance || !(character._mobileSheetInstance instanceof PF2eMobileSheet)) {
+          character._mobileSheetInstance = new PF2eMobileSheet({ document: character });
         }
+        character._mobileSheetInstance.render({ force: true });
+      } catch (err) {
+        console.error("PF2e Mobile Compact | Error auto-opening mobile sheet:", err);
+        character.sheet?.render?.({ force: true });
       }
     }
+  }
+}
 
-    // Floating launcher button (FAB) for mobile in case sheet was closed or needs opening
-    if (!document.getElementById("pf2e-mobile-fab")) {
-      const fab = document.createElement("button");
-      fab.id = "pf2e-mobile-fab";
-      fab.type = "button";
-      fab.title = "Open Mobile Sheet";
-      fab.innerHTML = '<i class="fas fa-user-shield"></i>';
-      fab.style.cssText = "position:fixed;bottom:calc(20px + env(safe-area-inset-bottom, 0px));right:calc(20px + env(safe-area-inset-right, 0px));z-index:9999;width:52px;height:52px;border-radius:50%;background:#e65100;color:#fff;border:2px solid #ffb74d;box-shadow:0 4px 12px rgba(0,0,0,0.6);font-size:22px;display:none;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;";
-      fab.addEventListener("click", () => {
-        const uChar = game.user.character;
-        const isUCharValid = uChar && (uChar.isOwner || uChar.testUserPermission(game.user, "LIMITED"));
+Hooks.once("setup", () => {
+  setTimeout(initMobileUI, 1200);
+  setTimeout(initMobileUI, 3000);
+});
 
-        const char = (isUCharValid ? uChar : null)
-          ?? game.actors.find(a => a.type === "character" && a.isOwner)
-          ?? game.actors.find(a => a.type === "character" && a.testUserPermission(game.user, "LIMITED"))
-          ?? (game.user.isGM ? game.actors.find(a => a.type === "character") : null);
-        if (char) {
-          if (!char._mobileSheetInstance || !(char._mobileSheetInstance instanceof PF2eMobileSheet)) {
-            char._mobileSheetInstance = new PF2eMobileSheet({ document: char });
-          }
-          char._mobileSheetInstance.render({ force: true });
-        } else {
-          ui.notifications?.warn?.("PF2e Mobile: No character actor found for this user.");
-        }
-      });
-      document.body.appendChild(fab);
-      updateFabVisibility();
-    }
+Hooks.once("ready", async () => {
+  syncStylesheetState();
+
+  if (shouldActivateMobile()) {
+    initMobileUI();
   } else {
     console.log("PF2e Mobile Compact | Desktop environment active. Mobile overrides dormant.");
     try {
@@ -916,20 +966,6 @@ Hooks.once("ready", async () => {
     console.warn("PF2e Mobile Compact | Property rune migration warning:", err);
   }
 });
-
-/**
- * Updates floating action button (FAB) visibility based on active sheet state.
- */
-export function updateFabVisibility() {
-  const fab = document.getElementById("pf2e-mobile-fab");
-  if (!fab) return;
-  if (!shouldActivateMobile()) {
-    fab.style.display = "none";
-    return;
-  }
-  const isOpen = !!document.querySelector(".pf2e-mobile-sheet");
-  fab.style.display = isOpen ? "none" : "flex";
-}
 
 // Reactively toggle stylesheet and FAB when mobile character sheet opens or closes
 Hooks.on("renderPF2eMobileSheet", (sheet) => {

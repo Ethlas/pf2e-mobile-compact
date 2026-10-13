@@ -349,6 +349,95 @@ export async function setMobileCanvasDisabled(disabled) {
   return nextState;
 }
 
+const enrichedDescriptionCache = new Map();
+
+/**
+ * High-performance cached HTML enrichment.
+ * 1. If text has no Foundry syntax ('@' or '[['), returns raw text synchronously without invoking TextEditor.
+ * 2. Checks in-memory cache keyed by document ID/UUID, update time/length, and raw text length.
+ * 3. Only invokes TextEditor.enrichHTML on cache miss, storing result in memory.
+ * @param {string} rawText
+ * @param {object} [options]
+ * @param {ClientDocument|object} [doc]
+ * @returns {Promise<string>}
+ */
+export async function enrichDescriptionCached(rawText, options = {}, doc = null) {
+  if (!rawText || typeof rawText !== "string") return "";
+
+  // Fast path: if there are no Foundry macro/UUID/roll directives, return immediately!
+  if (!rawText.includes("@") && !rawText.includes("[[")) {
+    return rawText;
+  }
+
+  const TextEditorClass = foundry.applications?.ux?.TextEditor ?? globalThis.TextEditor;
+  if (typeof TextEditorClass?.enrichHTML !== "function") {
+    return rawText;
+  }
+
+  const docKey = doc?.uuid ?? doc?.id ?? "transient";
+  const modTime = doc?._stats?.modifiedTime ?? doc?._stats?.lastModifiedBy ?? "";
+  const cacheKey = `${docKey}:${modTime}:${rawText.length}`;
+
+  const cached = enrichedDescriptionCache.get(cacheKey);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  try {
+    const enriched = await TextEditorClass.enrichHTML(rawText, {
+      secrets: options.secrets ?? doc?.isOwner ?? false,
+      rollData: options.rollData ?? {},
+      async: true
+    });
+    if (enrichedDescriptionCache.size > 1000) {
+      const firstKey = enrichedDescriptionCache.keys().next().value;
+      enrichedDescriptionCache.delete(firstKey);
+    }
+    enrichedDescriptionCache.set(cacheKey, enriched);
+    return enriched;
+  } catch {
+    return rawText;
+  }
+}
+
+/**
+ * Helper to create a proxy-backed tokens shim that gracefully absorbs
+ * any unhandled method calls (e.g. socket planned movements, layer placeable queries).
+ * @param {object} [initial]
+ * @returns {object}
+ */
+function createSafeTokensShim(initial = {}) {
+  const base = {
+    controlled: [],
+    placeables: [],
+    get: () => null,
+    releaseAll: () => {},
+    select: () => {},
+    activate() { return this; },
+    deactivate() { return this; },
+    _activate() { return this; },
+    _deactivate() { return this; },
+    draw() { return Promise.resolve(this); },
+    tearDown() { return Promise.resolve(this); },
+    createObject: () => null,
+    recalculatePlannedMovementPaths: () => {},
+    _updatePlannedMovements: () => {},
+    updatePlannedMovements: () => {},
+    clearPlannedMovements: () => {},
+    ...initial
+  };
+  return new Proxy(base, {
+    get(target, prop, receiver) {
+      if (prop in target) return Reflect.get(target, prop, receiver);
+      if (typeof prop === "string") {
+        if (prop === "active") return true;
+        return () => {};
+      }
+      return undefined;
+    }
+  });
+}
+
 /**
  * Ensures canvas.tokens exists and has safe defaults ({ controlled: [], placeables: [] })
  * and provides a no-op fallback for canvas.app (ticker, stage) to prevent third-party modules
@@ -359,15 +448,7 @@ export function ensureSafeCanvasTokens() {
   const canvasObj = typeof canvas !== "undefined" ? canvas : null;
   if (canvasObj) {
     if (!canvasObj.tokens) {
-      const mockTokens = {
-        controlled: [],
-        placeables: [],
-        get: () => null,
-        releaseAll: () => {},
-        select: () => {},
-        createObject: () => null,
-        recalculatePlannedMovementPaths: () => {}
-      };
+      const mockTokens = createSafeTokensShim();
       try {
         canvasObj.tokens = mockTokens;
       } catch {
@@ -392,6 +473,21 @@ export function ensureSafeCanvasTokens() {
       }
       if (typeof canvasObj.tokens.recalculatePlannedMovementPaths !== "function") {
         try { canvasObj.tokens.recalculatePlannedMovementPaths = () => {}; } catch {}
+      }
+      if (typeof canvasObj.tokens._updatePlannedMovements !== "function") {
+        try { canvasObj.tokens._updatePlannedMovements = () => {}; } catch {}
+      }
+      if (typeof canvasObj.tokens.updatePlannedMovements !== "function") {
+        try { canvasObj.tokens.updatePlannedMovements = () => {}; } catch {}
+      }
+      if (typeof canvasObj.tokens.clearPlannedMovements !== "function") {
+        try { canvasObj.tokens.clearPlannedMovements = () => {}; } catch {}
+      }
+      if (typeof canvasObj.tokens.activate !== "function") {
+        try { canvasObj.tokens.activate = function() { return this; }; } catch {}
+      }
+      if (typeof canvasObj.tokens.deactivate !== "function") {
+        try { canvasObj.tokens.deactivate = function() { return this; }; } catch {}
       }
     }
 
@@ -432,15 +528,7 @@ export function ensureSafeCanvasTokens() {
   if (typeof game !== "undefined" && game?.canvas) {
     if (!game.canvas.tokens) {
       try {
-        game.canvas.tokens = canvasObj?.tokens ?? {
-          controlled: [],
-          placeables: [],
-          get: () => null,
-          releaseAll: () => {},
-          select: () => {},
-          createObject: () => null,
-          recalculatePlannedMovementPaths: () => {}
-        };
+        game.canvas.tokens = canvasObj?.tokens ?? createSafeTokensShim();
       } catch {}
     } else {
       if (typeof game.canvas.tokens.createObject !== "function") {
@@ -448,6 +536,21 @@ export function ensureSafeCanvasTokens() {
       }
       if (typeof game.canvas.tokens.recalculatePlannedMovementPaths !== "function") {
         try { game.canvas.tokens.recalculatePlannedMovementPaths = () => {}; } catch {}
+      }
+      if (typeof game.canvas.tokens._updatePlannedMovements !== "function") {
+        try { game.canvas.tokens._updatePlannedMovements = () => {}; } catch {}
+      }
+      if (typeof game.canvas.tokens.updatePlannedMovements !== "function") {
+        try { game.canvas.tokens.updatePlannedMovements = () => {}; } catch {}
+      }
+      if (typeof game.canvas.tokens.clearPlannedMovements !== "function") {
+        try { game.canvas.tokens.clearPlannedMovements = () => {}; } catch {}
+      }
+      if (typeof game.canvas.tokens.activate !== "function") {
+        try { game.canvas.tokens.activate = function() { return this; }; } catch {}
+      }
+      if (typeof game.canvas.tokens.deactivate !== "function") {
+        try { game.canvas.tokens.deactivate = function() { return this; }; } catch {}
       }
     }
   }

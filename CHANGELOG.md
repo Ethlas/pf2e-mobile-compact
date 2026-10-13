@@ -4,6 +4,27 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.33] - 2026-10-13
+
+### Startup Performance Optimization, Canvas Layer Stubs & Resilient Mobile Launcher (`scripts/utils/sheet-utils.js`, `scripts/apps/sheet-helpers/`, `scripts/pf2e-mobile.js`, `styles/pf2e-mobile.css`)
+
+- **High-Performance Description Enrichment Caching (`enrichDescriptionCached`)**:
+  - Resolved major latency and startup delays on character sheets by introducing `enrichDescriptionCached` in `scripts/utils/sheet-utils.js`.
+  - Added synchronous fast-path bypassing `TextEditor.enrichHTML` completely for descriptions without Foundry directives (`@UUID`, `@Check`, `@Damage`, `[[`).
+  - Added memory-bounded cache for enriched HTML keyed by document UUID/ID, modification timestamp, and raw text length, preventing dozens of redundant asynchronous compendium lookups across action cards, spell cards, signature heightening variants, and inventory items on every render.
+  - Added in-memory caching for staff spells resolved from staff item descriptions (`_cachedStaffSpells`) in `context-activations.js`, preventing repeated `fromUuid` compendium queries.
+- **Fixed `layer.activate is not a function` & Socket `_updatePlannedMovements` Crashes**:
+  - Resolved `layer.activate is not a function` occurring during Foundry v14 `#initializeCanvasLayer()` in `setupGame()`, which previously aborted the core `"ready"` hook and prevented sheets and launcher buttons from auto-opening.
+  - Resolved `Uncaught (in promise) TypeError: canvas.tokens._updatePlannedMovements is not a function` at `foundry.mjs:46743:21` triggered by socket `userActivity` events when canvas is disabled or running in headless mode.
+  - Added `activate()`, `deactivate()`, `draw()`, `tearDown()`, `_updatePlannedMovements()`, `updatePlannedMovements()`, and `clearPlannedMovements()` stubs on `canvas.tokens` and `game.canvas.tokens` in `ensureSafeCanvasTokens()`.
+  - Wrapped `mockTokens` with a Proxy fallback that absorbs arbitrary property and method calls safely without throwing `TypeError`.
+- **Resilient Mobile Initialization & Launcher Button (FAB) Visibility**:
+  - Extracted mobile bootstrap into `initMobileUI()` with automatic fallback timeouts on `Hooks.once("setup")` and `window.load` so the sheet and launcher button reliably initialize even if third-party modules throw during canvas setup and abort Foundry's `"ready"` hook.
+  - Removed aggressive CSS `body:has(.pf2e-mobile-sheet) #pf2e-mobile-fab { display: none !important; }` rule which permanently hid the launcher button whenever a sheet DOM container existed.
+  - Updated `updateFabVisibility()` to dynamically evaluate whether any `.pf2e-mobile-sheet` element is actively visible on screen (`offsetParent !== null && display !== "none"`), ensuring `#pf2e-mobile-fab` is reliably displayed and clickable whenever the sheet is closed.
+
+---
+
 ## [1.0.32] - 2026-10-13
 
 ### Headless Token Resolution, Desktop Canvas Restoration & Safe App Shims (`scripts/pf2e-mobile.js`, `scripts/tokens/token-adapter.js`, `scripts/utils/sheet-utils.js`, `scripts/utils/view-mode.js`, `scripts/verify.mjs`)

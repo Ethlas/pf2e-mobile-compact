@@ -1,7 +1,7 @@
 /**
  * Context preparation helper for Spells (Cast View and Preparation View).
  */
-import { parseActionCostInfo, PROFICIENCY_RANK_LETTERS, PROFICIENCY_RANK_NAMES } from "../../utils/sheet-utils.js";
+import { enrichDescriptionCached, parseActionCostInfo, PROFICIENCY_RANK_LETTERS, PROFICIENCY_RANK_NAMES } from "../../utils/sheet-utils.js";
 import { isItemSpellcastingEntry } from "./context-activations.js";
 import { preparePreparationContext } from "./context-spell-preparation.js";
 
@@ -54,22 +54,14 @@ export async function formatSpell(actor, sheet, spell, entryId, extra = {}) {
     }
   }
 
-  let rawDescription = variantSpell.system?.description?.value ?? spell.system?.description?.value ?? "";
-  let enrichedDescription = rawDescription;
-  if (rawDescription && typeof TextEditorClass?.enrichHTML === "function") {
-    try {
-      const rollData = typeof variantSpell.getRollData === "function"
-        ? variantSpell.getRollData()
-        : actor.getRollData();
-      enrichedDescription = await TextEditorClass.enrichHTML(rawDescription, {
-        secrets: spell.isOwner,
-        rollData,
-        async: true
-      });
-    } catch {
-      enrichedDescription = rawDescription;
-    }
-  }
+  const rawDescription = variantSpell.system?.description?.value ?? spell.system?.description?.value ?? "";
+  const rollData = typeof variantSpell.getRollData === "function"
+    ? variantSpell.getRollData()
+    : (typeof actor.getRollData === "function" ? actor.getRollData() : {});
+  const enrichedDescription = await enrichDescriptionCached(rawDescription, {
+    secrets: spell.isOwner,
+    rollData
+  }, variantSpell ?? spell);
 
   // Detect spell damage / healing capabilities (system.damage, overlays, or inline @Damage tags)
   const rawDamageMap = variantSpell.system?.damage ?? spell.system?.damage ?? {};
