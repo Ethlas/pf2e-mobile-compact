@@ -2,7 +2,7 @@
  * Entry point for pf2e-mobile-compact module.
  */
 import { PF2eMobileSheet } from "./apps/mobile-sheet.js";
-import { isMobileDevice, isIOSDevice, getStoredRollMode } from "./utils/sheet-utils.js";
+import { isMobileDevice, isIOSDevice, getStoredRollMode, ensureSafeCanvasTokens } from "./utils/sheet-utils.js";
 import { migrateActorPropertyRunes } from "./apps/sheet-helpers/rune-handlers.js";
 import { ensureMobileViewButton } from "./utils/view-mode.js";
 
@@ -156,6 +156,7 @@ export async function setMobileCanvasDisabled(disabled) {
  * update natively. If the user enables the `disableCanvas` setting, suspends the ticker and stage rendering.
  */
 export function optimizeCanvasForMobile() {
+  ensureSafeCanvasTokens();
   const disableCanvas = isMobileCanvasDisabled();
   if (typeof document !== "undefined" && document.body) {
     document.body.classList.toggle("pf2e-canvas-disabled", disableCanvas);
@@ -617,6 +618,7 @@ Hooks.once("init", async () => {
     optimizeCanvasForMobile();
     suppressResolutionWarnings();
     patchMediaElements();
+    ensureSafeCanvasTokens();
     patchUserActiveTokens();
   }
 
@@ -745,6 +747,7 @@ export function activateMobileEnvironment() {
   suppressResolutionWarnings();
   patchMediaElements();
   sweepResolutionNotifications();
+  ensureSafeCanvasTokens();
   patchUserActiveTokens();
 }
 
@@ -924,10 +927,55 @@ Hooks.on("renderDialog", (dialog, html) => {
 
 // Re-optimize ticker whenever scene transitions or canvas re-draws (mobile only)
 Hooks.on("canvasReady", () => {
+  ensureSafeCanvasTokens();
   if (shouldActivateMobile()) {
     optimizeCanvasForMobile();
   }
 });
+
+function styleKingdomDialog(app, rawElement) {
+  const element = rawElement?.[0] || rawElement;
+  if (!element || typeof element.querySelector !== "function") return;
+
+  const isKmDialog = element.classList?.contains("km-dialog-form")
+    || Boolean(element.querySelector?.(".km-check-dialog"))
+    || app?.constructor?.name === "KingdomCheckDialog"
+    || String(app?.id || "").startsWith("kmCheck-");
+
+  if (!isKmDialog) return;
+
+  element.classList.add("pf2e-mobile-km-dialog", "compact-theme");
+  const rollBtn = element.querySelector?.('button[data-action="roll"]')
+    || element.querySelector?.('button[name="roll"]')
+    || element.querySelector?.('.dialog-button.roll');
+
+  if (rollBtn && !rollBtn.dataset.mobilePhysicalBound) {
+    rollBtn.dataset.mobilePhysicalBound = "true";
+    rollBtn.addEventListener("click", () => {
+      const openMobileSheet = Array.from(foundry.applications?.instances?.values?.() ?? [])
+        .find((inst) => inst instanceof PF2eMobileSheet);
+      const isPhys = openMobileSheet?.rollMode === "physical"
+        || getStoredRollMode() === "physical";
+      if (isPhys) {
+        import("./rolls/physical-dice-interceptor.js").then(({ PhysicalDiceManager }) => {
+          PhysicalDiceManager.activeContext = {
+            title: openMobileSheet?._pendingKingdomRollTitle || app?.title || "Kingdom Check",
+            actor: openMobileSheet?.actor,
+            isPhysical: true
+          };
+          setTimeout(() => {
+            if (PhysicalDiceManager.activeContext?.isPhysical) {
+              PhysicalDiceManager.activeContext = null;
+            }
+            if (openMobileSheet?.rendered) {
+              openMobileSheet.render({ parts: ["header", "sheet"] });
+            }
+          }, 15000);
+        });
+      }
+    }, true);
+  }
+}
 
 // Intercept pf2e-kingmaker-tools ApplicationV2 windows on mobile:
 // 1. Keep the desktop KingdomSheet (.km-kingdom-sheet) hidden and route/sync to PF2eMobileSheet.
@@ -974,36 +1022,19 @@ Hooks.on("renderApplicationV2", (app, element) => {
     return;
   }
 
-  if (element.classList?.contains("km-dialog-form") || element.querySelector?.(".km-check-dialog")) {
-    element.classList.add("pf2e-mobile-km-dialog", "compact-theme");
-    const rollBtn = element.querySelector?.('button[data-action="roll"]');
-    if (rollBtn && !rollBtn.dataset.mobilePhysicalBound) {
-      rollBtn.dataset.mobilePhysicalBound = "true";
-      rollBtn.addEventListener("click", () => {
-        const openMobileSheet = Array.from(foundry.applications?.instances?.values?.() ?? [])
-          .find((inst) => inst instanceof PF2eMobileSheet);
-        const isPhys = openMobileSheet?.rollMode === "physical"
-          || getStoredRollMode() === "physical";
-        if (isPhys) {
-          import("./rolls/physical-dice-interceptor.js").then(({ PhysicalDiceManager }) => {
-            PhysicalDiceManager.activeContext = {
-              title: openMobileSheet?._pendingKingdomRollTitle || app?.title || "Kingdom Check",
-              actor: openMobileSheet?.actor,
-              isPhysical: true
-            };
-            setTimeout(() => {
-              if (PhysicalDiceManager.activeContext?.isPhysical) {
-                PhysicalDiceManager.activeContext = null;
-              }
-              if (openMobileSheet?.rendered) {
-                openMobileSheet.render({ parts: ["header", "sheet"] });
-              }
-            }, 15000);
-          });
-        }
-      }, true);
-    }
-  }
+  styleKingdomDialog(app, element);
+});
+
+Hooks.on("renderApplication", (app, html) => {
+  const isMobile = shouldActivateMobile() || Boolean(document.querySelector(".pf2e-mobile-sheet"));
+  if (!isMobile) return;
+  styleKingdomDialog(app, html);
+});
+
+Hooks.on("renderDialog", (app, html) => {
+  const isMobile = shouldActivateMobile() || Boolean(document.querySelector(".pf2e-mobile-sheet"));
+  if (!isMobile) return;
+  styleKingdomDialog(app, html);
 });
 
 

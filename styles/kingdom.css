@@ -496,8 +496,13 @@
   color: #d4dae8;
 }
 
+.km-activity-card.expanded .km-activity-details,
 .km-activity-card.is-expanded .km-activity-details {
   display: block;
+}
+
+.km-end-turn-card {
+  padding: 10px;
 }
 
 /* Kingdom Page (Size, Abilities, Worksites, Charter, Levels) */
