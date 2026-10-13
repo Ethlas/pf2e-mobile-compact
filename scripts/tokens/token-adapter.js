@@ -742,7 +742,7 @@ export function getOriginToken(actor, sceneOverride = null) {
       return getTargetableToken(actor.token.id) ?? actor.token;
     }
     const tokensList = scene?.tokens?.contents ?? (scene?.tokens ? Array.from(scene.tokens) : []);
-    const activeTokenDoc = tokensList.find(t => t.actorId === actor.id || t.actor?.id === actor.id)
+    const activeTokenDoc = tokensList.find(t => t.actorId === actor.id)
       ?? tokensList.find(t => t.name === actor.name)
       ?? (typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(false, true)?.shift() : null);
 
@@ -876,7 +876,7 @@ export function ensureTokenControlled(actor) {
   if (canvasObj?.tokens?.placeables) {
     const activePlaceables = typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(true, false) : [];
     const token = activePlaceables?.[0]
-      ?? canvasObj.tokens.placeables.find(t => t.actor?.id === actor.id);
+      ?? canvasObj.tokens.placeables.find(t => (t.document?.actorId ?? t.actor?.id) === actor.id);
 
     if (token && typeof token.control === "function") {
       try {

@@ -1292,6 +1292,94 @@ try {
   } else {
     logPass(`[Issue #16 Headless Adapter & Performance] Getter-only TokenDocument.object overridden via Object.defineProperty, headless isFlanking=true, and 200x distanceTo ran in ${elapsedMs.toFixed(2)}ms.`);
   }
+
+  // 8. Headless Actor.prototype.getActiveTokens Recursion Guard & Synthetic Actor Test
+  class MockActorDocument {
+    constructor(data = {}) {
+      Object.assign(this, data);
+    }
+    getActiveTokens(linked = false, document = false) {
+      return []; // Base native Foundry behavior when canvas.ready === false
+    }
+  }
+  globalThis.CONFIG = { ...(globalThis.CONFIG || {}), Actor: { documentClass: MockActorDocument } };
+  const { patchUserActiveTokens } = await import("./pf2e-mobile.js");
+  patchUserActiveTokens();
+
+  // Test 8A: Synthetic Actor resolution (isToken: true)
+  const synthTokenDoc = { id: "tok-synth", actorLink: false, x: 0, y: 0, width: 1, height: 1 };
+  const synthActor = new MockActorDocument({
+    id: "synth-actor",
+    isToken: true,
+    token: synthTokenDoc
+  });
+  const synthActiveDocs = synthActor.getActiveTokens(false, true);
+  const synthLinkedDocs = synthActor.getActiveTokens(true, true);
+
+  // Test 8B: World Actor resolution with dangerous unlinked token in scene (getter must NOT be called)
+  let dangerousGetterAccessed = false;
+  const dangerousUnlinkedDoc = {
+    id: "tok-dangerous",
+    actorId: "other-actor",
+    actorLink: false,
+    x: 100, y: 100,
+    get actor() {
+      dangerousGetterAccessed = true;
+      throw new Error("Dangerous token.actor getter invoked!");
+    }
+  };
+  const matchingWorldDoc = {
+    id: "tok-matched-world",
+    actorId: "world-hero",
+    actorLink: true,
+    x: 0, y: 0
+  };
+  const sceneWithDangerousToken = {
+    id: "scene-tokens",
+    tokens: {
+      contents: [dangerousUnlinkedDoc, matchingWorldDoc],
+      get(id) { return this.contents.find(t => t.id === id) ?? null; }
+    }
+  };
+  globalThis.game.scenes.current = sceneWithDangerousToken;
+  globalThis.canvas = { ready: false, scene: null };
+
+  const worldActor = new MockActorDocument({
+    id: "world-hero",
+    isToken: false
+  });
+  const worldMatchedDocs = worldActor.getActiveTokens(true, true);
+
+  // Test 8C: Re-entrancy guard
+  let reentrancyResult = null;
+  const reentrantActor = new MockActorDocument({
+    id: "reentrant-actor",
+    isToken: false
+  });
+  const originalGetActiveTokens = reentrantActor.getActiveTokens;
+  let reentrantCallDepth = 0;
+  // Monkey-patch to simulate a hook or getter calling getActiveTokens again on the same actor
+  reentrantActor.getActiveTokens = function (...args) {
+    reentrantCallDepth++;
+    if (reentrantCallDepth === 1) {
+      reentrancyResult = this.getActiveTokens(false, true);
+    }
+    return originalGetActiveTokens.apply(this, args);
+  };
+  const normalResult = reentrantActor.getActiveTokens(false, true);
+
+  if (
+    synthActiveDocs?.[0] !== synthTokenDoc ||
+    synthLinkedDocs?.length !== 0 ||
+    dangerousGetterAccessed ||
+    worldMatchedDocs?.[0] !== matchingWorldDoc ||
+    !Array.isArray(reentrancyResult) ||
+    reentrancyResult.length !== 0
+  ) {
+    logFail(`[Headless getActiveTokens Recursion Guard] Failed: synthDocs=${synthActiveDocs?.length}, synthLinked=${synthLinkedDocs?.length}, dangerousAccessed=${dangerousGetterAccessed}, matchedDocs=${worldMatchedDocs?.length}, reentrancyResult=${JSON.stringify(reentrancyResult)}`);
+  } else {
+    logPass("[Headless getActiveTokens Recursion Guard] Synthetic actors resolve their own token without scanning, unlinked tokens never evaluate dangerous actor getters, and re-entrancy is blocked.");
+  }
 } catch (err) {
   logFail(`Action Cost / Spell Damage / Issue #16 verification threw an error: ${err.stack || err.message}`);
 }

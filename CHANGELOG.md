@@ -4,6 +4,21 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.32] - 2026-10-13
+
+### Headless Token Resolution & Infinite Recursion Fix (`scripts/pf2e-mobile.js`, `scripts/tokens/token-adapter.js`, `scripts/verify.mjs`)
+
+#### Fixed
+- **Fixed Infinite Recursion in Headless `Actor.prototype.getActiveTokens`**:
+  - Resolved `InternalError: too much recursion` occurring when PF2e initialises synthetic actors (e.g. unlinked NPCs during scene loading or `prepareBaseData`) while canvas is disabled or headless.
+  - Previous fallback implementation iterated over `scene.tokens` evaluating `t.actor?.id === this.id`. Accessing `tokenDoc.actor` on unlinked tokens invoked Foundry's `actor` getter (`ActorDelta._createSyntheticActor()`), triggering `prepareData()` and re-entering `getActiveTokens()` recursively.
+  - **Direct Synthetic Actor Resolution**: Synthetic actors (`actor.isToken === true`) now immediately return their own token document (`actor.token`) or mobile placeable adapter in $O(1)$ without searching `scene.tokens`.
+  - **Getter-Safe World Actor Token Lookup**: World actor token resolution now strictly compares the primitive schema string property `t.actorId === this.id`, eliminating all evaluations of `tokenDoc.actor`.
+  - **Re-Entrancy Guard**: Added a per-actor re-entrancy flag (`_pf2eMobileResolvingActiveTokens`) to unconditionally guard against nested or recursive calls to `getActiveTokens`.
+  - Also removed redundant `t.actor?.id` evaluations in `scripts/tokens/token-adapter.js` (`getOriginToken`, `ensureTokenControlled`).
+
+---
+
 ## [1.0.31] - 2026-10-08
 
 ### Kingdom Page Dice & Activity Execution Overhaul, Removal of Gaining Experience Section (`templates/kingdom/kingdom-turn.hbs`, `scripts/kingdom/`, `scripts/pf2e-mobile.js`, `scripts/apps/mobile-sheet.js`, `styles/kingdom.css`, `scripts/verify.mjs`)
