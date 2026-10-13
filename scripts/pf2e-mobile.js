@@ -87,6 +87,20 @@ export async function acquireWakeLock() {
 }
 
 /**
+ * Releases the active Screen WakeLock sentinel.
+ */
+export async function releaseWakeLock() {
+  if (wakeLockSentinel && !wakeLockSentinel.released) {
+    try {
+      await wakeLockSentinel.release();
+    } catch (err) {
+      console.warn("PF2e Mobile Compact | WakeLock release warning:", err);
+    }
+    wakeLockSentinel = null;
+  }
+}
+
+/**
  * Initializes keep-alive management to prevent mobile phone lockouts and disconnects.
  */
 export function setupKeepAlive() {
@@ -200,17 +214,28 @@ export function resumeCanvasFromMobile() {
   if (typeof document !== "undefined" && document.body) {
     document.body.classList.remove("pf2e-canvas-disabled");
   }
+  try {
+    if (typeof PIXI !== "undefined") {
+      if (PIXI.Ticker?.shared) PIXI.Ticker.shared.maxFPS = 60;
+      if (PIXI.Ticker?.system) PIXI.Ticker.system.maxFPS = 60;
+    }
+  } catch {}
+
   if (!canvas?.app) return;
   try {
     if (canvas.app.stage) {
       canvas.app.stage.renderable = true;
       canvas.app.stage.interactiveChildren = true;
     }
-    if (canvas.app.ticker && !canvas.app.ticker.started) {
+    if (canvas.app.ticker) {
       canvas.app.ticker.maxFPS = 60;
-      canvas.app.ticker.start();
+      if (!canvas.app.ticker.started) {
+        canvas.app.ticker.start();
+      }
     }
-  } catch {}
+  } catch (err) {
+    console.warn("PF2e Mobile Compact | resumeCanvasFromMobile warning:", err);
+  }
 }
 
 /**
@@ -562,9 +587,9 @@ export function syncStylesheetState(activeSheet = null) {
   const link = ensureStylesheetElement();
   const isMobile = shouldActivateMobile();
   const hasRenderedMobileSheet = Boolean(document.querySelector(".pf2e-mobile-sheet"))
-    || Boolean(activeSheet?.element)
+    || Boolean(activeSheet?.rendered && activeSheet?.element?.isConnected)
     || (typeof foundry !== "undefined" && foundry.applications?.instances?.values
-      ? Array.from(foundry.applications.instances.values()).some(a => a instanceof PF2eMobileSheet && (a.rendered || a.element))
+      ? Array.from(foundry.applications.instances.values()).some(a => a instanceof PF2eMobileSheet && a.rendered && a.element?.isConnected)
       : false);
   const shouldEnable = isMobile || hasRenderedMobileSheet;
 
@@ -802,6 +827,22 @@ export function activateMobileEnvironment() {
 }
 
 /**
+ * Deactivates mobile engine overrides and restores desktop Foundry environment
+ * (restores canvas ticker, re-enables UI containers, removes mobile body class).
+ */
+export function deactivateMobileEnvironment() {
+  if (typeof document !== "undefined" && document.body) {
+    document.body.classList.remove("pf2e-mobile-active");
+  }
+  mobileEnvActivated = false;
+  releaseWakeLock();
+  resumeCanvasFromMobile();
+  syncStylesheetState();
+  updateFabVisibility();
+  console.log("PF2e Mobile Compact | Desktop environment restored.");
+}
+
+/**
  * Ensures the floating action button (FAB) exists in the DOM for mobile users.
  * @returns {HTMLButtonElement|null}
  */
@@ -862,7 +903,7 @@ export function updateFabVisibility() {
     return true;
   });
   const hasAppInstance = typeof foundry !== "undefined" && foundry.applications?.instances?.values
-    ? Array.from(foundry.applications.instances.values()).some(a => a instanceof PF2eMobileSheet && (a.rendered || a.element))
+    ? Array.from(foundry.applications.instances.values()).some(a => a instanceof PF2eMobileSheet && a.rendered && a.element?.isConnected)
     : false;
   const isSheetOpen = isSheetInDom || hasAppInstance || Boolean(document.body?.classList?.contains("pf2e-sheet-open"));
 
@@ -923,6 +964,7 @@ Hooks.once("ready", async () => {
   if (shouldActivateMobile()) {
     initMobileUI();
   } else {
+    deactivateMobileEnvironment();
     console.log("PF2e Mobile Compact | Desktop environment active. Mobile overrides dormant.");
     const existingFab = document.getElementById("pf2e-mobile-fab");
     if (existingFab) existingFab.remove();
@@ -959,13 +1001,15 @@ Hooks.once("ready", async () => {
   document.addEventListener("fullscreenchange", onFullscreenStateChange);
   document.addEventListener("webkitfullscreenchange", onFullscreenStateChange);
 
-  // Dynamic viewport detection: activate mobile overrides if window is resized or rotated into mobile format
+  // Dynamic viewport detection: activate mobile overrides if window is resized or rotated into mobile format,
+  // or restore desktop environment if window is enlarged back to desktop viewports.
   window.addEventListener("resize", foundry.utils.debounce(() => {
     if (shouldActivateMobile()) {
       activateMobileEnvironment();
       syncStylesheetState();
       updateFabVisibility();
     } else {
+      deactivateMobileEnvironment();
       syncStylesheetState();
       updateFabVisibility();
     }
@@ -980,6 +1024,7 @@ Hooks.once("ready", async () => {
     console.warn("PF2e Mobile Compact | Property rune migration warning:", err);
   }
 });
+
 
 // Reactively toggle stylesheet and FAB when mobile character sheet opens or closes
 Hooks.on("renderPF2eMobileSheet", (sheet) => {
@@ -1094,8 +1139,7 @@ function styleKingdomDialog(app, rawElement) {
 // 1. Keep the desktop KingdomSheet (.km-kingdom-sheet) hidden and route/sync to PF2eMobileSheet.
 // 2. Apply mobile compact styling and PhysicalDiceManager context to KingdomCheckDialog / StructureBrowser modals.
 Hooks.on("renderApplicationV2", (app, element) => {
-  const isMobile = shouldActivateMobile() || Boolean(document.querySelector(".pf2e-mobile-sheet"));
-  if (!isMobile || !element) return;
+  if (!shouldActivateMobile() || !element) return;
 
   const appId = String(app?.id || "");
   if (element.classList?.contains("km-kingdom-sheet") || appId.startsWith("kmKingdomSheet-")) {
@@ -1139,14 +1183,12 @@ Hooks.on("renderApplicationV2", (app, element) => {
 });
 
 Hooks.on("renderApplication", (app, html) => {
-  const isMobile = shouldActivateMobile() || Boolean(document.querySelector(".pf2e-mobile-sheet"));
-  if (!isMobile) return;
+  if (!shouldActivateMobile()) return;
   styleKingdomDialog(app, html);
 });
 
 Hooks.on("renderDialog", (app, html) => {
-  const isMobile = shouldActivateMobile() || Boolean(document.querySelector(".pf2e-mobile-sheet"));
-  if (!isMobile) return;
+  if (!shouldActivateMobile()) return;
   styleKingdomDialog(app, html);
 });
 

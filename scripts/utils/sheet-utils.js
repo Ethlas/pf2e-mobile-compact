@@ -167,11 +167,13 @@ export function isMobileDevice() {
   const isStandaloneApp = window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator?.standalone === true;
   const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || "");
   const isIPad = (navigator.platform === "MacIntel" || /Macintosh/i.test(navigator.userAgent || "")) && (navigator.maxTouchPoints > 1);
-  const isMobileViewport = Math.min(window.innerWidth, window.innerHeight) < 768;
-  const hasTouch = navigator.maxTouchPoints > 0 || "ontouchstart" in window;
+  const hasTouch = (navigator.maxTouchPoints > 0 || "ontouchstart" in window);
   const hasCoarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches ?? hasTouch;
   const hasFinePointer = window.matchMedia?.("(pointer: fine)")?.matches ?? false;
-  const isTouchCompact = hasTouch && hasCoarsePointer && !hasFinePointer && isMobileViewport;
+  const width = window.innerWidth ?? 0;
+  const height = window.innerHeight ?? width;
+  const isCompactViewport = Math.min(width, height) < 1024;
+  const isTouchCompact = Boolean(hasTouch && hasCoarsePointer && !hasFinePointer && isCompactViewport);
 
   return isStandaloneApp || isMobileUA || isIPad || isTouchCompact;
 }

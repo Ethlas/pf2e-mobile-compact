@@ -589,12 +589,9 @@
 
 /* Never display the desktop KingdomSheet or desktop Inspect/Consumption windows when Mobile Sheet is active */
 body.pf2e-mobile-active .km-kingdom-sheet,
-body:has(.pf2e-mobile-sheet) .km-kingdom-sheet,
-.km-kingdom-sheet.km-mobile-hidden-proxy,
+body.pf2e-mobile-active .km-kingdom-sheet.km-mobile-hidden-proxy,
 body.pf2e-mobile-active .application[id^="kmInspectSettlement-"],
-body:has(.pf2e-mobile-sheet) .application[id^="kmInspectSettlement-"],
-body.pf2e-mobile-active .application[id^="kmConsumptionBreakdown-"],
-body:has(.pf2e-mobile-sheet) .application[id^="kmConsumptionBreakdown-"] {
+body.pf2e-mobile-active .application[id^="kmConsumptionBreakdown-"] {
   display: none !important;
   visibility: hidden !important;
   pointer-events: none !important;
@@ -605,9 +602,9 @@ body:has(.pf2e-mobile-sheet) .application[id^="kmConsumptionBreakdown-"] {
 }
 
 /* Style pf2e-kingmaker-tools Check & Browser modals to match pf2e-mobile-compact dark theme on mobile */
-.pf2e-mobile-km-dialog,
-.application[id^="kmCheck-"],
-.application[id^="kmStructureBrowser"] {
+body.pf2e-mobile-active .pf2e-mobile-km-dialog,
+body.pf2e-mobile-active .application[id^="kmCheck-"],
+body.pf2e-mobile-active .application[id^="kmStructureBrowser"] {
   width: min(95vw, 410px) !important;
   max-width: 95vw !important;
   max-height: 86vh !important;
@@ -620,28 +617,39 @@ body:has(.pf2e-mobile-sheet) .application[id^="kmConsumptionBreakdown-"] {
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.75) !important;
 }
 
-.pf2e-mobile-km-dialog .window-header {
+body.pf2e-mobile-active .pf2e-mobile-km-dialog .window-header,
+body.pf2e-mobile-active .application[id^="kmCheck-"] .window-header,
+body.pf2e-mobile-active .application[id^="kmStructureBrowser"] .window-header {
   background: rgba(24, 28, 40, 0.95) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
   color: #f3d486 !important;
 }
 
-.pf2e-mobile-km-dialog .window-content {
+body.pf2e-mobile-active .pf2e-mobile-km-dialog .window-content,
+body.pf2e-mobile-active .application[id^="kmCheck-"] .window-content,
+body.pf2e-mobile-active .application[id^="kmStructureBrowser"] .window-content {
   background: #141722 !important;
   color: #eef1f8 !important;
   padding: 10px !important;
   overflow-y: auto !important;
 }
 
-.pf2e-mobile-km-dialog .km-check-header {
+body.pf2e-mobile-active .pf2e-mobile-km-dialog .km-check-header,
+body.pf2e-mobile-active .application[id^="kmCheck-"] .km-check-header {
   display: flex !important;
   flex-direction: column !important;
   gap: 8px !important;
 }
 
-.pf2e-mobile-km-dialog select,
-.pf2e-mobile-km-dialog input[type="text"],
-.pf2e-mobile-km-dialog input[type="number"] {
+body.pf2e-mobile-active .pf2e-mobile-km-dialog select,
+body.pf2e-mobile-active .pf2e-mobile-km-dialog input[type="text"],
+body.pf2e-mobile-active .pf2e-mobile-km-dialog input[type="number"],
+body.pf2e-mobile-active .application[id^="kmCheck-"] select,
+body.pf2e-mobile-active .application[id^="kmCheck-"] input[type="text"],
+body.pf2e-mobile-active .application[id^="kmCheck-"] input[type="number"],
+body.pf2e-mobile-active .application[id^="kmStructureBrowser"] select,
+body.pf2e-mobile-active .application[id^="kmStructureBrowser"] input[type="text"],
+body.pf2e-mobile-active .application[id^="kmStructureBrowser"] input[type="number"] {
   min-height: 38px !important;
   background: rgba(255, 255, 255, 0.06) !important;
   border: 1px solid rgba(255, 255, 255, 0.18) !important;
@@ -650,8 +658,10 @@ body:has(.pf2e-mobile-sheet) .application[id^="kmConsumptionBreakdown-"] {
   padding: 4px 8px !important;
 }
 
-.pf2e-mobile-km-dialog button[data-action="roll"],
-.pf2e-mobile-km-dialog button[data-action="assurance"] {
+body.pf2e-mobile-active .pf2e-mobile-km-dialog button[data-action="roll"],
+body.pf2e-mobile-active .pf2e-mobile-km-dialog button[data-action="assurance"],
+body.pf2e-mobile-active .application[id^="kmCheck-"] button[data-action="roll"],
+body.pf2e-mobile-active .application[id^="kmCheck-"] button[data-action="assurance"] {
   width: 100% !important;
   min-height: 44px !important;
   margin-top: 8px !important;
@@ -662,4 +672,5 @@ body:has(.pf2e-mobile-sheet) .application[id^="kmConsumptionBreakdown-"] {
   font-weight: 700 !important;
   font-size: 0.95rem !important;
 }
+
 

@@ -1653,8 +1653,149 @@ try {
   } else {
     logPass("[Headless getActiveTokens Recursion Guard] Synthetic actors resolve their own token without scanning, unlinked tokens never evaluate dangerous actor getters, and re-entrancy is blocked.");
   }
+
+  // Verify Issue #20: Desktop mode isolation from mobile layout, unscoped Kingdom CSS, and touchscreen laptop false positive prevention
+  // 1. Check kingdom.css scoping: no unscoped .km-kingdom-sheet, .application[id^="kmCheck-"], .application[id^="kmStructureBrowser"], or body:has(.pf2e-mobile-sheet)
+  const kmCssContent = fs.readFileSync(path.join(rootDir, "styles/kingdom.css"), "utf-8");
+  if (kmCssContent.includes("body:has(.pf2e-mobile-sheet)")) {
+    logFail("[Issue #20 CSS Scoping] styles/kingdom.css contains obsolete body:has(.pf2e-mobile-sheet) selector that suppresses desktop windows.");
+  } else {
+    logPass("[Issue #20 CSS Scoping] styles/kingdom.css removed all body:has(.pf2e-mobile-sheet) selectors.");
+  }
+
+  // Ensure all Kingmaker modal, check dialog, and desktop sheet selectors are scoped to body.pf2e-mobile-active
+  const kmCleanContent = kmCssContent.replace(/\/\*[\s\S]*?\*\//g, "");
+  const kmBlocks = kmCleanContent.split("}");
+  const unscopedKmSelectors = [];
+  for (const block of kmBlocks) {
+    const parts = block.split("{");
+    if (parts.length > 1) {
+      const selectorList = parts[0].split(",").map(s => s.trim()).filter(Boolean);
+      for (const sel of selectorList) {
+        if (
+          sel.includes("kmStructureBrowser") ||
+          sel.includes("kmCheck-") ||
+          sel.includes("km-kingdom-sheet") ||
+          sel.includes("kmInspectSettlement-") ||
+          sel.includes("kmConsumptionBreakdown-")
+        ) {
+          if (!sel.startsWith("body.pf2e-mobile-active")) {
+            unscopedKmSelectors.push(sel);
+          }
+        }
+      }
+    }
+  }
+  if (unscopedKmSelectors.length > 0) {
+    logFail(`[Issue #20 CSS Scoping] Found unscoped Kingmaker selectors in styles/kingdom.css: ${unscopedKmSelectors.join("; ")}`);
+  } else {
+    logPass("[Issue #20 CSS Scoping] All Kingmaker modal and check dialog selectors in styles/kingdom.css are strictly scoped under body.pf2e-mobile-active.");
+  }
+
+  // 2. Test isMobileDevice on Touchscreen Laptops
+  const origWindow = global.window;
+  const origNavDesc = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+  try {
+    // Simulate Touchscreen Laptop (Surface, Dell XPS, Lenovo Yoga): maxTouchPoints > 0, fine pointer (mouse/touchpad), width < 1024
+    global.window = {
+      innerWidth: 900,
+      matchMedia: (query) => ({
+        matches: query.includes("pointer: fine") || query.includes("hover: hover")
+      })
+    };
+    Object.defineProperty(globalThis, "navigator", {
+      value: {
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+        maxTouchPoints: 10,
+        platform: "Win32"
+      },
+      configurable: true,
+      writable: true
+    });
+    const { isMobileDevice: isMobileDeviceTouchscreenLaptop } = await import("./utils/sheet-utils.js");
+    const laptopResult = isMobileDeviceTouchscreenLaptop();
+    if (laptopResult !== false) {
+      logFail(`[Issue #20 Touchscreen Laptop] Expected isMobileDevice()=false on touchscreen laptop (maxTouchPoints=10, width=900, pointer: fine), got ${laptopResult}`);
+    } else {
+      logPass("[Issue #20 Touchscreen Laptop] Touchscreen laptop with fine pointer and snapped viewport (< 1024px) correctly returns isMobileDevice()=false.");
+    }
+
+    // Simulate Pure Touch Tablet without mobile UA
+    global.window = {
+      innerWidth: 800,
+      matchMedia: (query) => ({
+        matches: query.includes("pointer: coarse")
+      })
+    };
+    Object.defineProperty(globalThis, "navigator", {
+      value: {
+        userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+        maxTouchPoints: 5,
+        platform: "Linux"
+      },
+      configurable: true,
+      writable: true
+    });
+    const tabletResult = isMobileDeviceTouchscreenLaptop();
+    if (tabletResult !== true) {
+      logFail(`[Issue #20 Touch Tablet] Expected isMobileDevice()=true on touch-primary tablet, got ${tabletResult}`);
+    } else {
+      logPass("[Issue #20 Touch Tablet] Touch-primary tablet (pointer: coarse, maxTouchPoints=5, width=800) correctly returns isMobileDevice()=true.");
+    }
+  } finally {
+    global.window = origWindow;
+    if (origNavDesc) {
+      Object.defineProperty(globalThis, "navigator", origNavDesc);
+    } else {
+      delete globalThis.navigator;
+    }
+  }
+
+  // 3. Test renderApplicationV2 does not check document.querySelector(".pf2e-mobile-sheet")
+  const pf2eMobileJs = fs.readFileSync(path.join(rootDir, "scripts/pf2e-mobile.js"), "utf-8");
+  if (/Hooks\.on\(\s*"renderApplicationV2"[\s\S]*?querySelector\("\.pf2e-mobile-sheet"\)/.test(pf2eMobileJs)) {
+    logFail("[Issue #20 renderApplicationV2] renderApplicationV2 hook still checks querySelector('.pf2e-mobile-sheet') instead of strict shouldActivateMobile().");
+  } else {
+    logPass("[Issue #20 renderApplicationV2] renderApplicationV2 strictly checks shouldActivateMobile() without falling back to querySelector('.pf2e-mobile-sheet').");
+  }
+
+  // 4. Test ApplicationV2 lifecycle check in syncStylesheetState (checks isConnected, not just .element)
+  if (/Array\.from\(foundry\.applications\.instances\.values\(\)\)\.some\([^)]*\(a\.rendered\s*\|\|\s*a\.element\)/.test(pf2eMobileJs)) {
+    logFail("[Issue #20 syncStylesheetState] syncStylesheetState still checks (a.rendered || a.element) which leaks disconnected ApplicationV2 instances.");
+  } else {
+    logPass("[Issue #20 syncStylesheetState] syncStylesheetState verifies active connection (a.rendered && a.element?.isConnected).");
+  }
+
+  // 5. Test deactivateMobileEnvironment export and body class removal
+  const { deactivateMobileEnvironment } = await import("./pf2e-mobile.js");
+  if (typeof deactivateMobileEnvironment !== "function") {
+    logFail("[Issue #20 deactivateMobileEnvironment] deactivateMobileEnvironment is not exported.");
+  } else {
+    const mockBody = { classList: new Set(["pf2e-mobile-active"]) };
+    mockBody.classList.remove = (cls) => mockBody.classList.delete(cls);
+    mockBody.classList.contains = (cls) => mockBody.classList.has(cls);
+    const origDoc = global.document;
+    global.document = {
+      body: mockBody,
+      head: { appendChild: () => {} },
+      getElementById: () => null,
+      querySelector: () => null,
+      querySelectorAll: () => [],
+      createElement: () => ({ setAttribute: () => {}, addEventListener: () => {} })
+    };
+    try {
+      deactivateMobileEnvironment();
+      if (mockBody.classList.has("pf2e-mobile-active")) {
+        logFail("[Issue #20 deactivateMobileEnvironment] Did not remove 'pf2e-mobile-active' from document.body.");
+      } else {
+        logPass("[Issue #20 deactivateMobileEnvironment] Successfully deactivates mobile engine and cleanses 'pf2e-mobile-active'.");
+      }
+    } finally {
+      global.document = origDoc;
+    }
+  }
 } catch (err) {
-  logFail(`Action Cost / Spell Damage / Issue #16 verification threw an error: ${err.stack || err.message}`);
+  logFail(`Action Cost / Spell Damage / Issue #16 / Issue #20 verification threw an error: ${err.stack || err.message}`);
 }
 
 // 6a. Slot counter: spontaneous ranks get one, cantrips never (they are cast at will; pf2e's slot0 counts cantrips known)
