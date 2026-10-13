@@ -806,7 +806,11 @@ export function activateMobileEnvironment() {
  * @returns {HTMLButtonElement|null}
  */
 export function ensureMobileFab() {
-  if (!shouldActivateMobile()) return null;
+  if (!shouldActivateMobile()) {
+    const existing = document.getElementById("pf2e-mobile-fab");
+    if (existing) existing.remove();
+    return null;
+  }
   if (typeof document === "undefined" || typeof document.getElementById !== "function") return null;
   let fab = document.getElementById("pf2e-mobile-fab");
   if (!fab) {
@@ -851,10 +855,18 @@ export function updateFabVisibility() {
     return;
   }
   const sheets = Array.from(document.querySelectorAll?.(".pf2e-mobile-sheet") ?? []);
-  const isSheetVisible = sheets.some(el => {
-    return el.offsetParent !== null && (window?.getComputedStyle?.(el)?.display ?? "") !== "none" && (window?.getComputedStyle?.(el)?.visibility ?? "") !== "hidden";
+  const isSheetInDom = sheets.some(el => {
+    if (!el || el.isConnected === false) return false;
+    const style = window?.getComputedStyle ? window.getComputedStyle(el) : null;
+    if (style && (style.display === "none" || style.visibility === "hidden")) return false;
+    return true;
   });
-  fab.style.display = isSheetVisible ? "none" : "flex";
+  const hasAppInstance = typeof foundry !== "undefined" && foundry.applications?.instances?.values
+    ? Array.from(foundry.applications.instances.values()).some(a => a instanceof PF2eMobileSheet && (a.rendered || a.element))
+    : false;
+  const isSheetOpen = isSheetInDom || hasAppInstance || Boolean(document.body?.classList?.contains("pf2e-sheet-open"));
+
+  fab.style.display = isSheetOpen ? "none" : "flex";
 }
 
 let mobileUiInitialized = false;
@@ -912,6 +924,8 @@ Hooks.once("ready", async () => {
     initMobileUI();
   } else {
     console.log("PF2e Mobile Compact | Desktop environment active. Mobile overrides dormant.");
+    const existingFab = document.getElementById("pf2e-mobile-fab");
+    if (existingFab) existingFab.remove();
     try {
       localStorage.removeItem("core.noCanvas");
       if (game.settings?.settings?.has?.("core.noCanvas") && game.settings.get("core", "noCanvas")) {

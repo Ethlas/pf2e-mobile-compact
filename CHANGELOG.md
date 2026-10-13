@@ -4,6 +4,19 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.34] - 2026-10-13
+
+### Mobile Launcher FAB Overlap Fix & Lifecycle Body State (`scripts/pf2e-mobile.js`, `scripts/apps/mobile-sheet.js`, `styles/pf2e-mobile.css`, `scripts/verify.mjs`)
+
+- **Fixed Floating Launcher Button (`#pf2e-mobile-fab`) Displaying Over Mobile Sheet**:
+  - Restored declarative CSS hiding rules `body:has(.pf2e-mobile-sheet) #pf2e-mobile-fab, body.pf2e-sheet-open #pf2e-mobile-fab { display: none !important; }` in `styles/pf2e-mobile.css` to prevent the orange launcher from overlapping bottom navigation and chat tabs.
+  - Added `body:not(.pf2e-mobile-active) #pf2e-mobile-fab { display: none !important; }` to guarantee the mobile launcher never renders in desktop environments.
+  - Added automatic lifecycle class `pf2e-sheet-open` on `document.body` during `PF2eMobileSheet._onRender` and removed during `_onClose`.
+  - Fixed `updateFabVisibility()` in `scripts/pf2e-mobile.js`: replaced broken `offsetParent !== null` check (which evaluates to `null` for fixed elements under W3C CSSOM specifications) with accurate DOM presence and computed style visibility detection (`el.isConnected !== false && display !== 'none'`).
+  - Added clean DOM removal of `#pf2e-mobile-fab` in `ensureMobileFab()` and `Hooks.once("ready")` whenever desktop mode is active.
+
+---
+
 ## [1.0.33] - 2026-10-13
 
 ### Startup Performance Optimization, Canvas Layer Stubs & Resilient Mobile Launcher (`scripts/utils/sheet-utils.js`, `scripts/apps/sheet-helpers/`, `scripts/pf2e-mobile.js`, `styles/pf2e-mobile.css`)

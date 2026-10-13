@@ -1371,7 +1371,7 @@ try {
 
     // Simulate visible sheet in DOM
     const mockSheetEl = {
-      offsetParent: {},
+      isConnected: true,
       style: { display: "flex" }
     };
     sheetsInDom.push(mockSheetEl);

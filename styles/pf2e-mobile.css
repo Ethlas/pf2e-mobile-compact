@@ -3194,3 +3194,15 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border: 1px solid var(--m-cyan-border);
   color: var(--m-cyan-text);
 }
+
+/* Floating sheet launcher button (FAB): strictly hidden whenever mobile sheet is rendered */
+body:has(.pf2e-mobile-sheet) #pf2e-mobile-fab,
+body.pf2e-sheet-open #pf2e-mobile-fab {
+  display: none !important;
+}
+
+/* Also strictly hidden when not in active mobile environment */
+body:not(.pf2e-mobile-active) #pf2e-mobile-fab {
+  display: none !important;
+}
+
