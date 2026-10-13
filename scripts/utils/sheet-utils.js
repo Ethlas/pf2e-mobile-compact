@@ -280,8 +280,8 @@ export function isMobileCanvasDisabled() {
 
 /**
  * Applies the current mobile canvas state.
- * When `disableCanvas` is true, sets Foundry's native `core.noCanvas` setting (and `CONFIG.Canvas.disabled = true`)
- * so Foundry v14 skips `Canvas#initialize()` and texture loading completely.
+ * When `disableCanvas` is true, sets `CONFIG.Canvas.disabled = true` in memory so Foundry v14 skips
+ * `Canvas#initialize()` and texture loading during mobile sessions.
  * When `disableCanvas` is false, allows `Canvas#initialize()` so `canvas.tokens` and PF2e system flanking
  * exist in memory, while still pausing the background PIXI frame loop behind the full-screen mobile sheet
  * to prevent mobile WebKit GPU out-of-memory crashes.
@@ -292,9 +292,6 @@ export function applyMobileCanvasState() {
     CONFIG.Canvas.disabled = disableCanvas;
   }
   ensureSafeCanvasTokens();
-  try {
-    localStorage.setItem("core.noCanvas", disableCanvas ? "true" : "false");
-  } catch {}
   if (typeof document !== "undefined" && document.body) {
     document.body.classList.toggle("pf2e-canvas-disabled", disableCanvas);
   }
@@ -331,7 +328,7 @@ export function applyMobileCanvasState() {
 
 /**
  * Updates and persists the user's mobile canvas disable preference across sessions,
- * synchronizing Foundry's native `core.noCanvas` setting so `Canvas#initialize()` is skipped when disabled.
+ * scoped strictly to pf2e-mobile-compact without polluting Foundry's global core.noCanvas setting.
  * @param {boolean} disabled
  * @returns {Promise<boolean>}
  */
@@ -342,12 +339,6 @@ export async function setMobileCanvasDisabled(disabled) {
   }
   try {
     localStorage.setItem("pf2e-mobile-compact.disableCanvas", nextState ? "true" : "false");
-    localStorage.setItem("core.noCanvas", nextState ? "true" : "false");
-  } catch {}
-  try {
-    if (game?.settings?.settings?.has?.("core.noCanvas")) {
-      await game.settings.set("core", "noCanvas", nextState);
-    }
   } catch {}
   try {
     if (game?.settings?.settings?.has?.("pf2e-mobile-compact.disableCanvas")) {
@@ -358,22 +349,127 @@ export async function setMobileCanvasDisabled(disabled) {
   return nextState;
 }
 
+const enrichedDescriptionCache = new Map();
+
+/**
+ * High-performance cached HTML enrichment.
+ * 1. If text has no Foundry syntax ('@' or '[['), returns raw text synchronously without invoking TextEditor.
+ * 2. Checks in-memory cache keyed by document ID/UUID, update time/length, and raw text length.
+ * 3. Only invokes TextEditor.enrichHTML on cache miss, storing result in memory.
+ * @param {string} rawText
+ * @param {object} [options]
+ * @param {ClientDocument|object} [doc]
+ * @returns {Promise<string>}
+ */
+export async function enrichDescriptionCached(rawText, options = {}, doc = null) {
+  if (!rawText || typeof rawText !== "string") return "";
+
+  // Fast path: if there are no Foundry macro/UUID/roll directives, return immediately!
+  if (!rawText.includes("@") && !rawText.includes("[[")) {
+    return rawText;
+  }
+
+  const TextEditorClass = foundry.applications?.ux?.TextEditor ?? globalThis.TextEditor;
+  if (typeof TextEditorClass?.enrichHTML !== "function") {
+    return rawText;
+  }
+
+  const docKey = doc?.uuid ?? doc?.id ?? "transient";
+  const modTime = doc?._stats?.modifiedTime ?? doc?._stats?.lastModifiedBy ?? "";
+  const cacheKey = `${docKey}:${modTime}:${rawText.length}`;
+
+  const cached = enrichedDescriptionCache.get(cacheKey);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  try {
+    const enriched = await TextEditorClass.enrichHTML(rawText, {
+      secrets: options.secrets ?? doc?.isOwner ?? false,
+      rollData: options.rollData ?? {},
+      async: true
+    });
+    if (enrichedDescriptionCache.size > 1000) {
+      const firstKey = enrichedDescriptionCache.keys().next().value;
+      enrichedDescriptionCache.delete(firstKey);
+    }
+    enrichedDescriptionCache.set(cacheKey, enriched);
+    return enriched;
+  } catch {
+    return rawText;
+  }
+}
+
+/**
+ * Helper to create a proxy-backed tokens shim that gracefully absorbs
+ * any unhandled method calls (e.g. socket planned movements, layer placeable queries).
+ * @param {object} [initial]
+ * @returns {object}
+ */
+function createSafeTokensShim(initial = {}) {
+  const safeQuadtree = new Proxy({
+    clear: () => {},
+    remove: () => {},
+    insert: () => {},
+    update: () => {},
+    get: () => [],
+    collide: () => []
+  }, {
+    get(target, prop, receiver) {
+      if (prop in target) return Reflect.get(target, prop, receiver);
+      if (typeof prop === "string") return () => {};
+      return undefined;
+    }
+  });
+
+  const base = {
+    controlled: [],
+    placeables: [],
+    get: () => null,
+    releaseAll: () => {},
+    select: () => {},
+    activate() { return this; },
+    deactivate() { return this; },
+    _activate() { return this; },
+    _deactivate() { return this; },
+    draw() { return Promise.resolve(this); },
+    tearDown() { return Promise.resolve(this); },
+    createObject: () => null,
+    recalculatePlannedMovementPaths: () => {},
+    _updatePlannedMovements: () => {},
+    updatePlannedMovements: () => {},
+    clearPlannedMovements: () => {},
+    quadtree: safeQuadtree,
+    objects: null,
+    preview: null,
+    _configPreview: null,
+    ...initial
+  };
+  return new Proxy(base, {
+    get(target, prop, receiver) {
+      if (prop in target) return Reflect.get(target, prop, receiver);
+      if (typeof prop === "string") {
+        if (prop === "active") return true;
+        if (prop === "quadtree") return safeQuadtree;
+        if (prop === "objects" || prop === "preview" || prop === "_configPreview") return null;
+        return () => {};
+      }
+      return undefined;
+    }
+  });
+}
+
 /**
  * Ensures canvas.tokens exists and has safe defaults ({ controlled: [], placeables: [] })
- * to prevent third-party modules (such as pf2e-kingmaker-tools) from throwing TypeErrors
- * when canvas is disabled, uninitialized, or running headless on mobile.
+ * and provides a no-op fallback for canvas.app (ticker, stage) to prevent third-party modules
+ * (such as pf2e-kingmaker-tools, splatter) from throwing TypeErrors when canvas is disabled,
+ * uninitialized, or running headless on mobile.
  */
 export function ensureSafeCanvasTokens() {
   const canvasObj = typeof canvas !== "undefined" ? canvas : null;
   if (canvasObj) {
     if (!canvasObj.tokens) {
-      const mockTokens = {
-        controlled: [],
-        placeables: [],
-        get: () => null,
-        releaseAll: () => {},
-        select: () => {}
-      };
+      const mockTokens = createSafeTokensShim();
       try {
         canvasObj.tokens = mockTokens;
       } catch {
@@ -393,20 +489,118 @@ export function ensureSafeCanvasTokens() {
       if (!Array.isArray(canvasObj.tokens.placeables)) {
         try { canvasObj.tokens.placeables = []; } catch {}
       }
+      if (typeof canvasObj.tokens.createObject !== "function") {
+        try { canvasObj.tokens.createObject = () => null; } catch {}
+      }
+      if (typeof canvasObj.tokens.recalculatePlannedMovementPaths !== "function") {
+        try { canvasObj.tokens.recalculatePlannedMovementPaths = () => {}; } catch {}
+      }
+      if (typeof canvasObj.tokens._updatePlannedMovements !== "function") {
+        try { canvasObj.tokens._updatePlannedMovements = () => {}; } catch {}
+      }
+      if (typeof canvasObj.tokens.updatePlannedMovements !== "function") {
+        try { canvasObj.tokens.updatePlannedMovements = () => {}; } catch {}
+      }
+      if (typeof canvasObj.tokens.clearPlannedMovements !== "function") {
+        try { canvasObj.tokens.clearPlannedMovements = () => {}; } catch {}
+      }
+      if (typeof canvasObj.tokens.activate !== "function") {
+        try { canvasObj.tokens.activate = function() { return this; }; } catch {}
+      }
+      if (typeof canvasObj.tokens.deactivate !== "function") {
+        try { canvasObj.tokens.deactivate = function() { return this; }; } catch {}
+      }
+      if (canvasObj.tokens.quadtree) {
+        if (typeof canvasObj.tokens.quadtree.remove !== "function") {
+          try { canvasObj.tokens.quadtree.remove = () => {}; } catch {}
+        }
+        if (typeof canvasObj.tokens.quadtree.update !== "function") {
+          try { canvasObj.tokens.quadtree.update = () => {}; } catch {}
+        }
+        if (typeof canvasObj.tokens.quadtree.insert !== "function") {
+          try { canvasObj.tokens.quadtree.insert = () => {}; } catch {}
+        }
+        if (typeof canvasObj.tokens.quadtree.clear !== "function") {
+          try { canvasObj.tokens.quadtree.clear = () => {}; } catch {}
+        }
+      }
+    }
+
+    if (!canvasObj.app) {
+      const mockApp = {
+        ticker: {
+          add: () => {},
+          remove: () => {},
+          start: () => {},
+          stop: () => {},
+          started: false,
+          maxFPS: 15
+        },
+        stage: {
+          renderable: false,
+          interactiveChildren: false,
+          children: []
+        },
+        renderer: {
+          resolution: 1
+        }
+      };
+      try {
+        canvasObj.app = mockApp;
+      } catch {
+        try {
+          Object.defineProperty(canvasObj, "app", {
+            get() { return this._safeAppShim ??= mockApp; },
+            set(v) { this._safeAppShim = v; },
+            configurable: true,
+            enumerable: true
+          });
+        } catch {}
+      }
     }
   }
 
   if (typeof game !== "undefined" && game?.canvas) {
     if (!game.canvas.tokens) {
       try {
-        game.canvas.tokens = canvasObj?.tokens ?? {
-          controlled: [],
-          placeables: [],
-          get: () => null,
-          releaseAll: () => {},
-          select: () => {}
-        };
+        game.canvas.tokens = canvasObj?.tokens ?? createSafeTokensShim();
       } catch {}
+    } else {
+      if (typeof game.canvas.tokens.createObject !== "function") {
+        try { game.canvas.tokens.createObject = () => null; } catch {}
+      }
+      if (typeof game.canvas.tokens.recalculatePlannedMovementPaths !== "function") {
+        try { game.canvas.tokens.recalculatePlannedMovementPaths = () => {}; } catch {}
+      }
+      if (typeof game.canvas.tokens._updatePlannedMovements !== "function") {
+        try { game.canvas.tokens._updatePlannedMovements = () => {}; } catch {}
+      }
+      if (typeof game.canvas.tokens.updatePlannedMovements !== "function") {
+        try { game.canvas.tokens.updatePlannedMovements = () => {}; } catch {}
+      }
+      if (typeof game.canvas.tokens.clearPlannedMovements !== "function") {
+        try { game.canvas.tokens.clearPlannedMovements = () => {}; } catch {}
+      }
+      if (typeof game.canvas.tokens.activate !== "function") {
+        try { game.canvas.tokens.activate = function() { return this; }; } catch {}
+      }
+      if (typeof game.canvas.tokens.deactivate !== "function") {
+        try { game.canvas.tokens.deactivate = function() { return this; }; } catch {}
+      }
+      if (game.canvas.tokens.quadtree) {
+        if (typeof game.canvas.tokens.quadtree.remove !== "function") {
+          try { game.canvas.tokens.quadtree.remove = () => {}; } catch {}
+        }
+        if (typeof game.canvas.tokens.quadtree.update !== "function") {
+          try { game.canvas.tokens.quadtree.update = () => {}; } catch {}
+        }
+        if (typeof game.canvas.tokens.quadtree.insert !== "function") {
+          try { game.canvas.tokens.quadtree.insert = () => {}; } catch {}
+        }
+        if (typeof game.canvas.tokens.quadtree.clear !== "function") {
+          try { game.canvas.tokens.quadtree.clear = () => {}; } catch {}
+        }
+      }
     }
   }
 }

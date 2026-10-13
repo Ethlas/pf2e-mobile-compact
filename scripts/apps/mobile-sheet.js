@@ -302,6 +302,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     this._registerChatListener();
     this._dockChatElement();
     this._ensureTokenControlled();
+    document.body?.classList.add("pf2e-sheet-open");
     document.querySelectorAll('link[href*="pf2e-mobile.css"]').forEach(link => { link.disabled = false; });
     Hooks.callAll("renderPF2eMobileSheet", this, this.element, context);
 
@@ -378,6 +379,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   /** @override */
   _onClose(options) {
+    document.body?.classList.remove("pf2e-sheet-open");
     this._unregisterSceneListeners();
     this._unregisterChatListener();
     this._restoreChatElement();

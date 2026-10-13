@@ -6,6 +6,23 @@
  */
 
 /**
+ * Safely retrieves the token's placeable object or adapter without throwing if
+ * Foundry's `TokenDocument.prototype.object` getter calls `this.layer.createObject`
+ * while canvas is headless or layers are uninitialized.
+ * @param {TokenDocument|object} tokenDoc
+ * @returns {object|null}
+ */
+export function getSafeTokenObject(tokenDoc) {
+  if (!tokenDoc) return null;
+  if (tokenDoc._object) return tokenDoc._object;
+  try {
+    return tokenDoc.object ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Reads the authoritative database coordinates (`_source`) of a TokenDocument or Placeable
  * and synchronizes any in-memory placeable/document coordinates that may be frozen when
  * the mobile WebGL ticker (`canvas.app.ticker`) is paused.
@@ -31,7 +48,7 @@ export function syncTokenPosition(tokenOrDoc) {
       if (doc.elevation !== authElev) doc.elevation = authElev;
     } catch {}
 
-    const placeable = doc._object ?? doc.object;
+    const placeable = getSafeTokenObject(doc);
     if (placeable && !placeable._isMobileAdapter) {
       try {
         const CanvasAnim = foundry?.canvas?.animation?.CanvasAnimation;
@@ -564,7 +581,8 @@ export function getTargetableToken(tokenId) {
   if (tokenDoc) syncTokenPosition(tokenDoc);
 
   // 1. Live canvas placeable check (if canvas has a real Token placeable, not a headless adapter)
-  const rawPlaceable = (tokenDoc?.object && !tokenDoc.object._isMobileAdapter ? tokenDoc.object : null)
+  const tokenObj = getSafeTokenObject(tokenDoc);
+  const rawPlaceable = (tokenObj && !tokenObj._isMobileAdapter ? tokenObj : null)
     ?? (canvasObj?.tokens?.placeables ? canvasObj.tokens.placeables.find(t => t.id === tokenId) : null)
     ?? (canvasObj?.tokens?.get?.(tokenId) instanceof (foundry.canvas?.placeables?.Token ?? Object) ? canvasObj.tokens.get(tokenId) : null);
 
@@ -585,8 +603,8 @@ export function getTargetableToken(tokenId) {
   }
 
   // Reuse existing dynamic adapter if already attached
-  if (tokenDoc.object?._isMobileAdapter) {
-    return tokenDoc.object;
+  if (tokenObj?._isMobileAdapter) {
+    return tokenObj;
   }
 
   const gridDistance = scene?.grid?.distance ?? 5;
@@ -713,7 +731,7 @@ export function getTargetableToken(tokenId) {
     }
   };
 
-  if (!tokenDoc.object) {
+  if (!getSafeTokenObject(tokenDoc)) {
     try {
       Object.defineProperty(tokenDoc, "object", {
         value: adapter,
@@ -742,7 +760,7 @@ export function getOriginToken(actor, sceneOverride = null) {
       return getTargetableToken(actor.token.id) ?? actor.token;
     }
     const tokensList = scene?.tokens?.contents ?? (scene?.tokens ? Array.from(scene.tokens) : []);
-    const activeTokenDoc = tokensList.find(t => t.actorId === actor.id || t.actor?.id === actor.id)
+    const activeTokenDoc = tokensList.find(t => t.actorId === actor.id)
       ?? tokensList.find(t => t.name === actor.name)
       ?? (typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(false, true)?.shift() : null);
 
@@ -876,7 +894,7 @@ export function ensureTokenControlled(actor) {
   if (canvasObj?.tokens?.placeables) {
     const activePlaceables = typeof actor.getActiveTokens === "function" ? actor.getActiveTokens(true, false) : [];
     const token = activePlaceables?.[0]
-      ?? canvasObj.tokens.placeables.find(t => t.actor?.id === actor.id);
+      ?? canvasObj.tokens.placeables.find(t => (t.document?.actorId ?? t.actor?.id) === actor.id);
 
     if (token && typeof token.control === "function") {
       try {

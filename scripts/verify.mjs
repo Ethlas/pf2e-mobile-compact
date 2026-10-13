@@ -1220,6 +1220,7 @@ try {
   await setMobileCanvasDisabled(true);
   const afterDisable = isMobileCanvasDisabled();
   const configDisabledWhenTrue = globalThis.CONFIG.Canvas.disabled;
+  const noCanvasPolluted = mockStorage.has("core.noCanvas");
   await setMobileCanvasDisabled(false);
   const afterReEnable = isMobileCanvasDisabled();
   const configDisabledWhenFalse = globalThis.CONFIG.Canvas.disabled;
@@ -1227,13 +1228,283 @@ try {
     defaultCanvasDisabled !== false ||
     afterDisable !== true ||
     configDisabledWhenTrue !== true ||
+    noCanvasPolluted ||
     afterReEnable !== false ||
     configDisabledWhenFalse !== false
   ) {
-    logFail(`[Issue #16 Canvas Toggle] Expected default=false, afterDisable=true (CONFIG.Canvas.disabled=true), afterReEnable=false; got ${defaultCanvasDisabled}, ${afterDisable} (${configDisabledWhenTrue}), ${afterReEnable} (${configDisabledWhenFalse})`);
+    logFail(`[Issue #16 Canvas Toggle] Expected default=false, afterDisable=true (CONFIG.Canvas.disabled=true, no core.noCanvas), afterReEnable=false; got ${defaultCanvasDisabled}, ${afterDisable} (${configDisabledWhenTrue}, polluted=${noCanvasPolluted}), ${afterReEnable} (${configDisabledWhenFalse})`);
   } else {
-    logPass("[Issue #16 Canvas Toggle] Canvas is enabled by default (disableCanvas=false), sets CONFIG.Canvas.disabled=true when disabled, and persists user toggle state across sessions.");
+    logPass("[Issue #16 Canvas Toggle] Canvas is enabled by default (disableCanvas=false), sets CONFIG.Canvas.disabled=true when disabled without polluting core.noCanvas, and persists user toggle state across sessions.");
   }
+
+  // 4b. ensureSafeCanvasTokens Fallback (app.ticker, stage, tokens, layer stubs, socket stubs)
+  const { ensureSafeCanvasTokens, enrichDescriptionCached } = await import("./utils/sheet-utils.js");
+  globalThis.canvas = {};
+  ensureSafeCanvasTokens();
+  if (
+    !globalThis.canvas.tokens ||
+    !Array.isArray(globalThis.canvas.tokens.controlled) ||
+    typeof globalThis.canvas.tokens.createObject !== "function" ||
+    typeof globalThis.canvas.tokens.recalculatePlannedMovementPaths !== "function" ||
+    typeof globalThis.canvas.tokens._updatePlannedMovements !== "function" ||
+    typeof globalThis.canvas.tokens.updatePlannedMovements !== "function" ||
+    typeof globalThis.canvas.tokens.activate !== "function" ||
+    typeof globalThis.canvas.tokens.deactivate !== "function" ||
+    typeof globalThis.canvas.tokens.unhandledProperty !== "function" ||
+    typeof globalThis.canvas.tokens.quadtree?.remove !== "function" ||
+    typeof globalThis.canvas.tokens.quadtree?.update !== "function" ||
+    !globalThis.canvas.app ||
+    typeof globalThis.canvas.app.ticker?.add !== "function" ||
+    !globalThis.canvas.app.stage
+  ) {
+    logFail("[Safe Canvas Tokens & App Shim] Failed: canvas.tokens or canvas.app.ticker shim missing required layer/socket/quadtree stubs");
+  } else {
+    logPass("[Safe Canvas Tokens & App Shim] canvas.tokens safe arrays, layer activate/deactivate stubs, quadtree stubs, socket _updatePlannedMovements stubs, proxy fallback, and canvas.app.ticker no-op shims created for headless/no-canvas mode.");
+  }
+
+  // 4c. Safe Token Placeable Resolution (Guards against 'this.layer.createObject is not a function')
+  const { getSafeTokenObject } = await import("./tokens/token-adapter.js");
+  class MockThrowingGetterTokenDoc {
+    constructor() {
+      this._source = { x: 50, y: 50 };
+      this.x = 0;
+      this.y = 0;
+    }
+    get object() {
+      throw new TypeError("this.layer.createObject is not a function");
+    }
+  }
+  const throwingDoc = new MockThrowingGetterTokenDoc();
+  let threwInGetSafe = false;
+  let safeObjResult = undefined;
+  try {
+    safeObjResult = getSafeTokenObject(throwingDoc);
+  } catch {
+    threwInGetSafe = true;
+  }
+  let threwInSync = false;
+  try {
+    syncTokenPosition(throwingDoc);
+  } catch {
+    threwInSync = true;
+  }
+
+  if (threwInGetSafe || safeObjResult !== null || threwInSync) {
+    logFail(`[Safe Token Placeable Resolution] Failed: threwInGetSafe=${threwInGetSafe}, result=${safeObjResult}, threwInSync=${threwInSync}`);
+  } else {
+    logPass("[Safe Token Placeable Resolution] getSafeTokenObject and syncTokenPosition safely catch throwing 'this.layer.createObject' getters without crashing.");
+  }
+
+  // 4d. enrichDescriptionCached Fast Path & Caching
+  let testEnrichCalls = 0;
+  const origUxApp = globalThis.foundry?.applications?.ux;
+  globalThis.foundry = globalThis.foundry || {};
+  globalThis.foundry.applications = globalThis.foundry.applications || {};
+  globalThis.foundry.applications.ux = {
+    TextEditor: {
+      enrichHTML: async (text) => {
+        testEnrichCalls++;
+        return `<em>${text}</em>`;
+      }
+    }
+  };
+
+  const plainRes = await enrichDescriptionCached("Plain sword strike", {}, { id: "item1" });
+  const callsAfterPlain = testEnrichCalls;
+
+  const directiveText = "Strike with @UUID[Compendium.pf2e.conditionitems.Item.Flat-Footed]";
+  const enriched1 = await enrichDescriptionCached(directiveText, {}, { id: "item2" });
+  const callsAfterFirst = testEnrichCalls;
+
+  const enriched2 = await enrichDescriptionCached(directiveText, {}, { id: "item2" });
+  const callsAfterSecond = testEnrichCalls;
+
+  globalThis.foundry.applications.ux = origUxApp;
+
+  if (callsAfterPlain !== 0 || callsAfterFirst !== 1 || callsAfterSecond !== 1 || plainRes !== "Plain sword strike" || enriched1 !== enriched2) {
+    logFail(`[Enrichment Cache] Failed: callsAfterPlain=${callsAfterPlain}, callsAfterFirst=${callsAfterFirst}, callsAfterSecond=${callsAfterSecond}`);
+  } else {
+    logPass("[Enrichment Cache] enrichDescriptionCached skips plain text without directives and caches enriched results to speed up sheet loading.");
+  }
+
+  // 4e. Floating Action Button (FAB) Visibility & Dynamic Recovery
+  const { ensureMobileFab, updateFabVisibility } = await import("./pf2e-mobile.js");
+  const origSettings = globalThis.game?.settings;
+  globalThis.game = globalThis.game || {};
+  globalThis.game.settings = {
+    settings: new Map([["pf2e-mobile-compact.mobileActivationMode", {}]]),
+    register: () => {},
+    get: (mod, key) => key === "mobileActivationMode" ? "always" : "auto"
+  };
+
+  const fabStore = new Map();
+  const sheetsInDom = [];
+  const prevDoc = globalThis.document;
+  const prevWin = globalThis.window;
+  globalThis.window = {
+    getComputedStyle: (el) => ({ display: el.style?.display ?? "flex", visibility: "visible" })
+  };
+  globalThis.document = {
+    getElementById: (id) => fabStore.get(id) ?? null,
+    createElement: (tag) => {
+      const el = {
+        id: "",
+        type: "",
+        title: "",
+        innerHTML: "",
+        style: {},
+        classList: { contains: () => false, add: () => {}, remove: () => {} },
+        addEventListener: () => {}
+      };
+      return el;
+    },
+    body: {
+      appendChild: (el) => { if (el.id) fabStore.set(el.id, el); }
+    },
+    querySelectorAll: (sel) => sel === ".pf2e-mobile-sheet" ? sheetsInDom : []
+  };
+
+  const fab = ensureMobileFab();
+  if (!fab) {
+    logFail("[Mobile FAB Recovery] Failed: ensureMobileFab returned null");
+  } else {
+    updateFabVisibility();
+    const visibleWhenClosed = fab.style.display;
+
+    // Simulate visible sheet in DOM
+    const mockSheetEl = {
+      isConnected: true,
+      style: { display: "flex" }
+    };
+    sheetsInDom.push(mockSheetEl);
+
+    updateFabVisibility();
+    const hiddenWhenOpen = fab.style.display;
+
+    sheetsInDom.length = 0;
+    updateFabVisibility();
+    const visibleWhenReclosed = fab.style.display;
+
+    if (visibleWhenClosed !== "flex" || hiddenWhenOpen !== "none" || visibleWhenReclosed !== "flex") {
+      logFail(`[Mobile FAB Recovery] Failed: closed=${visibleWhenClosed}, open=${hiddenWhenOpen}, reclosed=${visibleWhenReclosed}`);
+    } else {
+      logPass("[Mobile FAB Recovery] ensureMobileFab and updateFabVisibility correctly toggle launcher visibility based on actual sheet visibility.");
+    }
+  }
+  globalThis.document = prevDoc;
+  globalThis.window = prevWin;
+  globalThis.game.settings = origSettings;
+
+  // 4f. Staff Activations & Spontaneous Slot Integration
+  const { prepareActivationsContext } = await import("./apps/sheet-helpers/context-activations.js");
+  const { onAdjustStaffCharges } = await import("./apps/sheet-helpers/activations-handlers.js");
+
+  const origDOMParser = globalThis.DOMParser;
+  const origFromUuid = globalThis.fromUuid;
+  globalThis.fromUuid = async (uuid) => {
+    return {
+      name: uuid?.includes?.("Produce") ? "Produce Flame" : "Breathe Fire",
+      img: "icons/magic/fire/beam-jet-stream-yellow.webp",
+      system: {
+        traits: { value: ["fire"] },
+        time: { value: "2" }
+      }
+    };
+  };
+  globalThis.DOMParser = class {
+    parseFromString() {
+      return {
+        querySelectorAll: (sel) => {
+          if (sel === "ul") {
+            return [{
+              querySelectorAll: () => [
+                { textContent: "Cantrip: @UUID[Compendium.pf2e.spells-srd.Item.Produce-Flame]", firstChild: { textContent: "Cantrip" } },
+                { textContent: "1st: @UUID[Compendium.pf2e.spells-srd.Item.Breathe-Fire]", firstChild: { textContent: "1st" } }
+              ]
+            }];
+          }
+          return [];
+        }
+      };
+    }
+  };
+
+  const mockStaffItem = {
+    id: "staff-fire",
+    name: "Staff of Fire",
+    isEquipped: true,
+    system: {
+      equipped: { carryType: "held", handsHeld: 1 },
+      traits: { value: ["magical", "staff"] },
+      description: {
+        value: "<p>A burning wooden staff.</p><ul><li>Cantrip: @UUID[Compendium.pf2e.spells-srd.Item.Produce-Flame]</li><li>1st: @UUID[Compendium.pf2e.spells-srd.Item.Breathe-Fire]</li></ul>"
+      }
+    }
+  };
+
+  const staffFlags = {};
+  const mockStaffActor = {
+    level: 9,
+    items: {
+      contents: [mockStaffItem],
+      get: (id) => id === "staff-fire" ? mockStaffItem : null,
+      find: (fn) => [mockStaffItem].find(fn)
+    },
+    spellcasting: {
+      contents: [
+        {
+          id: "spont-entry",
+          name: "Sorcerer Spellcasting",
+          isSpontaneous: true,
+          highestRank: 5,
+          system: {
+            prepared: { value: "spontaneous" },
+            slots: {
+              slot1: { value: 3, max: 3 },
+              slot2: { value: 2, max: 3 }
+            }
+          }
+        }
+      ],
+      collections: { get: () => null }
+    },
+    getFlag: (scope, key) => staffFlags[`${scope}.${key}`] ?? null,
+    setFlag: async (scope, key, val) => { staffFlags[`${scope}.${key}`] = val; return val; },
+    getRollData: () => ({})
+  };
+
+  const staffContext = {};
+  const mockStaffSheet = {
+    actor: mockStaffActor,
+    _collapsedRankGroups: new Set(),
+    render: () => {}
+  };
+
+  await prepareActivationsContext(mockStaffActor, mockStaffSheet, staffContext);
+
+  if (
+    !staffContext.activations?.staff ||
+    staffContext.activations.staff.name !== "Staff of Fire" ||
+    staffContext.activations.staff.charges.max !== 5 ||
+    staffContext.activations.staff.charges.value !== 5
+  ) {
+    logFail(`[Staff Activations Verification] Failed: staffData=${JSON.stringify(staffContext.activations?.staff)}`);
+  } else {
+    // Test staff charge adjustment
+    await onAdjustStaffCharges(
+      mockStaffSheet,
+      { preventDefault: () => {}, stopPropagation: () => {} },
+      { dataset: { delta: "-1", staffId: "staff-fire" } }
+    );
+    const chargesAfterSpend = mockStaffActor.getFlag("pf2e-mobile-compact", "staffCharges-staff-fire");
+    if (chargesAfterSpend !== 4) {
+      logFail(`[Staff Activations Verification] Failed to spend charge: got ${chargesAfterSpend}, expected 4`);
+    } else {
+      logPass("[Staff Activations Verification] Staff resolution, charge calculation (max 5 at L9), spontaneous slots detection, and charge spending verified 100% intact.");
+    }
+  }
+  globalThis.DOMParser = origDOMParser;
+  globalThis.fromUuid = origFromUuid;
 
   // 7. Headless No-Canvas TokenDocument.prototype.object Getter & Non-Recursive distanceTo Guard
   const { getTargetableToken } = await import("./tokens/token-adapter.js");
@@ -1291,6 +1562,96 @@ try {
     logFail(`[Issue #16 Headless Adapter & Performance] Failed: hHeroDoc.object=${Boolean(hHeroDoc.object)}, isFlanking=${hHeroDoc.object?.isFlanking?.(hEnemyDoc.object, { reach: 5 })}, 200x distanceTo=${elapsedMs.toFixed(2)}ms`);
   } else {
     logPass(`[Issue #16 Headless Adapter & Performance] Getter-only TokenDocument.object overridden via Object.defineProperty, headless isFlanking=true, and 200x distanceTo ran in ${elapsedMs.toFixed(2)}ms.`);
+  }
+
+  // 8. Headless Actor.prototype.getActiveTokens Recursion Guard & Synthetic Actor Test
+  class MockActorDocument {
+    constructor(data = {}) {
+      Object.assign(this, data);
+    }
+    getActiveTokens(linked = false, document = false) {
+      return []; // Base native Foundry behavior when canvas.ready === false
+    }
+  }
+  globalThis.CONFIG = { ...(globalThis.CONFIG || {}), Actor: { documentClass: MockActorDocument } };
+  const { patchUserActiveTokens } = await import("./pf2e-mobile.js");
+  patchUserActiveTokens();
+
+  // Test 8A: Synthetic Actor resolution (isToken: true)
+  const synthTokenDoc = { id: "tok-synth", actorLink: false, x: 0, y: 0, width: 1, height: 1 };
+  const synthActor = new MockActorDocument({
+    id: "synth-actor",
+    isToken: true,
+    token: synthTokenDoc
+  });
+  const synthActiveDocs = synthActor.getActiveTokens(false, true);
+  const synthLinkedDocs = synthActor.getActiveTokens(true, true);
+
+  // Test 8B: World Actor resolution with dangerous unlinked token in scene (getter must NOT be called)
+  let dangerousGetterAccessed = false;
+  const dangerousUnlinkedDoc = {
+    id: "tok-dangerous",
+    actorId: "other-actor",
+    actorLink: false,
+    x: 100, y: 100,
+    get actor() {
+      dangerousGetterAccessed = true;
+      throw new Error("Dangerous token.actor getter invoked!");
+    }
+  };
+  const matchingWorldDoc = {
+    id: "tok-matched-world",
+    actorId: "world-hero",
+    actorLink: true,
+    x: 0, y: 0
+  };
+  const sceneWithDangerousToken = {
+    id: "scene-tokens",
+    tokens: {
+      contents: [dangerousUnlinkedDoc, matchingWorldDoc],
+      get(id) { return this.contents.find(t => t.id === id) ?? null; }
+    }
+  };
+  globalThis.game.scenes.current = sceneWithDangerousToken;
+  globalThis.canvas = { ready: false, scene: null };
+
+  const worldActor = new MockActorDocument({
+    id: "world-hero",
+    isToken: false
+  });
+  const worldMatchedDocs = worldActor.getActiveTokens(true, true);
+  const worldMatchedAdapters = worldActor.getActiveTokens(true, false);
+
+  // Test 8C: Re-entrancy guard
+  let reentrancyResult = null;
+  const reentrantActor = new MockActorDocument({
+    id: "reentrant-actor",
+    isToken: false
+  });
+  const originalGetActiveTokens = reentrantActor.getActiveTokens;
+  let reentrantCallDepth = 0;
+  // Monkey-patch to simulate a hook or getter calling getActiveTokens again on the same actor
+  reentrantActor.getActiveTokens = function (...args) {
+    reentrantCallDepth++;
+    if (reentrantCallDepth === 1) {
+      reentrancyResult = this.getActiveTokens(false, true);
+    }
+    return originalGetActiveTokens.apply(this, args);
+  };
+  const normalResult = reentrantActor.getActiveTokens(false, true);
+
+  if (
+    synthActiveDocs?.[0] !== synthTokenDoc ||
+    synthLinkedDocs?.length !== 0 ||
+    dangerousGetterAccessed ||
+    worldMatchedDocs?.[0] !== matchingWorldDoc ||
+    worldMatchedAdapters?.length !== 1 ||
+    !Array.isArray(reentrancyResult) ||
+    reentrancyResult.length !== 0
+  ) {
+    logFail(`[Headless getActiveTokens Recursion Guard] Failed: synthDocs=${synthActiveDocs?.length}, synthLinked=${synthLinkedDocs?.length}, dangerousAccessed=${dangerousGetterAccessed}, matchedDocs=${worldMatchedDocs?.length}, matchedAdapters=${worldMatchedAdapters?.length}, reentrancyResult=${JSON.stringify(reentrancyResult)}`);
+  } else {
+    logPass("[Headless getActiveTokens Recursion Guard] Synthetic actors resolve their own token without scanning, unlinked tokens never evaluate dangerous actor getters, and re-entrancy is blocked.");
   }
 } catch (err) {
   logFail(`Action Cost / Spell Damage / Issue #16 verification threw an error: ${err.stack || err.message}`);

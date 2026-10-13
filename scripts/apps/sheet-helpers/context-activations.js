@@ -2,7 +2,7 @@
  * Context preparation helper for Item Activations (Staves, Wands, Scrolls, and Activated Item Spells).
  */
 import { formatSpell } from "./context-spells.js";
-import { clamp, parseActionCostInfo } from "../../utils/sheet-utils.js";
+import { clamp, enrichDescriptionCached, parseActionCostInfo } from "../../utils/sheet-utils.js";
 
 /**
 /**
@@ -187,20 +187,11 @@ export async function prepareActivationsContext(actor, sheet, context) {
     }
 
     // Enrich staff item description
-    const TextEditorClass = foundry.applications?.ux?.TextEditor ?? globalThis.TextEditor;
-    let rawStaffDesc = staffItem?.system?.description?.value ?? "";
-    let enrichedStaffDesc = rawStaffDesc;
-    if (rawStaffDesc && typeof TextEditorClass?.enrichHTML === "function") {
-      try {
-        enrichedStaffDesc = await TextEditorClass.enrichHTML(rawStaffDesc, {
-          secrets: staffItem?.isOwner,
-          rollData: actor.getRollData(),
-          async: true
-        });
-      } catch {
-        enrichedStaffDesc = rawStaffDesc;
-      }
-    }
+    const rawStaffDesc = staffItem?.system?.description?.value ?? "";
+    const enrichedStaffDesc = await enrichDescriptionCached(rawStaffDesc, {
+      secrets: staffItem?.isOwner,
+      rollData: typeof actor.getRollData === "function" ? actor.getRollData() : {}
+    }, staffItem);
 
     // Collect staff spells with strict priority given to morning preparation:
     // 1. pf2e-dailies morning-prepared spells for this staff
@@ -209,7 +200,7 @@ export async function prepareActivationsContext(actor, sheet, context) {
     // 4. Physical staff item description HTML parser
     // 5. Existing staffEntry.spells strictly filtered to avoid spells from other staves
     let staffSpellDocs = [];
-    const ItemClass = getDocumentClass?.("Item") ?? Item;
+    const ItemClass = (typeof getDocumentClass === "function" ? getDocumentClass("Item") : null) ?? CONFIG.Item?.documentClass ?? (typeof Item !== "undefined" ? Item : Object);
     const entryId = staffEntry?.id ?? `${staffItem?.id}-casting`;
 
     // Priority 1: Morning-prepared spells from pf2e-dailies
@@ -374,7 +365,7 @@ export async function prepareActivationsContext(actor, sheet, context) {
     let formattedSpell = null;
     let spellDoc = wandEntry?.spells?.contents?.[0] ?? (spellData?.id ? actor.items.get(spellData.id) : null);
     if (!spellDoc && spellData) {
-      const ItemClass = getDocumentClass?.("Item") ?? Item;
+      const ItemClass = (typeof getDocumentClass === "function" ? getDocumentClass("Item") : null) ?? CONFIG.Item?.documentClass ?? (typeof Item !== "undefined" ? Item : Object);
       try {
         spellDoc = new ItemClass(foundry.utils.deepClone(spellData), { parent: actor });
       } catch {
@@ -420,7 +411,7 @@ export async function prepareActivationsContext(actor, sheet, context) {
     const scrollSpellData = scroll.system?.spell;
     let spellDoc = scrollEntry?.spells?.contents?.[0] ?? (scrollSpellData?.id ? actor.items.get(scrollSpellData.id) : null);
     if (!spellDoc && scrollSpellData) {
-      const ItemClass = getDocumentClass?.("Item") ?? Item;
+      const ItemClass = (typeof getDocumentClass === "function" ? getDocumentClass("Item") : null) ?? CONFIG.Item?.documentClass ?? (typeof Item !== "undefined" ? Item : Object);
       try {
         spellDoc = new ItemClass(foundry.utils.deepClone(scrollSpellData), { parent: actor });
       } catch {
@@ -515,10 +506,16 @@ export async function prepareActivationsContext(actor, sheet, context) {
  */
 export async function getSpellsFromStaffDescription(staffItem, maxRank, entryId, actor) {
   if (!staffItem) return [];
+  if (staffItem._cachedStaffSpells && staffItem._cachedStaffSpellsEntryId === entryId && staffItem._cachedStaffSpellsMaxRank === maxRank) {
+    return staffItem._cachedStaffSpells;
+  }
   const rawDesc = staffItem.system?.description?.value ?? staffItem.description ?? "";
   if (!rawDesc) return [];
 
-  const parser = new DOMParser();
+  const ParserClass = globalThis.DOMParser ?? (typeof DOMParser !== "undefined" ? DOMParser : null);
+  if (!ParserClass) return [];
+
+  const parser = new ParserClass();
   const doc = parser.parseFromString(rawDesc, "text/html");
   const uls = doc.querySelectorAll("ul");
   const lastUl = uls[uls.length - 1];
@@ -548,7 +545,7 @@ export async function getSpellsFromStaffDescription(staffItem, maxRank, entryId,
     }
   }
 
-  const ItemClass = getDocumentClass?.("Item") ?? Item;
+  const ItemClass = (typeof getDocumentClass === "function" ? getDocumentClass("Item") : null) ?? CONFIG.Item?.documentClass ?? (typeof Item !== "undefined" ? Item : Object);
   const spellDocs = await Promise.all(spellEntries.map(async ({ rank, uuid }) => {
     try {
       const sourceSpell = await fromUuid(uuid);
@@ -568,6 +565,10 @@ export async function getSpellsFromStaffDescription(staffItem, maxRank, entryId,
     }
   }));
 
-  return spellDocs.filter(Boolean);
+  const filtered = spellDocs.filter(Boolean);
+  staffItem._cachedStaffSpells = filtered;
+  staffItem._cachedStaffSpellsEntryId = entryId;
+  staffItem._cachedStaffSpellsMaxRank = maxRank;
+  return filtered;
 }
 

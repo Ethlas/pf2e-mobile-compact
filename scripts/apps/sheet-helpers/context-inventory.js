@@ -7,6 +7,7 @@
 import { getPropertyRuneLabel } from "./rune-data.js";
 import { getCarryState } from "./carry-type.js";
 import { prepareCurrencyContext } from "./currency-handlers.js";
+import { enrichDescriptionCached } from "../../utils/sheet-utils.js";
 
 const PHYSICAL_ITEM_TYPES = new Set([
   "ammo",
@@ -57,19 +58,10 @@ function isInvestableItem(item) {
 async function enrichItemDescription(item, actor) {
   const rawDescription = item.system?.description?.value ?? "";
   if (!rawDescription) return "";
-  const TextEditorClass = foundry.applications?.ux?.TextEditor ?? globalThis.TextEditor;
-  if (typeof TextEditorClass?.enrichHTML === "function") {
-    try {
-      return await TextEditorClass.enrichHTML(rawDescription, {
-        secrets: item.isOwner ?? false,
-        rollData: actor?.getRollData?.() ?? {},
-        async: true
-      });
-    } catch {
-      return rawDescription;
-    }
-  }
-  return rawDescription;
+  return enrichDescriptionCached(rawDescription, {
+    secrets: item.isOwner ?? false,
+    rollData: actor?.getRollData?.() ?? {}
+  }, item);
 }
 
 export async function prepareInventoryContext(actor, sheet, context) {

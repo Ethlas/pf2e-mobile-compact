@@ -2,7 +2,7 @@
  * Context preparation helper for Strikes, Character Actions, Reactions,
  * Free actions, Skill actions, Exploration, and Downtime activities.
  */
-import { getGlyph, parseActionCostInfo, PROFICIENCY_RANK_LETTERS, PROFICIENCY_RANK_NAMES } from "../../utils/sheet-utils.js";
+import { enrichDescriptionCached, getGlyph, parseActionCostInfo, PROFICIENCY_RANK_LETTERS, PROFICIENCY_RANK_NAMES } from "../../utils/sheet-utils.js";
 
 const PF2E_SKILL_SLUGS = new Set([
   "acrobatics",
@@ -254,19 +254,10 @@ export async function prepareActionsContext(actor, sheet, context) {
       if (!rawDescription && systemAction?.description) {
         rawDescription = game.i18n.localize(systemAction.description);
       }
-      const TextEditorClass = foundry.applications?.ux?.TextEditor ?? globalThis.TextEditor;
-      let enrichedDescription = rawDescription;
-      if (rawDescription && typeof TextEditorClass?.enrichHTML === "function") {
-        try {
-          enrichedDescription = await TextEditorClass.enrichHTML(rawDescription, {
-            secrets: item.isOwner ?? false,
-            rollData: actor.getRollData?.() ?? {},
-            async: true
-          });
-        } catch {
-          enrichedDescription = rawDescription;
-        }
-      }
+      const enrichedDescription = await enrichDescriptionCached(rawDescription, {
+        secrets: item.isOwner ?? false,
+        rollData: actor.getRollData?.() ?? {}
+      }, item);
 
       // Skill label and sort data (Skill Actions only). An action "comes from a feat" when it is a
       // feat itself (skill feats with an action cost) or was granted by one (pf2e sets item.grantedBy).

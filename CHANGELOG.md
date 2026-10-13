@@ -4,6 +4,81 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.35] - 2026-10-13
+
+### Quadtree Method Stubs & Interface Canvas Group Compatibility (`scripts/utils/sheet-utils.js`, `scripts/verify.mjs`)
+
+- **Fixed `Failed drawing interface canvas group: layer.quadtree.remove is not a function`**:
+  - Resolved `TypeError: layer.quadtree.remove is not a function` at `foundry.mjs:55188:22` in `PlaceableObject.prototype._updateQuadtree()` when child placeables (e.g. tokens in `viewedDocuments()`) access `this.layer.quadtree`.
+  - In `createSafeTokensShim()`, the proxy fallback previously returned a no-op function (`() => {}`) for any unknown property name. Because functions are truthy in JavaScript, `PlaceableObject._updateQuadtree()` passed its truthiness check `if (!layer.quadtree) return;` and attempted to invoke `layer.quadtree.remove(this)` and `layer.quadtree.update({r, t})`.
+  - Added a comprehensive `safeQuadtree` proxy to `createSafeTokensShim()` implementing `.remove()`, `.update()`, `.insert()`, `.clear()`, `.get()`, and `.collide()` stubs.
+  - Added quadtree method guards to `canvasObj.tokens` and `game.canvas.tokens` in `ensureSafeCanvasTokens()`.
+
+---
+
+## [1.0.34] - 2026-10-13
+
+### Mobile Launcher FAB Overlap Fix & Lifecycle Body State (`scripts/pf2e-mobile.js`, `scripts/apps/mobile-sheet.js`, `styles/pf2e-mobile.css`, `scripts/verify.mjs`)
+
+- **Fixed Floating Launcher Button (`#pf2e-mobile-fab`) Displaying Over Mobile Sheet**:
+  - Restored declarative CSS hiding rules `body:has(.pf2e-mobile-sheet) #pf2e-mobile-fab, body.pf2e-sheet-open #pf2e-mobile-fab { display: none !important; }` in `styles/pf2e-mobile.css` to prevent the orange launcher from overlapping bottom navigation and chat tabs.
+  - Added `body:not(.pf2e-mobile-active) #pf2e-mobile-fab { display: none !important; }` to guarantee the mobile launcher never renders in desktop environments.
+  - Added automatic lifecycle class `pf2e-sheet-open` on `document.body` during `PF2eMobileSheet._onRender` and removed during `_onClose`.
+  - Fixed `updateFabVisibility()` in `scripts/pf2e-mobile.js`: replaced broken `offsetParent !== null` check (which evaluates to `null` for fixed elements under W3C CSSOM specifications) with accurate DOM presence and computed style visibility detection (`el.isConnected !== false && display !== 'none'`).
+  - Added clean DOM removal of `#pf2e-mobile-fab` in `ensureMobileFab()` and `Hooks.once("ready")` whenever desktop mode is active.
+
+---
+
+## [1.0.33] - 2026-10-13
+
+### Startup Performance Optimization, Canvas Layer Stubs & Resilient Mobile Launcher (`scripts/utils/sheet-utils.js`, `scripts/apps/sheet-helpers/`, `scripts/pf2e-mobile.js`, `styles/pf2e-mobile.css`)
+
+- **High-Performance Description Enrichment Caching (`enrichDescriptionCached`)**:
+  - Resolved major latency and startup delays on character sheets by introducing `enrichDescriptionCached` in `scripts/utils/sheet-utils.js`.
+  - Added synchronous fast-path bypassing `TextEditor.enrichHTML` completely for descriptions without Foundry directives (`@UUID`, `@Check`, `@Damage`, `[[`).
+  - Added memory-bounded cache for enriched HTML keyed by document UUID/ID, modification timestamp, and raw text length, preventing dozens of redundant asynchronous compendium lookups across action cards, spell cards, signature heightening variants, and inventory items on every render.
+  - Added in-memory caching for staff spells resolved from staff item descriptions (`_cachedStaffSpells`) in `context-activations.js`, preventing repeated `fromUuid` compendium queries.
+- **Fixed `layer.activate is not a function` & Socket `_updatePlannedMovements` Crashes**:
+  - Resolved `layer.activate is not a function` occurring during Foundry v14 `#initializeCanvasLayer()` in `setupGame()`, which previously aborted the core `"ready"` hook and prevented sheets and launcher buttons from auto-opening.
+  - Resolved `Uncaught (in promise) TypeError: canvas.tokens._updatePlannedMovements is not a function` at `foundry.mjs:46743:21` triggered by socket `userActivity` events when canvas is disabled or running in headless mode.
+  - Added `activate()`, `deactivate()`, `draw()`, `tearDown()`, `_updatePlannedMovements()`, `updatePlannedMovements()`, and `clearPlannedMovements()` stubs on `canvas.tokens` and `game.canvas.tokens` in `ensureSafeCanvasTokens()`.
+  - Wrapped `mockTokens` with a Proxy fallback that absorbs arbitrary property and method calls safely without throwing `TypeError`.
+- **Resilient Mobile Initialization & Launcher Button (FAB) Visibility**:
+  - Extracted mobile bootstrap into `initMobileUI()` with automatic fallback timeouts on `Hooks.once("setup")` and `window.load` so the sheet and launcher button reliably initialize even if third-party modules throw during canvas setup and abort Foundry's `"ready"` hook.
+  - Removed aggressive CSS `body:has(.pf2e-mobile-sheet) #pf2e-mobile-fab { display: none !important; }` rule which permanently hid the launcher button whenever a sheet DOM container existed.
+  - Updated `updateFabVisibility()` to dynamically evaluate whether any `.pf2e-mobile-sheet` element is actively visible on screen (`offsetParent !== null && display !== "none"`), ensuring `#pf2e-mobile-fab` is reliably displayed and clickable whenever the sheet is closed.
+
+---
+
+## [1.0.32] - 2026-10-13
+
+### Headless Token Resolution, Desktop Canvas Restoration & Safe App Shims (`scripts/pf2e-mobile.js`, `scripts/tokens/token-adapter.js`, `scripts/utils/sheet-utils.js`, `scripts/utils/view-mode.js`, `scripts/verify.mjs`)
+
+- **Fixed `this.layer.createObject is not a function` in Headless Token Synchronization**:
+  - Resolved `Uncaught (in promise) TypeError: this.layer.createObject is not a function` occurring when `syncSceneTokenPositions()` or `ensureTokenControlled()` evaluated `doc.object` while canvas was headless or layer factories were uninitialized.
+  - Added `getSafeTokenObject(tokenDoc)` in `scripts/tokens/token-adapter.js` to safely resolve placeables without triggering unhandled layer errors.
+  - Provided `createObject: () => null` and `recalculatePlannedMovementPaths: () => {}` fallbacks on `canvas.tokens` in `ensureSafeCanvasTokens()`.
+  - Added a defensive error wrapper on `TokenDocument.prototype.object` in `patchUserActiveTokens()`, safely returning `this._object ?? null` if native layer creation fails.
+- **Fixed Floating Launcher Button (`#pf2e-mobile-fab`) Overlapping Bottom Sheet Navigation**:
+  - Added declarative rule `body:has(.pf2e-mobile-sheet) #pf2e-mobile-fab { display: none !important; }` in `styles/pf2e-mobile.css` so the floating orange launcher button is unconditionally hidden while the mobile sheet is in the DOM, preventing it from obscuring the bottom "Chat" tab even during asynchronous render cycles.
+- **Fixed Missing Import `getTargetableToken` in `scripts/pf2e-mobile.js`**:
+  - Resolved `ReferenceError: getTargetableToken is not defined` occurring at `pf2e-mobile.js:490` when `Actor.prototype.getActiveTokens(linked, false)` maps token documents to headless adapters.
+- **Fixed Desktop Canvas Lockout & `core.noCanvas` Contamination**:
+  - Resolved black screen (`#board` display: none) and `The Scene is now viewed but is not displayed because the game Canvas is disabled` on desktop view.
+  - Eliminated all module writes to Foundry's global `core.noCanvas` setting and `localStorage`, keeping mobile canvas battery optimization scoped strictly to `pf2e-mobile-compact.disableCanvas` and in-memory `CONFIG.Canvas.disabled`.
+  - Added desktop mode safety & cleanup in `init`, `ready`, and `view-mode.js` (`setMobileViewEnabled(false)`): actively removes `core.noCanvas` from `localStorage` and `game.settings`, resets `CONFIG.Canvas.disabled = false`, and restores `#board` display.
+- **Added Safe Fallback Stub for `canvas.app.ticker` in `ensureSafeCanvasTokens`**:
+  - Prevented third-party modules (such as `splatter`) from crashing during the `ready` hook (`Cannot read properties of undefined (reading 'ticker')`) when running in headless or canvas-disabled mode.
+- **Fixed Infinite Recursion in Headless `Actor.prototype.getActiveTokens`**:
+  - Resolved `InternalError: too much recursion` occurring when PF2e initialises synthetic actors (e.g. unlinked NPCs during scene loading or `prepareBaseData`) while canvas is disabled or headless.
+  - Previous fallback implementation iterated over `scene.tokens` evaluating `t.actor?.id === this.id`. Accessing `tokenDoc.actor` on unlinked tokens invoked Foundry's `actor` getter (`ActorDelta._createSyntheticActor()`), triggering `prepareData()` and re-entering `getActiveTokens()` recursively.
+  - **Direct Synthetic Actor Resolution**: Synthetic actors (`actor.isToken === true`) now immediately return their own token document (`actor.token`) or mobile placeable adapter in $O(1)$ without searching `scene.tokens`.
+  - **Getter-Safe World Actor Token Lookup**: World actor token resolution now strictly compares the primitive schema string property `t.actorId === this.id`, eliminating all evaluations of `tokenDoc.actor`.
+  - **Re-Entrancy Guard**: Added a per-actor re-entrancy flag (`_pf2eMobileResolvingActiveTokens`) to unconditionally guard against nested or recursive calls to `getActiveTokens`.
+  - Also removed redundant `t.actor?.id` evaluations in `scripts/tokens/token-adapter.js` (`getOriginToken`, `ensureTokenControlled`).
+
+---
+
 ## [1.0.31] - 2026-10-08
 
 ### Kingdom Page Dice & Activity Execution Overhaul, Removal of Gaining Experience Section (`templates/kingdom/kingdom-turn.hbs`, `scripts/kingdom/`, `scripts/pf2e-mobile.js`, `scripts/apps/mobile-sheet.js`, `styles/kingdom.css`, `scripts/verify.mjs`)

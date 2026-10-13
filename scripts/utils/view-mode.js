@@ -37,6 +37,19 @@ export async function setMobileViewEnabled(enabled) {
   }).catch(() => false);
   if (!confirmed) return;
 
+  if (!enabled) {
+    // When switching to desktop view, clean up any persistent core canvas disable state
+    try {
+      localStorage.removeItem("core.noCanvas");
+      if (game?.settings?.settings?.has?.("core.noCanvas") && game.settings.get("core", "noCanvas")) {
+        await game.settings.set("core", "noCanvas", false);
+      }
+      if (typeof CONFIG !== "undefined" && CONFIG.Canvas) {
+        CONFIG.Canvas.disabled = false;
+      }
+    } catch {}
+  }
+
   await game.settings.set("pf2e-mobile-compact", "mobileActivationMode", enabled ? "auto" : "never");
 }
 
