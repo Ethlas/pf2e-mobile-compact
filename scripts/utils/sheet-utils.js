@@ -407,6 +407,21 @@ export async function enrichDescriptionCached(rawText, options = {}, doc = null)
  * @returns {object}
  */
 function createSafeTokensShim(initial = {}) {
+  const safeQuadtree = new Proxy({
+    clear: () => {},
+    remove: () => {},
+    insert: () => {},
+    update: () => {},
+    get: () => [],
+    collide: () => []
+  }, {
+    get(target, prop, receiver) {
+      if (prop in target) return Reflect.get(target, prop, receiver);
+      if (typeof prop === "string") return () => {};
+      return undefined;
+    }
+  });
+
   const base = {
     controlled: [],
     placeables: [],
@@ -424,6 +439,10 @@ function createSafeTokensShim(initial = {}) {
     _updatePlannedMovements: () => {},
     updatePlannedMovements: () => {},
     clearPlannedMovements: () => {},
+    quadtree: safeQuadtree,
+    objects: null,
+    preview: null,
+    _configPreview: null,
     ...initial
   };
   return new Proxy(base, {
@@ -431,6 +450,8 @@ function createSafeTokensShim(initial = {}) {
       if (prop in target) return Reflect.get(target, prop, receiver);
       if (typeof prop === "string") {
         if (prop === "active") return true;
+        if (prop === "quadtree") return safeQuadtree;
+        if (prop === "objects" || prop === "preview" || prop === "_configPreview") return null;
         return () => {};
       }
       return undefined;
@@ -488,6 +509,20 @@ export function ensureSafeCanvasTokens() {
       }
       if (typeof canvasObj.tokens.deactivate !== "function") {
         try { canvasObj.tokens.deactivate = function() { return this; }; } catch {}
+      }
+      if (canvasObj.tokens.quadtree) {
+        if (typeof canvasObj.tokens.quadtree.remove !== "function") {
+          try { canvasObj.tokens.quadtree.remove = () => {}; } catch {}
+        }
+        if (typeof canvasObj.tokens.quadtree.update !== "function") {
+          try { canvasObj.tokens.quadtree.update = () => {}; } catch {}
+        }
+        if (typeof canvasObj.tokens.quadtree.insert !== "function") {
+          try { canvasObj.tokens.quadtree.insert = () => {}; } catch {}
+        }
+        if (typeof canvasObj.tokens.quadtree.clear !== "function") {
+          try { canvasObj.tokens.quadtree.clear = () => {}; } catch {}
+        }
       }
     }
 
@@ -551,6 +586,20 @@ export function ensureSafeCanvasTokens() {
       }
       if (typeof game.canvas.tokens.deactivate !== "function") {
         try { game.canvas.tokens.deactivate = function() { return this; }; } catch {}
+      }
+      if (game.canvas.tokens.quadtree) {
+        if (typeof game.canvas.tokens.quadtree.remove !== "function") {
+          try { game.canvas.tokens.quadtree.remove = () => {}; } catch {}
+        }
+        if (typeof game.canvas.tokens.quadtree.update !== "function") {
+          try { game.canvas.tokens.quadtree.update = () => {}; } catch {}
+        }
+        if (typeof game.canvas.tokens.quadtree.insert !== "function") {
+          try { game.canvas.tokens.quadtree.insert = () => {}; } catch {}
+        }
+        if (typeof game.canvas.tokens.quadtree.clear !== "function") {
+          try { game.canvas.tokens.quadtree.clear = () => {}; } catch {}
+        }
       }
     }
   }

@@ -4,6 +4,18 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.35] - 2026-10-13
+
+### Quadtree Method Stubs & Interface Canvas Group Compatibility (`scripts/utils/sheet-utils.js`, `scripts/verify.mjs`)
+
+- **Fixed `Failed drawing interface canvas group: layer.quadtree.remove is not a function`**:
+  - Resolved `TypeError: layer.quadtree.remove is not a function` at `foundry.mjs:55188:22` in `PlaceableObject.prototype._updateQuadtree()` when child placeables (e.g. tokens in `viewedDocuments()`) access `this.layer.quadtree`.
+  - In `createSafeTokensShim()`, the proxy fallback previously returned a no-op function (`() => {}`) for any unknown property name. Because functions are truthy in JavaScript, `PlaceableObject._updateQuadtree()` passed its truthiness check `if (!layer.quadtree) return;` and attempted to invoke `layer.quadtree.remove(this)` and `layer.quadtree.update({r, t})`.
+  - Added a comprehensive `safeQuadtree` proxy to `createSafeTokensShim()` implementing `.remove()`, `.update()`, `.insert()`, `.clear()`, `.get()`, and `.collide()` stubs.
+  - Added quadtree method guards to `canvasObj.tokens` and `game.canvas.tokens` in `ensureSafeCanvasTokens()`.
+
+---
+
 ## [1.0.34] - 2026-10-13
 
 ### Mobile Launcher FAB Overlap Fix & Lifecycle Body State (`scripts/pf2e-mobile.js`, `scripts/apps/mobile-sheet.js`, `styles/pf2e-mobile.css`, `scripts/verify.mjs`)

@@ -1251,13 +1251,15 @@ try {
     typeof globalThis.canvas.tokens.activate !== "function" ||
     typeof globalThis.canvas.tokens.deactivate !== "function" ||
     typeof globalThis.canvas.tokens.unhandledProperty !== "function" ||
+    typeof globalThis.canvas.tokens.quadtree?.remove !== "function" ||
+    typeof globalThis.canvas.tokens.quadtree?.update !== "function" ||
     !globalThis.canvas.app ||
     typeof globalThis.canvas.app.ticker?.add !== "function" ||
     !globalThis.canvas.app.stage
   ) {
-    logFail("[Safe Canvas Tokens & App Shim] Failed: canvas.tokens or canvas.app.ticker shim missing required layer/socket stubs");
+    logFail("[Safe Canvas Tokens & App Shim] Failed: canvas.tokens or canvas.app.ticker shim missing required layer/socket/quadtree stubs");
   } else {
-    logPass("[Safe Canvas Tokens & App Shim] canvas.tokens safe arrays, layer activate/deactivate stubs, socket _updatePlannedMovements stubs, proxy fallback, and canvas.app.ticker no-op shims created for headless/no-canvas mode.");
+    logPass("[Safe Canvas Tokens & App Shim] canvas.tokens safe arrays, layer activate/deactivate stubs, quadtree stubs, socket _updatePlannedMovements stubs, proxy fallback, and canvas.app.ticker no-op shims created for headless/no-canvas mode.");
   }
 
   // 4c. Safe Token Placeable Resolution (Guards against 'this.layer.createObject is not a function')
