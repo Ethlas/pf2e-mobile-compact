@@ -5,6 +5,7 @@ import { PF2eMobileSheet } from "./apps/mobile-sheet.js";
 import { isMobileDevice, isIOSDevice, getStoredRollMode, ensureSafeCanvasTokens } from "./utils/sheet-utils.js";
 import { migrateActorPropertyRunes } from "./apps/sheet-helpers/rune-handlers.js";
 import { ensureMobileViewButton } from "./utils/view-mode.js";
+import { getTargetableToken } from "./tokens/token-adapter.js";
 
 export { isMobileDevice, isIOSDevice };
 
@@ -626,10 +627,6 @@ Hooks.once("init", async () => {
       if (typeof CONFIG !== "undefined" && CONFIG.Canvas) {
         CONFIG.Canvas.disabled = disableCanvas;
       }
-      localStorage.setItem("core.noCanvas", disableCanvas ? "true" : "false");
-      if (game.settings?.settings?.has?.("core.noCanvas")) {
-        await game.settings.set("core", "noCanvas", disableCanvas);
-      }
     } catch {}
     document.body?.classList.add("pf2e-mobile-active");
     injectMobileViewportMeta();
@@ -638,6 +635,21 @@ Hooks.once("init", async () => {
     patchMediaElements();
     ensureSafeCanvasTokens();
     patchUserActiveTokens();
+  } else {
+    // Desktop environment: ensure canvas is NEVER disabled by mobile preferences or previous mobile sessions!
+    try {
+      localStorage.removeItem("core.noCanvas");
+      if (game.settings?.settings?.has?.("core.noCanvas") && game.settings.get("core", "noCanvas")) {
+        await game.settings.set("core", "noCanvas", false);
+      }
+      if (typeof CONFIG !== "undefined" && CONFIG.Canvas) {
+        CONFIG.Canvas.disabled = false;
+      }
+    } catch {}
+    if (typeof document !== "undefined" && document.body) {
+      document.body.classList.remove("pf2e-canvas-disabled");
+      document.body.classList.remove("pf2e-mobile-active");
+    }
   }
 
   // Register the custom mobile character and party sheet with Actors collection (namespaced in v13+)
@@ -769,7 +781,7 @@ export function activateMobileEnvironment() {
   patchUserActiveTokens();
 }
 
-Hooks.once("ready", () => {
+Hooks.once("ready", async () => {
   syncStylesheetState();
 
   if (shouldActivateMobile()) {
@@ -830,6 +842,19 @@ Hooks.once("ready", () => {
     }
   } else {
     console.log("PF2e Mobile Compact | Desktop environment active. Mobile overrides dormant.");
+    try {
+      localStorage.removeItem("core.noCanvas");
+      if (game.settings?.settings?.has?.("core.noCanvas") && game.settings.get("core", "noCanvas")) {
+        await game.settings.set("core", "noCanvas", false);
+      }
+      if (typeof CONFIG !== "undefined" && CONFIG.Canvas) {
+        CONFIG.Canvas.disabled = false;
+      }
+      const board = document.getElementById("board");
+      if (board && board.style.display === "none") {
+        board.style.display = "";
+      }
+    } catch {}
     // A mobile device switched to the desktop view gets a button to switch back (utils/view-mode.js)
     ensureMobileViewButton();
   }

@@ -280,8 +280,8 @@ export function isMobileCanvasDisabled() {
 
 /**
  * Applies the current mobile canvas state.
- * When `disableCanvas` is true, sets Foundry's native `core.noCanvas` setting (and `CONFIG.Canvas.disabled = true`)
- * so Foundry v14 skips `Canvas#initialize()` and texture loading completely.
+ * When `disableCanvas` is true, sets `CONFIG.Canvas.disabled = true` in memory so Foundry v14 skips
+ * `Canvas#initialize()` and texture loading during mobile sessions.
  * When `disableCanvas` is false, allows `Canvas#initialize()` so `canvas.tokens` and PF2e system flanking
  * exist in memory, while still pausing the background PIXI frame loop behind the full-screen mobile sheet
  * to prevent mobile WebKit GPU out-of-memory crashes.
@@ -292,9 +292,6 @@ export function applyMobileCanvasState() {
     CONFIG.Canvas.disabled = disableCanvas;
   }
   ensureSafeCanvasTokens();
-  try {
-    localStorage.setItem("core.noCanvas", disableCanvas ? "true" : "false");
-  } catch {}
   if (typeof document !== "undefined" && document.body) {
     document.body.classList.toggle("pf2e-canvas-disabled", disableCanvas);
   }
@@ -331,7 +328,7 @@ export function applyMobileCanvasState() {
 
 /**
  * Updates and persists the user's mobile canvas disable preference across sessions,
- * synchronizing Foundry's native `core.noCanvas` setting so `Canvas#initialize()` is skipped when disabled.
+ * scoped strictly to pf2e-mobile-compact without polluting Foundry's global core.noCanvas setting.
  * @param {boolean} disabled
  * @returns {Promise<boolean>}
  */
@@ -342,12 +339,6 @@ export async function setMobileCanvasDisabled(disabled) {
   }
   try {
     localStorage.setItem("pf2e-mobile-compact.disableCanvas", nextState ? "true" : "false");
-    localStorage.setItem("core.noCanvas", nextState ? "true" : "false");
-  } catch {}
-  try {
-    if (game?.settings?.settings?.has?.("core.noCanvas")) {
-      await game.settings.set("core", "noCanvas", nextState);
-    }
   } catch {}
   try {
     if (game?.settings?.settings?.has?.("pf2e-mobile-compact.disableCanvas")) {
@@ -360,8 +351,9 @@ export async function setMobileCanvasDisabled(disabled) {
 
 /**
  * Ensures canvas.tokens exists and has safe defaults ({ controlled: [], placeables: [] })
- * to prevent third-party modules (such as pf2e-kingmaker-tools) from throwing TypeErrors
- * when canvas is disabled, uninitialized, or running headless on mobile.
+ * and provides a no-op fallback for canvas.app (ticker, stage) to prevent third-party modules
+ * (such as pf2e-kingmaker-tools, splatter) from throwing TypeErrors when canvas is disabled,
+ * uninitialized, or running headless on mobile.
  */
 export function ensureSafeCanvasTokens() {
   const canvasObj = typeof canvas !== "undefined" ? canvas : null;
@@ -392,6 +384,39 @@ export function ensureSafeCanvasTokens() {
       }
       if (!Array.isArray(canvasObj.tokens.placeables)) {
         try { canvasObj.tokens.placeables = []; } catch {}
+      }
+    }
+
+    if (!canvasObj.app) {
+      const mockApp = {
+        ticker: {
+          add: () => {},
+          remove: () => {},
+          start: () => {},
+          stop: () => {},
+          started: false,
+          maxFPS: 15
+        },
+        stage: {
+          renderable: false,
+          interactiveChildren: false,
+          children: []
+        },
+        renderer: {
+          resolution: 1
+        }
+      };
+      try {
+        canvasObj.app = mockApp;
+      } catch {
+        try {
+          Object.defineProperty(canvasObj, "app", {
+            get() { return this._safeAppShim ??= mockApp; },
+            set(v) { this._safeAppShim = v; },
+            configurable: true,
+            enumerable: true
+          });
+        } catch {}
       }
     }
   }

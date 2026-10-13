@@ -1220,6 +1220,7 @@ try {
   await setMobileCanvasDisabled(true);
   const afterDisable = isMobileCanvasDisabled();
   const configDisabledWhenTrue = globalThis.CONFIG.Canvas.disabled;
+  const noCanvasPolluted = mockStorage.has("core.noCanvas");
   await setMobileCanvasDisabled(false);
   const afterReEnable = isMobileCanvasDisabled();
   const configDisabledWhenFalse = globalThis.CONFIG.Canvas.disabled;
@@ -1227,12 +1228,29 @@ try {
     defaultCanvasDisabled !== false ||
     afterDisable !== true ||
     configDisabledWhenTrue !== true ||
+    noCanvasPolluted ||
     afterReEnable !== false ||
     configDisabledWhenFalse !== false
   ) {
-    logFail(`[Issue #16 Canvas Toggle] Expected default=false, afterDisable=true (CONFIG.Canvas.disabled=true), afterReEnable=false; got ${defaultCanvasDisabled}, ${afterDisable} (${configDisabledWhenTrue}), ${afterReEnable} (${configDisabledWhenFalse})`);
+    logFail(`[Issue #16 Canvas Toggle] Expected default=false, afterDisable=true (CONFIG.Canvas.disabled=true, no core.noCanvas), afterReEnable=false; got ${defaultCanvasDisabled}, ${afterDisable} (${configDisabledWhenTrue}, polluted=${noCanvasPolluted}), ${afterReEnable} (${configDisabledWhenFalse})`);
   } else {
-    logPass("[Issue #16 Canvas Toggle] Canvas is enabled by default (disableCanvas=false), sets CONFIG.Canvas.disabled=true when disabled, and persists user toggle state across sessions.");
+    logPass("[Issue #16 Canvas Toggle] Canvas is enabled by default (disableCanvas=false), sets CONFIG.Canvas.disabled=true when disabled without polluting core.noCanvas, and persists user toggle state across sessions.");
+  }
+
+  // 4b. ensureSafeCanvasTokens Fallback (app.ticker, stage, tokens)
+  const { ensureSafeCanvasTokens } = await import("./utils/sheet-utils.js");
+  globalThis.canvas = {};
+  ensureSafeCanvasTokens();
+  if (
+    !globalThis.canvas.tokens ||
+    !Array.isArray(globalThis.canvas.tokens.controlled) ||
+    !globalThis.canvas.app ||
+    typeof globalThis.canvas.app.ticker?.add !== "function" ||
+    !globalThis.canvas.app.stage
+  ) {
+    logFail("[Safe Canvas Tokens & App Shim] Failed: canvas.tokens or canvas.app.ticker shim missing");
+  } else {
+    logPass("[Safe Canvas Tokens & App Shim] canvas.tokens safe arrays and canvas.app.ticker no-op shims created for headless/no-canvas mode.");
   }
 
   // 7. Headless No-Canvas TokenDocument.prototype.object Getter & Non-Recursive distanceTo Guard
@@ -1349,6 +1367,7 @@ try {
     isToken: false
   });
   const worldMatchedDocs = worldActor.getActiveTokens(true, true);
+  const worldMatchedAdapters = worldActor.getActiveTokens(true, false);
 
   // Test 8C: Re-entrancy guard
   let reentrancyResult = null;
@@ -1373,10 +1392,11 @@ try {
     synthLinkedDocs?.length !== 0 ||
     dangerousGetterAccessed ||
     worldMatchedDocs?.[0] !== matchingWorldDoc ||
+    worldMatchedAdapters?.length !== 1 ||
     !Array.isArray(reentrancyResult) ||
     reentrancyResult.length !== 0
   ) {
-    logFail(`[Headless getActiveTokens Recursion Guard] Failed: synthDocs=${synthActiveDocs?.length}, synthLinked=${synthLinkedDocs?.length}, dangerousAccessed=${dangerousGetterAccessed}, matchedDocs=${worldMatchedDocs?.length}, reentrancyResult=${JSON.stringify(reentrancyResult)}`);
+    logFail(`[Headless getActiveTokens Recursion Guard] Failed: synthDocs=${synthActiveDocs?.length}, synthLinked=${synthLinkedDocs?.length}, dangerousAccessed=${dangerousGetterAccessed}, matchedDocs=${worldMatchedDocs?.length}, matchedAdapters=${worldMatchedAdapters?.length}, reentrancyResult=${JSON.stringify(reentrancyResult)}`);
   } else {
     logPass("[Headless getActiveTokens Recursion Guard] Synthetic actors resolve their own token without scanning, unlinked tokens never evaluate dangerous actor getters, and re-entrancy is blocked.");
   }

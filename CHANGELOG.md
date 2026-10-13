@@ -6,9 +6,17 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [1.0.32] - 2026-10-13
 
-### Headless Token Resolution & Infinite Recursion Fix (`scripts/pf2e-mobile.js`, `scripts/tokens/token-adapter.js`, `scripts/verify.mjs`)
+### Headless Token Resolution, Desktop Canvas Restoration & Safe App Shims (`scripts/pf2e-mobile.js`, `scripts/tokens/token-adapter.js`, `scripts/utils/sheet-utils.js`, `scripts/utils/view-mode.js`, `scripts/verify.mjs`)
 
 #### Fixed
+- **Fixed Missing Import `getTargetableToken` in `scripts/pf2e-mobile.js`**:
+  - Resolved `ReferenceError: getTargetableToken is not defined` occurring at `pf2e-mobile.js:490` when `Actor.prototype.getActiveTokens(linked, false)` maps token documents to headless adapters.
+- **Fixed Desktop Canvas Lockout & `core.noCanvas` Contamination**:
+  - Resolved black screen (`#board` display: none) and `The Scene is now viewed but is not displayed because the game Canvas is disabled` on desktop view.
+  - Eliminated all module writes to Foundry's global `core.noCanvas` setting and `localStorage`, keeping mobile canvas battery optimization scoped strictly to `pf2e-mobile-compact.disableCanvas` and in-memory `CONFIG.Canvas.disabled`.
+  - Added desktop mode safety & cleanup in `init`, `ready`, and `view-mode.js` (`setMobileViewEnabled(false)`): actively removes `core.noCanvas` from `localStorage` and `game.settings`, resets `CONFIG.Canvas.disabled = false`, and restores `#board` display.
+- **Added Safe Fallback Stub for `canvas.app.ticker` in `ensureSafeCanvasTokens`**:
+  - Prevented third-party modules (such as `splatter`) from crashing during the `ready` hook (`Cannot read properties of undefined (reading 'ticker')`) when running in headless or canvas-disabled mode.
 - **Fixed Infinite Recursion in Headless `Actor.prototype.getActiveTokens`**:
   - Resolved `InternalError: too much recursion` occurring when PF2e initialises synthetic actors (e.g. unlinked NPCs during scene loading or `prepareBaseData`) while canvas is disabled or headless.
   - Previous fallback implementation iterated over `scene.tokens` evaluating `t.actor?.id === this.id`. Accessing `tokenDoc.actor` on unlinked tokens invoked Foundry's `actor` getter (`ActorDelta._createSyntheticActor()`), triggering `prepareData()` and re-entering `getActiveTokens()` recursively.
