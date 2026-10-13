@@ -1555,13 +1555,16 @@ try {
   if (
     !hHeroDoc.object ||
     !hEnemyDoc.object ||
+    typeof hHeroDoc.object.control !== "function" ||
+    typeof hHeroDoc.object.release !== "function" ||
+    typeof hHeroDoc.object.panCanvas !== "function" ||
     typeof hHeroDoc.object.isFlanking !== "function" ||
     hHeroDoc.object.isFlanking(hEnemyDoc.object, { reach: 5 }) !== true ||
     elapsedMs > 50
   ) {
-    logFail(`[Issue #16 Headless Adapter & Performance] Failed: hHeroDoc.object=${Boolean(hHeroDoc.object)}, isFlanking=${hHeroDoc.object?.isFlanking?.(hEnemyDoc.object, { reach: 5 })}, 200x distanceTo=${elapsedMs.toFixed(2)}ms`);
+    logFail(`[Issue #16 Headless Adapter & Performance] Failed: hHeroDoc.object=${Boolean(hHeroDoc.object)}, control=${typeof hHeroDoc.object?.control}, isFlanking=${hHeroDoc.object?.isFlanking?.(hEnemyDoc.object, { reach: 5 })}, 200x distanceTo=${elapsedMs.toFixed(2)}ms`);
   } else {
-    logPass(`[Issue #16 Headless Adapter & Performance] Getter-only TokenDocument.object overridden via Object.defineProperty, headless isFlanking=true, and 200x distanceTo ran in ${elapsedMs.toFixed(2)}ms.`);
+    logPass(`[Issue #16 Headless Adapter & Performance] Getter-only TokenDocument.object overridden via Object.defineProperty, headless control/release/panCanvas present, headless isFlanking=true, and 200x distanceTo ran in ${elapsedMs.toFixed(2)}ms.`);
   }
 
   // 8. Headless Actor.prototype.getActiveTokens Recursion Guard & Synthetic Actor Test

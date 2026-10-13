@@ -707,6 +707,20 @@ export function getTargetableToken(tokenId) {
       Hooks?.callAll?.("targetToken", user, this, state);
     },
 
+    // Control & Placeable state stubs for canvas initialization
+    controlled: false,
+    control(options = {}) {
+      this.controlled = true;
+      return true;
+    },
+    release(options = {}) {
+      this.controlled = false;
+      return true;
+    },
+    panCanvas() {
+      return Promise.resolve();
+    },
+
     // PIXI Container compatibility stubs for UI modules in headless mobile mode
     children: [],
     addChild(...children) {

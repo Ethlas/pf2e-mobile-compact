@@ -4,6 +4,16 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.36] - 2026-10-13
+
+### Headless Token Adapter Control & Pan Stubs (`scripts/tokens/token-adapter.js`, `scripts/verify.mjs`)
+
+- **Fixed `token.control is not a function` in `#initializeTokenControl`**:
+  - Resolved `TypeError: token.control is not a function` at `foundry.mjs:117714` occurring when Foundry's canvas controller iterates active tokens during scene loading.
+  - Added `control()`, `release()`, and `panCanvas()` stubs on headless token adapters in `scripts/tokens/token-adapter.js`.
+
+---
+
 ## [1.0.35] - 2026-10-13
 
 ### Quadtree Method Stubs & Interface Canvas Group Compatibility (`scripts/utils/sheet-utils.js`, `scripts/verify.mjs`)
