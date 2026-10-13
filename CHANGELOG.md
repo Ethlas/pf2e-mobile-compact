@@ -8,7 +8,13 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ### Headless Token Resolution, Desktop Canvas Restoration & Safe App Shims (`scripts/pf2e-mobile.js`, `scripts/tokens/token-adapter.js`, `scripts/utils/sheet-utils.js`, `scripts/utils/view-mode.js`, `scripts/verify.mjs`)
 
-#### Fixed
+- **Fixed `this.layer.createObject is not a function` in Headless Token Synchronization**:
+  - Resolved `Uncaught (in promise) TypeError: this.layer.createObject is not a function` occurring when `syncSceneTokenPositions()` or `ensureTokenControlled()` evaluated `doc.object` while canvas was headless or layer factories were uninitialized.
+  - Added `getSafeTokenObject(tokenDoc)` in `scripts/tokens/token-adapter.js` to safely resolve placeables without triggering unhandled layer errors.
+  - Provided `createObject: () => null` and `recalculatePlannedMovementPaths: () => {}` fallbacks on `canvas.tokens` in `ensureSafeCanvasTokens()`.
+  - Added a defensive error wrapper on `TokenDocument.prototype.object` in `patchUserActiveTokens()`, safely returning `this._object ?? null` if native layer creation fails.
+- **Fixed Floating Launcher Button (`#pf2e-mobile-fab`) Overlapping Bottom Sheet Navigation**:
+  - Added declarative rule `body:has(.pf2e-mobile-sheet) #pf2e-mobile-fab { display: none !important; }` in `styles/pf2e-mobile.css` so the floating orange launcher button is unconditionally hidden while the mobile sheet is in the DOM, preventing it from obscuring the bottom "Chat" tab even during asynchronous render cycles.
 - **Fixed Missing Import `getTargetableToken` in `scripts/pf2e-mobile.js`**:
   - Resolved `ReferenceError: getTargetableToken is not defined` occurring at `pf2e-mobile.js:490` when `Actor.prototype.getActiveTokens(linked, false)` maps token documents to headless adapters.
 - **Fixed Desktop Canvas Lockout & `core.noCanvas` Contamination**:

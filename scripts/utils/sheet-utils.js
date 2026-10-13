@@ -364,7 +364,9 @@ export function ensureSafeCanvasTokens() {
         placeables: [],
         get: () => null,
         releaseAll: () => {},
-        select: () => {}
+        select: () => {},
+        createObject: () => null,
+        recalculatePlannedMovementPaths: () => {}
       };
       try {
         canvasObj.tokens = mockTokens;
@@ -384,6 +386,12 @@ export function ensureSafeCanvasTokens() {
       }
       if (!Array.isArray(canvasObj.tokens.placeables)) {
         try { canvasObj.tokens.placeables = []; } catch {}
+      }
+      if (typeof canvasObj.tokens.createObject !== "function") {
+        try { canvasObj.tokens.createObject = () => null; } catch {}
+      }
+      if (typeof canvasObj.tokens.recalculatePlannedMovementPaths !== "function") {
+        try { canvasObj.tokens.recalculatePlannedMovementPaths = () => {}; } catch {}
       }
     }
 
@@ -429,9 +437,18 @@ export function ensureSafeCanvasTokens() {
           placeables: [],
           get: () => null,
           releaseAll: () => {},
-          select: () => {}
+          select: () => {},
+          createObject: () => null,
+          recalculatePlannedMovementPaths: () => {}
         };
       } catch {}
+    } else {
+      if (typeof game.canvas.tokens.createObject !== "function") {
+        try { game.canvas.tokens.createObject = () => null; } catch {}
+      }
+      if (typeof game.canvas.tokens.recalculatePlannedMovementPaths !== "function") {
+        try { game.canvas.tokens.recalculatePlannedMovementPaths = () => {}; } catch {}
+      }
     }
   }
 }

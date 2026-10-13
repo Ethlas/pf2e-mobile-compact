@@ -1244,13 +1244,48 @@ try {
   if (
     !globalThis.canvas.tokens ||
     !Array.isArray(globalThis.canvas.tokens.controlled) ||
+    typeof globalThis.canvas.tokens.createObject !== "function" ||
+    typeof globalThis.canvas.tokens.recalculatePlannedMovementPaths !== "function" ||
     !globalThis.canvas.app ||
     typeof globalThis.canvas.app.ticker?.add !== "function" ||
     !globalThis.canvas.app.stage
   ) {
     logFail("[Safe Canvas Tokens & App Shim] Failed: canvas.tokens or canvas.app.ticker shim missing");
   } else {
-    logPass("[Safe Canvas Tokens & App Shim] canvas.tokens safe arrays and canvas.app.ticker no-op shims created for headless/no-canvas mode.");
+    logPass("[Safe Canvas Tokens & App Shim] canvas.tokens safe arrays, createObject/recalculatePlannedMovementPaths, and canvas.app.ticker no-op shims created for headless/no-canvas mode.");
+  }
+
+  // 4c. Safe Token Placeable Resolution (Guards against 'this.layer.createObject is not a function')
+  const { getSafeTokenObject } = await import("./tokens/token-adapter.js");
+  class MockThrowingGetterTokenDoc {
+    constructor() {
+      this._source = { x: 50, y: 50 };
+      this.x = 0;
+      this.y = 0;
+    }
+    get object() {
+      throw new TypeError("this.layer.createObject is not a function");
+    }
+  }
+  const throwingDoc = new MockThrowingGetterTokenDoc();
+  let threwInGetSafe = false;
+  let safeObjResult = undefined;
+  try {
+    safeObjResult = getSafeTokenObject(throwingDoc);
+  } catch {
+    threwInGetSafe = true;
+  }
+  let threwInSync = false;
+  try {
+    syncTokenPosition(throwingDoc);
+  } catch {
+    threwInSync = true;
+  }
+
+  if (threwInGetSafe || safeObjResult !== null || threwInSync) {
+    logFail(`[Safe Token Placeable Resolution] Failed: threwInGetSafe=${threwInGetSafe}, result=${safeObjResult}, threwInSync=${threwInSync}`);
+  } else {
+    logPass("[Safe Token Placeable Resolution] getSafeTokenObject and syncTokenPosition safely catch throwing 'this.layer.createObject' getters without crashing.");
   }
 
   // 7. Headless No-Canvas TokenDocument.prototype.object Getter & Non-Recursive distanceTo Guard

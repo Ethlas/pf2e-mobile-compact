@@ -502,6 +502,26 @@ export function patchUserActiveTokens() {
     };
     ActorClass.prototype._pf2eMobileActiveTokensPatched = true;
   }
+
+  const TokenDocumentClass = CONFIG.Token?.documentClass ?? (typeof TokenDocument !== "undefined" ? TokenDocument : null);
+  if (TokenDocumentClass?.prototype && !TokenDocumentClass.prototype._pf2eMobileObjectSafePatched) {
+    const origObjectDescriptor = Object.getOwnPropertyDescriptor(TokenDocumentClass.prototype, "object");
+    if (origObjectDescriptor?.get) {
+      const origGet = origObjectDescriptor.get;
+      Object.defineProperty(TokenDocumentClass.prototype, "object", {
+        get() {
+          try {
+            return origGet.call(this);
+          } catch {
+            return this._object ?? null;
+          }
+        },
+        configurable: true,
+        enumerable: true
+      });
+      TokenDocumentClass.prototype._pf2eMobileObjectSafePatched = true;
+    }
+  }
 }
 
 /**
