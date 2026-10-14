@@ -19,7 +19,7 @@
     <span class="character-item-level m-shrink-0 m-text-sm m-color-soft">{{entry.level}}</span>
     {{/if}}
     <span class="action-name m-flex-col m-flex-auto m-min-w-0 m-truncate">
-      <span class="character-item-name">{{#if isChild}}{{entry.name}}{{else}}<strong>{{entry.name}}</strong>{{/if}}{{#if entry.badge}} {{entry.badge}}{{/if}}</span>
+      <span class="character-item-name m-truncate">{{#if isChild}}{{entry.name}}{{else}}<strong>{{entry.name}}</strong>{{/if}}{{#if entry.badge}} {{entry.badge}}{{/if}}</span>
       {{#if entry.remaining}}<span class="m-text-sm m-color-dim">{{entry.remaining}}</span>{{/if}}
     </span>
   </div>
