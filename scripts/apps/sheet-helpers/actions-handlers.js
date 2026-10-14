@@ -368,15 +368,20 @@ export async function onRollActionCheck(sheet, event, target) {
   const actionSlug = target.dataset.actionSlug;
   const item = sheet.actor.items.get(itemId);
   const label = item?.name ?? actionSlug;
+  const systemAction = game.pf2e?.actions?.get?.(actionSlug) ?? game.pf2e?.actions?.[actionSlug];
 
-  // 1. Resolve target: check active target or prompt user
+  // 1. Resolve target: check active target or prompt user. Downtime activities (Earn Income, Craft, Subsist, ...)
+  //    never aim at a creature, so they skip this.
   let targetToken = null;
-  const currentTarget = Array.from(game.user?.targets ?? []).find(t => t.id);
-  if (currentTarget) {
-    targetToken = getTargetableToken(currentTarget.id) ?? currentTarget;
-  } else {
-    targetToken = await resolveTargetForAction(sheet, label);
-    if (targetToken === false) return; // User cancelled prompt
+  const traits = [...(item?.system?.traits?.value ?? []), ...(systemAction?.traits ?? [])];
+  if (!traits.includes("downtime")) {
+    const currentTarget = Array.from(game.user?.targets ?? []).find(t => t.id);
+    if (currentTarget) {
+      targetToken = getTargetableToken(currentTarget.id) ?? currentTarget;
+    } else {
+      targetToken = await resolveTargetForAction(sheet, label);
+      if (targetToken === false) return; // User cancelled prompt
+    }
   }
 
   // Ensure origin token adapter is initialized
@@ -388,7 +393,6 @@ export async function onRollActionCheck(sheet, event, target) {
     actor: sheet.actor
   }, async () => {
     // 2. PF2e System Action Registry (e.g. Demoralize, Trip, Grapple, Disarm, Feint, Administer First Aid, etc.)
-    const systemAction = game.pf2e?.actions?.get?.(actionSlug) ?? game.pf2e?.actions?.[actionSlug];
     if (systemAction) {
       const useOptions = {
         actors: [sheet.actor],
