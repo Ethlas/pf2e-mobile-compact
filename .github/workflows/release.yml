@@ -1,0 +1,99 @@
+name: Package & Release Module
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag (e.g. v1.0.37). Leave empty to use version from module.json"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Package Foundry VTT Module & Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run verification test suite
+        run: node scripts/verify.mjs
+
+      - name: Determine version and release tag
+        id: get_version
+        run: |
+          if [ -n "${{ github.event.inputs.tag_name }}" ]; then
+            TAG="${{ github.event.inputs.tag_name }}"
+            VERSION="${TAG#v}"
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${{ github.ref_name }}"
+            VERSION="${TAG#v}"
+          else
+            VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('module.json', 'utf8')).version)")
+            TAG="v${VERSION}"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Releasing version ${VERSION} with tag ${TAG}"
+
+      - name: Stage clean module package
+        run: |
+          mkdir -p dist/package
+
+          # Whitelist runtime assets only (Foundry VTT Packaging Guide compliant)
+          cp module.json README.md dist/package/
+          cp -r styles dist/package/
+          cp -r templates dist/package/
+          cp -r scripts dist/package/
+
+          # Remove verification tests, versioning scripts, and dev tooling from release bundle
+          rm -f dist/package/scripts/verify.mjs
+          rm -f dist/package/scripts/bump-version.mjs
+
+          # Update version and tag-specific download URL in the release manifest
+          node -e "
+            const fs = require('fs');
+            const mod = JSON.parse(fs.readFileSync('dist/package/module.json', 'utf8'));
+            mod.version = '${{ steps.get_version.outputs.version }}';
+            mod.download = 'https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.tag }}/module.zip';
+            mod.manifest = 'https://github.com/${{ github.repository }}/releases/latest/download/module.json';
+            fs.writeFileSync('dist/package/module.json', JSON.stringify(mod, null, 2) + '\n');
+          "
+
+          # Export standalone release manifest alongside zip
+          cp dist/package/module.json dist/module.json
+
+          # Create root-level module.zip archive
+          cd dist/package
+          zip -r ../module.zip .
+          cd ../..
+
+      - name: Inspect packaged zip contents
+        run: |
+          echo "=== Archive contents of module.zip ==="
+          unzip -l dist/module.zip
+
+      - name: Publish GitHub Release & Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/module.zip
+            dist/module.json
+          name: Release ${{ steps.get_version.outputs.tag }}
+          tag_name: ${{ steps.get_version.outputs.tag }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

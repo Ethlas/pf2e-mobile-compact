@@ -69,14 +69,19 @@ Welcome to the **PF2e Mobile Sheet (Compact)** repository (`pf2e-mobile-compact`
 
 1. **Syntax & Quality Checks**:
    - Run `node scripts/verify.mjs` before pushing changes or deploying to verify JavaScript syntax, template rules, and touch targets.
-2. **Deployment**:
+2. **Semantic Versioning & Releases**:
+   - Use the `version-manager` skill ([`.agents/skills/version-manager/SKILL.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/.agents/skills/version-manager/SKILL.md)) or `node scripts/bump-version.mjs <type>`:
+     - **Bug Fix**: update 3rd number (e.g. `1.0.36` -> `1.0.37`).
+     - **Feature**: update middle number and reset 3rd number to 0 (e.g. `1.0.36` -> `1.1.0`).
+     - **Full New Version**: update 1st number and reset middle and 3rd numbers to 0 (e.g. `1.0.36` -> `2.0.0`).
+   - Document changes in [`CHANGELOG.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/CHANGELOG.md).
+   - Packaging and GitHub Releases are automated via [`.github/workflows/release.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/release.yml) upon pushing a `v*` tag.
+3. **Deployment**:
    - Run `.\deploy.ps1` to sync to the remote Foundry server (`$env:FOUNDRY_DEPLOY_SERVER`) only when explicitly authorized by the user for deployment.
-3. **Approval & Documentation Integrity**:
+4. **Approval & Documentation Integrity**:
    - **NEVER commit or push to Git/GitHub without explicit user approval.**
    - **NEVER deploy without explicit user approval.**
    - Never commit or store plaintext passwords in repository files or skill runbooks.
-   - For every feature milestone, bug fix, or breaking change, document the change under the corresponding version in [`CHANGELOG.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/CHANGELOG.md).
-   - Bump version in [`module.json`](file:///d:/Dnd/coding/pf2e-mobile-compact/module.json) when releasing new milestone versions.
 
 ---
 
