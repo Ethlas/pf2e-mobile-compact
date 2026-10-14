@@ -557,6 +557,12 @@ body.pf2e-mobile-active select,
 body.pf2e-mobile-active textarea {
   font-size: 16px !important;
 }
+/* Dropdowns of windows outside this module (pf2e's roll dialog, for instance) are sized for smaller text, 24px high;
+   WebKit cuts off the bottom of the 16px text above instead of centering it, so they grow to fit their text */
+body.pf2e-mobile-active select:not(:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .m-dialog) *) {
+  height: auto;
+  min-height: var(--input-height, 24px);
+}
 .pf2e-mobile-sheet button:active {
   background: var(--m-surface-5);
 }

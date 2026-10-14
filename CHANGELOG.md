@@ -9,6 +9,7 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 ### Fixes from a WebKit (iPhone) against Chromium (Android) walkthrough
 
 - **Header dropdowns draw their own arrow** (`styles/pf2e-mobile.css`): WebKit's native dropdown arrow is much wider than Chromium's, so on an iPhone the perception/initiative dropdown showed only "👁️ ..." instead of "👁️ +12". The three header dropdowns (character, target, perception) now use `appearance: none` with a small arrow drawn by two gradients in the text colour, so they look the same in every browser and keep room for their text.
+- **Dropdowns in other windows fit their text** (`styles/pf2e-mobile.css`): the rule against iOS focus zoom gives every input and dropdown 16px text, also in windows of pf2e and Foundry whose dropdowns are 24px high. WebKit cut off the bottom of the text there (the "Roll Visibility" dropdown of the roll dialog, for instance) where Chromium centers it. Dropdowns outside the sheet now have `height: auto` with the old height as minimum.
 
 ---
 
