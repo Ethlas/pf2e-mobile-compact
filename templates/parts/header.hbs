@@ -123,23 +123,23 @@
       <input type="text" class="hp-delta-input header-item m-compact m-bold" data-change-action="applyDeltaHP" placeholder="±Amt" title="Enter heal amount or -damage (e.g. 5 to heal, -5 for damage)" aria-label="HP Delta" />
     </div>
 
-    <!-- Current & Max HP with Direct Edit -->
-    <div class="hp-direct-group header-item hp-{{hp.state}} m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0">
+    <!-- Current & Max HP with Direct Edit. A label, so a tap anywhere on the pill focuses the (smaller) input -->
+    <label class="hp-direct-group header-item hp-{{hp.state}} m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0">
       <span class="hp-label m-text-sm m-bold m-color-success">HP</span>
       <div class="m-flex-row m-align-center m-gap-2">
         <input type="text" class="hp-current-input m-pill-input m-bold" data-change-action="setDirectHP" value="{{hp.value}}" title="Current HP (type number to set, or +/- to change)" aria-label="Current HP" />
         <span class="hp-slash m-text-xl m-bold m-color-faint">/</span>
         <span class="hp-max-value m-text-full m-bold m-color-soft" title="Max HP">{{hp.max}}</span>
       </div>
-    </div>
+    </label>
 
-    <!-- Temp HP with Direct Edit -->
-    <div class="temp-hp-direct-group header-item m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0">
+    <!-- Temp HP with Direct Edit, a label like the HP pill -->
+    <label class="temp-hp-direct-group header-item m-compact m-flex-row m-align-center m-justify-center m-gap-4 m-min-w-0">
       <span class="temp-hp-label m-text-sm m-bold">TEMP</span>
       <div class="m-flex-row m-align-center">
         <input type="text" class="temp-hp-current-input m-pill-input m-bold" data-change-action="setDirectTempHP" value="{{hp.temp}}" title="Temp HP (type number to set, or +/- to change)" aria-label="Temporary HP" />
       </div>
-    </div>
+    </label>
 
     {{#if shield.hp.max}}
     <div class="shield-badge-group m-flex-row m-align-center">
