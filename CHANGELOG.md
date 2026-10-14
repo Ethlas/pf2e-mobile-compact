@@ -10,6 +10,9 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 - **Header dropdowns draw their own arrow** (`styles/pf2e-mobile.css`): WebKit's native dropdown arrow is much wider than Chromium's, so on an iPhone the perception/initiative dropdown showed only "👁️ ..." instead of "👁️ +12". The three header dropdowns (character, target, perception) now use `appearance: none` with a small arrow drawn by two gradients in the text colour, so they look the same in every browser and keep room for their text.
 - **Dropdowns in other windows fit their text** (`styles/pf2e-mobile.css`): the rule against iOS focus zoom gives every input and dropdown 16px text, also in windows of pf2e and Foundry whose dropdowns are 24px high. WebKit cut off the bottom of the text there (the "Roll Visibility" dropdown of the roll dialog, for instance) where Chromium centers it. Dropdowns outside the sheet now have `height: auto` with the old height as minimum.
+- **No more errors when picking a target** (`scripts/utils/sheet-utils.js`, `scripts/tokens/token-adapter.js`): every target change logged `Error thrown in hooked function '' for hook 'targetToken'` (`flankingHighlight.draw`) twice.
+  - With the canvas paused, `canvas.tokens` is the safe stand-in layer, which answers unknown properties with a no-op function. `highlightObjects`, a true/false flag on the real token layer, therefore read as true, and pf2e's `targetToken` hook tried to draw a flanking highlight on the headless token of the sheet's character, which has none. The stand-in layer now has `highlightObjects: false`.
+  - Foundry v14's `UserTargets.add()` and `delete()` call the `targetToken` hook themselves; `setTargetTokens()` and the headless token's `setTarget()` called it again after them, so every listener ran twice per change. Those extra calls are removed.
 
 ---
 
