@@ -52,7 +52,7 @@ jobs:
           mkdir -p dist/package
 
           # Whitelist runtime assets only (Foundry VTT Packaging Guide compliant)
-          cp module.json README.md dist/package/
+          cp module.json README.md LICENSE dist/package/
           cp -r styles dist/package/
           cp -r templates dist/package/
           cp -r scripts dist/package/

@@ -248,4 +248,4 @@ Enhance your mobile in-person tabletop experience with these companion modules:
 
 - **Author**: Ethlas & Vincent Zorge
 - **System**: Pathfinder Second Edition is a trademark of Paizo Inc.
-- **License**: Released under standard community software license. This module strictly complies with the Foundry VTT AI Content Policy (zero bundled AI media, zero scraped third-party rules text, 100% human-maintained modular architecture).
+- **License**: Released under the [MIT License](LICENSE). This module strictly complies with the Foundry VTT AI Content Policy (zero bundled AI media, zero scraped third-party rules text, 100% human-maintained modular architecture).
