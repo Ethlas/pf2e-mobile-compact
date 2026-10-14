@@ -64,6 +64,10 @@
             <i class="fas {{#if canvasDisabled}}fa-eye-slash{{else}}fa-map{{/if}}"></i>
           </button>
 
+          <button type="button" class="header-btn header-item-button m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal {{#unless audioMuted}}active{{/unless}}" data-action="toggleAudioMode" title="{{#if audioMuted}}Audio Muted (Tap to Enable Audio){{else}}Audio Enabled (Tap to Mute Audio){{/if}}" aria-label="Toggle Audio">
+            <i class="fas {{#if audioMuted}}fa-volume-xmark{{else}}fa-volume-high{{/if}}"></i>
+          </button>
+
           {{#if isPhysicalDiceActive}}
           <button type="button" class="header-btn header-item-button m-compact m-flex-row m-align-center m-justify-center m-shrink-0 m-text-xl m-color-normal" data-action="toggleEntryMethod" title="{{#if isChatEntryMethod}}Manual Dice Entry: In-Chat (Tap to switch to Popup Dialog){{else}}Manual Dice Entry: Popup Dialog (Tap to switch to In-Chat){{/if}}" aria-label="Toggle Manual Dice Entry Method">
             <i class="fas {{#if isChatEntryMethod}}fa-comment-dots{{else}}fa-window-restore{{/if}}"></i>

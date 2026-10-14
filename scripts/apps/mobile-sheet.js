@@ -45,7 +45,7 @@ import { onChangeCarryType } from "./sheet-helpers/carry-type.js";
 import { onSwitchSpellSubTab, onToggleRankGroup, onOpenSpellPrepPicker, prepareSlot, onUnprepareSlot, onToggleSlotExpended, onResetDailySpells, onSaveSpellPreset, onApplySpellPreset, onDeleteSpellPreset, onOpenCompendiumPicker, onAdjustSlot, onAdjustFocus, onCastSpell, onRollSpellDamage, onToggleSignatureSpell, onRemoveSpell } from "./sheet-helpers/spells-handlers.js";
 import { onMoveSpellEntry } from "./sheet-helpers/spell-entry-order-handlers.js";
 import { onCastStaffSpell, onAdjustStaffCharges, onCastItemSpell, onOpenDailies } from "./sheet-helpers/activations-handlers.js";
-import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleEntryMethod, onToggleHeaderMenu, onToggleCanvasMode, onToggleFullscreen, onSwitchToDesktopView, onSwitchActor } from "./sheet-helpers/header-handlers.js";
+import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleEntryMethod, onToggleHeaderMenu, onToggleCanvasMode, onToggleAudioMode, onToggleFullscreen, onSwitchToDesktopView, onSwitchActor } from "./sheet-helpers/header-handlers.js";
 import { disableChatInputs, dockChatElement, restoreChatElement, scrollChatToBottom, setupScrollBottomListener, registerChatListener, unregisterChatListener, updateChatBadge } from "./sheet-helpers/chat-handler.js";
 
 /**
@@ -90,6 +90,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       toggleItemDescription: PF2eMobileSheet._onToggleItemDescription,
       setRollOption: PF2eMobileSheet._onSetRollOption,
       toggleCanvasMode: PF2eMobileSheet._onToggleCanvasMode,
+      toggleAudioMode: PF2eMobileSheet._onToggleAudioMode,
       switchTab: PF2eMobileSheet._onSwitchTab,
       scrollChatToBottom: PF2eMobileSheet._onScrollChatToBottom,
       openCompendiumPicker: PF2eMobileSheet._onOpenCompendiumPicker,
@@ -278,9 +279,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     if (chatMount && chatEl && chatMount.contains(chatEl)) {
       this._tempChatFragment.appendChild(chatEl);
     }
-
     super._replaceHTML(result, content, options);
-
     const newChatMount = (result instanceof HTMLElement ? result.querySelector?.(".mobile-chat-mount") : null)
       ?? this.element?.querySelector?.(".mobile-chat-mount");
     if (newChatMount && chatEl) {
@@ -570,6 +569,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onToggleItemDescription(event, target) { return onToggleItemDescription(this, event, target); }
   static async _onSetRollOption(event, target) { return onSetRollOption(this, event, target); }
   static async _onToggleCanvasMode(event, target) { return onToggleCanvasMode(this, event, target); }
+  static async _onToggleAudioMode(event, target) { return onToggleAudioMode(this, event, target); }
   static async _onToggleFullscreen(event, target) { return onToggleFullscreen(this, event, target); }
   static async _onSwitchToDesktopView() { return onSwitchToDesktopView(this); }
   static async _onScrollChatToBottom() { this._scrollChatToBottom(true); }

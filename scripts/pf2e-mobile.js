@@ -6,8 +6,9 @@ import { isMobileDevice, isIOSDevice, getStoredRollMode, ensureSafeCanvasTokens 
 import { migrateActorPropertyRunes } from "./apps/sheet-helpers/rune-handlers.js";
 import { ensureMobileViewButton } from "./utils/view-mode.js";
 import { getTargetableToken } from "./tokens/token-adapter.js";
+import { isMobileAudioDisabled, setMobileAudioDisabled, applyMobileAudioSuppression, restoreMobileAudioPlayback, patchAudioMethods } from "./audio/mobile-audio.js";
 
-export { isMobileDevice, isIOSDevice };
+export { isMobileDevice, isIOSDevice, isMobileAudioDisabled, setMobileAudioDisabled };
 
 /**
  * Evaluates whether mobile mode should activate for the current client session,
@@ -649,6 +650,34 @@ Hooks.once("init", async () => {
       }
     }
   });
+  // Client Setting: Mute Audio on Mobile (Battery Saver option, defaults to true)
+  let initialMuteAudio = true;
+  try {
+    const stored = localStorage.getItem("pf2e-mobile-compact.muteAudioMobile");
+    if (stored === "true") initialMuteAudio = true;
+    else if (stored === "false") initialMuteAudio = false;
+  } catch {}
+  game.settings.register("pf2e-mobile-compact", "muteAudioMobile", {
+    name: "Mute Audio on Mobile (Battery Saver)",
+    hint: "Suppresses playlists, ambient audio, and sound effects on mobile devices to save battery and prevent unexpected playback during in-person play. Desktop sessions remain unaffected.",
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: initialMuteAudio,
+    onChange: (val) => {
+      try {
+        localStorage.setItem("pf2e-mobile-compact.muteAudioMobile", val ? "true" : "false");
+      } catch {}
+      if (shouldActivateMobile()) {
+        if (val) {
+          applyMobileAudioSuppression();
+        } else {
+          restoreMobileAudioPlayback();
+        }
+      }
+    }
+  });
+
   game.settings.register("pf2e-mobile-compact", "rollMode", {
     name: "Default Roll Mode",
     hint: "Controls whether rolls default to digital dice or manual physical table dice entry.",
@@ -665,6 +694,9 @@ Hooks.once("init", async () => {
   // Ensure stylesheet element exists and is strictly dormant on desktop sessions
   syncStylesheetState();
 
+  // Patch audio methods early with strict mobile-only guards
+  patchAudioMethods();
+
   const isMobile = shouldActivateMobile();
   if (isMobile) {
     const disableCanvas = isMobileCanvasDisabled();
@@ -680,8 +712,12 @@ Hooks.once("init", async () => {
     patchMediaElements();
     ensureSafeCanvasTokens();
     patchUserActiveTokens();
+    if (isMobileAudioDisabled()) {
+      applyMobileAudioSuppression();
+    }
   } else {
-    // Desktop environment: ensure canvas is NEVER disabled by mobile preferences or previous mobile sessions!
+    // Desktop environment: ensure canvas & audio are NEVER disabled by mobile preferences or previous mobile sessions!
+    restoreMobileAudioPlayback();
     try {
       localStorage.removeItem("core.noCanvas");
       if (game.settings?.settings?.has?.("core.noCanvas") && game.settings.get("core", "noCanvas")) {
@@ -824,6 +860,9 @@ export function activateMobileEnvironment() {
   sweepResolutionNotifications();
   ensureSafeCanvasTokens();
   patchUserActiveTokens();
+  if (isMobileAudioDisabled()) {
+    applyMobileAudioSuppression();
+  }
 }
 
 /**
@@ -837,6 +876,7 @@ export function deactivateMobileEnvironment() {
   mobileEnvActivated = false;
   releaseWakeLock();
   resumeCanvasFromMobile();
+  restoreMobileAudioPlayback();
   syncStylesheetState();
   updateFabVisibility();
   console.log("PF2e Mobile Compact | Desktop environment restored.");
@@ -963,7 +1003,11 @@ Hooks.once("ready", async () => {
 
   if (shouldActivateMobile()) {
     initMobileUI();
+    if (isMobileAudioDisabled()) {
+      applyMobileAudioSuppression();
+    }
   } else {
+    restoreMobileAudioPlayback();
     deactivateMobileEnvironment();
     console.log("PF2e Mobile Compact | Desktop environment active. Mobile overrides dormant.");
     const existingFab = document.getElementById("pf2e-mobile-fab");
