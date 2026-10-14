@@ -4,6 +4,25 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [1.0.36] - 2026-10-14
+
+### Mobile Audio Suppression & Battery Saver Mode (Issue #38) (`scripts/audio/mobile-audio.js`, `scripts/pf2e-mobile.js`, `scripts/apps/sheet-helpers/`, `templates/parts/header.hbs`, `scripts/verify.mjs`)
+
+- **Strict Mobile-Only Audio Suppression (Zero Desktop Intrusion)**:
+  - Resolved Issue #38 where mobile devices streamed background scene playlists, ambient audio sources, interface sound effects, and module audio cues, draining battery life and cellular data and causing unexpected audio playback at in-person tabletop sessions.
+  - Implemented modular audio management in `scripts/audio/mobile-audio.js` with strict desktop isolation: whenever `shouldActivateMobile()` is false (desktop clients), all audio methods, volume sliders, and playlist playback execute 100% natively without interference.
+  - Monkey-patched `PlaylistSound.prototype.sync` to suppress audio fetching and streaming on mobile while keeping server playlist state completely untouched.
+  - Monkey-patched `AmbientSound.prototype.sync` to prevent canvas ambient placeable audio from playing on mobile devices.
+  - Monkey-patched `foundry.audio.Sound.prototype.play` and `foundry.audio.AudioHelper.play` to prevent local playback on mobile while preserving GM socket broadcasts to desktop players.
+  - Suspended hardware Web Audio contexts (`AudioContext.prototype.suspend()`) on mobile devices to allow phone DACs to enter low-power sleep states, and prevented click/gesture unlock listeners from waking mobile DACs.
+  - Cleared `game.audio.pending` to prevent queued audio requests from triggering upon first mobile touch interaction.
+  - Implemented client-side setting `pf2e-mobile-compact.muteAudioMobile` (default: `true`, battery & data saver) under Module Settings, allowing mobile players to opt in if they desire audio.
+  - Added an audio toggle button (`toggleAudioMode`) to the mobile character sheet header settings cog menu (`header.hbs`), allowing players to toggle mobile audio on or off dynamically without reloading.
+  - Added clean audio restoration in `restoreMobileAudioPlayback()` when switching from mobile back to desktop view (`deactivateMobileEnvironment()`) or when un-muting audio, re-synchronizing active server playlists and canvas ambient sounds seamlessly.
+  - Added full automated verification test suite in `scripts/verify.mjs` verifying default settings, desktop isolation, context suspension/resumption, local sound stopping without server playlist mutation, monkey-patch guards, and header menu integration.
+
+---
+
 ## [1.0.35] - 2026-10-13
 
 ### Quadtree Method Stubs & Interface Canvas Group Compatibility (`scripts/utils/sheet-utils.js`, `scripts/verify.mjs`)

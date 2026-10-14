@@ -1,4 +1,5 @@
 import { clamp, isIOSDevice, isMobileCanvasDisabled, setMobileCanvasDisabled, getStoredRollMode, setStoredRollMode, getDiceEntryMethod, setDiceEntryMethod } from "../../utils/sheet-utils.js";
+import { isMobileAudioDisabled, setMobileAudioDisabled } from "../../audio/mobile-audio.js";
 import { PhysicalDiceManager } from "../../rolls/physical-dice-interceptor.js";
 import { setTargetToken } from "../../tokens/token-adapter.js";
 import { promptMultiTargetSelection } from "./sheet-prompts.js";
@@ -459,6 +460,25 @@ export async function onToggleCanvasMode(sheet, event, target) {
       window.location.reload();
     }
   }, 250);
+}
+
+/**
+ * Action handler: toggle mobile audio muted/enabled state and persist preference.
+ * @param {object} sheet
+ * @param {Event} [event]
+ * @param {HTMLElement} [target]
+ */
+export async function onToggleAudioMode(sheet, event, target) {
+  closeHeaderMenu(sheet);
+  const currentlyDisabled = isMobileAudioDisabled();
+  const nextDisabled = !currentlyDisabled;
+  await setMobileAudioDisabled(nextDisabled);
+  if (nextDisabled) {
+    globalThis.ui?.notifications?.info?.("Mobile Audio Muted (Battery Saver). Background music & sounds suspended.");
+  } else {
+    globalThis.ui?.notifications?.info?.("Mobile Audio Enabled. Background music & sounds resumed.");
+  }
+  sheet.render({ parts: ["header"] });
 }
 
 /**

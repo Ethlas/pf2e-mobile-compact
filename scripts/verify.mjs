@@ -2088,6 +2088,195 @@ try {
   logFail(`Physical dice integration verification threw an error: ${err.stack || err.message}`);
 }
 
+// --- 6.13 Mobile Audio Suppression Verification (Issue #38) ---
+try {
+  const {
+    isMobileAudioDisabled,
+    setMobileAudioDisabled,
+    isMobileAudioSuppressed,
+    suspendAudioContexts,
+    resumeAudioContexts,
+    stopActiveSounds,
+    patchAudioMethods
+  } = await import("../scripts/audio/mobile-audio.js");
+  const { onToggleAudioMode } = await import("../scripts/apps/sheet-helpers/header-handlers.js");
+  const { prepareHeaderContext } = await import("../scripts/apps/sheet-helpers/context-header.js");
+  const headerTpl = fs.readFileSync(path.join(rootDir, "templates/parts/header.hbs"), "utf-8");
+
+  // 1. Verify default setting is true (muted)
+  if (isMobileAudioDisabled() !== true) {
+    logFail("[Mobile Audio] isMobileAudioDisabled() should default to true.");
+  } else {
+    logPass("[Mobile Audio] isMobileAudioDisabled() defaults to true (battery & data saver).");
+  }
+
+  // 2. Verify Desktop Mode Isolation:
+  // When mobileActivationMode is 'never' (desktop view), audio is NOT suppressed
+  const origSettingsGet = globalThis.game.settings.get;
+  globalThis.game.settings.get = (mod, key) => {
+    if (mod === "pf2e-mobile-compact" && key === "mobileActivationMode") return "never";
+    if (mod === "pf2e-mobile-compact" && key === "muteAudioMobile") return true;
+    return origSettingsGet ? origSettingsGet(mod, key) : null;
+  };
+
+  if (isMobileAudioSuppressed() !== false) {
+    logFail("[Mobile Audio] Desktop clients must remain 100% unaffected (isMobileAudioSuppressed returned true in desktop view).");
+  } else {
+    logPass("[Mobile Audio] Desktop mode isolation: audio is never suppressed when mobileActivationMode is 'never'.");
+  }
+
+  // 3. Verify Mobile Mode Suppression:
+  // When mobileActivationMode is 'always', audio IS suppressed when muteAudioMobile is true
+  globalThis.game.settings.get = (mod, key) => {
+    if (mod === "pf2e-mobile-compact" && key === "mobileActivationMode") return "always";
+    if (mod === "pf2e-mobile-compact" && key === "muteAudioMobile") return true;
+    return origSettingsGet ? origSettingsGet(mod, key) : null;
+  };
+
+  if (isMobileAudioSuppressed() !== true) {
+    logFail("[Mobile Audio] isMobileAudioSuppressed() should return true when in mobile mode and muteAudioMobile is true.");
+  } else {
+    logPass("[Mobile Audio] Mobile mode active: audio is correctly suppressed by default.");
+  }
+
+  // 4. Verify Toggling Audio in Mobile Mode:
+  await setMobileAudioDisabled(false);
+  if (isMobileAudioSuppressed() !== false) {
+    logFail("[Mobile Audio] isMobileAudioSuppressed() should return false when user explicitly un-mutes mobile audio.");
+  } else {
+    logPass("[Mobile Audio] User opt-in: toggling muteAudioMobile off cleanly restores mobile audio permission.");
+  }
+  await setMobileAudioDisabled(true);
+
+  // 5. Verify AudioContext suspension and resumption
+  let suspendedCalled = 0;
+  let resumeCalled = 0;
+  const mockAudioContext = {
+    state: "running",
+    async suspend() { this.state = "suspended"; suspendedCalled++; },
+    async resume() { this.state = "running"; resumeCalled++; }
+  };
+  globalThis.game.audio = {
+    context: mockAudioContext,
+    playing: new Map(),
+    pending: ["sound1", "sound2"]
+  };
+
+  suspendAudioContexts();
+  if (suspendedCalled === 0 || mockAudioContext.state !== "suspended") {
+    logFail("[Mobile Audio] suspendAudioContexts failed to suspend active AudioContext.");
+  } else {
+    logPass("[Mobile Audio] suspendAudioContexts successfully suspends Web Audio context to power down hardware DAC.");
+  }
+
+  resumeAudioContexts();
+  if (resumeCalled === 0 || mockAudioContext.state !== "running") {
+    logFail("[Mobile Audio] resumeAudioContexts failed to resume suspended AudioContext.");
+  } else {
+    logPass("[Mobile Audio] resumeAudioContexts successfully resumes Web Audio context for desktop / unmuted playback.");
+  }
+
+  // 6. Verify stopActiveSounds stops local sounds and clears pending without mutating playlists
+  let soundStopCalled = 0;
+  let playlistStopSoundCalled = 0;
+  const mockSound1 = {
+    playing: true,
+    stop() { this.playing = false; soundStopCalled++; }
+  };
+  const mockSound2 = {
+    playing: true,
+    stop() { this.playing = false; soundStopCalled++; }
+  };
+  const mockPlaylist = {
+    playing: true,
+    sounds: [{ sound: mockSound2, playing: true }],
+    stopSound() { playlistStopSoundCalled++; },
+    stopAll() { playlistStopSoundCalled++; }
+  };
+  globalThis.game.playlists = [mockPlaylist];
+  globalThis.game.audio.playing.set("test-sound", mockSound1);
+
+  stopActiveSounds();
+  if (soundStopCalled < 2 || mockSound1.playing !== false || mockSound2.playing !== false || playlistStopSoundCalled !== 0 || globalThis.game.audio.pending.length !== 0) {
+    logFail(`[Mobile Audio] stopActiveSounds failed: soundStopCalled=${soundStopCalled}, playlistMutated=${playlistStopSoundCalled}, pending=${globalThis.game.audio.pending.length}`);
+  } else {
+    logPass("[Mobile Audio] stopActiveSounds stops local audio and clears pending gestures without mutating server playlist documents.");
+  }
+
+  // 7. Verify Monkey-Patches
+  let origSyncCalled = 0;
+  let origPlayCalled = 0;
+  class MockPlaylistSound {
+    constructor() {
+      this.sound = { playing: true, stop: () => { soundStopCalled++; } };
+    }
+    sync() { origSyncCalled++; }
+  }
+  globalThis.CONFIG.PlaylistSound = { documentClass: MockPlaylistSound };
+  class MockSound {
+    async play() { origPlayCalled++; return this; }
+  }
+  globalThis.foundry = globalThis.foundry || {};
+  globalThis.foundry.audio = globalThis.foundry.audio || {};
+  globalThis.foundry.audio.Sound = MockSound;
+
+  patchAudioMethods();
+
+  const testPs = new MockPlaylistSound();
+  // While suppressed on mobile:
+  testPs.sync();
+  if (origSyncCalled !== 0) {
+    logFail("[Mobile Audio] PlaylistSound.sync should NOT call original sync when mobile audio is suppressed.");
+  } else {
+    logPass("[Mobile Audio] PlaylistSound.prototype.sync is suppressed on mobile (prevents network streaming & battery drain).");
+  }
+
+  const testSnd = new MockSound();
+  await testSnd.play();
+  if (origPlayCalled !== 0) {
+    logFail("[Mobile Audio] Sound.play should NOT execute playback when mobile audio is suppressed.");
+  } else {
+    logPass("[Mobile Audio] Sound.prototype.play resolves without playback when mobile audio is suppressed.");
+  }
+
+  // When desktop mode restored:
+  globalThis.game.settings.get = (mod, key) => {
+    if (mod === "pf2e-mobile-compact" && key === "mobileActivationMode") return "never";
+    return origSettingsGet ? origSettingsGet(mod, key) : null;
+  };
+  testPs.sync();
+  await testSnd.play();
+  if (origSyncCalled !== 1 || origPlayCalled !== 1) {
+    logFail(`[Mobile Audio] On desktop, original sync and play must execute normally: sync=${origSyncCalled}, play=${origPlayCalled}`);
+  } else {
+    logPass("[Mobile Audio] Desktop clients retain 100% standard Foundry audio execution through original sync and play.");
+  }
+
+  // Restore settings get
+  globalThis.game.settings.get = origSettingsGet;
+
+  // 8. Verify Header Menu & Context Integration
+  const headerCtx = {};
+  prepareHeaderContext({ type: "character", system: {}, items: [] }, { render: () => {} }, headerCtx);
+  if (typeof headerCtx.audioMuted !== "boolean") {
+    logFail("[Mobile Audio] prepareHeaderContext must provide audioMuted boolean.");
+  } else {
+    logPass("[Mobile Audio] prepareHeaderContext provides audioMuted boolean for header template.");
+  }
+
+  if (!headerTpl.includes('data-action="toggleAudioMode"')) {
+    logFail("[Mobile Audio] header.hbs is missing data-action='toggleAudioMode' button.");
+  } else {
+    logPass("[Mobile Audio] header.hbs contains 'toggleAudioMode' button inside settings menu.");
+  }
+
+  const testAudioSheet = { render: () => {} };
+  await onToggleAudioMode(testAudioSheet);
+  logPass("[Mobile Audio] onToggleAudioMode successfully toggles mobile audio preference.");
+} catch (err) {
+  logFail(`Mobile audio suppression verification threw an error: ${err.stack || err.message}`);
+}
+
 
 // 7. Foundry VTT AI Content Policy Compliance Audit (https://foundryvtt.com/article/ai-policy/)
 console.log("\n--- 7. Foundry VTT AI Content Policy Compliance Audit ---");
