@@ -4,6 +4,28 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [2.0.0] - 2026-10-14
+
+### Official Foundry VTT Content Packaging, GitHub Releases & Mobile Documentation (Issue #41) (`README.md`, `.github/workflows/release.yml`, `module.json`, `scripts/bump-version.mjs`, `.agents/skills/version-manager/`, `AGENTS.md`)
+
+- **Official Foundry VTT Content Packaging & GitHub Actions Automation**:
+  - Implemented automated release workflow in `.github/workflows/release.yml` fully compliant with Foundry VTT's official Content Packaging Guide.
+  - Automatically triggers on version tags (`v*`) or via manual `workflow_dispatch`.
+  - Stages runtime files in a clean whitelist directory (`dist/package`) containing only `module.json`, `README.md`, `styles/`, `templates/`, and `scripts/`.
+  - Excludes internal developer files and tests (`.agents/`, `AGENTS.md`, `CHANGELOG.md`, `deploy.ps1`, `run-verify.ps1`, `docs/`, `scratch/`, `scripts/verify.mjs`, `scripts/bump-version.mjs`).
+  - Automatically updates the release manifest's `download` URL to the release tag zip asset and uploads both `module.zip` and `module.json` as release assets via `softprops/action-gh-release@v2`.
+- **Package Manifest URLs (`module.json`)**:
+  - Added official repository `url`, `manifest`, `download`, and `readme` fields to `module.json` to enable automated updates and version checks directly inside Foundry VTT's Module Browser.
+- **Comprehensive Mobile User Documentation (`README.md`)**:
+  - Created complete user guide covering Progressive Web App (PWA) setup, mobile viewport safe-area compatibility, screen wake-lock, and battery/performance optimizations.
+  - Added visual & functional tour detailing every feature: Header Dashboard, Strikes & MAP, Spells & Magic Staves, Gear & Currency, Skills, Character Overview & Feats, Docked Chat, Party Sheet, Kingmaker Kingdom Sheet, and Physical Dice integration.
+- **Semantic Version Manager (`scripts/bump-version.mjs` & Agent Skill)**:
+  - Created deterministic CLI tool `scripts/bump-version.mjs` enforcing standard SemVer rules: Bug Fix (updates 3rd number), Feature (updates middle number, resets 3rd to 0), and Full New Version (updates 1st number, resets middle and 3rd to 0).
+  - Created `.agents/skills/version-manager/SKILL.md` and registered `version-manager` agent in Antigravity.
+  - Updated `AGENTS.md` to document semantic versioning workflows.
+
+---
+
 ## [1.0.36] - 2026-10-14
 
 ### Mobile Audio Suppression & Battery Saver Mode (Issue #38) (`scripts/audio/mobile-audio.js`, `scripts/pf2e-mobile.js`, `scripts/apps/sheet-helpers/`, `templates/parts/header.hbs`, `scripts/verify.mjs`)
