@@ -13,6 +13,7 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 - **No more errors when picking a target** (`scripts/utils/sheet-utils.js`, `scripts/tokens/token-adapter.js`): every target change logged `Error thrown in hooked function '' for hook 'targetToken'` (`flankingHighlight.draw`) twice.
   - With the canvas paused, `canvas.tokens` is the safe stand-in layer, which answers unknown properties with a no-op function. `highlightObjects`, a true/false flag on the real token layer, therefore read as true, and pf2e's `targetToken` hook tried to draw a flanking highlight on the headless token of the sheet's character, which has none. The stand-in layer now has `highlightObjects: false`.
   - Foundry v14's `UserTargets.add()` and `delete()` call the `targetToken` hook themselves; `setTargetTokens()` and the headless token's `setTarget()` called it again after them, so every listener ran twice per change. Those extra calls are removed.
+- **The sheet uses Foundry's font again** (`styles/pf2e-mobile.css`): the sheet asked for `var(--font-primary, sans-serif)`, but Foundry v14 defines `--font-primary` only on legacy windows (`body.game .app`), so the sheet fell back to the browser's own sans-serif font, which differs per browser and system (a much wider one in WebKit on Linux, for instance, cutting off names and wrapping lines). It now uses `--font-body`, Foundry's font for everything (Signika).
 
 ---
 

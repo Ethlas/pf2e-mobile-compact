@@ -196,7 +196,8 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   width: 100%;
   background: var(--pf2e-theme-bg, #1a1a1a);
   color: var(--pf2e-theme-text, #e0e0e0);
-  font-family: var(--font-primary, sans-serif);
+  /* Foundry v14 defines --font-primary only on legacy windows (body.game .app); --font-body is its font for everything */
+  font-family: var(--font-body, sans-serif);
   font-size: calc(1rem * var(--pf2e-mobile-scale, 1));
   overflow: hidden;
   box-sizing: border-box;
