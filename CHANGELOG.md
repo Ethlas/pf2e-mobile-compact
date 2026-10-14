@@ -4,6 +4,14 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [Unreleased]
+
+### Fixes from a WebKit (iPhone) against Chromium (Android) walkthrough
+
+- **Header dropdowns draw their own arrow** (`styles/pf2e-mobile.css`): WebKit's native dropdown arrow is much wider than Chromium's, so on an iPhone the perception/initiative dropdown showed only "👁️ ..." instead of "👁️ +12". The three header dropdowns (character, target, perception) now use `appearance: none` with a small arrow drawn by two gradients in the text colour, so they look the same in every browser and keep room for their text.
+
+---
+
 ## [2.0.0] - 2026-10-14
 
 ### Official Foundry VTT Content Packaging, GitHub Releases & Mobile Documentation (Issue #41) (`README.md`, `.github/workflows/release.yml`, `module.json`, `scripts/bump-version.mjs`, `.agents/skills/version-manager/`, `AGENTS.md`)

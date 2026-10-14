@@ -637,6 +637,19 @@ body.pf2e-mobile-active textarea {
   font-size: 16px;
   color: var(--m-text);
 }
+/* The header dropdowns draw their own arrow (two gradients in the text colour) instead of the native one, which
+   is much wider in WebKit (iPhone Safari) than in Chromium and left the perception dropdown room for only "👁️ ..." */
+.pf2e-mobile-sheet .mobile-header-dashboard select.header-item {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 16px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: right 10px center, right 5px center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
 .pf2e-mobile-sheet .mobile-header-dashboard .header-btn {
   position: relative;
   min-width: 38px;
