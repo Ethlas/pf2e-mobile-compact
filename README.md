@@ -2,7 +2,7 @@
 
 A mobile-optimized, battery-efficient, data-saving character sheet for **Pathfinder Second Edition (PF2e)** on **Foundry Virtual Tabletop (v14+)**.
 
-Designed specifically for **in-person tabletop play**, this module transforms your smartphone or tablet into a lightning-fast, full-featured digital character sheet without clutter, lag, or battery drain.
+Designed specifically for **in-person tabletop play**, this module transforms your smartphone or tablet into a lightning-fast (no it is not really that fast, but trying to make it better with limitations from foundry), digital character sheet without clutter, lag, or battery drain.
 
 ---
 
