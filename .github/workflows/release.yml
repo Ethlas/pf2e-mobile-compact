@@ -50,8 +50,21 @@ jobs:
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
-          # If triggered by a push to main (merge) and this release already exists, skip safely
+          # When triggered by a push/merge to main, only package for 'fix' or 'feat' Conventional Commits
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_type }}" != "tag" ]; then
+            COMMIT_SUBJECT=$(git log -1 --pretty=%s)
+            PR_TITLE=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" --jq '.[0].title // empty' 2>/dev/null || true)
+
+            echo "Commit subject : ${COMMIT_SUBJECT}"
+            echo "Merged PR title: ${PR_TITLE}"
+
+            if ! echo "${PR_TITLE}" | grep -Eq '^(feat|fix)(\([a-zA-Z0-9_./-]+\))?(!)?: ' && \
+               ! echo "${COMMIT_SUBJECT}" | grep -Eq '^(feat|fix)(\([a-zA-Z0-9_./-]+\))?(!)?: '; then
+              echo "Commit/PR does not have a 'fix' or 'feat' Conventional Commit prefix. Skipping module packaging."
+              echo "should_release=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
             if gh release view "${TAG}" >/dev/null 2>&1; then
               echo "Release ${TAG} already exists. Skipping duplicate packaging."
               echo "should_release=false" >> "$GITHUB_OUTPUT"

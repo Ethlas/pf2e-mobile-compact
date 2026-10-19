@@ -55,8 +55,10 @@ This guide provides procedures for developing and extending the PF2e Mobile Shee
    - Add responsive styles in `styles/pf2e-mobile.css`.
    - Test on compact viewport widths (360px - 430px).
 
-6. **Static Verification & Validation**:
+6. **Static Verification, Conventional Commits & Pull Requests**:
    - Run `node scripts/verify.mjs` before committing or deploying.
-   - Run `.\deploy.ps1` only with explicit user authorization.
+   - Format all commit messages and Pull Request titles using **[Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)** (`<type>[optional scope][!]: <description>`).
+   - For `fix:` and `feat:` PRs (which package a new Foundry module release when merged), bump `module.json` and `CHANGELOG.md` via `node scripts/bump-version.mjs <bugfix|feature|full> "<description>"`.
+   - **NEVER commit, push, or deploy without explicit user authorization, and NEVER merge Pull Requests (`gh pr merge`).**
 
 

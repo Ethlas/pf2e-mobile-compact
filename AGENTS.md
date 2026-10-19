@@ -69,17 +69,22 @@ Welcome to the **PF2e Mobile Sheet (Compact)** repository (`pf2e-mobile-compact`
 
 1. **Syntax & Quality Checks**:
    - Run `node scripts/verify.mjs` before pushing changes or deploying to verify JavaScript syntax, template rules, and touch targets.
-2. **Semantic Versioning & Releases**:
-   - Use the `version-manager` skill ([`.agents/skills/version-manager/SKILL.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/.agents/skills/version-manager/SKILL.md)) or `node scripts/bump-version.mjs <type>`:
-     - **Bug Fix**: update 3rd number (e.g. `1.0.36` -> `1.0.37`).
-     - **Feature**: update middle number and reset 3rd number to 0 (e.g. `1.0.36` -> `1.1.0`).
-     - **Full New Version**: update 1st number and reset middle and 3rd numbers to 0 (e.g. `1.0.36` -> `2.0.0`).
-   - Document changes in [`CHANGELOG.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/CHANGELOG.md).
-   - Packaging and GitHub Releases are automated via [`.github/workflows/release.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/release.yml) upon pushing a `v*` tag.
+2. **Conventional Commits & Semantic Versioning ([Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/))**:
+   - **All commit messages and Pull Request titles MUST follow [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)**: `<type>[optional scope][!]: <description>`.
+   - **Release-Triggering Prefixes (`fix` and `feat`)**:
+     - Only PRs/commits with a `fix` or `feat` prefix trigger module packaging in [`.github/workflows/release.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/release.yml) when merged into `main`, and [`.github/workflows/ci-verify.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/ci-verify.yml) requires `module.json` version to be incremented on every `fix`/`feat` PR.
+     - Use the `version-manager` skill ([`.agents/skills/version-manager/SKILL.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/.agents/skills/version-manager/SKILL.md)) or `node scripts/bump-version.mjs <type>`:
+       - **`fix:` (Bug Fix / Patch)**: update 3rd number (e.g. `1.0.36` -> `1.0.37`).
+       - **`feat:` (Feature / Minor)**: update middle number and reset 3rd number to 0 (e.g. `1.0.36` -> `1.1.0`).
+       - **`feat!:` / `fix!:` (Breaking / Major)**: update 1st number and reset middle and 3rd numbers to 0 (e.g. `1.0.36` -> `2.0.0`).
+     - Document changes in [`CHANGELOG.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/CHANGELOG.md).
+   - **Non-Release Prefixes (`chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `revert`)**:
+     - Use these prefixes for documentation, CI workflows, styling-guide updates, tests, or internal chores that do **not** package a new Foundry release on merge.
 3. **Deployment**:
    - Run `.\deploy.ps1` to sync to the remote Foundry server (`$env:FOUNDRY_DEPLOY_SERVER`) only when explicitly authorized by the user for deployment.
 4. **Approval & Documentation Integrity**:
    - **NEVER commit or push to Git/GitHub without explicit user approval.**
+   - **NEVER merge Pull Requests (`gh pr merge` or merging into `main`).** Always leave Pull Requests open for the user to review and merge manually in GitHub.
    - **NEVER deploy without explicit user approval.**
    - Never commit or store plaintext passwords in repository files or skill runbooks.
 

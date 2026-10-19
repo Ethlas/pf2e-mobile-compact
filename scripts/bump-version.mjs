@@ -168,19 +168,21 @@ export function bumpVersion(rawType, changeDescription = "", options = {}) {
   }
 
   // 6. Summary and git release guidance
+  const ccPrefix = releaseType === "patch" ? "fix" : releaseType === "minor" ? "feat" : "feat!";
+  const ccSummary = (changeDescription || "update module").replace(/^(feat|fix)(\([^)]+\))?!?:s*/i, "");
   console.log(`
 ============================================================
 \x1b[32m✔ Version ${nextVersion} prepared and verified successfully!\x1b[0m
 ============================================================
 
-Next Steps (Reminder: Always obtain explicit user authorization before pushing to git):
+Next Steps (Reminder: Always obtain explicit user authorization before pushing to git, and NEVER merge PRs):
   1. Review and refine your notes in CHANGELOG.md
-  2. Commit changes:
+  2. Commit changes using Conventional Commits v1.0.0:
      \x1b[36mgit add module.json CHANGELOG.md\x1b[0m
-     \x1b[36mgit commit -m "Release v${nextVersion}: ${changeDescription || 'Bump version'}"\x1b[0m
-  3. Create and push tag to trigger GitHub release workflow:
-     \x1b[36mgit tag v${nextVersion}\x1b[0m
-     \x1b[36mgit push origin main --tags\x1b[0m
+     \x1b[36mgit commit -m "${ccPrefix}: ${ccSummary}"\x1b[0m
+  3. Push branch and open a Pull Request with a "${ccPrefix}:" title (do NOT merge):
+     \x1b[36mgit push -u origin <branch-name>\x1b[0m
+     \x1b[36mgh pr create --base main --head <branch-name> --title "${ccPrefix}: ${ccSummary}"\x1b[0m
 `);
 
   return { currentVersion, nextVersion, releaseType };
