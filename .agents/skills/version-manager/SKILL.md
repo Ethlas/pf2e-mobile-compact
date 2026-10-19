@@ -98,10 +98,7 @@ Once the user authorizes pushing a branch / PR:
    ```
 
 ### Automated GitHub Verification & Release Actions
-- **On Pull Request ([`.github/workflows/ci-verify.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/ci-verify.yml))**:
-  - Runs `node scripts/check-pr.mjs`, which validates that the PR title matches Conventional Commits v1.0.0 (`<type>[optional scope][!]: <description>`).
-  - If `<type>` is `fix` or `feat`, verifies that `module.json` version was incremented above `main` and that tag `vX.Y.Z` is unused.
-  - Runs `node scripts/verify.mjs`.
+- **On Pull Request and push ([`.github/workflows/ci-verify.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/ci-verify.yml))**: runs `node scripts/verify.mjs`.
 - **On Merge to `main` ([`.github/workflows/release.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/release.yml))**:
   - Runs `node scripts/release-check.mjs`, which checks whether the merged PR title / commit has a `fix` or `feat` Conventional Commit prefix.
   - **Only when `fix` or `feat` is present**: verifies code integrity, packages runtime assets with `node scripts/build.mjs` (`module.json`, `README.md`, `LICENSE`, `scripts/` without its `.mjs` tooling, `styles/`, `templates/`), and automatically creates the `vX.Y.Z` tag and GitHub Release with `module.zip` and `module.json`.

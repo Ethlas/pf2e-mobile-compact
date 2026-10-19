@@ -3,7 +3,6 @@ name: Verify JS, HTML/HBS & Sheet Actions
 on:
   pull_request:
     branches: [main, master]
-    types: [opened, edited, synchronize, reopened]
   push:
     branches: [main, master]
 
@@ -14,8 +13,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v5
@@ -25,13 +22,6 @@ jobs:
 
       - name: Install dev tooling
         run: npm ci
-
-      - name: Validate Conventional Commit PR prefix & module.json version (Pull Requests)
-        if: github.event_name == 'pull_request'
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          BASE_REF: ${{ github.base_ref }}
-        run: node scripts/check-pr.mjs
 
       - name: Run JS, HTML/Handlebars, CSS & Section Handler Verifications
         run: node scripts/verify.mjs

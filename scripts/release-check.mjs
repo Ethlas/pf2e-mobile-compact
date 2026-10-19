@@ -16,8 +16,13 @@
  */
 
 import { execFileSync } from "node:child_process";
+import fs from "node:fs";
 import semver from "semver";
-import { isDirectRun, parseCommitHeader, readModuleJson, rootDir, setGithubOutputs } from "./release-utils.mjs";
+import { isDirectRun, readModuleJson, rootDir } from "./release-utils.mjs";
+
+// A `feat` or `fix` Conventional Commit header, optionally with scope and `!`. PR titles are not
+// enforced: a title without this prefix simply does not package a release.
+const RELEASE_HEADER = /^(feat|fix)(\([^)]*\))?!?: /;
 
 /**
  * Runs a command and returns its trimmed stdout, or null when it fails.
@@ -45,7 +50,7 @@ export function shouldRelease(env, tag) {
   console.log(`Commit subject : ${commitSubject}`);
   console.log(`Merged PR title: ${prTitle}`);
 
-  if (!parseCommitHeader(prTitle)?.isRelease && !parseCommitHeader(commitSubject)?.isRelease) {
+  if (!RELEASE_HEADER.test(prTitle) && !RELEASE_HEADER.test(commitSubject)) {
     console.log("Commit/PR does not have a 'fix' or 'feat' Conventional Commit prefix. Skipping module packaging.");
     return false;
   }
@@ -67,5 +72,7 @@ if (isDirectRun(import.meta.url)) {
   const release = shouldRelease(process.env, tag);
 
   if (release) console.log(`Releasing version ${version} with tag ${tag}`);
-  setGithubOutputs({ tag, version, should_release: release });
+  const outputs = `tag=${tag}\nversion=${version}\nshould_release=${release}\n`;
+  if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, outputs);
+  console.log(outputs);
 }
