@@ -343,15 +343,15 @@ export async function onTransferCoins(sheet, event, target) {
   const stashCoins = party.inventory?.coins ?? { pp: 0, gp: 0, sp: 0, cp: 0 };
 
   const content = `
-    <div style="padding: 6px 0;">
-      <div class="form-group" style="margin-bottom: 10px;">
+    <div class="m-dialog" style="padding: 6px 0;">
+      <div class="form-group m-flex-col" style="margin-bottom: 10px; align-items: stretch;">
         <label style="display:block; margin-bottom: 4px; font-weight: bold;">Direction:</label>
         <select id="coin-direction" style="width:100%; height:42px; border-radius:6px; background:#222; color:#fff; border:1px solid #444; padding:0 8px;">
           <option value="withdraw" selected>Withdraw from Stash to Member</option>
           <option value="deposit">Deposit from Member to Stash</option>
         </select>
       </div>
-      <div class="form-group" style="margin-bottom: 10px;">
+      <div class="form-group m-flex-col" style="margin-bottom: 10px; align-items: stretch;">
         <label style="display:block; margin-bottom: 4px; font-weight: bold;">Party Member:</label>
         <select id="coin-member" style="width:100%; height:42px; border-radius:6px; background:#222; color:#fff; border:1px solid #444; padding:0 8px;">
           ${memberOptionsHtml}

@@ -442,6 +442,9 @@ function createSafeTokensShim(initial = {}) {
     updatePlannedMovements: () => {},
     clearPlannedMovements: () => {},
     quadtree: safeQuadtree,
+    // A flag on the real TokenLayer; the no-op function below would read as true, and pf2e's targetToken hook
+    // then draws a flanking highlight on a headless token that has none
+    highlightObjects: false,
     objects: null,
     preview: null,
     _configPreview: null,

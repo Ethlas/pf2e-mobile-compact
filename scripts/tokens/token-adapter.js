@@ -674,11 +674,10 @@ export function getTargetableToken(tokenId) {
       if (releaseOthers) {
         for (const t of Array.from(user.targets)) {
           if (t.id !== this.id) {
+            // UserTargets.delete() calls the targetToken hook itself
             user.targets.delete(t);
             if (typeof t.setTarget === "function" && t !== this) {
               try { t.setTarget(false, { user, releaseOthers: false }); } catch {}
-            } else {
-              Hooks.callAll("targetToken", user, t, false);
             }
           }
         }
@@ -686,6 +685,7 @@ export function getTargetableToken(tokenId) {
 
       if (state === isCurrentlyTargeted) return;
 
+      // UserTargets.add() and delete() call the targetToken hook themselves
       if (state) {
         user.targets.add(this);
       } else {
@@ -703,8 +703,6 @@ export function getTargetableToken(tokenId) {
           sceneId: scene?.id ?? null
         }, { volatile: false });
       }
-
-      Hooks?.callAll?.("targetToken", user, this, state);
     },
 
     // PIXI Container compatibility stubs for UI modules in headless mobile mode
@@ -837,8 +835,8 @@ export async function setTargetTokens(tokenIds) {
       if (typeof t.setTarget === "function") {
         try { t.setTarget(false, { user: game.user, releaseOthers: false, groupSelection: true }); } catch {}
       } else {
+        // UserTargets.delete() calls the targetToken hook itself
         game.user.targets.delete(t);
-        Hooks.callAll("targetToken", game.user, t, false);
       }
     }
   }
@@ -856,8 +854,8 @@ export async function setTargetTokens(tokenIds) {
         } catch {}
       }
       if (!Array.from(game.user.targets).some(t => t.id === id)) {
+        // UserTargets.add() calls the targetToken hook itself
         game.user.targets.add(token);
-        Hooks.callAll("targetToken", game.user, token, true);
       }
     }
   }

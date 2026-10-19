@@ -4,6 +4,27 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [Unreleased]
+
+### Fixes from a WebKit (iPhone) against Chromium (Android) walkthrough
+
+- **Header dropdowns draw their own arrow** (`styles/pf2e-mobile.css`): WebKit's native dropdown arrow is much wider than Chromium's, so on an iPhone the perception/initiative dropdown showed only "👁️ ..." instead of "👁️ +12". The three header dropdowns (character, target, perception) now use `appearance: none` with a small arrow drawn by two gradients in the text colour, so they look the same in every browser and keep room for their text.
+- **Dropdowns in other windows fit their text** (`styles/pf2e-mobile.css`): the rule against iOS focus zoom gives every input and dropdown 16px text, also in windows of pf2e and Foundry whose dropdowns are 24px high. WebKit cut off the bottom of the text there (the "Roll Visibility" dropdown of the roll dialog, for instance) where Chromium centers it. Dropdowns outside the module's own windows (the sheet, the compendium picker, the spell picker and `m-dialog` dialogs, which size their dropdowns themselves) now have `height: auto` with the old height as minimum.
+- **No more errors when picking a target** (`scripts/utils/sheet-utils.js`, `scripts/tokens/token-adapter.js`): every target change logged `Error thrown in hooked function '' for hook 'targetToken'` (`flankingHighlight.draw`) twice.
+  - With the canvas paused, `canvas.tokens` is the safe stand-in layer, which answers unknown properties with a no-op function. `highlightObjects`, a true/false flag on the real token layer, therefore read as true, and pf2e's `targetToken` hook tried to draw a flanking highlight on the headless token of the sheet's character, which has none. The stand-in layer now has `highlightObjects: false`.
+  - Foundry v14's `UserTargets.add()` and `delete()` call the `targetToken` hook themselves; `setTargetTokens()` and the headless token's `setTarget()` called it again after them, so every listener ran twice per change. Those extra calls are removed.
+- **The sheet uses Foundry's font again** (`styles/pf2e-mobile.css`): the sheet asked for `var(--font-primary, sans-serif)`, but Foundry v14 defines `--font-primary` only on legacy windows (`body.game .app`), so the sheet fell back to the browser's own sans-serif font, which differs per browser and system (a much wider one in WebKit on Linux, for instance, cutting off names and wrapping lines). It now uses `--font-body`, Foundry's font for everything (Signika).
+- **Downtime activities don't ask for a target** (`scripts/apps/sheet-helpers/actions-handlers.js`): every action check without a current target opened the "Select Target Token" prompt, also Earn Income, Craft, Subsist and Create Forgery. `onRollActionCheck()` now skips the target for actions with the `downtime` trait (on the item or on pf2e's system action); Demoralize, Recall Knowledge, Treat Wounds and the other actions still ask. The trait is used rather than the action's `difficultyClass`, which is also empty for actions that do aim at a creature (Recall Knowledge, Administer First Aid).
+- **Cut-off text and small touch targets** (`templates/parts/character.hbs`, `templates/parts/header.hbs`, `styles/pf2e-mobile.css`, `scripts/apps/sheet-helpers/party-handlers.js`):
+  - A long effect name in the character overview ran past its card without "…": `m-truncate` sat on the flex column around the name, where the ellipsis doesn't reach the name span. The name span now has `m-truncate` itself.
+  - The compendium picker's Rank and Tradition filters were unstyled, so Rank read "All Ran" in a narrow field and both dropdowns were 32px high: their rules were scoped to `.pf2e-mobile-sheet`, but the picker is a window of its own. They are now scoped to `.compendium-picker`, giving two equal fields with 44px dropdowns.
+  - The Transfer Currency dialog put its labels beside the dropdowns (Foundry's `form-group` is a row), cutting "Withdraw from Stash to Member" off. The content root now has `m-dialog` and the two groups `m-flex-col`, so each label sits above its dropdown.
+  - The HP and Temp HP inputs are 28px high inside their 38px pills. The pills are now `<label>` elements, so a tap anywhere on a pill focuses its input.
+  - The cast button of a spell without tags followed its 30px line; it now has `min-height: max(100%, 38px)`.
+  - The folding section headers of the Gear tab were 36px: the later `.m-group > .section-title` rule overrode their 38px. A `.m-group > .section-title.touch-header` rule restores it.
+
+---
+
 ## [2.0.0] - 2026-10-14
 
 ### Official Foundry VTT Content Packaging, GitHub Releases & Mobile Documentation (Issue #41) (`README.md`, `.github/workflows/release.yml`, `module.json`, `scripts/bump-version.mjs`, `.agents/skills/version-manager/`, `AGENTS.md`)

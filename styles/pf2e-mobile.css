@@ -196,7 +196,8 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
   width: 100%;
   background: var(--pf2e-theme-bg, #1a1a1a);
   color: var(--pf2e-theme-text, #e0e0e0);
-  font-family: var(--font-primary, sans-serif);
+  /* Foundry v14 defines --font-primary only on legacy windows (body.game .app); --font-body is its font for everything */
+  font-family: var(--font-body, sans-serif);
   font-size: calc(1rem * var(--pf2e-mobile-scale, 1));
   overflow: hidden;
   box-sizing: border-box;
@@ -557,6 +558,12 @@ body.pf2e-mobile-active select,
 body.pf2e-mobile-active textarea {
   font-size: 16px !important;
 }
+/* Dropdowns of windows outside this module (pf2e's roll dialog, for instance) are sized for smaller text, 24px high;
+   WebKit cuts off the bottom of the 16px text above instead of centering it, so they grow to fit their text */
+body.pf2e-mobile-active select:not(:is(.pf2e-mobile-sheet, .pf2e-mobile-compendium-picker, .spell-picker-dialog, .m-dialog) *) {
+  height: auto;
+  min-height: var(--input-height, 24px);
+}
 .pf2e-mobile-sheet button:active {
   background: var(--m-surface-5);
 }
@@ -636,6 +643,19 @@ body.pf2e-mobile-active textarea {
 .pf2e-mobile-sheet .mobile-header-dashboard .header-select {
   font-size: 16px;
   color: var(--m-text);
+}
+/* The header dropdowns draw their own arrow (two gradients in the text colour) instead of the native one, which
+   is much wider in WebKit (iPhone Safari) than in Chromium and left the perception dropdown room for only "👁️ ..." */
+.pf2e-mobile-sheet .mobile-header-dashboard select.header-item {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 16px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: right 10px center, right 5px center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
 }
 .pf2e-mobile-sheet .mobile-header-dashboard .header-btn {
   position: relative;
@@ -1830,6 +1850,10 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   border-bottom: none;
   background: transparent;
 }
+/* A title that folds its section away is a button: the 38px touch target */
+.pf2e-mobile-sheet .m-group > .section-title.touch-header {
+  min-height: 38px;
+}
 .pf2e-mobile-sheet .spell-list.collapsed {
   display: none !important;
 }
@@ -2018,8 +2042,9 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   align-content: center;
   white-space: nowrap;
 }
+/* As tall as the spell's line, and at least the 38px touch target when the line is short (a spell without tags) */
 .pf2e-mobile-sheet .action-btn-group .btn-cast {
-  min-height: 100%;
+  min-height: max(100%, 38px);
   padding: 4px;
 }
 .pf2e-mobile-sheet .spell-drawer-actions .btn-cast {
@@ -2365,14 +2390,14 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   background: #18181b;
   border-bottom: 1px solid #27272a;
 }
-.pf2e-mobile-sheet .filter-field {
+.compendium-picker .filter-field {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
 }
-.pf2e-mobile-sheet .filter-label {
+.compendium-picker .filter-label {
   font-size: 0.6875rem;
   text-transform: uppercase;
   color: #a1a1aa;
@@ -2382,7 +2407,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   align-items: center;
   gap: 4px;
 }
-.pf2e-mobile-sheet .filter-select {
+.compendium-picker .filter-select {
   width: 100%;
   height: 44px;
   background: var(--m-surface-3);
@@ -2394,7 +2419,7 @@ body.pf2e-fullscreen .pf2e-mobile-compendium-picker,
   cursor: pointer;
   touch-action: manipulation;
 }
-.pf2e-mobile-sheet .filter-select:focus {
+.compendium-picker .filter-select:focus {
   border-color: #3b82f6;
   outline: none;
 }
