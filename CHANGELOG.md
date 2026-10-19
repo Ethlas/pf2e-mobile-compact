@@ -4,6 +4,19 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [2.0.2] - 2026-10-19
+
+### Automated PR Version Increment Gate & Merge-to-Main Release Packaging (`.github/workflows/ci-verify.yml`, `.github/workflows/release.yml`)
+
+- **Required PR Version Increment Check (`.github/workflows/ci-verify.yml`)**:
+  - Added pull request verification step that compares `module.json` against `origin/main` (`MAJOR.MINOR.PATCH`) and fails the check if the version has not been incremented or if the corresponding `vX.Y.Z` tag already exists.
+  - Registered `Static & Interactive Sheet Verification` as a required status check in the repository's `main` branch ruleset (`main-2`).
+- **Auto-Tag & Package on Merge to `main` (`.github/workflows/release.yml`)**:
+  - Updated `release.yml` to trigger automatically on pushes/merges to `main` (in addition to `v*` tags and `workflow_dispatch`).
+  - Checks whether a GitHub Release for `v${version}` already exists to remain idempotent, and automatically tags `v${version}` on the merge commit and publishes `module.zip` and `module.json`.
+
+---
+
 ## [2.0.1] - 2026-10-19
 
 ### Fixes from a WebKit (iPhone) against Chromium (Android) walkthrough (PR #40, Issue #49)
