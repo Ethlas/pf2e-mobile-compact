@@ -6,6 +6,15 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Desktop Chat Isolation & Cleanup (Issue #53)
+
+- **Desktop Mode Guard (`scripts/apps/sheet-helpers/chat-handler.js`, `scripts/apps/mobile-sheet.js`, `scripts/utils/sheet-utils.js`)**:
+  - Guarded `dockChatElement` with `shouldActivateMobile()` and updated `PF2eMobileSheet._replaceHTML` to only preserve/re-attach `#chat` across re-renders when it is already docked inside that sheet, preventing desktop mode from moving `#chat` out of `#sidebar`.
+- **Removed Redundant Inline Style & Disabled Mutations (`scripts/apps/sheet-helpers/chat-handler.js`, `scripts/apps/mobile-sheet.js`)**:
+  - Removed `disableChatInputs` and `_pf2eMobileInputObserver` (relying on existing `.pf2e-mobile-sheet .mobile-chat-mount` CSS rules in `styles/pf2e-mobile.css`), so `#chat` inputs and layout are never mutated or left disabled when restored to the desktop sidebar.
+- **Shared Original Parent & Multi-Sheet Handoff (`scripts/apps/sheet-helpers/chat-handler.js`, `scripts/pf2e-mobile.js`)**:
+  - Stored `originalParent` and `originalNextSibling` once at the module level (only captured when `#chat` is not already inside `.mobile-chat-mount`) and handed `#chat` to any remaining open mobile sheet before restoring to `#sidebar`.
+
 ### Automatic release versions & Node build (`scripts/release-check.mjs`, `scripts/build.mjs`, `.github/workflows/release.yml`)
 
 - **The version comes from the tags**: merging a `fix:` or `feat:` PR into `main` releases the highest `vX.Y.Z` tag raised by the prefix (`fix` -> patch, `feat` -> minor, `!` -> major). `scripts/bump-version.mjs` is removed, and the repository's `module.json` version is `0.0.0-dev`, for development checkouts only; the release writes the computed version into the packaged manifest.

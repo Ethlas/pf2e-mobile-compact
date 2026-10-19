@@ -1,7 +1,7 @@
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
 import { CompendiumPickerApp } from "./compendium-picker.js";
-import { clamp, getGlyph, getStoredRollMode } from "../utils/sheet-utils.js";
+import { clamp, getGlyph, getStoredRollMode, shouldActivateMobile } from "../utils/sheet-utils.js";
 import { getTargetableToken, getOriginToken, setTargetToken, setTargetTokens, ensureTokenControlled, syncSceneTokenPositions } from "../tokens/token-adapter.js";
 import { prepareHeaderContext } from "./sheet-helpers/context-header.js";
 import { preparePartyContext } from "./sheet-helpers/context-party.js";
@@ -46,7 +46,7 @@ import { onSwitchSpellSubTab, onToggleRankGroup, onOpenSpellPrepPicker, prepareS
 import { onMoveSpellEntry } from "./sheet-helpers/spell-entry-order-handlers.js";
 import { onCastStaffSpell, onAdjustStaffCharges, onCastItemSpell, onOpenDailies } from "./sheet-helpers/activations-handlers.js";
 import { onApplyDeltaHP, onSetDirectHP, onSetDirectTempHP, onRollPerceptionOrInitiative, onApplyDamage, onApplyHeal, onSetTempHP, onAdjustTempHP, onRollSave, onRollPerception, onRollInitiative, onSelectTarget, onToggleRollMode, onToggleEntryMethod, onToggleHeaderMenu, onToggleCanvasMode, onToggleAudioMode, onToggleFullscreen, onSwitchToDesktopView, onSwitchActor } from "./sheet-helpers/header-handlers.js";
-import { disableChatInputs, dockChatElement, restoreChatElement, scrollChatToBottom, setupScrollBottomListener, registerChatListener, unregisterChatListener, updateChatBadge } from "./sheet-helpers/chat-handler.js";
+import { dockChatElement, restoreChatElement, scrollChatToBottom, setupScrollBottomListener, registerChatListener, unregisterChatListener, updateChatBadge } from "./sheet-helpers/chat-handler.js";
 
 /**
  * Mobile-optimized compact character sheet application subclassing Foundry VTT's modern ActorSheetV2.
@@ -216,12 +216,6 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /** @type {DocumentFragment} */
   _tempChatFragment = document.createDocumentFragment();
 
-  /** @type {HTMLElement|null} */
-  _chatOriginalParent = null;
-
-  /** @type {Node|null} */
-  _chatOriginalNextSibling = null;
-
   /**
    * Current active tab key.
    * @type {string}
@@ -276,14 +270,13 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
     const chatMount = content.querySelector?.(".mobile-chat-mount");
     const chatEl = (ui.chat?.element instanceof HTMLElement ? ui.chat.element : ui.chat?.element?.[0]) ?? document.getElementById("chat");
-    if (chatMount && chatEl && chatMount.contains(chatEl)) {
-      this._tempChatFragment.appendChild(chatEl);
-    }
+    const wasDocked = Boolean(chatMount && chatEl && chatMount.contains(chatEl));
+    if (wasDocked) this._tempChatFragment.appendChild(chatEl);
     super._replaceHTML(result, content, options);
-    const newChatMount = (result instanceof HTMLElement ? result.querySelector?.(".mobile-chat-mount") : null)
-      ?? this.element?.querySelector?.(".mobile-chat-mount");
-    if (newChatMount && chatEl) {
-      newChatMount.appendChild(chatEl);
+    if (wasDocked && shouldActivateMobile()) {
+      const newChatMount = (result instanceof HTMLElement ? result.querySelector?.(".mobile-chat-mount") : null)
+        ?? this.element?.querySelector?.(".mobile-chat-mount");
+      if (newChatMount && chatEl) newChatMount.appendChild(chatEl);
     }
 
     const savedScroll = this._tabScrollPositions.get(this._activeTab);
@@ -444,7 +437,6 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     this._sceneHookIds = [];
   }
 
-  _disableChatInputs(chatEl) { disableChatInputs(chatEl, this); }
   _dockChatElement() { dockChatElement(this); }
   _restoreChatElement() { restoreChatElement(this); }
   _scrollChatToBottom(smooth = false) { scrollChatToBottom(this, smooth); }
