@@ -4,6 +4,17 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
+## [Unreleased]
+
+### Automatic release versions & Node build (`scripts/release-check.mjs`, `scripts/build.mjs`, `.github/workflows/release.yml`)
+
+- **The version comes from the tags**: merging a `fix:` or `feat:` PR into `main` releases the highest `vX.Y.Z` tag raised by the prefix (`fix` -> patch, `feat` -> minor, `!` -> major). `scripts/bump-version.mjs` is removed, and the repository's `module.json` version is `0.0.0-dev`, for development checkouts only; the release writes the computed version into the packaged manifest.
+- **PR titles are free format**: the PR title and version checks in `ci-verify.yml` are removed. A PR without a `fix`/`feat` prefix merges fine and doesn't release.
+- **Releases only on merge to `main`**: the `v*` tag push and manual (`workflow_dispatch`) triggers are removed. A manual run built the selected branch, not the given tag, so it could overwrite an earlier release's files with newer code.
+- **Packaging in Node**: `scripts/build.mjs` replaces the `cp`/`rm`/`zip` steps (dev dependencies `semver` and `yazl` in a new `package.json`), so a release package can also be built locally, on Windows too. Every `.mjs` file in `scripts/` is tooling and stays out of `module.zip`.
+
+---
+
 ## [2.0.2] - 2026-10-19
 
 ### Automated PR Version Increment Gate & Merge-to-Main Release Packaging (`.github/workflows/ci-verify.yml`, `.github/workflows/release.yml`)

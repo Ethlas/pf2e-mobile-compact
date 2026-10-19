@@ -1,0 +1,18 @@
+{
+  "name": "pf2e-mobile-compact",
+  "private": true,
+  "description": "Development tooling for the pf2e-mobile-compact Foundry VTT module (verification, release gate, packaging). Not shipped in the module zip.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "verify": "node scripts/verify.mjs",
+    "build": "node scripts/build.mjs"
+  },
+  "devDependencies": {
+    "semver": "^7.8.5",
+    "yazl": "^3.3.1"
+  }
+}
