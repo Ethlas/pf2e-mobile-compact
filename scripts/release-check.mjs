@@ -2,15 +2,20 @@
 /**
  * scripts/release-check.mjs
  *
- * Release gate run by .github/workflows/release.yml on every push (merge) to main. Works out the
- * release tag and version and whether this push should package a release, and hands them to the
- * next steps as outputs (`tag`, `version`, `should_release`).
+ * Release gate run by .github/workflows/release.yml on every push (merge) to main. Decides whether
+ * this push packages a release and computes its version, and hands them to the next steps as
+ * outputs (`tag`, `version`, `should_release`).
  *
- * - The tag is `v` + the module.json version.
- * - A release is only packaged when the merged PR title or the commit subject has a `feat:` or
- *   `fix:` Conventional Commit prefix, and when no release with that tag exists yet.
+ * - Only a `feat` or `fix` Conventional Commit prefix on the merged PR title (or, without a PR,
+ *   the commit subject) releases. PR titles are not enforced: any other title just doesn't release.
+ * - The version is the highest existing `vX.Y.Z` tag, raised by the prefix:
+ *   `fix` -> patch, `feat` -> minor, `!` (e.g. `feat!:`) -> major.
+ *   The module.json version in the repository (0.0.0-dev) is only for development checkouts;
+ *   build.mjs writes the computed version into the released manifest.
+ * - A commit that already has a `v` tag is not released again (e.g. when a finished run is re-run).
  *
- * The GitHub calls go through the `gh` CLI (preinstalled on GitHub runners, authenticated with GH_TOKEN).
+ * The GitHub call goes through the `gh` CLI (preinstalled on GitHub runners, authenticated with
+ * GH_TOKEN). The tags need the full history (actions/checkout with fetch-depth: 0).
  *
  * Usage: node scripts/release-check.mjs   (reads GITHUB_REPOSITORY and GITHUB_SHA, set by Actions)
  */
@@ -18,11 +23,10 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import semver from "semver";
-import { isDirectRun, readModuleJson, rootDir } from "./release-utils.mjs";
+import { isDirectRun, rootDir } from "./release-utils.mjs";
 
-// A `feat` or `fix` Conventional Commit header, optionally with scope and `!`. PR titles are not
-// enforced: a title without this prefix simply does not package a release.
-const RELEASE_HEADER = /^(feat|fix)(\([^)]*\))?!?: /;
+// `feat` or `fix`, optional scope, optional `!` for a breaking change
+const RELEASE_HEADER = /^(feat|fix)(\([^)]*\))?(!)?: /;
 
 /**
  * Runs a command and returns its trimmed stdout, or null when it fails.
@@ -38,41 +42,48 @@ function tryRun(cmd, args) {
 }
 
 /**
- * Decides whether this push should package a release.
- * @param {NodeJS.ProcessEnv} env
- * @param {string} tag
- * @returns {boolean}
+ * The semver increment for a Conventional Commit header, or null when it doesn't release.
+ * @param {string} header - e.g. "feat(spells): add heightened spell damage button"
+ * @returns {"major"|"minor"|"patch"|null}
  */
-export function shouldRelease(env, tag) {
-  const commitSubject = tryRun("git", ["log", "-1", "--pretty=%s"]) ?? "";
-  const prTitle = tryRun("gh", ["api", `repos/${env.GITHUB_REPOSITORY}/commits/${env.GITHUB_SHA}/pulls`, "--jq", ".[0].title // empty"]) ?? "";
+export function releaseType(header) {
+  const match = header.match(RELEASE_HEADER);
+  if (!match) return null;
+  if (match[3]) return "major";
+  return match[1] === "feat" ? "minor" : "patch";
+}
 
-  console.log(`Commit subject : ${commitSubject}`);
-  console.log(`Merged PR title: ${prTitle}`);
-
-  if (!RELEASE_HEADER.test(prTitle) && !RELEASE_HEADER.test(commitSubject)) {
-    console.log("Commit/PR does not have a 'fix' or 'feat' Conventional Commit prefix. Skipping module packaging.");
-    return false;
-  }
-
-  if (tryRun("gh", ["release", "view", tag]) !== null) {
-    console.log(`Release ${tag} already exists. Skipping duplicate packaging.`);
-    return false;
-  }
-
-  return true;
+/**
+ * The next version after the highest `vX.Y.Z` tag (pre-release tags are ignored).
+ * @param {string[]} tags - e.g. ["v2.0.2", "v2.0.3"]
+ * @param {"major"|"minor"|"patch"} type
+ * @returns {string}
+ */
+export function nextVersion(tags, type) {
+  const latest = semver.maxSatisfying(tags.map((tag) => semver.valid(tag)).filter(Boolean), "*") ?? "0.0.0";
+  return semver.inc(latest, type);
 }
 
 if (isDirectRun(import.meta.url)) {
-  const version = readModuleJson().version;
-  if (!semver.valid(version)) {
-    throw new Error(`module.json version "${version}" is not valid SemVer (MAJOR.MINOR.PATCH).`);
-  }
-  const tag = `v${version}`;
-  const release = shouldRelease(process.env, tag);
+  const commitSubject = tryRun("git", ["log", "-1", "--pretty=%s"]) ?? "";
+  const prTitle = tryRun("gh", ["api", `repos/${process.env.GITHUB_REPOSITORY}/commits/${process.env.GITHUB_SHA}/pulls`, "--jq", ".[0].title // empty"]) ?? "";
+  console.log(`Commit subject : ${commitSubject}`);
+  console.log(`Merged PR title: ${prTitle}`);
 
-  if (release) console.log(`Releasing version ${version} with tag ${tag}`);
-  const outputs = `tag=${tag}\nversion=${version}\nshould_release=${release}\n`;
+  const type = releaseType(prTitle || commitSubject);
+  const existingTag = tryRun("git", ["tag", "--points-at", "HEAD", "--list", "v*"]);
+  let outputs = "should_release=false\n";
+
+  if (!type) {
+    console.log("No 'fix' or 'feat' Conventional Commit prefix. Skipping module packaging.");
+  } else if (existingTag) {
+    console.log(`This commit is already released as ${existingTag}. Skipping.`);
+  } else {
+    const version = nextVersion((tryRun("git", ["tag", "--list", "v*"]) ?? "").split("\n"), type);
+    console.log(`Releasing ${type} version ${version} with tag v${version}`);
+    outputs = `tag=v${version}\nversion=${version}\nshould_release=true\n`;
+  }
+
   if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, outputs);
   console.log(outputs);
 }

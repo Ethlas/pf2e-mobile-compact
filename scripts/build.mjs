@@ -8,7 +8,7 @@
  * - dist/module.zip  the module folder zipped at its root, as Foundry installs it
  *
  * The package holds module.json, README.md, LICENSE, styles/, templates/ and scripts/ without the
- * Node tooling: runtime code is .js, so every .mjs file in scripts/ (verify, bump-version, build, ...)
+ * Node tooling: runtime code is .js, so every .mjs file in scripts/ (verify, build, release-check, ...)
  * stays out.
  *
  * Usage:

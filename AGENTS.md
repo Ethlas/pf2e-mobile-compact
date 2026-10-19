@@ -70,16 +70,16 @@ Welcome to the **PF2e Mobile Sheet (Compact)** repository (`pf2e-mobile-compact`
 1. **Syntax & Quality Checks**:
    - Run `npm ci` once to install the dev tooling (`semver`, `yazl`; dev dependencies only, nothing ships in the module).
    - Run `node scripts/verify.mjs` before pushing changes or deploying to verify JavaScript syntax, template rules, and touch targets.
-   - **Release tooling lives in `scripts/*.mjs`** and is never packaged (runtime code is `.js`): `release-check.mjs` (release gate in `release.yml`), `build.mjs` (stages `dist/package/`, writes `dist/module.json` and `dist/module.zip`; run it locally to test a package), `bump-version.mjs`, and the shared `release-utils.mjs`.
+   - **Release tooling lives in `scripts/*.mjs`** and is never packaged (runtime code is `.js`): `release-check.mjs` (release gate in `release.yml`), `build.mjs` (stages `dist/package/`, writes `dist/module.json` and `dist/module.zip`; run it locally to test a package), and the shared `release-utils.mjs`.
 2. **Conventional Commits & Semantic Versioning ([Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/))**:
    - **All commit messages and Pull Request titles MUST follow [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)**: `<type>[optional scope][!]: <description>`.
    - **Release-Triggering Prefixes (`fix` and `feat`)**:
-     - Only PRs/commits with a `fix` or `feat` prefix trigger module packaging in [`.github/workflows/release.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/release.yml) when merged into `main`. PR titles are not enforced by CI: a PR without one of these prefixes merges fine but does not release. A `fix`/`feat` PR must bump `module.json` to an unreleased version, otherwise the release is skipped.
-     - Use the `version-manager` skill ([`.agents/skills/version-manager/SKILL.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/.agents/skills/version-manager/SKILL.md)) or `node scripts/bump-version.mjs <type>`:
-       - **`fix:` (Bug Fix / Patch)**: update 3rd number (e.g. `1.0.36` -> `1.0.37`).
-       - **`feat:` (Feature / Minor)**: update middle number and reset 3rd number to 0 (e.g. `1.0.36` -> `1.1.0`).
-       - **`feat!:` / `fix!:` (Breaking / Major)**: update 1st number and reset middle and 3rd numbers to 0 (e.g. `1.0.36` -> `2.0.0`).
-     - Document changes in [`CHANGELOG.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/CHANGELOG.md).
+     - Only PRs/commits with a `fix` or `feat` prefix trigger module packaging in [`.github/workflows/release.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/release.yml) when merged into `main`. PR titles are not enforced by CI: a PR without one of these prefixes merges fine but does not release.
+     - **The version is automatic**: the release takes the highest `vX.Y.Z` tag and raises it by the prefix (see the `version-manager` skill, [`.agents/skills/version-manager/SKILL.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/.agents/skills/version-manager/SKILL.md)). Never edit the version by hand: the `module.json` version in the repository is `0.0.0-dev`, for development checkouts only, and the release writes the computed version into the packaged manifest.
+       - **`fix:` (Bug Fix / Patch)**: 3rd number (e.g. `1.0.36` -> `1.0.37`).
+       - **`feat:` (Feature / Minor)**: middle number, 3rd number reset to 0 (e.g. `1.0.36` -> `1.1.0`).
+       - **`feat!:` / `fix!:` (Breaking / Major)**: 1st number, middle and 3rd numbers reset to 0 (e.g. `1.0.36` -> `2.0.0`).
+     - Document changes in [`CHANGELOG.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/CHANGELOG.md) under the `## [Unreleased]` heading; GitHub's generated release notes list the merged PRs per version.
    - **Non-Release Prefixes (`chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `revert`)**:
      - Use these prefixes for documentation, CI workflows, styling-guide updates, tests, or internal chores that do **not** package a new Foundry release on merge.
 3. **Deployment**:
