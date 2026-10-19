@@ -4,7 +4,7 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ---
 
-## [2.0.3] - 2026-10-19
+## [Unreleased]
 
 ### Desktop Chat Isolation & Cleanup (Issue #53)
 
@@ -14,6 +14,13 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
   - Removed `disableChatInputs` and `_pf2eMobileInputObserver` (relying on existing `.pf2e-mobile-sheet .mobile-chat-mount` CSS rules in `styles/pf2e-mobile.css`), so `#chat` inputs and layout are never mutated or left disabled when restored to the desktop sidebar.
 - **Shared Original Parent & Multi-Sheet Handoff (`scripts/apps/sheet-helpers/chat-handler.js`, `scripts/pf2e-mobile.js`)**:
   - Stored `originalParent` and `originalNextSibling` once at the module level (only captured when `#chat` is not already inside `.mobile-chat-mount`) and handed `#chat` to any remaining open mobile sheet before restoring to `#sidebar`.
+
+### Automatic release versions & Node build (`scripts/release-check.mjs`, `scripts/build.mjs`, `.github/workflows/release.yml`)
+
+- **The version comes from the tags**: merging a `fix:` or `feat:` PR into `main` releases the highest `vX.Y.Z` tag raised by the prefix (`fix` -> patch, `feat` -> minor, `!` -> major). `scripts/bump-version.mjs` is removed, and the repository's `module.json` version is `0.0.0-dev`, for development checkouts only; the release writes the computed version into the packaged manifest.
+- **PR titles are free format**: the PR title and version checks in `ci-verify.yml` are removed. A PR without a `fix`/`feat` prefix merges fine and doesn't release.
+- **Releases only on merge to `main`**: the `v*` tag push and manual (`workflow_dispatch`) triggers are removed. A manual run built the selected branch, not the given tag, so it could overwrite an earlier release's files with newer code.
+- **Packaging in Node**: `scripts/build.mjs` replaces the `cp`/`rm`/`zip` steps (dev dependencies `semver` and `yazl` in a new `package.json`), so a release package can also be built locally, on Windows too. Every `.mjs` file in `scripts/` is tooling and stays out of `module.zip`.
 
 ---
 

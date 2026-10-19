@@ -23,3 +23,6 @@ deploy.ps1
 scratch/
 
 dev/**
+
+# Build output (node scripts/build.mjs)
+dist/

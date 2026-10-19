@@ -4,14 +4,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - "v*"
-  workflow_dispatch:
-    inputs:
-      tag_name:
-        description: "Release tag (e.g. v2.0.2). Leave empty to use version from module.json"
-        required: false
-        default: ""
 
 permissions:
   contents: write
@@ -30,105 +22,32 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: "24"
+          cache: npm
+
+      - name: Install dev tooling
+        run: npm ci
 
       - name: Determine version and check if release is needed
         id: get_version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ -n "${{ github.event.inputs.tag_name }}" ]; then
-            TAG="${{ github.event.inputs.tag_name }}"
-            VERSION="${TAG#v}"
-          elif [ "${{ github.ref_type }}" = "tag" ]; then
-            TAG="${{ github.ref_name }}"
-            VERSION="${TAG#v}"
-          else
-            VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('module.json', 'utf8')).version)")
-            TAG="v${VERSION}"
-          fi
-
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-
-          # When triggered by a push/merge to main, only package for 'fix' or 'feat' Conventional Commits
-          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_type }}" != "tag" ]; then
-            COMMIT_SUBJECT=$(git log -1 --pretty=%s)
-            PR_TITLE=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" --jq '.[0].title // empty' 2>/dev/null || true)
-
-            echo "Commit subject : ${COMMIT_SUBJECT}"
-            echo "Merged PR title: ${PR_TITLE}"
-
-            if ! echo "${PR_TITLE}" | grep -Eq '^(feat|fix)(\([a-zA-Z0-9_./-]+\))?(!)?: ' && \
-               ! echo "${COMMIT_SUBJECT}" | grep -Eq '^(feat|fix)(\([a-zA-Z0-9_./-]+\))?(!)?: '; then
-              echo "Commit/PR does not have a 'fix' or 'feat' Conventional Commit prefix. Skipping module packaging."
-              echo "should_release=false" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-
-            if gh release view "${TAG}" >/dev/null 2>&1; then
-              echo "Release ${TAG} already exists. Skipping duplicate packaging."
-              echo "should_release=false" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-          fi
-
-          echo "should_release=true" >> "$GITHUB_OUTPUT"
-          echo "Releasing version ${VERSION} with tag ${TAG}"
+        run: node scripts/release-check.mjs
 
       - name: Run verification test suite
         if: steps.get_version.outputs.should_release == 'true'
         run: node scripts/verify.mjs
 
-      - name: Stage clean module package
+      - name: Build module package
         if: steps.get_version.outputs.should_release == 'true'
-        run: |
-          mkdir -p dist/package
-
-          # Whitelist runtime assets only (Foundry VTT Packaging Guide compliant)
-          cp module.json README.md LICENSE dist/package/
-          cp -r styles dist/package/
-          cp -r templates dist/package/
-          cp -r scripts dist/package/
-
-          # Remove verification tests, versioning scripts, and dev tooling from release bundle
-          rm -f dist/package/scripts/verify.mjs
-          rm -f dist/package/scripts/bump-version.mjs
-
-          # Update version and tag-specific download URL in the release manifest
-          node -e "
-            const fs = require('fs');
-            const mod = JSON.parse(fs.readFileSync('dist/package/module.json', 'utf8'));
-            mod.version = '${{ steps.get_version.outputs.version }}';
-            mod.download = 'https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.tag }}/module.zip';
-            mod.manifest = 'https://github.com/${{ github.repository }}/releases/latest/download/module.json';
-            fs.writeFileSync('dist/package/module.json', JSON.stringify(mod, null, 2) + '\n');
-          "
-
-          # Export standalone release manifest alongside zip
-          cp dist/package/module.json dist/module.json
-
-          # Create root-level module.zip archive
-          cd dist/package
-          zip -r ../module.zip .
-          cd ../..
-
-      - name: Inspect packaged zip contents
-        if: steps.get_version.outputs.should_release == 'true'
-        run: |
-          echo "=== Archive contents of module.zip ==="
-          unzip -l dist/module.zip
+        run: node scripts/build.mjs --tag "${{ steps.get_version.outputs.tag }}"
 
       - name: Publish GitHub Release & Assets
         if: steps.get_version.outputs.should_release == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.get_version.outputs.tag }}
         run: |
-          TAG="${{ steps.get_version.outputs.tag }}"
-          if gh release view "${TAG}" >/dev/null 2>&1; then
-            gh release upload "${TAG}" dist/module.zip dist/module.json --clobber
-          else
-            gh release create "${TAG}" dist/module.zip dist/module.json \
-              --title "Release ${TAG}" \
-              --target "${{ github.sha }}" \
-              --generate-notes
-          fi
+          gh release create "${TAG}" dist/module.zip dist/module.json \
+            --title "Release ${TAG}" \
+            --target "${{ github.sha }}" \
+            --generate-notes
