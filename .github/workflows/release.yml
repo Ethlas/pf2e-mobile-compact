@@ -2,12 +2,14 @@ name: Package & Release Module
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*"
   workflow_dispatch:
     inputs:
       tag_name:
-        description: "Release tag (e.g. v1.0.37). Leave empty to use version from module.json"
+        description: "Release tag (e.g. v2.0.2). Leave empty to use version from module.json"
         required: false
         default: ""
 
@@ -20,18 +22,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version: "24"
 
-      - name: Run verification test suite
-        run: node scripts/verify.mjs
-
-      - name: Determine version and release tag
+      - name: Determine version and check if release is needed
         id: get_version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ -n "${{ github.event.inputs.tag_name }}" ]; then
             TAG="${{ github.event.inputs.tag_name }}"
@@ -43,11 +46,28 @@ jobs:
             VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('module.json', 'utf8')).version)")
             TAG="v${VERSION}"
           fi
+
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+          # If triggered by a push to main (merge) and this release already exists, skip safely
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_type }}" != "tag" ]; then
+            if gh release view "${TAG}" >/dev/null 2>&1; then
+              echo "Release ${TAG} already exists. Skipping duplicate packaging."
+              echo "should_release=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+
+          echo "should_release=true" >> "$GITHUB_OUTPUT"
           echo "Releasing version ${VERSION} with tag ${TAG}"
 
+      - name: Run verification test suite
+        if: steps.get_version.outputs.should_release == 'true'
+        run: node scripts/verify.mjs
+
       - name: Stage clean module package
+        if: steps.get_version.outputs.should_release == 'true'
         run: |
           mkdir -p dist/package
 
@@ -80,20 +100,22 @@ jobs:
           cd ../..
 
       - name: Inspect packaged zip contents
+        if: steps.get_version.outputs.should_release == 'true'
         run: |
           echo "=== Archive contents of module.zip ==="
           unzip -l dist/module.zip
 
       - name: Publish GitHub Release & Assets
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            dist/module.zip
-            dist/module.json
-          name: Release ${{ steps.get_version.outputs.tag }}
-          tag_name: ${{ steps.get_version.outputs.tag }}
-          generate_release_notes: true
-          draft: false
-          prerelease: false
+        if: steps.get_version.outputs.should_release == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.get_version.outputs.tag }}"
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" dist/module.zip dist/module.json --clobber
+          else
+            gh release create "${TAG}" dist/module.zip dist/module.json \
+              --title "Release ${TAG}" \
+              --target "${{ github.sha }}" \
+              --generate-notes
+          fi
