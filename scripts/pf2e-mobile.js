@@ -2,30 +2,14 @@
  * Entry point for pf2e-mobile-compact module.
  */
 import { PF2eMobileSheet } from "./apps/mobile-sheet.js";
-import { isMobileDevice, isIOSDevice, getStoredRollMode, ensureSafeCanvasTokens } from "./utils/sheet-utils.js";
+import { isMobileDevice, isIOSDevice, shouldActivateMobile, getStoredRollMode, ensureSafeCanvasTokens } from "./utils/sheet-utils.js";
+import { restoreChatElement } from "./apps/sheet-helpers/chat-handler.js";
 import { migrateActorPropertyRunes } from "./apps/sheet-helpers/rune-handlers.js";
 import { ensureMobileViewButton } from "./utils/view-mode.js";
 import { getTargetableToken } from "./tokens/token-adapter.js";
 import { isMobileAudioDisabled, setMobileAudioDisabled, applyMobileAudioSuppression, restoreMobileAudioPlayback, patchAudioMethods } from "./audio/mobile-audio.js";
 
-export { isMobileDevice, isIOSDevice, isMobileAudioDisabled, setMobileAudioDisabled };
-
-/**
- * Evaluates whether mobile mode should activate for the current client session,
- * respecting the user's client-side module settings.
- * @returns {boolean}
- */
-export function shouldActivateMobile() {
-  try {
-    const mode = game.settings.get("pf2e-mobile-compact", "mobileActivationMode");
-    if (mode === "always") return true;
-    if (mode === "never") return false;
-    return isMobileDevice();
-  } catch {
-    // Before settings are ready, fallback to device detection
-    return isMobileDevice();
-  }
-}
+export { isMobileDevice, isIOSDevice, shouldActivateMobile, isMobileAudioDisabled, setMobileAudioDisabled };
 
 /**
  * Injects or updates the viewport meta tag with `viewport-fit=cover` (for iPhone Notch / Dynamic Island
@@ -874,6 +858,7 @@ export function deactivateMobileEnvironment() {
     document.body.classList.remove("pf2e-mobile-active");
   }
   mobileEnvActivated = false;
+  restoreChatElement();
   releaseWakeLock();
   resumeCanvasFromMobile();
   restoreMobileAudioPlayback();

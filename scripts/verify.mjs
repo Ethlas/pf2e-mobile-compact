@@ -2277,6 +2277,91 @@ try {
   logFail(`Mobile audio suppression verification threw an error: ${err.stack || err.message}`);
 }
 
+// --- 6.14 Desktop Chat Isolation & Restore Verification (Issue #53) ---
+try {
+  const { dockChatElement, restoreChatElement } = await import("../scripts/apps/sheet-helpers/chat-handler.js");
+
+  const makeEl = (id = "", classes = []) => ({
+    id,
+    parentElement: null,
+    nextSibling: null,
+    isConnected: true,
+    children: [],
+    classList: { contains: (c) => classes.includes(c) },
+    appendChild(child) {
+      child.parentElement?.children?.splice(child.parentElement.children.indexOf(child), 1);
+      child.parentElement = this;
+      this.children.push(child);
+      return child;
+    },
+    insertBefore(child, ref) { return this.appendChild(child); },
+    contains(target) {
+      for (let curr = target; curr; curr = curr.parentElement) if (curr === this) return true;
+      return false;
+    },
+    querySelector(sel) {
+      if (sel === ".mobile-chat-mount") return this._mount ?? null;
+      return null;
+    },
+    addEventListener: () => {}
+  });
+
+  const sidebarEl = makeEl("sidebar");
+  const chatEl = makeEl("chat");
+  sidebarEl.appendChild(chatEl);
+
+  const makeSheet = (id) => {
+    const mount = makeEl("", ["mobile-chat-mount"]);
+    const root = makeEl(id, ["pf2e-mobile-sheet"]);
+    root._mount = mount;
+    root.appendChild(mount);
+    return { id, rendered: true, element: root, _ensureTokenControlled: () => {} };
+  };
+  const sheetA = makeSheet("sheet-a");
+  const sheetB = makeSheet("sheet-b");
+
+  const prevUi = globalThis.ui;
+  const prevInstances = globalThis.foundry.applications.instances;
+  const origGet = globalThis.game.settings.get;
+  const instances = new Map([["sheet-a", sheetA]]);
+  globalThis.ui = { ...(prevUi || {}), chat: { element: chatEl } };
+  globalThis.foundry.applications.instances = instances;
+
+  // 1. Desktop mode ("never"): #chat stays in #sidebar
+  globalThis.game.settings.get = (mod, key) => (mod === "pf2e-mobile-compact" && key === "mobileActivationMode") ? "never" : origGet?.(mod, key);
+  dockChatElement(sheetA);
+  if (chatEl.parentElement !== sidebarEl) {
+    logFail("[Desktop Chat Issue #53] Bug #1: dockChatElement moved #chat in desktop mode.");
+  } else {
+    logPass("[Desktop Chat Issue #53] Bug #1 fixed: #chat stays in #sidebar when mobile mode is inactive.");
+  }
+
+  // 2. Mobile mode ("always"): docks #chat and hands off cleanly across multiple open sheets (Bug #2 & #3)
+  globalThis.game.settings.get = (mod, key) => (mod === "pf2e-mobile-compact" && key === "mobileActivationMode") ? "always" : origGet?.(mod, key);
+  dockChatElement(sheetA);
+  instances.set("sheet-b", sheetB);
+  dockChatElement(sheetB);
+  sheetA.rendered = false;
+  instances.delete("sheet-a");
+  restoreChatElement(sheetA);
+  const stayedInB = chatEl.parentElement === sheetB.element._mount;
+
+  sheetB.rendered = false;
+  instances.delete("sheet-b");
+  restoreChatElement(sheetB);
+  if (!stayedInB || chatEl.parentElement !== sidebarEl) {
+    logFail("[Desktop Chat Issue #53] Bug #3: Multi-sheet handoff or final restore to #sidebar failed.");
+  } else {
+    logPass("[Desktop Chat Issue #53] Bug #2 & #3 fixed: Multi-sheet handoff and clean restore to #sidebar without inline style mutations.");
+  }
+
+  globalThis.ui = prevUi;
+  globalThis.foundry.applications.instances = prevInstances;
+  globalThis.game.settings.get = origGet;
+} catch (err) {
+  logFail(`Desktop chat isolation & restore verification threw an error: ${err.stack || err.message}`);
+}
+
 
 // 7. Foundry VTT AI Content Policy Compliance Audit (https://foundryvtt.com/article/ai-policy/)
 console.log("\n--- 7. Foundry VTT AI Content Policy Compliance Audit ---");

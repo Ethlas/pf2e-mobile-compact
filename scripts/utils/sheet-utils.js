@@ -179,6 +179,25 @@ export function isMobileDevice() {
 }
 
 /**
+ * Evaluates whether mobile mode should activate for the current client session,
+ * respecting the user's client-side module settings.
+ * @returns {boolean}
+ */
+export function shouldActivateMobile() {
+  try {
+    if (typeof game !== "undefined" && typeof game.settings?.get === "function") {
+      const mode = game.settings.get("pf2e-mobile-compact", "mobileActivationMode");
+      if (mode === "always") return true;
+      if (mode === "never") return false;
+    }
+    return isMobileDevice();
+  } catch {
+    // Before settings are ready, fallback to device detection
+    return isMobileDevice();
+  }
+}
+
+/**
  * Check if the client is running on an iOS / iPadOS WebKit device (iPhone, iPad, iPod).
  * @returns {boolean}
  */
