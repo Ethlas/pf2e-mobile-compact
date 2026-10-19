@@ -15,6 +15,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import semver from "semver";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,24 +47,16 @@ export const TYPE_MAP = {
  * @returns {string} nextVersion - e.g. "1.0.37"
  */
 export function calculateNextVersion(currentVersion, releaseType) {
-  if (!currentVersion || !/^\d+\.\d+\.\d+$/.test(currentVersion)) {
+  if (!semver.valid(currentVersion)) {
     throw new Error(`Current version "${currentVersion}" in module.json is not valid SemVer (X.Y.Z).`);
   }
-
-  const [major, minor, patch] = currentVersion.split(".").map(Number);
-
-  if (releaseType === "patch") {
-    // Bug fix: update 3rd number
-    return `${major}.${minor}.${patch + 1}`;
-  } else if (releaseType === "minor") {
-    // Feature: update middle number, reset patch to 0
-    return `${major}.${minor + 1}.0`;
-  } else if (releaseType === "major") {
-    // Full new version: update 1st number, reset minor & patch to 0
-    return `${major + 1}.0.0`;
+  if (!["patch", "minor", "major"].includes(releaseType)) {
+    throw new Error(`Unknown release type "${releaseType}". Expected patch, minor, or major.`);
   }
 
-  throw new Error(`Unknown release type "${releaseType}". Expected patch, minor, or major.`);
+  // patch: bug fix (3rd number), minor: feature (middle number, resets patch),
+  // major: full new version (1st number, resets minor and patch)
+  return semver.inc(currentVersion, releaseType);
 }
 
 /**
@@ -178,7 +171,7 @@ export function bumpVersion(rawType, changeDescription = "", options = {}) {
 Next Steps (Reminder: Always obtain explicit user authorization before pushing to git, and NEVER merge PRs):
   1. Review and refine your notes in CHANGELOG.md
   2. Commit changes using Conventional Commits v1.0.0:
-     \x1b[36mgit add module.json CHANGELOG.md\x1b[0m
+     \x1b[36mgit add module.json package.json CHANGELOG.md\x1b[0m
      \x1b[36mgit commit -m "${ccPrefix}: ${ccSummary}"\x1b[0m
   3. Push branch and open a Pull Request with a "${ccPrefix}:" title (do NOT merge):
      \x1b[36mgit push -u origin <branch-name>\x1b[0m

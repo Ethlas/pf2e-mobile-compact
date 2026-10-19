@@ -59,7 +59,7 @@ node scripts/bump-version.mjs full "Brief description of major milestone"
 ### What `bump-version.mjs` Performs:
 1. Validates the current version in [`module.json`](file:///d:/Dnd/coding/pf2e-mobile-compact/module.json).
 2. Calculates the new version based on the specified release type.
-3. Updates `module.json`'s `"version"` field.
+3. Updates the `"version"` field of `module.json` and `package.json` (with `semver.inc`).
 4. Prepends a draft entry with today's date in [`CHANGELOG.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/CHANGELOG.md).
 5. Runs the automated verification suite (`node scripts/verify.mjs`).
 6. Outputs exact Conventional Commits git & PR commands.
@@ -74,7 +74,8 @@ Before committing or opening a PR:
    node scripts/verify.mjs
    ```
 2. Check that all tests pass with 0 errors and 0 warnings.
-3. For `fix:` and `feat:` PRs, ensure [`CHANGELOG.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/CHANGELOG.md) accurately documents the changes and lists affected files.
+3. To test the release package locally, run `node scripts/build.mjs` and inspect `dist/module.zip`.
+4. For `fix:` and `feat:` PRs, ensure [`CHANGELOG.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/CHANGELOG.md) accurately documents the changes and lists affected files.
 
 ---
 
@@ -98,9 +99,9 @@ Once the user authorizes pushing a branch / PR:
 
 ### Automated GitHub Verification & Release Actions
 - **On Pull Request ([`.github/workflows/ci-verify.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/ci-verify.yml))**:
-  - Validates that the PR title matches Conventional Commits v1.0.0 (`<type>[optional scope][!]: <description>`).
+  - Runs `node scripts/check-pr.mjs`, which validates that the PR title matches Conventional Commits v1.0.0 (`<type>[optional scope][!]: <description>`).
   - If `<type>` is `fix` or `feat`, verifies that `module.json` version was incremented above `main` and that tag `vX.Y.Z` is unused.
   - Runs `node scripts/verify.mjs`.
 - **On Merge to `main` ([`.github/workflows/release.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/release.yml))**:
-  - Checks whether the merged PR title / commit has a `fix` or `feat` Conventional Commit prefix.
-  - **Only when `fix` or `feat` is present**: verifies code integrity, packages runtime assets (`module.json`, `README.md`, `LICENSE`, `scripts/`, `styles/`, `templates/`), and automatically creates the `vX.Y.Z` tag and GitHub Release with `module.zip` and `module.json`.
+  - Runs `node scripts/release-check.mjs`, which checks whether the merged PR title / commit has a `fix` or `feat` Conventional Commit prefix.
+  - **Only when `fix` or `feat` is present**: verifies code integrity, packages runtime assets with `node scripts/build.mjs` (`module.json`, `README.md`, `LICENSE`, `scripts/` without its `.mjs` tooling, `styles/`, `templates/`), and automatically creates the `vX.Y.Z` tag and GitHub Release with `module.zip` and `module.json`.

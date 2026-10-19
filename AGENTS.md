@@ -68,7 +68,9 @@ Welcome to the **PF2e Mobile Sheet (Compact)** repository (`pf2e-mobile-compact`
 ## 3. Workflow & Deployment Rules
 
 1. **Syntax & Quality Checks**:
+   - Run `npm ci` once to install the dev tooling (`semver`, `yazl`; dev dependencies only, nothing ships in the module).
    - Run `node scripts/verify.mjs` before pushing changes or deploying to verify JavaScript syntax, template rules, and touch targets.
+   - **Release tooling lives in `scripts/*.mjs`** and is never packaged (runtime code is `.js`): `check-pr.mjs` (PR title & version gate in `ci-verify.yml`), `release-check.mjs` (release gate in `release.yml`), `build.mjs` (stages `dist/package/`, writes `dist/module.json` and `dist/module.zip`; run it locally to test a package), `bump-version.mjs`, and the shared `release-utils.mjs` (the one Conventional Commits pattern). Keep workflow steps to a call of these scripts instead of inline shell or `node -e` code.
 2. **Conventional Commits & Semantic Versioning ([Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/))**:
    - **All commit messages and Pull Request titles MUST follow [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)**: `<type>[optional scope][!]: <description>`.
    - **Release-Triggering Prefixes (`fix` and `feat`)**:
