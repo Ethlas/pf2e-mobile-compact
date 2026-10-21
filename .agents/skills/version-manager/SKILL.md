@@ -17,7 +17,7 @@ All commits and Pull Request titles MUST follow the **[Conventional Commits v1.0
 <type>[optional scope][!]: <description>
 ```
 
-Versions follow the `MAJOR.MINOR.PATCH` format (e.g., `2.0.2`) and are **computed automatically** when a PR is merged: the release takes the highest `vX.Y.Z` tag and raises it by the PR title's prefix. Never edit the version by hand: the `module.json` version in the repository is `0.0.0-dev`, for development checkouts only, and the release writes the computed version into the packaged manifest.
+Versions follow the `MAJOR.MINOR.PATCH` format (e.g., `2.0.2`) and are **computed automatically** when a PR is merged: the release takes the highest `vX.Y.Z` tag and raises it by the PR title's prefix (or, for a direct push without a PR, the commit subject's; the prefixes of the commits inside a PR don't count). Never edit the version by hand: the `module.json` version in the repository is `0.0.0-dev`, for development checkouts only, and the release writes the computed version into the packaged manifest.
 **Only `fix` and `feat` Pull Requests package a new Foundry module release when merged into `main`:**
 
 1. **`fix:` — Bug Fix (Patch)**:
@@ -44,6 +44,8 @@ Versions follow the `MAJOR.MINOR.PATCH` format (e.g., `2.0.2`) and are **compute
 ## 2. Changelog
 
 Add an entry for every `fix` or `feat` change to [`CHANGELOG.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/CHANGELOG.md) under the `## [Unreleased]` heading at the top. The version isn't known until the PR is merged; GitHub's generated release notes list the merged PRs per version.
+
+After a release, rename `## [Unreleased]` to the released version and date (e.g. `## [2.0.4] - 2026-10-21`, from the release's `vX.Y.Z` tag) in a `docs(changelog):` PR, and start a new empty `## [Unreleased]` above it. The release workflow does not edit the changelog.
 
 ---
 
@@ -79,7 +81,8 @@ Once the user authorizes pushing a branch / PR:
    ```
 
 ### Automated GitHub Verification & Release Actions
-- **On Pull Request and push ([`.github/workflows/ci-verify.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/ci-verify.yml))**: runs `node scripts/verify.mjs`.
+- **On Pull Request ([`.github/workflows/ci-verify.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/ci-verify.yml))**: runs `node scripts/verify.mjs`.
 - **On Merge to `main` ([`.github/workflows/release.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/release.yml))**:
+  - First runs `ci-verify.yml` as its `verify` job (a reusable workflow, via `workflow_call`); packaging only starts when it passes.
   - Runs `node scripts/release-check.mjs`, which checks whether the merged PR title (or the commit subject) has a `fix` or `feat` Conventional Commit prefix, and computes the version from the highest `vX.Y.Z` tag.
-  - **Only when `fix` or `feat` is present**: verifies code integrity, packages runtime assets with `node scripts/build.mjs` (`module.json`, `README.md`, `LICENSE`, `scripts/` without its `.mjs` tooling, `styles/`, `templates/`), and automatically creates the `vX.Y.Z` tag and GitHub Release with `module.zip` and `module.json`.
+  - **Only when `fix` or `feat` is present**: packages runtime assets with `node scripts/build.mjs` (`module.json`, `README.md`, `LICENSE`, `scripts/` without its `.mjs` tooling, `styles/`, `templates/`), and automatically creates the `vX.Y.Z` tag and GitHub Release with `module.zip` and `module.json`.
