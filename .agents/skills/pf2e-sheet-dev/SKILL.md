@@ -58,7 +58,7 @@ This guide provides procedures for developing and extending the PF2e Mobile Shee
 6. **Static Verification, Conventional Commits & Pull Requests**:
    - Run `node scripts/verify.mjs` before committing or deploying.
    - Format all commit messages and Pull Request titles using **[Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)** (`<type>[optional scope][!]: <description>`).
-   - `fix:` and `feat:` PRs package a new Foundry module release when merged; the version is computed from the latest `v` tag, so don't edit the `module.json` version. Document the change in `CHANGELOG.md` under `## [Unreleased]`.
+   - PRs with a `fix:` or `feat:` **title** package a new Foundry module release when merged (the commits' prefixes don't count); the version is computed from the latest `v` tag, so don't edit the `module.json` version. Document the change in `CHANGELOG.md` under `## [Unreleased]`.
    - **NEVER commit, push, or deploy without explicit user authorization, and NEVER merge Pull Requests (`gh pr merge`).**
 
 

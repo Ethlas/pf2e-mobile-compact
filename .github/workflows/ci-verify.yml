@@ -2,9 +2,8 @@ name: Verify JS, HTML/HBS & Sheet Actions
 
 on:
   pull_request:
-    branches: [main, master]
-  push:
-    branches: [main, master]
+    branches: [main]
+  workflow_call:
 
 jobs:
   verify:

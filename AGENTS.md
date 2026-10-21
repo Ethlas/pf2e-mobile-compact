@@ -74,12 +74,13 @@ Welcome to the **PF2e Mobile Sheet (Compact)** repository (`pf2e-mobile-compact`
 2. **Conventional Commits & Semantic Versioning ([Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/))**:
    - **All commit messages and Pull Request titles MUST follow [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)**: `<type>[optional scope][!]: <description>`.
    - **Release-Triggering Prefixes (`fix` and `feat`)**:
-     - Only PRs/commits with a `fix` or `feat` prefix trigger module packaging in [`.github/workflows/release.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/release.yml) when merged into `main`. PR titles are not enforced by CI: a PR without one of these prefixes merges fine but does not release.
+     - Only a `fix` or `feat` prefix on the **PR title** (or, for a direct push without a PR, the commit subject) triggers module packaging in [`.github/workflows/release.yml`](file:///d:/Dnd/coding/pf2e-mobile-compact/.github/workflows/release.yml) when merged into `main`. The prefixes of the commits inside a PR don't count. PR titles are not enforced by CI: a PR without one of these prefixes merges fine but does not release.
      - **The version is automatic**: the release takes the highest `vX.Y.Z` tag and raises it by the prefix (see the `version-manager` skill, [`.agents/skills/version-manager/SKILL.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/.agents/skills/version-manager/SKILL.md)). Never edit the version by hand: the `module.json` version in the repository is `0.0.0-dev`, for development checkouts only, and the release writes the computed version into the packaged manifest.
        - **`fix:` (Bug Fix / Patch)**: 3rd number (e.g. `1.0.36` -> `1.0.37`).
        - **`feat:` (Feature / Minor)**: middle number, 3rd number reset to 0 (e.g. `1.0.36` -> `1.1.0`).
        - **`feat!:` / `fix!:` (Breaking / Major)**: 1st number, middle and 3rd numbers reset to 0 (e.g. `1.0.36` -> `2.0.0`).
      - Document changes in [`CHANGELOG.md`](file:///d:/Dnd/coding/pf2e-mobile-compact/CHANGELOG.md) under the `## [Unreleased]` heading; GitHub's generated release notes list the merged PRs per version.
+     - **After a release**, rename `## [Unreleased]` to the released version and date (e.g. `## [2.0.4] - 2026-10-21`, from the release's `vX.Y.Z` tag) in a `docs(changelog):` PR, and start a new empty `## [Unreleased]` above it. The release workflow does not edit the changelog.
    - **Non-Release Prefixes (`chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `revert`)**:
      - Use these prefixes for documentation, CI workflows, styling-guide updates, tests, or internal chores that do **not** package a new Foundry release on merge.
 3. **Deployment**:
