@@ -9,8 +9,14 @@ permissions:
   contents: write
 
 jobs:
+  verify:
+    uses: ./.github/workflows/ci-verify.yml
+    permissions:
+      contents: read
+
   build-and-release:
     name: Package Foundry VTT Module & Create Release
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -32,10 +38,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/release-check.mjs
-
-      - name: Run verification test suite
-        if: steps.get_version.outputs.should_release == 'true'
-        run: node scripts/verify.mjs
 
       - name: Build module package
         if: steps.get_version.outputs.should_release == 'true'
