@@ -6,6 +6,11 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### foundryvtt.com listing description (`docs/foundry-listing.html`, `docs/screenshots/`, `ASSET_PROVENANCE.json`)
+
+- **Description for the package page**: foundryvtt.com doesn't read `module.json` or the README for the package page; the owner pastes the description into the package admin. `docs/foundry-listing.html` holds that text (a short pitch, benefit bullets and three phone screenshots) so it can be reviewed like code.
+- **Screenshots**: the Actions tab, the header target list with distances, and the Spells tab, in `docs/screenshots/`. The listing loads them from `main` on GitHub. `docs/` is not packaged; `ASSET_PROVENANCE.json` records the screenshots for the media check in `scripts/verify.mjs`.
+
 ### Desktop Chat Isolation & Cleanup (Issue #53)
 
 - **Desktop Mode Guard (`scripts/apps/sheet-helpers/chat-handler.js`, `scripts/apps/mobile-sheet.js`, `scripts/utils/sheet-utils.js`)**:
