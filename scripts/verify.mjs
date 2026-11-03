@@ -2362,6 +2362,225 @@ try {
   logFail(`Desktop chat isolation & restore verification threw an error: ${err.stack || err.message}`);
 }
 
+// 6.14 Kineticist Elemental Blast & Weapon Infusion Verification
+console.log("\n--- 6.14 Kineticist Elemental Blast & Weapon Infusion Verification ---");
+try {
+  const { prepareTogglesContext } = await import("../scripts/apps/sheet-helpers/context-toggles.js");
+  const {
+    prepareElementalBlastsContext,
+    onChannelElements,
+    onToggleBlastActionCost,
+    onSetBlastDamageType,
+    onExecuteBlastAttack,
+    onExecuteBlastDamage
+  } = await import("../scripts/apps/sheet-helpers/elemental-blast-handlers.js");
+
+  let kineticAuraActive = false;
+  let currentActionCost = 1;
+  let selectedDamageType = "cold";
+  const attackCalls = [];
+  const damageCalls = [];
+  const toggledOptions = [];
+
+  const channelItem = {
+    id: "chan-item-1",
+    name: "Channel Elements",
+    slug: "channel-elements",
+    type: "action",
+    system: {
+      selfEffect: { uuid: "Compendium.pf2e.feat-effects.Item.EffectKineticAura", name: "Effect: Kinetic Aura" }
+    },
+    toMessage: async () => {}
+  };
+  const blastItem = {
+    id: "blast-item-1",
+    name: "Elemental Blast",
+    slug: "elemental-blast",
+    type: "action",
+    system: { rules: [{ key: "RollOption", option: "action-cost", selection: "1" }] }
+  };
+
+  const mockKineticist = {
+    id: "kin-1",
+    name: "Yoon",
+    type: "character",
+    flags: { pf2e: { kineticist: { elementalBlast: { ready: false } } } },
+    items: {
+      find: (fn) => [channelItem, blastItem].find(fn),
+      get: (id) => [channelItem, blastItem].find((i) => i.id === id) || null,
+      filter: () => []
+    },
+    itemTypes: {
+      action: [channelItem, blastItem],
+      feat: [{ id: "feat-wi", name: "Weapon Infusion", slug: "weapon-infusion" }],
+      effect: []
+    },
+    synthetics: {
+      toggles: {
+        "elemental-blast": {
+          "weapon-infusion": {
+            itemId: "feat-wi",
+            label: "PF2E.SpecificRule.Kineticist.Impulse.WeaponInfusion.SimpleLabel",
+            domain: "elemental-blast",
+            option: "weapon-infusion",
+            checked: true,
+            enabled: true,
+            alwaysActive: false,
+            suboptions: [
+              { value: "agile", label: "Agile", selected: true },
+              { value: "propulsive", label: "Propulsive", selected: false }
+            ]
+          },
+          "action-cost": {
+            itemId: "blast-item-1",
+            label: "Actions",
+            domain: "elemental-blast",
+            option: "action-cost",
+            checked: true,
+            enabled: true,
+            alwaysActive: true,
+            suboptions: [
+              { value: "1", label: "1", selected: true },
+              { value: "2", label: "2", selected: false }
+            ]
+          }
+        }
+      }
+    },
+    toggleRollOption: async (domain, option, itemId, checked, suboption) => {
+      toggledOptions.push({ domain, option, itemId, checked, suboption });
+      if (option === "action-cost") currentActionCost = Number(suboption) || 1;
+    },
+    createEmbeddedDocuments: async () => {
+      kineticAuraActive = true;
+    }
+  };
+
+  const prevPf2e = globalThis.game.pf2e;
+  const prevConfigPf2e = globalThis.CONFIG.PF2E;
+  globalThis.CONFIG.PF2E = {
+    ...(prevConfigPf2e || {}),
+    effectTraits: { water: "Water", fire: "Fire" },
+    npcAttackTraits: { agile: "Agile", propulsive: "Propulsive", versatileB: "Versatile B" },
+    damageTypes: { cold: "Cold", bludgeoning: "Bludgeoning", piercing: "Piercing", slashing: "Slashing" }
+  };
+  globalThis.game.pf2e = {
+    ...(prevPf2e || {}),
+    ElementalBlast: class MockElementalBlast {
+      constructor(actor) {
+        this.actor = actor;
+        this.item = blastItem;
+        this.actionCost = currentActionCost;
+        this.infusion = kineticAuraActive
+          ? { traits: { melee: ["agile"], ranged: ["propulsive"] }, damageTypes: ["bludgeoning", "piercing", "slashing"] }
+          : null;
+        this.configs = kineticAuraActive
+          ? [{
+              element: "water",
+              label: "PF2E.SpecificRule.Kineticist.Impulse.ElementalBlast.ShortLabel.water",
+              img: "systems/pf2e/icons/actions/elemental-blast-water.webp",
+              dieFaces: 8,
+              actionCost: currentActionCost,
+              range: { increment: null, max: 30, label: "Max 30 ft." },
+              damageTypes: [
+                { value: "cold", label: "Cold", icon: "snowflake", selected: selectedDamageType === "cold" },
+                { value: "bludgeoning", label: "Bludgeoning", icon: "hammer", selected: selectedDamageType === "bludgeoning" }
+              ],
+              maps: {
+                melee: { map0: "+10", map1: "MAP -4 (+6)", map2: "MAP -8 (+2)" },
+                ranged: { map0: "+10", map1: "MAP -5 (+5)", map2: "MAP -10 (+0)" }
+              }
+            }]
+          : [];
+      }
+      async setDamageType({ element, damageType }) {
+        selectedDamageType = damageType;
+      }
+      async attack(params) {
+        attackCalls.push(params);
+      }
+      async damage(params) {
+        if (params.getFormula) {
+          return params.outcome === "success"
+            ? (params.melee ? "1d8+4 cold" : "1d8+2 cold")
+            : (params.melee ? "2*(1d8+4) cold" : "2*(1d8+2) cold");
+        }
+        damageCalls.push(params);
+      }
+    }
+  };
+
+  // 1. Unchanneled state: blast card shows Channel Elements button
+  const unchanneledCtx = {};
+  prepareTogglesContext(mockKineticist, { _collapsedRankGroups: new Set() }, unchanneledCtx);
+  await prepareElementalBlastsContext(mockKineticist, unchanneledCtx);
+  if (
+    unchanneledCtx.elementalBlastsReady !== false ||
+    unchanneledCtx.elementalBlasts?.length !== 1 ||
+    unchanneledCtx.elementalBlasts[0].ready !== false ||
+    unchanneledCtx.elementalBlasts[0].channelItemId !== "chan-item-1"
+  ) {
+    logFail(`[Elemental Blast] Unchanneled context invalid: ${JSON.stringify(unchanneledCtx.elementalBlasts)}`);
+  } else {
+    logPass("[Elemental Blast] Unchanneled Kineticist context exposes Elemental Blast card with Channel Elements button.");
+  }
+
+  // 2. Toggles context routes Weapon Infusion & Action Cost into toggles.elementalBlast
+  if (unchanneledCtx.toggles?.elementalBlast?.length !== 2 || unchanneledCtx.toggles?.actions?.length !== 0) {
+    logFail(`[Elemental Blast] Expected 2 toggles in toggles.elementalBlast and 0 in toggles.actions, got ${unchanneledCtx.toggles?.elementalBlast?.length} / ${unchanneledCtx.toggles?.actions?.length}`);
+  } else {
+    logPass("[Elemental Blast] Weapon Infusion and Action Cost toggles route cleanly to toggles.elementalBlast.");
+  }
+
+  // 3. Channeled state: melee/ranged variants, formulas, Weapon Infusion traits, and damage types
+  kineticAuraActive = true;
+  mockKineticist.flags.pf2e.kineticist.elementalBlast.ready = true;
+  const channeledCtx = {};
+  await prepareElementalBlastsContext(mockKineticist, channeledCtx);
+  const waterBlast = channeledCtx.elementalBlasts?.[0];
+  if (
+    !channeledCtx.elementalBlastsReady ||
+    !waterBlast?.ready ||
+    waterBlast.meleeVariants?.length !== 3 ||
+    waterBlast.rangedVariants?.length !== 3 ||
+    waterBlast.meleeTraits?.[0]?.slug !== "agile" ||
+    waterBlast.rangedTraits?.[0]?.slug !== "propulsive" ||
+    waterBlast.formula?.melee?.damage !== "1d8+4 cold" ||
+    waterBlast.hasMultipleDamageTypes !== true
+  ) {
+    logFail(`[Elemental Blast] Channeled context invalid: ${JSON.stringify(waterBlast)}`);
+  } else {
+    logPass("[Elemental Blast] Channeled Kineticist context prepares Melee/Ranged MAP variants, damage formulas, Weapon Infusion traits, and damage type choices.");
+  }
+
+  // 4. Handlers: toggleBlastActionCost, setBlastDamageType, executeBlastAttack, executeBlastDamage
+  const mockKinSheet = { actor: mockKineticist, rollMode: "digital", _resolveTargetForAction: async () => null };
+  await onToggleBlastActionCost(mockKinSheet, {}, { dataset: { itemId: "blast-item-1", actionCost: "1" } });
+  await onSetBlastDamageType(mockKinSheet, {}, { dataset: { element: "water", damageType: "bludgeoning" } });
+  await onExecuteBlastAttack(mockKinSheet, {}, { dataset: { element: "water", damageType: "bludgeoning", melee: "true", mapIncreases: "1" } });
+  await onExecuteBlastDamage(mockKinSheet, {}, { dataset: { element: "water", damageType: "bludgeoning", melee: "false", outcome: "criticalSuccess" } });
+
+  if (
+    currentActionCost !== 2 ||
+    selectedDamageType !== "bludgeoning" ||
+    attackCalls.length !== 1 ||
+    attackCalls[0].melee !== true ||
+    attackCalls[0].mapIncreases !== 1 ||
+    damageCalls.length !== 1 ||
+    damageCalls[0].melee !== false ||
+    damageCalls[0].outcome !== "criticalSuccess"
+  ) {
+    logFail(`[Elemental Blast] Handler execution mismatch: cost=${currentActionCost}, dt=${selectedDamageType}, attacks=${JSON.stringify(attackCalls)}, damages=${JSON.stringify(damageCalls)}`);
+  } else {
+    logPass("[Elemental Blast] Action cost toggle, damage type selection, Melee/Ranged attack, and Damage/Crit handlers verified.");
+  }
+
+  globalThis.game.pf2e = prevPf2e;
+  globalThis.CONFIG.PF2E = prevConfigPf2e;
+} catch (err) {
+  logFail(`Kineticist Elemental Blast verification threw an error: ${err.stack || err.message}`);
+}
+
 
 // 7. Foundry VTT AI Content Policy Compliance Audit (https://foundryvtt.com/article/ai-policy/)
 console.log("\n--- 7. Foundry VTT AI Content Policy Compliance Audit ---");

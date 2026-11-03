@@ -806,6 +806,7 @@ Hooks.once("init", async () => {
     "modules/pf2e-mobile-compact/templates/parts/spell-picker-dialog.hbs",
     "modules/pf2e-mobile-compact/templates/parts/actions.hbs",
     "modules/pf2e-mobile-compact/templates/parts/actions/action-card.hbs",
+    "modules/pf2e-mobile-compact/templates/parts/actions/elemental-blast-card.hbs",
     "modules/pf2e-mobile-compact/templates/parts/skills.hbs",
     "modules/pf2e-mobile-compact/templates/parts/character.hbs",
     "modules/pf2e-mobile-compact/templates/parts/toggles.hbs",
