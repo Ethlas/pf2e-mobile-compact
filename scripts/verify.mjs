@@ -926,6 +926,43 @@ try {
   logFail(`Skill Action Labels verification threw an error: ${err.stack || err.message}`);
 }
 
+// 6.6c Test Skill Actions membership: category "interaction" alone doesn't make a skill action (Issue #65)
+try {
+  const { isSkillActionItem } = await import("./apps/sheet-helpers/context-actions.js");
+  const action = (name, slug, traits, category = "interaction") => ({
+    item: { name, slug, type: "action", system: { slug, category, traits: { value: traits } } },
+    traits
+  });
+  const notSkill = [
+    action("Trace Rune", "trace-rune", ["concentrate", "magical", "manipulate", "runesmith"]),
+    action("Command a Thrall", "command-a-thrall", ["concentrate", "necromancer", "thrall"]),
+    action("Quick Alchemy", "quick-alchemy", ["alchemist", "manipulate"]),
+    action("Drain Bonded Item", "drain-bonded-item", ["arcane", "wizard"])
+  ].filter(a => isSkillActionItem(a.item, a.traits, undefined)).map(a => a.item.name);
+
+  const encouraging = action("Encouraging Words", "encouraging-words", ["auditory", "linguistic", "mental"]);
+  const hide = action("Hide", "hide", ["secret"], "");
+  const battleMedicine = {
+    item: { name: "Battle Medicine", slug: "battle-medicine", type: "feat", system: { slug: "battle-medicine", category: "skill", traits: { value: ["general", "healing", "manipulate", "skill"] } } },
+    traits: ["general", "healing", "manipulate", "skill"]
+  };
+  const skillFeatWithoutTrait = { ...battleMedicine, item: { ...battleMedicine.item, name: "Some Skill Feat", slug: "some-skill-feat" }, traits: ["general"] };
+  const isSkill = [
+    [encouraging, { section: "skill", statistic: "diplomacy" }],
+    [hide, undefined],
+    [battleMedicine, undefined],
+    [skillFeatWithoutTrait, undefined]
+  ].filter(([a, sys]) => !isSkillActionItem(a.item, a.traits, sys)).map(([a]) => a.item.name);
+
+  if (notSkill.length || isSkill.length) {
+    logFail(`[Skill Actions Membership] Wrongly in Skill Actions: [${notSkill.join(", ")}]; wrongly left out: [${isSkill.join(", ")}].`);
+  } else {
+    logPass("[Skill Actions Membership] Class actions with category 'interaction' and no skill stay out of Skill Actions; registry skill actions, known slugs and skill feats stay in.");
+  }
+} catch (err) {
+  logFail(`Skill Actions Membership verification threw an error: ${err.stack || err.message}`);
+}
+
 // 6.7 Test Spell Action Cost (1-3, default 2) & Multi-Action Button Labels (> 1)
 try {
   const { parseActionCostInfo } = await import("./utils/sheet-utils.js");

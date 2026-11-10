@@ -6,6 +6,11 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Class actions back under Actions / Reactions / Free Actions (Issue #65)
+
+- **Category `interaction` no longer means "skill action" (`scripts/apps/sheet-helpers/context-actions.js`)**: pf2e gives category `interaction` to every action that is neither offensive nor defensive, so Trace Rune, Command a Thrall, Manifest Eidolon, Act Together, Drain Bonded Item, Explode, Quick Alchemy and about a hundred other actions ended up under Skill Actions. They now sort by action cost like on pf2e's own sheet (which has no Skill Actions section). Skill actions are still found through pf2e's action registry (`section: "skill"` or a `statistic`, e.g. Encouraging Words), the known skill-action slugs and names, skill traits, and skill feats (`category: "skill"`).
+- **`isSkillActionItem(item, traits, systemAction)`**: the check moved out of the preparation loop into an exported function, so `scripts/verify.mjs` can test it (section 6.6c). It reads the category from `system.category` only; the old fallbacks (`system.actionCategory.value`, `item.category`) never applied in pf2e.
+
 ### foundryvtt.com listing description (`docs/foundry-listing.html`, `docs/screenshots/`, `ASSET_PROVENANCE.json`)
 
 - **Description for the package page**: foundryvtt.com doesn't read `module.json` or the README for the package page; the owner pastes the description into the package admin. `docs/foundry-listing.html` holds that text (a short pitch, benefit bullets and three phone screenshots) so it can be reviewed like code.
