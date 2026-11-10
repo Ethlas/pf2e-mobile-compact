@@ -929,35 +929,44 @@ try {
 // 6.6c Test Skill Actions membership: category "interaction" alone doesn't make a skill action (Issue #65)
 try {
   const { isSkillActionItem } = await import("./apps/sheet-helpers/context-actions.js");
-  const action = (name, slug, traits, category = "interaction") => ({
-    item: { name, slug, type: "action", system: { slug, category, traits: { value: traits } } },
-    traits
+  const action = (name, traits, extra = {}) => ({
+    slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    name: name.toLowerCase(),
+    traits,
+    category: "interaction",
+    ...extra
   });
-  const notSkill = [
-    action("Trace Rune", "trace-rune", ["concentrate", "magical", "manipulate", "runesmith"]),
-    action("Command a Thrall", "command-a-thrall", ["concentrate", "necromancer", "thrall"]),
-    action("Quick Alchemy", "quick-alchemy", ["alchemist", "manipulate"]),
-    action("Drain Bonded Item", "drain-bonded-item", ["arcane", "wizard"])
-  ].filter(a => isSkillActionItem(a.item, a.traits, undefined)).map(a => a.item.name);
+  const wronglyIn = [
+    // The class actions from the issue: category "interaction", no skill
+    action("Trace Rune", ["concentrate", "magical", "manipulate", "runesmith"]),
+    action("Command a Thrall", ["concentrate", "necromancer", "thrall"]),
+    action("Manifest Eidolon", ["concentrate", "manipulate", "summoner", "teleportation"]),
+    action("Act Together", ["summoner", "tandem"]),
+    action("Drain Bonded Item", ["arcane", "wizard"]),
+    action("Explode", ["fire", "inventor", "manipulate", "unstable"]),
+    action("Quick Alchemy", ["alchemist", "manipulate"]),
+    // A registry statistic that isn't a skill
+    action("Point Out", ["auditory", "manipulate", "visual"], { systemAction: { section: "specialty-basic" } }),
+    action("Arrest a Fall", [], { systemAction: { section: "specialty-basic", statistic: "reflex" } })
+  ].filter(a => isSkillActionItem(a)).map(a => a.name);
 
-  const encouraging = action("Encouraging Words", "encouraging-words", ["auditory", "linguistic", "mental"]);
-  const hide = action("Hide", "hide", ["secret"], "");
-  const battleMedicine = {
-    item: { name: "Battle Medicine", slug: "battle-medicine", type: "feat", system: { slug: "battle-medicine", category: "skill", traits: { value: ["general", "healing", "manipulate", "skill"] } } },
-    traits: ["general", "healing", "manipulate", "skill"]
-  };
-  const skillFeatWithoutTrait = { ...battleMedicine, item: { ...battleMedicine.item, name: "Some Skill Feat", slug: "some-skill-feat" }, traits: ["general"] };
-  const isSkill = [
-    [encouraging, { section: "skill", statistic: "diplomacy" }],
-    [hide, undefined],
-    [battleMedicine, undefined],
-    [skillFeatWithoutTrait, undefined]
-  ].filter(([a, sys]) => !isSkillActionItem(a.item, a.traits, sys)).map(([a]) => a.item.name);
+  const wronglyOut = [
+    // Registry statistic alone (no section), a choice of skills, and section alone
+    action("Encouraging Words", ["auditory", "linguistic", "mental"], { systemAction: { statistic: "diplomacy" } }),
+    action("Recall Knowledge Variant", ["concentrate", "secret"], { slug: "rk-variant", systemAction: { statistic: ["arcana", "society"] } }),
+    action("Some Registry Skill Action", [], { systemAction: { section: "skill" } }),
+    // The item's own statistic, a lore, a known slug, a skill trait, and a skill feat without the trait
+    action("Homebrew Action", [], { statistic: "stealth" }),
+    action("Lore Action", [], { statistic: "sailing-lore" }),
+    action("Hide", ["secret"], { category: "" }),
+    action("Battle Medicine", ["general", "healing", "manipulate", "skill"], { category: "skill" }),
+    action("Some Skill Feat", ["general"], { category: "skill" })
+  ].filter(a => !isSkillActionItem(a)).map(a => a.name);
 
-  if (notSkill.length || isSkill.length) {
-    logFail(`[Skill Actions Membership] Wrongly in Skill Actions: [${notSkill.join(", ")}]; wrongly left out: [${isSkill.join(", ")}].`);
+  if (wronglyIn.length || wronglyOut.length) {
+    logFail(`[Skill Actions Membership] Wrongly in Skill Actions: [${wronglyIn.join(", ")}]; wrongly left out: [${wronglyOut.join(", ")}].`);
   } else {
-    logPass("[Skill Actions Membership] Class actions with category 'interaction' and no skill stay out of Skill Actions; registry skill actions, known slugs and skill feats stay in.");
+    logPass("[Skill Actions Membership] Class actions with category 'interaction' and registry actions with a non-skill statistic stay out of Skill Actions; registry skill actions, skill statistics, known slugs and skill feats stay in.");
   }
 } catch (err) {
   logFail(`Skill Actions Membership verification threw an error: ${err.stack || err.message}`);
