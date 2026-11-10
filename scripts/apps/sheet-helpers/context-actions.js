@@ -105,6 +105,46 @@ export function getActionSkillInfo(actor, statistic) {
 }
 
 /**
+ * Whether a statistic slug, or any slug in a list of choices, is a skill (a lore counts).
+ * pf2e's action registry also names non-skill statistics, e.g. `perception` for Seek or
+ * `reflex` for Grab an Edge.
+ * @param {string|string[]|null|undefined} statistic
+ * @returns {boolean}
+ */
+function namesSkill(statistic) {
+  const slugs = Array.isArray(statistic) ? statistic : [statistic];
+  return slugs.some(s => typeof s === "string" && (PF2E_SKILL_SLUGS.has(s) || s.endsWith("-lore")));
+}
+
+/**
+ * Whether an action or feat belongs in the Skill Actions section: it rolls a skill or is a
+ * skill feat. pf2e's own sheet has no such section; everything else goes into Actions,
+ * Reactions or Free Actions by its action cost, as on pf2e's sheet.
+ * Category `interaction` doesn't count: pf2e uses it for every action that is neither
+ * offensive nor defensive (Trace Rune, Quick Alchemy, Command a Thrall, ...), not only for
+ * skill actions. Skill actions that pf2e knows are found through its action registry instead:
+ * `section: "skill"`, or a `statistic` that is a skill (the same statistic the card's skill
+ * label uses, see getActionSkillInfo).
+ * Exploration and downtime activities are sorted out before this check.
+ * @param {object} action  The item's data, normalised by the caller
+ * @param {string} action.slug  Lower case
+ * @param {string} action.name  Trimmed, lower case
+ * @param {string[]} action.traits  Lower case
+ * @param {string} action.category  `system.category`, lower case ("skill" for skill feats)
+ * @param {string|string[]|null} [action.statistic]  The item's own `system.statistic`, if any
+ * @param {object} [action.systemAction]  The matching entry of game.pf2e.actions, if any
+ * @returns {boolean}
+ */
+export function isSkillActionItem({ slug, name, traits, category, statistic = null, systemAction }) {
+  return KNOWN_SKILL_ACTION_SLUGS.has(slug) ||
+    KNOWN_SKILL_ACTION_NAMES.has(name) ||
+    systemAction?.section === "skill" ||
+    namesSkill(systemAction?.statistic ?? statistic) ||
+    traits.some(t => PF2E_SKILL_SLUGS.has(t) || t === "skill") ||
+    category === "skill";
+}
+
+/**
  * Sort order of the Skill Actions section: actions from feats first (the character's own
  * build, e.g. Battle Medicine), then by proficiency in the action's skill (best first;
  * actions without a skill last), then by name.
@@ -210,31 +250,25 @@ export async function prepareActionsContext(actor, sheet, context) {
       const actionCost = item.actionCost;
       const rawTraits = item.system?.traits?.value ?? [];
       const traits = Array.isArray(rawTraits) ? rawTraits.map(t => typeof t === "string" ? t.toLowerCase() : String(t?.value ?? "").toLowerCase()) : [];
-      const actionCategory = String(item.system?.actionCategory?.value ?? item.system?.category ?? item.category ?? "").toLowerCase();
+      const category = String(item.system?.category ?? "").toLowerCase();
 
       // Exploration & Downtime identification
-      const isExploration = traits.includes("exploration") || actionCategory === "exploration";
-      const isDowntime = traits.includes("downtime") || actionCategory === "downtime";
+      const isExploration = traits.includes("exploration") || category === "exploration";
+      const isDowntime = traits.includes("downtime") || category === "downtime";
 
       // Check system action registry if available in PF2e
       const actionSlug = item.slug ?? item.system?.slug ?? "";
       const systemAction = game.pf2e?.actions?.get?.(actionSlug);
-      const isSystemSkillAction = systemAction?.section === "skill" || !!systemAction?.statistic;
-
       const itemSlug = String(actionSlug).toLowerCase();
-      const normalizedName = String(item.name ?? "").trim().toLowerCase();
 
-      // Skill Action identification:
-      const isSkillAction = !isExploration && !isDowntime && (
-        KNOWN_SKILL_ACTION_SLUGS.has(itemSlug) ||
-        KNOWN_SKILL_ACTION_NAMES.has(normalizedName) ||
-        isSystemSkillAction ||
-        traits.some(t => PF2E_SKILL_SLUGS.has(t) || t === "skill") ||
-        actionCategory === "skill" ||
-        item.category === "skill" ||
-        (item.system?.category === "interaction") ||
-        (item.flags?.pf2e?.skillAction)
-      );
+      const isSkillAction = !isExploration && !isDowntime && isSkillActionItem({
+        slug: itemSlug,
+        name: String(item.name ?? "").trim().toLowerCase(),
+        traits,
+        category,
+        statistic: item.system?.statistic ?? null,
+        systemAction
+      });
 
       const selfEffect = item.system?.selfEffect;
       const isEffectActive = !!(selfEffect?.uuid && actor.itemTypes?.effect?.some(e => {
