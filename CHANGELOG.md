@@ -6,6 +6,10 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Switching off a self-effect action no longer uses it again (Issue #66, `scripts/apps/sheet-helpers/actions-handlers.js`)
+
+- **Switch-off only removes the effect**: the Use button of an action with a self-effect (Rage, Hunt Prey, Devise a Stratagem, Raise a Shield …) toggles the effect. `onUseAction` now returns right after deleting the effect, so the second tap shows only the "Deactivated …" notification. Before, it fell through to the code that follows a use: it posted the action card to chat again and took a frequency use from an action with uses left.
+
 ### foundryvtt.com listing description (`docs/foundry-listing.html`, `docs/screenshots/`, `ASSET_PROVENANCE.json`)
 
 - **Description for the package page**: foundryvtt.com doesn't read `module.json` or the README for the package page; the owner pastes the description into the package admin. `docs/foundry-listing.html` holds that text (a short pitch, benefit bullets and three phone screenshots) so it can be reviewed like code.

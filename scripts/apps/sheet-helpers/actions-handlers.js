@@ -197,6 +197,8 @@ export async function onItemToChat(sheet, event, target) {
  * Action handler: execute character action / feat ability.
  * Handles both self-inflicted actions (selfEffect / self-buffs applied to actor, ignoring targets)
  * and targeted / attack actions (affecting the targeted token).
+ * A self-effect action toggles: when its effect is already active, the tap only removes the effect
+ * (no chat card, no frequency use taken).
  * @param {object} sheet
  * @param {Event} event
  * @param {HTMLElement} target
@@ -229,37 +231,40 @@ export async function onUseAction(sheet, event, target) {
     );
 
     if (existingEffect) {
-      // Toggle effect off on actor
+      // Toggle effect off on actor. Switching off is not a use of the action:
+      // no action card in chat and no frequency use taken (issue #66).
       await existingEffect.delete();
       ui.notifications?.info?.(`Deactivated ${existingEffect.name} for ${sheet.actor.name}.`);
-    } else {
-      // Fetch and apply the effect to the actor (self only)
-      const effectDoc = await fromUuid(selfEffect.uuid);
-      if (effectDoc) {
-        const effectSource = effectDoc.toObject();
-        delete effectSource._id;
-        effectSource._id = null;
+      sheet.render({ parts: ["sheet"] });
+      return;
+    }
 
-        const tokenDoc = sheet.token ?? sheet.actor.getActiveTokens?.(true, true)?.[0] ?? sheet.actor.getActiveTokens?.()?.[0]?.document ?? null;
-        if (!effectSource.system) effectSource.system = {};
-        effectSource.system.context = {
-          origin: {
-            actor: sheet.actor.uuid,
-            item: item.uuid,
-            token: tokenDoc?.uuid ?? null,
-            spellcasting: null,
-            rollOptions: typeof item.getOriginData === "function" ? (item.getOriginData()?.rollOptions ?? []) : []
-          },
-          target: {
-            actor: sheet.actor.uuid,
-            token: tokenDoc?.uuid ?? null
-          },
-          roll: null
-        };
+    // Fetch and apply the effect to the actor (self only)
+    const effectDoc = await fromUuid(selfEffect.uuid);
+    if (effectDoc) {
+      const effectSource = effectDoc.toObject();
+      delete effectSource._id;
+      effectSource._id = null;
 
-        await sheet.actor.createEmbeddedDocuments("Item", [effectSource]);
-        ui.notifications?.info?.(`Activated ${effectDoc.name} on ${sheet.actor.name}.`);
-      }
+      const tokenDoc = sheet.token ?? sheet.actor.getActiveTokens?.(true, true)?.[0] ?? sheet.actor.getActiveTokens?.()?.[0]?.document ?? null;
+      if (!effectSource.system) effectSource.system = {};
+      effectSource.system.context = {
+        origin: {
+          actor: sheet.actor.uuid,
+          item: item.uuid,
+          token: tokenDoc?.uuid ?? null,
+          spellcasting: null,
+          rollOptions: typeof item.getOriginData === "function" ? (item.getOriginData()?.rollOptions ?? []) : []
+        },
+        target: {
+          actor: sheet.actor.uuid,
+          token: tokenDoc?.uuid ?? null
+        },
+        roll: null
+      };
+
+      await sheet.actor.createEmbeddedDocuments("Item", [effectSource]);
+      ui.notifications?.info?.(`Activated ${effectDoc.name} on ${sheet.actor.name}.`);
     }
 
     // Deduct frequency if applicable
