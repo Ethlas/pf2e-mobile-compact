@@ -3,6 +3,7 @@
  * Free actions, Skill actions, Exploration, and Downtime activities.
  */
 import { enrichDescriptionCached, getGlyph, parseActionCostInfo, PROFICIENCY_RANK_LETTERS, PROFICIENCY_RANK_NAMES } from "../../utils/sheet-utils.js";
+import { prepareElementalBlastsContext } from "./elemental-blast-handlers.js";
 
 const PF2E_SKILL_SLUGS = new Set([
   "acrobatics",
@@ -127,6 +128,9 @@ export function compareSkillActions(a, b) {
 export async function prepareActionsContext(actor, sheet, context) {
   // Defensive initialization of context fields expected by actions.hbs
   context.strikes = [];
+  context.elementalBlasts = [];
+  context.elementalBlastsReady = false;
+  context.channelElementsItemId = null;
   context.characterActions = {
     actions: [],
     reactions: [],
@@ -139,6 +143,12 @@ export async function prepareActionsContext(actor, sheet, context) {
     hasExploration: false,
     hasDowntime: false
   };
+
+  // Kineticist Elemental Blast (shown above the strikes); a failure must not hide the regular strikes
+  await prepareElementalBlastsContext(actor, context).catch(err => {
+    console.warn("PF2e Mobile Compact | Failed to prepare Elemental Blasts:", err);
+    context.elementalBlasts = [];
+  });
 
   // Strikes Context (with Weapon Image, Traits, MAP Variants, Damage, and Auxiliary Actions)
   const strikesList = Array.isArray(actor.system?.actions)

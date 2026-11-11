@@ -1079,7 +1079,8 @@ body.pf2e-mobile-active select:not(:is(.pf2e-mobile-sheet, .pf2e-mobile-compendi
   padding: 4px;
 }
 .pf2e-mobile-sheet .action-subtabs .subtab-btn,
-.pf2e-mobile-sheet .spell-subtabs .subtab-btn {
+.pf2e-mobile-sheet .spell-subtabs .subtab-btn,
+.pf2e-mobile-sheet .blast-cost-switch .subtab-btn {
   min-height: 40px;
   height: 40px;
   background: transparent;
@@ -1088,7 +1089,8 @@ body.pf2e-mobile-active select:not(:is(.pf2e-mobile-sheet, .pf2e-mobile-compendi
   transition: background 0.15s ease, color 0.15s ease;
 }
 .pf2e-mobile-sheet .action-subtabs .subtab-btn.active,
-.pf2e-mobile-sheet .spell-subtabs .subtab-btn.active {
+.pf2e-mobile-sheet .spell-subtabs .subtab-btn.active,
+.pf2e-mobile-sheet .blast-cost-switch .subtab-btn.active {
   background: var(--m-surface-4);
   color: var(--m-text-strong);
   border: 1px solid var(--m-border-strong);
@@ -1187,6 +1189,34 @@ body.pf2e-mobile-active select:not(:is(.pf2e-mobile-sheet, .pf2e-mobile-compendi
 }
 .pf2e-mobile-sheet .aux-label {
   white-space: nowrap;
+}
+/* Kineticist Elemental Blast Controls & Card */
+.pf2e-mobile-sheet .blast-controls-panel {
+  padding: 4px 10px;
+}
+/* Elemental Blast's 1 / 2 action switch: the sub-tab buttons (rules above) on a sunken track */
+.pf2e-mobile-sheet .blast-cost-switch {
+  padding: 2px;
+  background: var(--m-surface-1);
+  border: 1px solid var(--m-border-subtle);
+  border-radius: 6px;
+}
+.pf2e-mobile-sheet .blast-cost-switch .subtab-btn {
+  padding: 0 8px;
+}
+.pf2e-mobile-sheet .blast-dt-btn {
+  border: 1px solid var(--m-border);
+  opacity: 0.65;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.pf2e-mobile-sheet .blast-dt-btn.selected {
+  opacity: 1;
+  border-color: var(--m-accent);
+  box-shadow: 0 0 0 1px var(--m-accent);
+}
+.pf2e-mobile-sheet .blast-ranged-header {
+  padding-top: 6px;
+  border-top: 1px solid var(--m-border-subtle);
 }
 .pf2e-mobile-sheet .action-card-header {
   margin-bottom: 6px;

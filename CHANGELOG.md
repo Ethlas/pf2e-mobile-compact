@@ -10,6 +10,16 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 - **Description for the package page**: foundryvtt.com doesn't read `module.json` or the README for the package page; the owner pastes the description into the package admin. `docs/foundry-listing.html` holds that text (a short pitch, benefit bullets and three phone screenshots) so it can be reviewed like code.
 - **Screenshots**: the Actions tab, the header target list with distances, and the Spells tab, in `docs/screenshots/`. The listing loads them from `main` on GitHub. `docs/` is not packaged; `ASSET_PROVENANCE.json` records the screenshots for the media check in `scripts/verify.mjs`.
+### Kineticist Elemental Blast, Channel Elements & Weapon Infusion (Issue #57)
+
+- **Unchanneled & Channeled Elemental Blasts in Attacks (`scripts/apps/sheet-helpers/elemental-blast-handlers.js`, `scripts/apps/sheet-helpers/context-actions.js`)**:
+  - Added `prepareElementalBlastsContext` using `game.pf2e.ElementalBlast(actor)`. When `Effect: Kinetic Aura` is inactive, renders the unchanneled Elemental Blast card in **Attacks** with the **Channel Elements** (1-action) button (`onChannelElements`).
+  - When channeled, renders an Elemental Blast card per active gate element with damage type buttons (`onSetBlastDamageType`), Melee MAP 0/1/2 attack buttons + Melee Damage/Crit buttons, and Ranged MAP 0/1/2 attack buttons + Ranged Damage/Crit buttons (`onExecuteBlastAttack`, `onExecuteBlastDamage`).
+  - **Channel Elements is an auxiliary action of the card**, styled like a weapon's Draw / Reload (`aux-action-btn` in `strike-auxiliary-row`): `1 Channel Elements` before channeling, `End Kinetic Aura` once channeled (pf2e removes the effect). One control in one place, in the look the strike cards already use, instead of a separate blue bar and a green button in the panel.
+  - The damage buttons show pf2e's own formula (`getFormula`); when pf2e can't give one they show a plain "Damage" label rather than a formula built by the module. The element trait badge is left out when the damage-type badge already names it (Fire / FIRE).
+- **Weapon Infusion & Elemental Blast Roll Options (`scripts/apps/sheet-helpers/context-toggles.js`, `templates/parts/actions.hbs`)**:
+  - Routed `elemental-blast` domain toggles (including **Weapon Infusion** checkbox + shape dropdown and **Action Cost** 1/2) into `context.toggles.elementalBlast` and rendered them in a `.blast-controls-panel` at the top of the **Attacks** list while Kinetic Aura is active (pf2e only offers these toggles while the aura is active).
+  - **The action cost is a two-button switch** (`.blast-cost-switch`, the sub-tab button look) instead of a dropdown, so the active cost is visible at a glance; it is the only place the cost is set (`onToggleBlastActionCost` with the chosen `data-value`), and the card header shows the cost as a plain glyph like the strike cards. pf2e only accepts 1 or 2 actions (`ElementalBlast#actionCost`).
 
 ### Desktop Chat Isolation & Cleanup (Issue #53)
 

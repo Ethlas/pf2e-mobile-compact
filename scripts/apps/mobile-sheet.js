@@ -6,29 +6,14 @@ import { getTargetableToken, getOriginToken, setTargetToken, setTargetTokens, en
 import { prepareHeaderContext } from "./sheet-helpers/context-header.js";
 import { preparePartyContext } from "./sheet-helpers/context-party.js";
 import {
-  prepareKingdomContext,
-  onOpenMobileKingdomSheet,
-  onSwitchKingdomTurnSubTab,
-  onSwitchKingdomSheetSubTab,
-  onToggleKingdomPhase,
-  onToggleKingdomActivity,
-  onSetKingdomActiveLeader,
-  onSetKingdomActiveSettlement,
-  onRollKingdomSkillCheck,
-  onPerformKingdomActivity,
-  onRollKingdomResourceDice,
-  onPostKingdomActivityChat,
-  onSkipCollectTaxes,
-  onClaimKingdomRefuge,
-  onClaimKingdomLandmark,
-  onOpenConsumptionBreakdown,
-  onInspectKingdomSettlement,
-  onFilterKingdomLevel,
-  onResolveKingdomEvent,
-  onUpdateKingdomField,
-  onDispatchKingdomNativeAction
+  prepareKingdomContext, onOpenMobileKingdomSheet, onSwitchKingdomTurnSubTab, onSwitchKingdomSheetSubTab,
+  onToggleKingdomPhase, onToggleKingdomActivity, onSetKingdomActiveLeader, onSetKingdomActiveSettlement,
+  onRollKingdomSkillCheck, onPerformKingdomActivity, onRollKingdomResourceDice, onPostKingdomActivityChat,
+  onSkipCollectTaxes, onClaimKingdomRefuge, onClaimKingdomLandmark, onOpenConsumptionBreakdown,
+  onInspectKingdomSettlement, onFilterKingdomLevel, onResolveKingdomEvent, onUpdateKingdomField, onDispatchKingdomNativeAction
 } from "../kingdom/kingdom-handlers.js";
 import { prepareActionsContext } from "./sheet-helpers/context-actions.js";
+import { onChannelElements, onToggleBlastActionCost, onSetBlastDamageType, onExecuteBlastAttack, onExecuteBlastDamage } from "./sheet-helpers/elemental-blast-handlers.js";
 import { prepareSkillsContext } from "./sheet-helpers/context-skills.js";
 import { prepareCharacterContext } from "./sheet-helpers/context-character.js";
 import { onToggleCharacterOverview, onToggleItemDescription, refreshOverviewDurations } from "./sheet-helpers/character-handlers.js";
@@ -100,6 +85,11 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       executeDamage: PF2eMobileSheet._onExecuteDamage,
       executeCritical: PF2eMobileSheet._onExecuteCritical,
       executeAuxiliaryAction: PF2eMobileSheet._onExecuteAuxiliaryAction,
+      channelElements: PF2eMobileSheet._onChannelElements,
+      toggleBlastActionCost: PF2eMobileSheet._onToggleBlastActionCost,
+      setBlastDamageType: PF2eMobileSheet._onSetBlastDamageType,
+      executeBlastAttack: PF2eMobileSheet._onExecuteBlastAttack,
+      executeBlastDamage: PF2eMobileSheet._onExecuteBlastDamage,
       itemToChat: PF2eMobileSheet._onItemToChat,
       useAction: PF2eMobileSheet._onUseAction,
       rollActionCheck: PF2eMobileSheet._onRollActionCheck,
@@ -488,6 +478,7 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     } catch (err) {
       console.error("PF2e Mobile Compact | Error preparing actions context:", err);
       context.strikes = context.strikes ?? [];
+      context.elementalBlasts = context.elementalBlasts ?? [];
       context.characterActions = context.characterActions ?? {
         actions: [],
         reactions: [],
@@ -611,6 +602,11 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onExecuteDamage(event, target) { return onExecuteDamage(this, event, target); }
   static async _onExecuteCritical(event, target) { return onExecuteCritical(this, event, target); }
   static async _onExecuteAuxiliaryAction(event, target) { return onExecuteAuxiliaryAction(this, event, target); }
+  static async _onChannelElements(event, target) { return onChannelElements(this, event, target); }
+  static async _onToggleBlastActionCost(event, target) { return onToggleBlastActionCost(this, event, target); }
+  static async _onSetBlastDamageType(event, target) { return onSetBlastDamageType(this, event, target); }
+  static async _onExecuteBlastAttack(event, target) { return onExecuteBlastAttack(this, event, target); }
+  static async _onExecuteBlastDamage(event, target) { return onExecuteBlastDamage(this, event, target); }
   static async _onItemToChat(event, target) { return onItemToChat(this, event, target); }
   static async _onUseAction(event, target) { return onUseAction(this, event, target); }
   static async _onRollActionCheck(event, target) { return onRollActionCheck(this, event, target); }

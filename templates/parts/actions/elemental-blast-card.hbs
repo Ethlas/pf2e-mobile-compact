@@ -1,0 +1,118 @@
+{{!--
+  Elemental Blast card for Kineticist characters in the Attacks section (templates/parts/actions.hbs).
+  When Kinetic Aura is not channeled (!blast.ready), displays the Channel Elements (1-action) button.
+  Once channeled (blast.ready), displays damage type selection (including Weapon Infusion physical types),
+  the current action cost (switched between 1 and 2 actions in actions.hbs's blast panel), and both Melee and
+  Ranged attack/damage rows.
+--}}
+<div class="m-action-card m-card strike-card elemental-blast-card m-flex-col m-gap-8 {{#if blast.ready}}ready{{/if}}" data-element="{{blast.element}}" data-damage-type="{{blast.damageType}}" data-item-id="{{blast.itemId}}">
+  <!-- Blast Header: Element Image, Action Cost Glyph (switched in the panel above the cards), Name, Traits, Chat -->
+  <div class="m-flex-row m-align-center m-gap-10">
+    <img class="strike-img m-shrink-0" src="{{blast.img}}" alt="{{blast.label}}" />
+    <div class="m-flex-col m-gap-4 m-flex-1 m-min-w-0">
+      <div class="m-flex-row m-align-center m-gap-6">
+        <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base m-color-accent"><span class="action-glyph">{{blast.glyph}}</span></span>
+        <span class="action-name m-min-w-0 m-truncate"><strong>{{blast.label}}</strong></span>
+      </div>
+      {{#if blast.ready}}
+      <div class="action-traits m-flex-row m-wrap m-gap-4">
+        {{!-- the element trait is left out when the damage-type badge already names it (e.g. Fire / FIRE) --}}
+        {{#if (and blast.elementLabel (or blast.hasMultipleDamageTypes (not (eq blast.element blast.damageType))))}}
+        <span class="trait-badge m-badge-neutral m-text-xs m-color-soft">{{blast.elementLabel}}</span>
+        {{/if}}
+        {{#unless blast.hasMultipleDamageTypes}}
+        <span class="damage-type-badge damage-{{blast.damageType}} m-text-xs m-bold">{{blast.damageTypeLabel}}</span>
+        {{/unless}}
+        <span class="trait-badge m-badge-neutral m-text-xs m-color-soft">d{{blast.dieFaces}}</span>
+      </div>
+      {{/if}}
+    </div>
+    {{#if blast.itemId}}
+    <button type="button" class="btn-action-chat m-compact m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base m-color-normal" data-action="itemToChat" data-item-id="{{blast.itemId}}" title="Send to Chat">
+      <i class="fas fa-message"></i>
+    </button>
+    {{/if}}
+  </div>
+
+  {{#if blast.ready}}
+    <!-- Damage Type Selector (shown when element has multiple damage types or Weapon Infusion adds B/P/S) -->
+    {{#if blast.hasMultipleDamageTypes}}
+    <div class="blast-damage-types m-flex-row m-wrap m-gap-6">
+      {{#each blast.damageTypes as |dt|}}
+      <button type="button" class="blast-dt-btn damage-type-badge damage-{{dt.value}} m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-flex-1 m-text-xs m-bold {{#if dt.selected}}selected{{/if}}" data-action="setBlastDamageType" data-element="{{../blast.element}}" data-damage-type="{{dt.value}}" {{#if dt.selected}}disabled{{/if}} title="{{dt.label}}">
+        {{#if dt.icon}}<i class="fa-solid fa-fw fa-{{dt.icon}}"></i>{{/if}}
+        <span>{{dt.label}}</span>
+      </button>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    <!-- Melee Elemental Blast -->
+    {{#if blast.meleeTraits.length}}
+    <div class="action-traits m-flex-row m-wrap m-align-center m-gap-4">
+      <span class="m-text-xs m-semibold m-color-muted"><i class="fas fa-fist-raised"></i> Melee</span>
+      {{#each blast.meleeTraits as |trait|}}
+      <span class="trait-badge m-badge-neutral m-text-xs m-color-soft">{{trait.label}}</span>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    <div class="strike-map-row m-flex-row m-gap-6">
+      {{#each blast.meleeVariants as |variant|}}
+      <button type="button" class="map-button m-text-full m-flex-row m-align-center m-justify-center m-flex-1 m-bold" data-action="executeBlastAttack" data-element="{{../blast.element}}" data-damage-type="{{../blast.damageType}}" data-melee="true" data-map-increases="{{variant.mapIncreases}}" title="Melee {{../blast.label}} ({{variant.label}})">
+        {{variant.label}}
+      </button>
+      {{/each}}
+    </div>
+
+    <div class="strike-damage-row m-flex-row m-gap-6">
+      <button type="button" class="variant-button damage-button m-flex-1 m-text-base m-color-strong" data-action="executeBlastDamage" data-element="{{blast.element}}" data-damage-type="{{blast.damageType}}" data-melee="true" data-outcome="success" title="Roll Melee Damage">
+        💥 {{#if blast.formula.melee.damage}}{{blast.formula.melee.damage}}{{else}}Damage{{/if}}
+      </button>
+      <button type="button" class="variant-button critical-button m-flex-1 m-text-base m-bold m-color-strong" data-action="executeBlastDamage" data-element="{{blast.element}}" data-damage-type="{{blast.damageType}}" data-melee="true" data-outcome="criticalSuccess" title="Roll Melee Critical Damage">
+        ⚡ Crit
+      </button>
+    </div>
+
+    <!-- Ranged Elemental Blast -->
+    <div class="blast-ranged-header action-traits m-flex-row m-wrap m-align-center m-gap-4">
+      <span class="m-text-xs m-semibold m-color-muted"><i class="fas fa-meteor"></i> Ranged{{#if blast.rangeLabel}} · {{blast.rangeLabel}}{{/if}}</span>
+      {{#each blast.rangedTraits as |trait|}}
+      <span class="trait-badge m-badge-neutral m-text-xs m-color-soft">{{trait.label}}</span>
+      {{/each}}
+    </div>
+
+    <div class="strike-map-row m-flex-row m-gap-6">
+      {{#each blast.rangedVariants as |variant|}}
+      <button type="button" class="map-button m-text-full m-flex-row m-align-center m-justify-center m-flex-1 m-bold" data-action="executeBlastAttack" data-element="{{../blast.element}}" data-damage-type="{{../blast.damageType}}" data-melee="false" data-map-increases="{{variant.mapIncreases}}" title="Ranged {{../blast.label}} ({{variant.label}})">
+        {{variant.label}}
+      </button>
+      {{/each}}
+    </div>
+
+    <div class="strike-damage-row m-flex-row m-gap-6">
+      <button type="button" class="variant-button damage-button m-flex-1 m-text-base m-color-strong" data-action="executeBlastDamage" data-element="{{blast.element}}" data-damage-type="{{blast.damageType}}" data-melee="false" data-outcome="success" title="Roll Ranged Damage">
+        💥 {{#if blast.formula.ranged.damage}}{{blast.formula.ranged.damage}}{{else}}Damage{{/if}}
+      </button>
+      <button type="button" class="variant-button critical-button m-flex-1 m-text-base m-bold m-color-strong" data-action="executeBlastDamage" data-element="{{blast.element}}" data-damage-type="{{blast.damageType}}" data-melee="false" data-outcome="criticalSuccess" title="Roll Ranged Critical Damage">
+        ⚡ Crit
+      </button>
+    </div>
+  {{/if}}
+
+  <!-- Channel Elements as an auxiliary action, like a weapon's Draw / Reload: starts Kinetic Aura
+       (1 action) or, once channeled, ends it (pf2e removes the Kinetic Aura effect) -->
+  {{#if blast.channelItemId}}
+  <div class="strike-auxiliary-row m-flex-row m-wrap m-gap-6">
+    <button type="button" class="aux-action-btn m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-color-soft" data-action="channelElements" data-item-id="{{blast.channelItemId}}" title="{{#if blast.ready}}End Kinetic Aura{{else}}{{blast.channelLabel}}{{/if}}">
+      {{#if blast.ready}}
+      <i class="fas fa-xmark m-text-sm m-color-dim"></i>
+      <span class="aux-label m-medium">End Kinetic Aura</span>
+      {{else}}
+      <span class="m-inline-flex m-align-center m-justify-center m-text-sm m-bold m-color-accent"><span class="action-glyph">1</span></span>
+      <span class="aux-label m-medium">{{blast.channelLabel}}</span>
+      {{/if}}
+    </button>
+  </div>
+  {{/if}}
+</div>
