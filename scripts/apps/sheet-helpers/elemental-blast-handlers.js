@@ -59,12 +59,13 @@ export async function prepareElementalBlastsContext(actor, context) {
     const damageTypes = (config.damageTypes ?? []).map(dt => ({ ...dt, label: t(dt.label) }));
     const selected = damageTypes.find(dt => dt.selected) ?? damageTypes[0];
     const damageType = selected?.value ?? "untyped";
-    // pf2e computes the formula itself (getFormula), the same way its sheet labels the damage buttons
+    // pf2e computes the formula itself (getFormula), the same way its sheet labels the damage buttons.
+    // If pf2e can't give one, the button shows its plain label instead of a made-up formula.
     const formula = async (melee) => {
       try {
-        return await blast.damage({ element: config.element, damageType, melee, outcome: "success", getFormula: true });
+        return await blast.damage({ element: config.element, damageType, melee, outcome: "success", getFormula: true }) || null;
       } catch {
-        return `1d${config.dieFaces}`;
+        return null;
       }
     };
     const maps = config.maps ?? {};
@@ -110,10 +111,17 @@ export async function onChannelElements(sheet, event, target) {
   if (itemId) return onUseAction(sheet, event, { dataset: { itemId } });
 }
 
-/** Action handler: switch Elemental Blast between 1 and 2 actions (pf2e's "action-cost" roll option). */
+/**
+ * Action handler: set Elemental Blast to 1 or 2 actions (pf2e's "action-cost" roll option). The buttons of the
+ * blast panel's switch carry the cost they choose in data-value; without it, the cost given in
+ * data-action-cost is flipped. pf2e only accepts 1 or 2 (ElementalBlast#actionCost).
+ */
 export async function onToggleBlastActionCost(sheet, event, target) {
-  const next = Number(target?.dataset?.actionCost) === 2 ? 1 : 2;
+  const { value, actionCost } = target?.dataset ?? {};
+  const next = value ? Number(value) : (Number(actionCost) === 2 ? 1 : 2);
+  if (next !== 1 && next !== 2) return;
   const toggle = sheet.actor.synthetics?.toggles?.["elemental-blast"]?.["action-cost"];
+  if (value && toggle?.suboptions?.find(s => s.selected)?.value === value) return; // already the active cost
   await sheet.actor.toggleRollOption("elemental-blast", "action-cost", toggle?.itemId ?? target?.dataset?.itemId, true, String(next));
 }
 

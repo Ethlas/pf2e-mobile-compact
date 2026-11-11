@@ -1079,7 +1079,8 @@ body.pf2e-mobile-active select:not(:is(.pf2e-mobile-sheet, .pf2e-mobile-compendi
   padding: 4px;
 }
 .pf2e-mobile-sheet .action-subtabs .subtab-btn,
-.pf2e-mobile-sheet .spell-subtabs .subtab-btn {
+.pf2e-mobile-sheet .spell-subtabs .subtab-btn,
+.pf2e-mobile-sheet .blast-cost-switch .subtab-btn {
   min-height: 40px;
   height: 40px;
   background: transparent;
@@ -1088,7 +1089,8 @@ body.pf2e-mobile-active select:not(:is(.pf2e-mobile-sheet, .pf2e-mobile-compendi
   transition: background 0.15s ease, color 0.15s ease;
 }
 .pf2e-mobile-sheet .action-subtabs .subtab-btn.active,
-.pf2e-mobile-sheet .spell-subtabs .subtab-btn.active {
+.pf2e-mobile-sheet .spell-subtabs .subtab-btn.active,
+.pf2e-mobile-sheet .blast-cost-switch .subtab-btn.active {
   background: var(--m-surface-4);
   color: var(--m-text-strong);
   border: 1px solid var(--m-border-strong);
@@ -1192,25 +1194,15 @@ body.pf2e-mobile-active select:not(:is(.pf2e-mobile-sheet, .pf2e-mobile-compendi
 .pf2e-mobile-sheet .blast-controls-panel {
   padding: 4px 10px;
 }
-.pf2e-mobile-sheet .btn-channel-elements {
-  min-height: 44px;
-  height: 44px;
-  padding: 0 12px;
-  background: var(--m-info-solid);
-  border: 1px solid var(--m-hue-info);
+/* Elemental Blast's 1 / 2 action switch: the sub-tab buttons (rules above) on a sunken track */
+.pf2e-mobile-sheet .blast-cost-switch {
+  padding: 2px;
+  background: var(--m-surface-1);
+  border: 1px solid var(--m-border-subtle);
   border-radius: 6px;
 }
-.pf2e-mobile-sheet .btn-channel-elements:active {
-  background: var(--m-info-solid-active);
-}
-.pf2e-mobile-sheet .blast-cost-btn {
+.pf2e-mobile-sheet .blast-cost-switch .subtab-btn {
   padding: 0 8px;
-  background: var(--m-surface-3);
-  border: 1px solid var(--m-border);
-}
-.pf2e-mobile-sheet .blast-cost-btn:active {
-  background: var(--m-surface-5);
-  border-color: var(--m-accent);
 }
 .pf2e-mobile-sheet .blast-dt-btn {
   border: 1px solid var(--m-border);

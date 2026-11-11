@@ -2,26 +2,22 @@
   Elemental Blast card for Kineticist characters in the Attacks section (templates/parts/actions.hbs).
   When Kinetic Aura is not channeled (!blast.ready), displays the Channel Elements (1-action) button.
   Once channeled (blast.ready), displays damage type selection (including Weapon Infusion physical types),
-  action cost toggle (1 vs 2 actions), and both Melee and Ranged attack/damage rows.
+  the current action cost (switched between 1 and 2 actions in actions.hbs's blast panel), and both Melee and
+  Ranged attack/damage rows.
 --}}
 <div class="m-action-card m-card strike-card elemental-blast-card m-flex-col m-gap-8 {{#if blast.ready}}ready{{/if}}" data-element="{{blast.element}}" data-damage-type="{{blast.damageType}}" data-item-id="{{blast.itemId}}">
-  <!-- Blast Header: Element Image, Action Cost Glyph (tappable to toggle 1/2 actions), Name, Traits, Chat -->
+  <!-- Blast Header: Element Image, Action Cost Glyph (switched in the panel above the cards), Name, Traits, Chat -->
   <div class="m-flex-row m-align-center m-gap-10">
     <img class="strike-img m-shrink-0" src="{{blast.img}}" alt="{{blast.label}}" />
     <div class="m-flex-col m-gap-4 m-flex-1 m-min-w-0">
       <div class="m-flex-row m-align-center m-gap-6">
-        {{#if blast.ready}}
-        <button type="button" class="blast-cost-btn m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-shrink-0 m-text-sm m-bold m-color-accent" data-action="toggleBlastActionCost" data-item-id="{{blast.itemId}}" data-action-cost="{{blast.actionCost}}" title="Toggle 1-Action / 2-Action Elemental Blast">
-          <span class="action-glyph">{{blast.glyph}}</span>
-        </button>
-        {{else}}
         <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base m-color-accent"><span class="action-glyph">{{blast.glyph}}</span></span>
-        {{/if}}
         <span class="action-name m-min-w-0 m-truncate"><strong>{{blast.label}}</strong></span>
       </div>
       {{#if blast.ready}}
       <div class="action-traits m-flex-row m-wrap m-gap-4">
-        {{#if blast.elementLabel}}
+        {{!-- the element trait is left out when the damage-type badge already names it (e.g. Fire / FIRE) --}}
+        {{#if (and blast.elementLabel (or blast.hasMultipleDamageTypes (not (eq blast.element blast.damageType))))}}
         <span class="trait-badge m-badge-neutral m-text-xs m-color-soft">{{blast.elementLabel}}</span>
         {{/if}}
         {{#unless blast.hasMultipleDamageTypes}}
@@ -71,7 +67,7 @@
 
     <div class="strike-damage-row m-flex-row m-gap-6">
       <button type="button" class="variant-button damage-button m-flex-1 m-text-base m-color-strong" data-action="executeBlastDamage" data-element="{{blast.element}}" data-damage-type="{{blast.damageType}}" data-melee="true" data-outcome="success" title="Roll Melee Damage">
-        💥 {{blast.formula.melee.damage}}
+        💥 {{#if blast.formula.melee.damage}}{{blast.formula.melee.damage}}{{else}}Damage{{/if}}
       </button>
       <button type="button" class="variant-button critical-button m-flex-1 m-text-base m-bold m-color-strong" data-action="executeBlastDamage" data-element="{{blast.element}}" data-damage-type="{{blast.damageType}}" data-melee="true" data-outcome="criticalSuccess" title="Roll Melee Critical Damage">
         ⚡ Crit
@@ -96,19 +92,27 @@
 
     <div class="strike-damage-row m-flex-row m-gap-6">
       <button type="button" class="variant-button damage-button m-flex-1 m-text-base m-color-strong" data-action="executeBlastDamage" data-element="{{blast.element}}" data-damage-type="{{blast.damageType}}" data-melee="false" data-outcome="success" title="Roll Ranged Damage">
-        💥 {{blast.formula.ranged.damage}}
+        💥 {{#if blast.formula.ranged.damage}}{{blast.formula.ranged.damage}}{{else}}Damage{{/if}}
       </button>
       <button type="button" class="variant-button critical-button m-flex-1 m-text-base m-bold m-color-strong" data-action="executeBlastDamage" data-element="{{blast.element}}" data-damage-type="{{blast.damageType}}" data-melee="false" data-outcome="criticalSuccess" title="Roll Ranged Critical Damage">
         ⚡ Crit
       </button>
     </div>
-  {{else}}
-    <!-- Unchanneled State: Channel Elements Button -->
-    <div class="strike-auxiliary-row m-flex-row m-wrap m-gap-6">
-      <button type="button" class="btn-channel-elements m-flex-row m-align-center m-justify-center m-gap-8 m-flex-1 m-text-base m-bold m-color-strong" data-action="channelElements" data-item-id="{{blast.channelItemId}}" title="{{blast.channelLabel}}">
-        <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base m-color-accent"><span class="action-glyph">1</span></span>
-        <span>{{blast.channelLabel}}</span>
-      </button>
-    </div>
+  {{/if}}
+
+  <!-- Channel Elements as an auxiliary action, like a weapon's Draw / Reload: starts Kinetic Aura
+       (1 action) or, once channeled, ends it (pf2e removes the Kinetic Aura effect) -->
+  {{#if blast.channelItemId}}
+  <div class="strike-auxiliary-row m-flex-row m-wrap m-gap-6">
+    <button type="button" class="aux-action-btn m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-color-soft" data-action="channelElements" data-item-id="{{blast.channelItemId}}" title="{{#if blast.ready}}End Kinetic Aura{{else}}{{blast.channelLabel}}{{/if}}">
+      {{#if blast.ready}}
+      <i class="fas fa-xmark m-text-sm m-color-dim"></i>
+      <span class="aux-label m-medium">End Kinetic Aura</span>
+      {{else}}
+      <span class="m-inline-flex m-align-center m-justify-center m-text-sm m-bold m-color-accent"><span class="action-glyph">1</span></span>
+      <span class="aux-label m-medium">{{blast.channelLabel}}</span>
+      {{/if}}
+    </button>
+  </div>
   {{/if}}
 </div>

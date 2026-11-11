@@ -18,7 +18,7 @@
       <h3 class="section-title m-bold m-color-accent"><i class="fas fa-fist-raised"></i> Attacks</h3>
       <div class="m-group-list strikes-list">
         {{#if elementalBlasts.length}}
-          {{#if (and elementalBlastsReady (or toggles.elementalBlast.length channelElementsItemId))}}
+          {{#if (and elementalBlastsReady toggles.elementalBlast.length)}}
           <div class="blast-controls-panel m-panel m-flex-col">
             {{#each toggles.elementalBlast as |toggle|}}
             <div class="toggle-row m-flex-row m-gap-8" data-domain="{{toggle.domain}}" data-option="{{toggle.option}}" data-toggle-item-id="{{toggle.itemId}}">
@@ -30,7 +30,17 @@
                 <span class="m-min-w-0">{{toggle.label}}</span>
               </label>
               {{/if}}
-              {{#if toggle.choices.length}}
+              {{#if (eq toggle.option "action-cost")}}
+              {{!-- pf2e's 1 / 2 action choice as a switch with the active cost raised, instead of a dropdown --}}
+              <div class="blast-cost-switch m-flex-row m-gap-4 m-shrink-0" role="group" aria-label="{{toggle.label}}">
+                {{#each toggle.choices as |choice|}}
+                <button type="button" class="subtab-btn m-inline-flex m-align-center m-justify-center m-gap-4 m-text-sm m-semibold {{#if choice.selected}}active m-color-strong{{else}}m-color-muted{{/if}}" data-action="toggleBlastActionCost" data-item-id="{{toggle.itemId}}" data-value="{{choice.value}}" aria-pressed="{{#if choice.selected}}true{{else}}false{{/if}}" title="{{choice.label}}">
+                  <span class="action-glyph m-color-accent">{{choice.value}}</span>
+                  <span>{{choice.label}}</span>
+                </button>
+                {{/each}}
+              </div>
+              {{else if toggle.choices.length}}
               <select class="toggle-select m-compact m-text-base m-color-normal" data-change-action="setRollOption" {{#if (eq toggle.choices.length 1)}}disabled{{/if}}>
                 {{#each toggle.choices as |choice|}}
                 <option value="{{choice.value}}" {{#if choice.selected}}selected{{/if}}>{{choice.label}}</option>
@@ -39,15 +49,6 @@
               {{/if}}
             </div>
             {{/each}}
-            {{#if channelElementsItemId}}
-            <div class="toggle-row m-flex-row m-align-center m-justify-between m-gap-8">
-              <span class="m-text-sm m-semibold m-color-success"><i class="fas fa-fire-flame-curved"></i> Kinetic Aura Active</span>
-              <button type="button" class="btn-action-use active m-compact m-inline-flex m-align-center m-gap-4 m-text-sm m-bold" data-action="channelElements" data-item-id="{{channelElementsItemId}}" title="Toggle Channel Elements (Kinetic Aura)">
-                <i class="fas fa-check"></i>
-                <span>Channel Elements</span>
-              </button>
-            </div>
-            {{/if}}
           </div>
           {{/if}}
           {{#each elementalBlasts as |blast|}}
