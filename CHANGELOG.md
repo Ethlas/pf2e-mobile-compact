@@ -6,6 +6,12 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Class actions back under Actions / Reactions / Free Actions (Issue #65)
+
+- **Category `interaction` no longer means "skill action" (`scripts/apps/sheet-helpers/context-actions.js`)**: pf2e gives category `interaction` to every action that is neither offensive nor defensive, so Trace Rune, Command a Thrall, Manifest Eidolon, Act Together, Drain Bonded Item, Explode, Quick Alchemy and about a hundred other actions ended up under Skill Actions. They now sort by action cost like on pf2e's own sheet (which has no Skill Actions section). Skill actions are still found through pf2e's action registry (`section: "skill"` or a `statistic`, e.g. Encouraging Words), the known skill-action slugs and names, skill traits, and skill feats (`category: "skill"`).
+- **Registry statistic must be a skill**: an action pf2e's registry gives a non-skill `statistic` (Seek and Sense Motive roll `perception`, Arrest a Fall and Grab an Edge roll `reflex`) no longer counts as a skill action through that statistic; a skill or a lore does, also from the item's own `system.statistic` (the same statistic the card's skill label reads). Seek, Sense Motive and Escape stay in Skill Actions through the known skill-action list.
+- **`isSkillActionItem({ slug, name, traits, category, statistic, systemAction })`**: the check moved out of the preparation loop into an exported function that takes the values the loop already normalised, so `scripts/verify.mjs` can test it (section 6.6c, with all seven class actions from the issue). The category is read from `system.category` only; the old fallbacks (`system.actionCategory.value`, `item.category`) and the `flags.pf2e.skillAction` check never applied in pf2e and are gone.
+
 ### Switching off a self-effect action no longer uses it again (Issue #66, `scripts/apps/sheet-helpers/actions-handlers.js`)
 
 - **Switch-off only removes the effect**: the Use button of an action with a self-effect (Rage, Hunt Prey, Devise a Stratagem, Raise a Shield …) toggles the effect. `onUseAction` now returns right after deleting the effect, so the second tap shows only the "Deactivated …" notification. Before, it fell through to the code that follows a use: it posted the action card to chat again and took a frequency use from an action with uses left.

@@ -926,6 +926,52 @@ try {
   logFail(`Skill Action Labels verification threw an error: ${err.stack || err.message}`);
 }
 
+// 6.6c Test Skill Actions membership: category "interaction" alone doesn't make a skill action (Issue #65)
+try {
+  const { isSkillActionItem } = await import("./apps/sheet-helpers/context-actions.js");
+  const action = (name, traits, extra = {}) => ({
+    slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    name: name.toLowerCase(),
+    traits,
+    category: "interaction",
+    ...extra
+  });
+  const wronglyIn = [
+    // The class actions from the issue: category "interaction", no skill
+    action("Trace Rune", ["concentrate", "magical", "manipulate", "runesmith"]),
+    action("Command a Thrall", ["concentrate", "necromancer", "thrall"]),
+    action("Manifest Eidolon", ["concentrate", "manipulate", "summoner", "teleportation"]),
+    action("Act Together", ["summoner", "tandem"]),
+    action("Drain Bonded Item", ["arcane", "wizard"]),
+    action("Explode", ["fire", "inventor", "manipulate", "unstable"]),
+    action("Quick Alchemy", ["alchemist", "manipulate"]),
+    // A registry statistic that isn't a skill
+    action("Point Out", ["auditory", "manipulate", "visual"], { systemAction: { section: "specialty-basic" } }),
+    action("Arrest a Fall", [], { systemAction: { section: "specialty-basic", statistic: "reflex" } })
+  ].filter(a => isSkillActionItem(a)).map(a => a.name);
+
+  const wronglyOut = [
+    // Registry statistic alone (no section), a choice of skills, and section alone
+    action("Encouraging Words", ["auditory", "linguistic", "mental"], { systemAction: { statistic: "diplomacy" } }),
+    action("Recall Knowledge Variant", ["concentrate", "secret"], { slug: "rk-variant", systemAction: { statistic: ["arcana", "society"] } }),
+    action("Some Registry Skill Action", [], { systemAction: { section: "skill" } }),
+    // The item's own statistic, a lore, a known slug, a skill trait, and a skill feat without the trait
+    action("Homebrew Action", [], { statistic: "stealth" }),
+    action("Lore Action", [], { statistic: "sailing-lore" }),
+    action("Hide", ["secret"], { category: "" }),
+    action("Battle Medicine", ["general", "healing", "manipulate", "skill"], { category: "skill" }),
+    action("Some Skill Feat", ["general"], { category: "skill" })
+  ].filter(a => !isSkillActionItem(a)).map(a => a.name);
+
+  if (wronglyIn.length || wronglyOut.length) {
+    logFail(`[Skill Actions Membership] Wrongly in Skill Actions: [${wronglyIn.join(", ")}]; wrongly left out: [${wronglyOut.join(", ")}].`);
+  } else {
+    logPass("[Skill Actions Membership] Class actions with category 'interaction' and registry actions with a non-skill statistic stay out of Skill Actions; registry skill actions, skill statistics, known slugs and skill feats stay in.");
+  }
+} catch (err) {
+  logFail(`Skill Actions Membership verification threw an error: ${err.stack || err.message}`);
+}
+
 // 6.7 Test Spell Action Cost (1-3, default 2) & Multi-Action Button Labels (> 1)
 try {
   const { parseActionCostInfo } = await import("./utils/sheet-utils.js");
