@@ -12,10 +12,24 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 - **Registry statistic must be a skill**: an action pf2e's registry gives a non-skill `statistic` (Seek and Sense Motive roll `perception`, Arrest a Fall and Grab an Edge roll `reflex`) no longer counts as a skill action through that statistic; a skill or a lore does, also from the item's own `system.statistic` (the same statistic the card's skill label reads). Seek, Sense Motive and Escape stay in Skill Actions through the known skill-action list.
 - **`isSkillActionItem({ slug, name, traits, category, statistic, systemAction })`**: the check moved out of the preparation loop into an exported function that takes the values the loop already normalised, so `scripts/verify.mjs` can test it (section 6.6c, with all seven class actions from the issue). The category is read from `system.category` only; the old fallbacks (`system.actionCategory.value`, `item.category`) and the `flags.pf2e.skillAction` check never applied in pf2e and are gone.
 
+### Switching off a self-effect action no longer uses it again (Issue #66, `scripts/apps/sheet-helpers/actions-handlers.js`)
+
+- **Switch-off only removes the effect**: the Use button of an action with a self-effect (Rage, Hunt Prey, Devise a Stratagem, Raise a Shield …) toggles the effect. `onUseAction` now returns right after deleting the effect, so the second tap shows only the "Deactivated …" notification. Before, it fell through to the code that follows a use: it posted the action card to chat again and took a frequency use from an action with uses left.
+
 ### foundryvtt.com listing description (`docs/foundry-listing.html`, `docs/screenshots/`, `ASSET_PROVENANCE.json`)
 
 - **Description for the package page**: foundryvtt.com doesn't read `module.json` or the README for the package page; the owner pastes the description into the package admin. `docs/foundry-listing.html` holds that text (a short pitch, benefit bullets and three phone screenshots) so it can be reviewed like code.
 - **Screenshots**: the Actions tab, the header target list with distances, and the Spells tab, in `docs/screenshots/`. The listing loads them from `main` on GitHub. `docs/` is not packaged; `ASSET_PROVENANCE.json` records the screenshots for the media check in `scripts/verify.mjs`.
+### Kineticist Elemental Blast, Channel Elements & Weapon Infusion (Issue #57)
+
+- **Unchanneled & Channeled Elemental Blasts in Attacks (`scripts/apps/sheet-helpers/elemental-blast-handlers.js`, `scripts/apps/sheet-helpers/context-actions.js`)**:
+  - Added `prepareElementalBlastsContext` using `game.pf2e.ElementalBlast(actor)`. When `Effect: Kinetic Aura` is inactive, renders the unchanneled Elemental Blast card in **Attacks** with the **Channel Elements** (1-action) button (`onChannelElements`).
+  - When channeled, renders an Elemental Blast card per active gate element with damage type buttons (`onSetBlastDamageType`), Melee MAP 0/1/2 attack buttons + Melee Damage/Crit buttons, and Ranged MAP 0/1/2 attack buttons + Ranged Damage/Crit buttons (`onExecuteBlastAttack`, `onExecuteBlastDamage`).
+  - **Channel Elements is an auxiliary action of the card**, styled like a weapon's Draw / Reload (`aux-action-btn` in `strike-auxiliary-row`): `1 Channel Elements` before channeling, `End Kinetic Aura` once channeled (pf2e removes the effect). One control in one place, in the look the strike cards already use, instead of a separate blue bar and a green button in the panel.
+  - The damage buttons show pf2e's own formula (`getFormula`); when pf2e can't give one they show a plain "Damage" label rather than a formula built by the module. The element trait badge is left out when the damage-type badge already names it (Fire / FIRE).
+- **Weapon Infusion & Elemental Blast Roll Options (`scripts/apps/sheet-helpers/context-toggles.js`, `templates/parts/actions.hbs`)**:
+  - Routed `elemental-blast` domain toggles (including **Weapon Infusion** checkbox + shape dropdown and **Action Cost** 1/2) into `context.toggles.elementalBlast` and rendered them in a `.blast-controls-panel` at the top of the **Attacks** list while Kinetic Aura is active (pf2e only offers these toggles while the aura is active).
+  - **The action cost is a two-button switch** (`.blast-cost-switch`, the sub-tab button look) instead of a dropdown, so the active cost is visible at a glance; it is the only place the cost is set (`onToggleBlastActionCost` with the chosen `data-value`), and the card header shows the cost as a plain glyph like the strike cards. pf2e only accepts 1 or 2 actions (`ElementalBlast#actionCost`).
 
 ### Desktop Chat Isolation & Cleanup (Issue #53)
 
