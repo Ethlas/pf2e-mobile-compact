@@ -164,7 +164,7 @@ function formatToggle(toggle) {
  * @param {object} context
  */
 export function prepareTogglesContext(actor, sheet, context) {
-  const toggles = { actions: [], spellcasting: [], specials: [] };
+  const toggles = { actions: [], elementalBlast: [], spellcasting: [], specials: [] };
   context.toggles = toggles;
   context.togglesCollapsed = Object.fromEntries(
     Object.keys(toggles).map(key => [key, !!sheet?._collapsedRankGroups?.has(`toggles-${key}`)])
@@ -172,6 +172,15 @@ export function prepareTogglesContext(actor, sheet, context) {
   try {
     const all = Object.values(actor.synthetics?.toggles ?? {}).flatMap(domain => Object.values(domain));
     for (const toggle of all) {
+      if (toggle.domain === "elemental-blast") {
+        const rules = (actor.rules ?? []).filter(rule =>
+          rule.key === "RollOption" && rule.toggleable && rule.domain === toggle.domain && rule.option === toggle.option
+        );
+        if (!rules.some(rule => rule.toggleable === "totm")) {
+          toggles.elementalBlast.push(formatToggle(toggle));
+        }
+        continue;
+      }
       const place = classifyToggle(actor, toggle);
       if (place === "specials") toggles.specials.push(formatToggle(toggle));
       else if (place === "placement") (toggle.placement === "spellcasting" ? toggles.spellcasting : toggles.actions).push(formatToggle(toggle));
@@ -179,6 +188,6 @@ export function prepareTogglesContext(actor, sheet, context) {
     for (const list of Object.values(toggles)) list.sort((a, b) => a.label.localeCompare(b.label));
   } catch (err) {
     console.error("PF2e Mobile Compact | Error preparing toggles context:", err);
-    context.toggles = { actions: [], spellcasting: [], specials: [] };
+    context.toggles = { actions: [], elementalBlast: [], spellcasting: [], specials: [] };
   }
 }
