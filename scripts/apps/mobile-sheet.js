@@ -8,7 +8,7 @@ import { preparePartyContext } from "./sheet-helpers/context-party.js";
 import {
   prepareKingdomContext, onOpenMobileKingdomSheet, onSwitchKingdomTurnSubTab, onSwitchKingdomSheetSubTab,
   onToggleKingdomPhase, onToggleKingdomActivity, onSetKingdomActiveLeader, onSetKingdomActiveSettlement,
-  onRollKingdomSkillCheck, onPerformKingdomActivity, onRollKingdomResourceDice, onPostKingdomActivityChat,
+  onRollKingdomSkillCheck, onPerformKingdomActivity, onPostKingdomActivityChat,
   onSkipCollectTaxes, onClaimKingdomRefuge, onClaimKingdomLandmark, onOpenConsumptionBreakdown,
   onInspectKingdomSettlement, onFilterKingdomLevel, onResolveKingdomEvent, onUpdateKingdomField, onDispatchKingdomNativeAction
 } from "../kingdom/kingdom-handlers.js";
@@ -139,7 +139,6 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       setKingdomActiveSettlement: PF2eMobileSheet._onSetKingdomActiveSettlement,
       rollKingdomSkillCheck: PF2eMobileSheet._onRollKingdomSkillCheck,
       performKingdomActivity: PF2eMobileSheet._onPerformKingdomActivity,
-      rollKingdomResourceDice: PF2eMobileSheet._onRollKingdomResourceDice,
       postKingdomActivityChat: PF2eMobileSheet._onPostKingdomActivityChat,
       skipCollectTaxes: PF2eMobileSheet._onSkipCollectTaxes,
       claimKingdomRefuge: PF2eMobileSheet._onClaimKingdomRefuge,
@@ -668,7 +667,6 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onSetKingdomActiveSettlement(event, target) { return onSetKingdomActiveSettlement(this, event, target); }
   static async _onRollKingdomSkillCheck(event, target) { return onRollKingdomSkillCheck(this, event, target); }
   static async _onPerformKingdomActivity(event, target) { return onPerformKingdomActivity(this, event, target); }
-  static async _onRollKingdomResourceDice(event, target) { return onRollKingdomResourceDice(this, event, target); }
   static async _onPostKingdomActivityChat(event, target) { return onPostKingdomActivityChat(this, event, target); }
   static async _onSkipCollectTaxes(event, target) { return onSkipCollectTaxes(this, event, target); }
   static async _onClaimKingdomRefuge(event, target) { return onClaimKingdomRefuge(this, event, target); }

@@ -246,50 +246,6 @@ export async function onPerformKingdomActivity(sheet, event, target) {
 }
 
 /**
- * Rolls Kingdom Resource Dice into chat using the formula prepared by `pf2e-kingmaker-tools`.
- */
-export async function onRollKingdomResourceDice(sheet, event) {
-  event?.stopPropagation?.();
-  const partyActor = getPartyActor(sheet.actor);
-  if (!partyActor) return;
-
-  const kmApp = await getOrInitKingdomApp(partyActor, true);
-  let km = null;
-  if (kmApp && typeof kmApp._preparePartContext === "function") {
-    try {
-      km = await kmApp._preparePartContext("form", { partId: "form" }, { parts: ["form"] });
-    } catch (err) {
-      console.warn("PF2e Mobile Compact | Failed to read Resource Dice formula from pf2e-kingmaker-tools:", err);
-    }
-  }
-
-  const formula = typeof km?.resourceDiceIncome === "string" ? km.resourceDiceIncome.trim() : "";
-  if (!formula || (typeof Roll?.validate === "function" && !Roll.validate(formula))) {
-    globalThis.ui?.notifications?.warn?.("Kingdom Resource Dice formula is unavailable from pf2e-kingmaker-tools.");
-    return;
-  }
-
-  const level = km?.levelInput?.value;
-  const flavor = (level !== undefined && level !== null && level !== "")
-    ? `<strong>Kingdom Resource Dice</strong> (Level ${level})`
-    : "<strong>Kingdom Resource Dice</strong>";
-
-  const rollAction = async () => {
-    const roll = new Roll(formula);
-    await roll.evaluate();
-    await roll.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor: partyActor }),
-      flavor
-    });
-  };
-
-  await PhysicalDiceManager.withPhysicalMode({
-    title: "Kingdom Resource Dice",
-    actor: partyActor
-  }, rollAction, sheet.rollMode === "physical" || sheet._rollMode === "physical");
-}
-
-/**
  * Posts the activity's details or official chat card to chat.
  */
 export async function onPostKingdomActivityChat(sheet, event, target) {

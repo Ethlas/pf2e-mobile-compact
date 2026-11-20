@@ -562,7 +562,6 @@ try {
     onUpdateKingdomField,
     onRollKingdomSkillCheck,
     onPerformKingdomActivity,
-    onRollKingdomResourceDice,
     onPostKingdomActivityChat,
     onSkipCollectTaxes,
     onClaimKingdomRefuge,
@@ -688,74 +687,16 @@ try {
     logPass("[Turn Tab] Activity Perform buttons ('performKingdomActivity') execute Official & Homebrew activities with Physical Dice interception.");
   }
 
-  const rolledFormulas = [];
-  let physicalObservedOnResourceDice = false;
-  const warnMessages = [];
-  const prevUi = globalThis.ui;
-  globalThis.ui = {
-    ...(prevUi || {}),
-    notifications: {
-      ...(prevUi?.notifications || {}),
-      warn: (msg) => { warnMessages.push(msg); }
-    }
-  };
-  global.Roll = class {
-    static validate(f) { return /^\s*\d+d\d+(?:\s*[+-]\s*\d+)?\s*$/.test(String(f || "")); }
-    constructor(formula) {
-      this.formula = formula;
-      rolledFormulas.push(formula);
-    }
-    async evaluate() {
-      if (PhysicalDiceManager.isPhysicalModeActive() || PhysicalDiceManager.activeContext?.isPhysical) {
-        physicalObservedOnResourceDice = true;
-      }
-      return this;
-    }
-    async toMessage() { return {}; }
-  };
   global.ChatMessage = {
     getSpeaker: () => ({}),
     create: async () => ({})
   };
 
-  const prevPreparePartContext = mockKmApp._preparePartContext;
-  const prevPartyApps = mockPartyActor.apps;
-  const prevAppInstances = foundry.applications.instances;
-  try {
-    await onRollKingdomResourceDice(mockPartySheet, {});
-
-    mockKmApp._preparePartContext = async () => ({ resourceDiceIncome: "5d4", levelInput: { value: 1 } });
-    await onRollKingdomResourceDice(mockPartySheet, {});
-
-    mockKmApp._preparePartContext = async () => ({ resourceDiceIncome: "6d6-2", levelInput: { value: 2 } });
-    await onRollKingdomResourceDice(mockPartySheet, {});
-
-    // Empty resourceDiceIncome must warn and not roll a fallback formula
-    mockKmApp._preparePartContext = async () => ({ resourceDiceIncome: "", levelInput: { value: 4 } });
-    await onRollKingdomResourceDice(mockPartySheet, {});
-
-    // Missing kmApp must warn and not roll a fallback formula
-    mockPartyActor.apps = {};
-    foundry.applications.instances = new Map();
-    await onRollKingdomResourceDice(mockPartySheet, {});
-  } finally {
-    mockKmApp._preparePartContext = prevPreparePartContext;
-    mockPartyActor.apps = prevPartyApps;
-    foundry.applications.instances = prevAppInstances;
-    globalThis.ui = prevUi;
-  }
-
-  if (
-    !physicalObservedOnResourceDice ||
-    rolledFormulas.length !== 3 ||
-    rolledFormulas[0] !== "6d6+2" ||
-    rolledFormulas[1] !== "5d4" ||
-    rolledFormulas[2] !== "6d6-2" ||
-    warnMessages.length !== 2
-  ) {
-    logFail(`[Turn Tab] onRollKingdomResourceDice failed formula-only verification (rolled=${JSON.stringify(rolledFormulas)}, physical=${physicalObservedOnResourceDice}, warns=${warnMessages.length}).`);
+  const kingdomTurnHbs = fs.readFileSync(path.join(rootDir, "templates/kingdom/kingdom-turn.hbs"), "utf-8");
+  if (kingdomTurnHbs.includes("rollKingdomResourceDice")) {
+    logFail("[Turn Tab] templates/kingdom/kingdom-turn.hbs should not include 'rollKingdomResourceDice' button (handled by GM on desktop).");
   } else {
-    logPass("[Turn Tab] Resource Dice button ('rollKingdomResourceDice') rolls exact pf2e-kingmaker-tools resourceDiceIncome formulas ('6d6+2', '5d4', '6d6-2') with Physical Dice interception and warns without fallback when unavailable.");
+    logPass("[Turn Tab] Resource Dice roll buttons removed from templates/kingdom/kingdom-turn.hbs (Upkeep remains read-only for GM on desktop).");
   }
 
   // Verify applyKingdomFlagFallback + normalizeKingdomViewData never fabricate formulas or clobber consumption=0
