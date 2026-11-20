@@ -19,7 +19,7 @@
         <div class="km-stat-tile">
           <span class="km-tile-label">Size &amp; Nation</span>
           <strong class="km-tile-val">{{km.size}} Hexes</strong>
-          <small class="km-tile-sub">{{km.kingdomSize}} ({{km.resourceDiceIncome}})</small>
+          <small class="km-tile-sub">{{km.kingdomSize}}{{#if km.resourceDiceIncome}} ({{km.resourceDiceIncome}}){{/if}}</small>
         </div>
         <button type="button" class="km-stat-tile clickable" data-action="openConsumptionBreakdown">
           <span class="km-tile-label">Consumption <i class="fa-solid fa-circle-info"></i></span>

@@ -359,8 +359,8 @@ try {
         next: { name: "resourcePoints.next", value: 5 }
       },
       resourceDiceContext: {
-        now: { value: "6d6+2" },
-        next: { value: "6d6+2" }
+        now: { name: "resourceDice.now", value: 0 },
+        next: { name: "resourceDice.next", value: 0 }
       },
       commoditiesContext: {
         now: {
@@ -550,6 +550,8 @@ try {
   const { onSwitchActor } = await import("../scripts/apps/sheet-helpers/header-handlers.js");
   const {
     prepareKingdomContext,
+    applyKingdomFlagFallback,
+    normalizeKingdomViewData,
     onOpenMobileKingdomSheet,
     onSwitchKingdomTurnSubTab,
     onSwitchKingdomSheetSubTab,
@@ -636,6 +638,7 @@ try {
 
   if (
     !kingdomContext.isKingdom ||
+    kingdomContext.km.rdNowDisplay !== "6d6+2" ||
     kingdomContext.km.commoditiesArray.length !== 5 ||
     kingdomContext.km.ruinArray.length !== 4 ||
     kingdomContext.km.abilitiesArray.length !== 4 ||
@@ -649,7 +652,7 @@ try {
   ) {
     logFail("prepareKingdomContext failed to normalize one or more Kingdom / Homebrew sections.");
   } else {
-    logPass("[Context] All 5 Kingdom tabs populated, including 8 Leadership roles, Homebrew Leader Modifier types ('Skilled' +2), and Homebrew Leadership activities ('Naval Support', 'Cleanse Item').");
+    logPass("[Context] All 5 Kingdom tabs populated (including rdNowDisplay from resourceDiceIncome despite numeric resourceDiceContext.now=0), 8 Leadership roles, Homebrew Leader Modifier types ('Skilled' +2), and Homebrew Leadership activities ('Naval Support', 'Cleanse Item').");
   }
 
   // 6.3 Test Tab 1 (Turn) Buttons, Dropdowns, Accordion & Physical Dice Interception
@@ -685,22 +688,112 @@ try {
     logPass("[Turn Tab] Activity Perform buttons ('performKingdomActivity') execute Official & Homebrew activities with Physical Dice interception.");
   }
 
-  let resourceDiceRolled = false;
+  const rolledFormulas = [];
+  let physicalObservedOnResourceDice = false;
+  const warnMessages = [];
+  const prevUi = globalThis.ui;
+  globalThis.ui = {
+    ...(prevUi || {}),
+    notifications: {
+      ...(prevUi?.notifications || {}),
+      warn: (msg) => { warnMessages.push(msg); }
+    }
+  };
   global.Roll = class {
-    constructor(formula) { this.formula = formula; }
-    async evaluate() { return this; }
-    async toMessage() { resourceDiceRolled = true; return {}; }
+    static validate(f) { return /^\s*\d+d\d+(?:\s*[+-]\s*\d+)?\s*$/.test(String(f || "")); }
+    constructor(formula) {
+      this.formula = formula;
+      rolledFormulas.push(formula);
+    }
+    async evaluate() {
+      if (PhysicalDiceManager.isPhysicalModeActive() || PhysicalDiceManager.activeContext?.isPhysical) {
+        physicalObservedOnResourceDice = true;
+      }
+      return this;
+    }
+    async toMessage() { return {}; }
   };
   global.ChatMessage = {
     getSpeaker: () => ({}),
     create: async () => ({})
   };
 
-  await onRollKingdomResourceDice(mockPartySheet, {});
-  if (!resourceDiceRolled) {
-    logFail("[Turn Tab] onRollKingdomResourceDice failed to evaluate and post roll.");
+  const prevPreparePartContext = mockKmApp._preparePartContext;
+  const prevPartyApps = mockPartyActor.apps;
+  const prevAppInstances = foundry.applications.instances;
+  try {
+    await onRollKingdomResourceDice(mockPartySheet, {});
+
+    mockKmApp._preparePartContext = async () => ({ resourceDiceIncome: "5d4", levelInput: { value: 1 } });
+    await onRollKingdomResourceDice(mockPartySheet, {});
+
+    mockKmApp._preparePartContext = async () => ({ resourceDiceIncome: "6d6-2", levelInput: { value: 2 } });
+    await onRollKingdomResourceDice(mockPartySheet, {});
+
+    // Empty resourceDiceIncome must warn and not roll a fallback formula
+    mockKmApp._preparePartContext = async () => ({ resourceDiceIncome: "", levelInput: { value: 4 } });
+    await onRollKingdomResourceDice(mockPartySheet, {});
+
+    // Missing kmApp must warn and not roll a fallback formula
+    mockPartyActor.apps = {};
+    foundry.applications.instances = new Map();
+    await onRollKingdomResourceDice(mockPartySheet, {});
+  } finally {
+    mockKmApp._preparePartContext = prevPreparePartContext;
+    mockPartyActor.apps = prevPartyApps;
+    foundry.applications.instances = prevAppInstances;
+    globalThis.ui = prevUi;
+  }
+
+  if (
+    !physicalObservedOnResourceDice ||
+    rolledFormulas.length !== 3 ||
+    rolledFormulas[0] !== "6d6+2" ||
+    rolledFormulas[1] !== "5d4" ||
+    rolledFormulas[2] !== "6d6-2" ||
+    warnMessages.length !== 2
+  ) {
+    logFail(`[Turn Tab] onRollKingdomResourceDice failed formula-only verification (rolled=${JSON.stringify(rolledFormulas)}, physical=${physicalObservedOnResourceDice}, warns=${warnMessages.length}).`);
   } else {
-    logPass("[Turn Tab] Resource Dice button ('rollKingdomResourceDice') rolled and posted to chat.");
+    logPass("[Turn Tab] Resource Dice button ('rollKingdomResourceDice') rolls exact pf2e-kingmaker-tools resourceDiceIncome formulas ('6d6+2', '5d4', '6d6-2') with Physical Dice interception and warns without fallback when unavailable.");
+  }
+
+  // Verify applyKingdomFlagFallback + normalizeKingdomViewData never fabricate formulas or clobber consumption=0
+  const fallbackFlagActor = {
+    id: "party-fallback",
+    name: "Fallback Kingdom",
+    type: "party",
+    flags: {
+      "pf2e-kingmaker-tools": {
+        "kingdom-sheet": {
+          name: "Fallback Kingdom",
+          level: 4,
+          resourceDice: { bonus: 3, penalty: 1 },
+          consumption: { base: 5, reduction: 2 },
+          abilityScores: { culture: 14, economy: 16 }
+        }
+      }
+    }
+  };
+  const noFormulaKm = {};
+  applyKingdomFlagFallback(fallbackFlagActor, noFormulaKm);
+  normalizeKingdomViewData(fallbackFlagActor, noFormulaKm);
+
+  const zeroConsumptionKm = { consumption: 0 };
+  applyKingdomFlagFallback(fallbackFlagActor, zeroConsumptionKm);
+  normalizeKingdomViewData(fallbackFlagActor, zeroConsumptionKm);
+
+  if (
+    noFormulaKm.rdNowDisplay !== "" ||
+    noFormulaKm.resourceDice !== undefined ||
+    noFormulaKm.consumption !== undefined ||
+    noFormulaKm.abilities !== undefined ||
+    noFormulaKm.abilitiesArray.length !== 0 ||
+    zeroConsumptionKm.consumption !== 0
+  ) {
+    logFail(`[Context] Kingdom fallback fabricated formulas or overwrote consumption=0: rdNow='${noFormulaKm.rdNowDisplay}', resourceDice=${JSON.stringify(noFormulaKm.resourceDice)}, consumption=${JSON.stringify(noFormulaKm.consumption)}, zeroConsumption=${JSON.stringify(zeroConsumptionKm.consumption)}, abilities=${JSON.stringify(noFormulaKm.abilities)}.`);
+  } else {
+    logPass("[Context] Kingdom fallback/normalization never fabricates Resource Dice, consumption, or ability modifier formulas and preserves consumption=0.");
   }
 
   await onPostKingdomActivityChat(mockPartySheet, {}, { dataset: { activityId: "naval-support" } });

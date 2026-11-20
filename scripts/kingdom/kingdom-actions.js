@@ -246,29 +246,40 @@ export async function onPerformKingdomActivity(sheet, event, target) {
 }
 
 /**
- * Rolls Kingdom Resource Dice into chat.
+ * Rolls Kingdom Resource Dice into chat using the formula prepared by `pf2e-kingmaker-tools`.
  */
 export async function onRollKingdomResourceDice(sheet, event) {
   event?.stopPropagation?.();
   const partyActor = getPartyActor(sheet.actor);
   if (!partyActor) return;
 
-  const flag = partyActor.getFlag?.("pf2e-kingmaker-tools", "kingdom-sheet")
-    || partyActor.flags?.["pf2e-kingmaker-tools"]?.["kingdom-sheet"]
-    || {};
-  const campaign = partyActor.system?.campaign;
+  const kmApp = await getOrInitKingdomApp(partyActor, true);
+  let km = null;
+  if (kmApp && typeof kmApp._preparePartContext === "function") {
+    try {
+      km = await kmApp._preparePartContext("form", { partId: "form" }, { parts: ["form"] });
+    } catch (err) {
+      console.warn("PF2e Mobile Compact | Failed to read Resource Dice formula from pf2e-kingmaker-tools:", err);
+    }
+  }
 
-  const level = Number(flag.level ?? campaign?.level ?? 1);
-  const count = level + 4;
-  const bonus = Number(flag.resourceDice?.bonus ?? campaign?.resourceDice?.bonus ?? 0);
-  const formula = bonus ? `${count}d6 + ${bonus}` : `${count}d6`;
+  const formula = typeof km?.resourceDiceIncome === "string" ? km.resourceDiceIncome.trim() : "";
+  if (!formula || (typeof Roll?.validate === "function" && !Roll.validate(formula))) {
+    globalThis.ui?.notifications?.warn?.("Kingdom Resource Dice formula is unavailable from pf2e-kingmaker-tools.");
+    return;
+  }
+
+  const level = km?.levelInput?.value;
+  const flavor = (level !== undefined && level !== null && level !== "")
+    ? `<strong>Kingdom Resource Dice</strong> (Level ${level})`
+    : "<strong>Kingdom Resource Dice</strong>";
 
   const rollAction = async () => {
     const roll = new Roll(formula);
     await roll.evaluate();
     await roll.toMessage({
       speaker: ChatMessage.getSpeaker({ actor: partyActor }),
-      flavor: `<strong>Kingdom Resource Dice</strong> (Level ${level})`
+      flavor
     });
   };
 
