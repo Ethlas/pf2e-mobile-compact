@@ -156,6 +156,7 @@ export async function onExecuteAuxiliaryAction(sheet, event, target) {
   const aux = strike.auxiliaryActions?.[auxIndex];
   if (typeof aux?.execute === "function") {
     await aux.execute({ event });
+    await sheet.render?.({ parts: ["header", "sheet"] });
     return;
   }
 
@@ -166,10 +167,13 @@ export async function onExecuteAuxiliaryAction(sheet, event, target) {
 
   if (purpose === "draw") {
     await weapon.update({ "system.equipped.carryType": "held", "system.equipped.handsHeld": 1 });
+    await sheet.render?.({ parts: ["header", "sheet"] });
   } else if (purpose === "sheathe") {
     await weapon.update({ "system.equipped.carryType": "worn", "system.equipped.handsHeld": 0 });
+    await sheet.render?.({ parts: ["header", "sheet"] });
   } else if (purpose === "drop") {
     await weapon.update({ "system.equipped.carryType": "dropped", "system.equipped.handsHeld": 0 });
+    await sheet.render?.({ parts: ["header", "sheet"] });
   }
 }
 
@@ -235,7 +239,7 @@ export async function onUseAction(sheet, event, target) {
       // no action card in chat and no frequency use taken (issue #66).
       await existingEffect.delete();
       ui.notifications?.info?.(`Deactivated ${existingEffect.name} for ${sheet.actor.name}.`);
-      sheet.render({ parts: ["sheet"] });
+      await sheet.render?.({ parts: ["header", "sheet"] });
       return;
     }
 
@@ -278,7 +282,7 @@ export async function onUseAction(sheet, event, target) {
       await item.toMessage(event);
     }
 
-    sheet.render({ parts: ["sheet"] });
+    await sheet.render?.({ parts: ["header", "sheet"] });
     return;
   }
 
@@ -336,9 +340,11 @@ export async function onUseAction(sheet, event, target) {
     try {
       if (typeof systemAction.use === "function") {
         await systemAction.use(useOptions);
+        await sheet.render?.({ parts: ["header", "sheet"] });
         return;
       } else if (typeof systemAction === "function") {
         await systemAction(useOptions);
+        await sheet.render?.({ parts: ["header", "sheet"] });
         return;
       }
     } catch (err) {
@@ -358,7 +364,7 @@ export async function onUseAction(sheet, event, target) {
     await item.toMessage(event);
   }
 
-  sheet.render({ parts: ["sheet"] });
+  await sheet.render?.({ parts: ["header", "sheet"] });
 }
 
 /**

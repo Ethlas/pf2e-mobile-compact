@@ -39,7 +39,7 @@
     {{#if blast.hasMultipleDamageTypes}}
     <div class="blast-damage-types m-flex-row m-wrap m-gap-6">
       {{#each blast.damageTypes as |dt|}}
-      <button type="button" class="blast-dt-btn damage-type-badge damage-{{dt.value}} m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-flex-1 m-text-xs m-bold {{#if dt.selected}}selected{{/if}}" data-action="setBlastDamageType" data-element="{{../blast.element}}" data-damage-type="{{dt.value}}" {{#if dt.selected}}disabled{{/if}} title="{{dt.label}}">
+      <button type="button" class="blast-dt-btn damage-type-badge damage-{{dt.value}} m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-flex-auto m-text-xs m-bold {{#if dt.selected}}selected{{/if}}" data-action="setBlastDamageType" data-element="{{../blast.element}}" data-damage-type="{{dt.value}}" {{#if dt.selected}}disabled{{/if}} title="{{dt.label}}">
         {{#if dt.icon}}<i class="fa-solid fa-fw fa-{{dt.icon}}"></i>{{/if}}
         <span>{{dt.label}}</span>
       </button>

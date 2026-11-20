@@ -1,6 +1,7 @@
 /**
  * Action and prompt handlers for Party Sheet and Stash item transfers.
  */
+import { closeOtherMobileSheets } from "./header-handlers.js";
 
 /**
  * Prompts user with a touch-friendly dialog to transfer an item to a party member.
@@ -274,6 +275,21 @@ export async function onSendToPartyStash(sheet, event, target) {
 }
 
 /**
+ * Renders `targetActor.sheet` before closing `sheet` and any extra open mobile sheets.
+ * @param {object} sheet
+ * @param {Actor} targetActor
+ * @returns {Promise<void>}
+ */
+async function openTargetActorSheet(sheet, targetActor) {
+  const targetSheet = targetActor.sheet;
+  await targetSheet.render({ force: true });
+  if (sheet && sheet !== targetSheet && typeof sheet.close === "function") {
+    await sheet.close({ animate: false });
+  }
+  await closeOtherMobileSheets(targetSheet, sheet?.constructor);
+}
+
+/**
  * Action handler: Open or switch sheet to the Party Stash actor.
  * @param {object} sheet
  * @param {Event} event
@@ -293,8 +309,7 @@ export async function onOpenPartyStash(sheet, event, target) {
   const partyActor = game.actors.get(partyId);
   if (!partyActor) return;
 
-  await sheet.close();
-  partyActor.sheet.render(true);
+  await openTargetActorSheet(sheet, partyActor);
 }
 
 /**
@@ -310,8 +325,7 @@ export async function onSwitchToPartyMember(sheet, event, target) {
   const memberActor = game.actors.get(actorId);
   if (!memberActor) return;
 
-  await sheet.close();
-  memberActor.sheet.render(true);
+  await openTargetActorSheet(sheet, memberActor);
 }
 
 /**

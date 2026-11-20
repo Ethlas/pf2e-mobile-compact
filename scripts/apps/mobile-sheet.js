@@ -361,7 +361,11 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   /** @override */
   _onClose(options) {
-    document.body?.classList.remove("pf2e-sheet-open");
+    const hasOtherOpenSheet = Array.from(foundry.applications?.instances?.values?.() ?? [])
+      .some(a => a !== this && a instanceof PF2eMobileSheet && a.rendered);
+    if (!hasOtherOpenSheet) {
+      document.body?.classList.remove("pf2e-sheet-open");
+    }
     this._unregisterSceneListeners();
     this._unregisterChatListener();
     this._restoreChatElement();

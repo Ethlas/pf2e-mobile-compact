@@ -444,6 +444,7 @@ function createSafeTokensShim(initial = {}) {
   });
 
   const base = {
+    _isSafeTokensShim: true,
     controlled: [],
     placeables: [],
     get: () => null,
@@ -461,9 +462,16 @@ function createSafeTokensShim(initial = {}) {
     updatePlannedMovements: () => {},
     clearPlannedMovements: () => {},
     quadtree: safeQuadtree,
-    // A flag on the real TokenLayer; the no-op function below would read as true, and pf2e's targetToken hook
-    // then draws a flanking highlight on a headless token that has none
+    // State fields from PlaceablesLayer / TokenLayer: the catch-all method stub would read as truthy,
+    // breaking falsy checks like `highlightObjects` (flanking) and `Token#_onUpdate -> #getDragContext` (`_draggedToken?.mouseInteractionManager`)
     highlightObjects: false,
+    hover: null,
+    occlusionMode: 0,
+    _draggedToken: null,
+    _dragMovementAction: null,
+    _movementPlanningContext: null,
+    _placementContext: null,
+    _tabIndex: null,
     objects: null,
     preview: null,
     _configPreview: null,
@@ -484,6 +492,43 @@ function createSafeTokensShim(initial = {}) {
 }
 
 /**
+ * Returns true while Foundry is still initializing before Canvas#initialize() binds layers
+ * and `core.noCanvas` is disabled, so we avoid pre-defining `canvas.tokens` and shadowing Foundry's real `TokenLayer`.
+ * @param {object|null} canvasObj
+ * @returns {boolean}
+ */
+function isCanvasPendingInitialization(canvasObj) {
+  if (!canvasObj || canvasObj.initialized !== false) return false;
+  try {
+    if (typeof game !== "undefined" && game?.settings?.settings?.has?.("core.noCanvas") && game.settings.get("core", "noCanvas")) {
+      return false;
+    }
+  } catch {}
+  return Boolean(typeof game !== "undefined" && game?.ready === false);
+}
+
+/**
+ * Replaces a previously installed safe tokens shim with Foundry's real `TokenLayer` once `canvas.interface.tokens` exists.
+ * @param {object|null} target
+ */
+function restoreRealTokensLayer(target) {
+  const realLayer = target?.interface?.tokens;
+  if (!target?.tokens?._isSafeTokensShim || !realLayer || realLayer._isSafeTokensShim) return;
+  try {
+    target.tokens = realLayer;
+  } catch {
+    try {
+      Object.defineProperty(target, "tokens", {
+        value: realLayer,
+        configurable: true,
+        enumerable: true,
+        writable: true
+      });
+    } catch {}
+  }
+}
+
+/**
  * Ensures canvas.tokens exists and has safe defaults ({ controlled: [], placeables: [] })
  * and provides a no-op fallback for canvas.app (ticker, stage) to prevent third-party modules
  * (such as pf2e-kingmaker-tools, splatter) from throwing TypeErrors when canvas is disabled,
@@ -491,7 +536,12 @@ function createSafeTokensShim(initial = {}) {
  */
 export function ensureSafeCanvasTokens() {
   const canvasObj = typeof canvas !== "undefined" ? canvas : null;
+  const targetCanvas = canvasObj ?? (typeof game !== "undefined" ? game?.canvas : null);
+  if (isCanvasPendingInitialization(targetCanvas)) {
+    return;
+  }
   if (canvasObj) {
+    restoreRealTokensLayer(canvasObj);
     if (!canvasObj.tokens) {
       const mockTokens = createSafeTokensShim();
       try {
@@ -585,6 +635,7 @@ export function ensureSafeCanvasTokens() {
   }
 
   if (typeof game !== "undefined" && game?.canvas) {
+    restoreRealTokensLayer(game.canvas);
     if (!game.canvas.tokens) {
       try {
         game.canvas.tokens = canvasObj?.tokens ?? createSafeTokensShim();

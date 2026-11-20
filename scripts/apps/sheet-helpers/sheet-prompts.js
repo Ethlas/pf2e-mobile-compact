@@ -302,6 +302,7 @@ export async function promptTargetSelection(sheet, actionLabel, options = {}) {
       DialogV2.prompt({
         window: { title: `Target: ${actionLabel}` },
         content,
+        modal: true,
         ok: {
           label: "Confirm & Roll",
           callback: async (event, button, dialog) => {
@@ -438,6 +439,7 @@ export async function promptMultiTargetSelection(sheet, actionLabel, options = {
       DialogV2.prompt({
         window: { title: `Targets: ${actionLabel}` },
         content,
+        modal: true,
         render: (event, dialog) => {
           bindQuickButtons(dialog.element);
         },
@@ -499,6 +501,7 @@ export async function promptVariantSelection(sheet, actionLabel, variants) {
       DialogV2.prompt({
         window: { title: `${actionLabel} - Select Variant` },
         content,
+        modal: true,
         ok: {
           label: "Proceed",
           callback: (event, button, dialog) => {
@@ -555,6 +558,7 @@ export async function promptStatisticSelection(sheet, actionLabel, statistics) {
       DialogV2.prompt({
         window: { title: `${actionLabel} - Select Skill` },
         content,
+        modal: true,
         ok: {
           label: "Roll Check",
           callback: (event, button, dialog) => {
@@ -607,6 +611,7 @@ export async function promptStrikeSelection(sheet, actionLabel, strikes) {
       DialogV2.prompt({
         window: { title: `${actionLabel} - Select Strike` },
         content,
+        modal: true,
         ok: {
           label: "Roll Attack",
           callback: (event, button, dialog) => {
@@ -661,6 +666,7 @@ export async function promptConsumableUsage(sheet, item) {
       DialogV2.prompt({
         window: { title: `Use Consumable: ${item.name}` },
         content,
+        modal: true,
         ok: {
           label: "Use / Administer",
           callback: (event, button, dialog) => {
@@ -724,6 +730,7 @@ export async function promptWeaponSelectionForAttachment(sheet, consumable, weap
       DialogV2.prompt({
         window: { title: `Apply ${consumable.name}` },
         content,
+        modal: true,
         ok: {
           label: "Apply to Weapon",
           callback: (event, button, dialog) => {
@@ -781,6 +788,7 @@ export async function promptSpontaneousSlotSelection(sheet, spellName, minRank, 
       dialogInstance = new DialogV2({
         window: { title: `1 Chg + Slot: ${spellName}` },
         content,
+        modal: true,
         buttons: [
           {
             action: "cancel",

@@ -1289,6 +1289,13 @@ try {
   ensureSafeCanvasTokens();
   if (
     !globalThis.canvas.tokens ||
+    globalThis.canvas.tokens._isSafeTokensShim !== true ||
+    globalThis.canvas.tokens._draggedToken !== null ||
+    globalThis.canvas.tokens._movementPlanningContext !== null ||
+    globalThis.canvas.tokens._placementContext !== null ||
+    globalThis.canvas.tokens.hover !== null ||
+    globalThis.canvas.tokens.highlightObjects !== false ||
+    globalThis.canvas.tokens._draggedToken?.mouseInteractionManager.interactionData !== undefined ||
     !Array.isArray(globalThis.canvas.tokens.controlled) ||
     typeof globalThis.canvas.tokens.createObject !== "function" ||
     typeof globalThis.canvas.tokens.recalculatePlannedMovementPaths !== "function" ||
@@ -1303,9 +1310,41 @@ try {
     typeof globalThis.canvas.app.ticker?.add !== "function" ||
     !globalThis.canvas.app.stage
   ) {
-    logFail("[Safe Canvas Tokens & App Shim] Failed: canvas.tokens or canvas.app.ticker shim missing required layer/socket/quadtree stubs");
+    logFail("[Safe Canvas Tokens & App Shim] Failed: canvas.tokens or canvas.app.ticker shim missing required layer/socket/quadtree stubs or null TokenLayer state fields");
   } else {
-    logPass("[Safe Canvas Tokens & App Shim] canvas.tokens safe arrays, layer activate/deactivate stubs, quadtree stubs, socket _updatePlannedMovements stubs, proxy fallback, and canvas.app.ticker no-op shims created for headless/no-canvas mode.");
+    logPass("[Safe Canvas Tokens & App Shim] canvas.tokens safe arrays, null TokenLayer drag/hover state fields, layer activate/deactivate stubs, quadtree stubs, socket _updatePlannedMovements stubs, proxy fallback, and canvas.app.ticker no-op shims created for headless/no-canvas mode.");
+  }
+
+  // 4b-ii. ensureSafeCanvasTokens initialization guard & real TokenLayer self-healing
+  const prevGame4b = globalThis.game;
+  globalThis.canvas = { initialized: false };
+  globalThis.game = {
+    ready: false,
+    canvas: globalThis.canvas,
+    settings: { settings: new Map([["core.noCanvas", {}]]), get: () => false }
+  };
+  ensureSafeCanvasTokens();
+  const pendingUntouched = !("tokens" in globalThis.canvas) && !("app" in globalThis.canvas);
+
+  globalThis.game.ready = true;
+  ensureSafeCanvasTokens();
+  const readyShimInstalled = Boolean(
+    globalThis.canvas.tokens?._isSafeTokensShim === true &&
+    globalThis.canvas.tokens?._draggedToken === null &&
+    globalThis.canvas.app?.stage
+  );
+
+  const realLayer4b = { controlled: [], placeables: [], _draggedToken: null };
+  globalThis.canvas.interface = { tokens: realLayer4b };
+  ensureSafeCanvasTokens();
+  const healedToRealLayer = globalThis.canvas.tokens === realLayer4b;
+
+  globalThis.game = prevGame4b;
+  globalThis.canvas = {};
+  if (!pendingUntouched || !readyShimInstalled || !healedToRealLayer) {
+    logFail(`[Safe Canvas Tokens Init Guard] Failed: pendingUntouched=${pendingUntouched}, readyShimInstalled=${readyShimInstalled}, healedToRealLayer=${healedToRealLayer}`);
+  } else {
+    logPass("[Safe Canvas Tokens Init Guard] Skips pre-defining canvas.tokens/app while Canvas initialization is pending (game.ready=false), installs shim in ready/headless mode, and self-heals to canvas.interface.tokens when present.");
   }
 
   // 4c. Safe Token Placeable Resolution (Guards against 'this.layer.createObject is not a function')
@@ -1668,6 +1707,17 @@ try {
   const worldMatchedDocs = worldActor.getActiveTokens(true, true);
   const worldMatchedAdapters = worldActor.getActiveTokens(true, false);
 
+  let floatyStubOk = false;
+  if (
+    typeof worldMatchedAdapters?.[0]?.showFloatyText === "function" &&
+    typeof worldMatchedAdapters?.[0]?._onApplyStatusEffect === "function" &&
+    typeof worldMatchedAdapters?.[0]?.drawEffects === "function"
+  ) {
+    await worldMatchedAdapters[0].showFloatyText({ create: {} });
+    worldMatchedAdapters[0]._onApplyStatusEffect("frightened", false);
+    floatyStubOk = true;
+  }
+
   // Test 8C: Re-entrancy guard
   let reentrancyResult = null;
   const reentrantActor = new MockActorDocument({
@@ -1692,12 +1742,13 @@ try {
     dangerousGetterAccessed ||
     worldMatchedDocs?.[0] !== matchingWorldDoc ||
     worldMatchedAdapters?.length !== 1 ||
+    !floatyStubOk ||
     !Array.isArray(reentrancyResult) ||
     reentrancyResult.length !== 0
   ) {
-    logFail(`[Headless getActiveTokens Recursion Guard] Failed: synthDocs=${synthActiveDocs?.length}, synthLinked=${synthLinkedDocs?.length}, dangerousAccessed=${dangerousGetterAccessed}, matchedDocs=${worldMatchedDocs?.length}, matchedAdapters=${worldMatchedAdapters?.length}, reentrancyResult=${JSON.stringify(reentrancyResult)}`);
+    logFail(`[Headless getActiveTokens Recursion Guard] Failed: synthDocs=${synthActiveDocs?.length}, synthLinked=${synthLinkedDocs?.length}, dangerousAccessed=${dangerousGetterAccessed}, matchedDocs=${worldMatchedDocs?.length}, matchedAdapters=${worldMatchedAdapters?.length}, floatyStubOk=${floatyStubOk}, reentrancyResult=${JSON.stringify(reentrancyResult)}`);
   } else {
-    logPass("[Headless getActiveTokens Recursion Guard] Synthetic actors resolve their own token without scanning, unlinked tokens never evaluate dangerous actor getters, and re-entrancy is blocked.");
+    logPass("[Headless getActiveTokens Recursion Guard] Synthetic actors resolve their own token without scanning, unlinked tokens never evaluate dangerous actor getters, headless adapters provide showFloatyText/_onApplyStatusEffect/drawEffects no-op stubs, and re-entrancy is blocked.");
   }
 
   // Verify Issue #20: Desktop mode isolation from mobile layout, unscoped Kingdom CSS, and touchscreen laptop false positive prevention
@@ -2625,6 +2676,239 @@ try {
   globalThis.CONFIG.PF2E = prevConfigPf2e;
 } catch (err) {
   logFail(`Kineticist Elemental Blast verification threw an error: ${err.stack || err.message}`);
+}
+
+// 6.15 Immediate Header & Sheet Refresh on Action / Aux Toggles (Issue #69, Stage 1)
+console.log("\n--- 6.15 Immediate Header & Sheet Refresh on Action / Aux Toggles (Issue #69) ---");
+try {
+  const { onExecuteAuxiliaryAction, onUseAction } = await import("../scripts/apps/sheet-helpers/actions-handlers.js");
+  const { onChannelElements } = await import("../scripts/apps/sheet-helpers/elemental-blast-handlers.js");
+
+  const prevFromUuid = globalThis.fromUuid;
+  const prevPf2e = globalThis.game.pf2e;
+  const prevUi = globalThis.ui;
+  globalThis.ui = { ...(prevUi || {}), notifications: { info: () => {}, warn: () => {} } };
+
+  const activeEffects = [];
+  const renderCalls = [];
+  let chatPosts = 0;
+
+  const makeSelfItem = (id, name, slug, uuid, freq = null) => ({
+    id,
+    uuid: `Actor.r1.Item.${id}`,
+    name,
+    slug,
+    type: "action",
+    system: { frequency: freq, selfEffect: { uuid, name: `Effect: ${name}` } },
+    async update(patch) { if (patch["system.frequency.value"] !== undefined) this.system.frequency.value = patch["system.frequency.value"]; },
+    async toMessage() { chatPosts++; }
+  });
+
+  const duelingParry = makeSelfItem("act-dp", "Dueling Parry", "dueling-parry", "Compendium.pf2e.feat-effects.Item.dp1", { value: 1, max: 1, per: "day" });
+  const channelElements = makeSelfItem("act-ce", "Channel Elements", "channel-elements", "Compendium.pf2e.feat-effects.Item.aura1");
+  const raiseShield = { id: "act-ras", name: "Raise a Shield", slug: "raise-a-shield", type: "action", system: {} };
+
+  globalThis.fromUuid = async (uuid) => ({
+    name: uuid.endsWith("aura1") ? "Effect: Kinetic Aura" : "Effect: Dueling Parry",
+    toObject: () => ({ name: uuid.endsWith("aura1") ? "Effect: Kinetic Aura" : "Effect: Dueling Parry", type: "effect", sourceId: uuid, system: {} })
+  });
+  globalThis.game.pf2e = {
+    ...(prevPf2e || {}),
+    actions: { get: (slug) => slug === "raise-a-shield" ? { slug, use: async () => {} } : null }
+  };
+
+  const itemsList = [duelingParry, channelElements, raiseShield];
+  itemsList.get = (id) => itemsList.find(i => i.id === id) ?? null;
+
+  const mockSheet = {
+    actor: {
+      id: "r1",
+      uuid: "Actor.r1",
+      name: "Valeros",
+      items: itemsList,
+      itemTypes: { action: [channelElements], effect: activeEffects },
+      system: { actions: [{ auxiliaryActions: [{ action: "raise-a-shield", execute: async () => {} }] }] },
+      createEmbeddedDocuments: async (_t, docs) => docs.map(d => {
+        const eff = { ...d, flags: { core: { sourceId: d.sourceId } }, delete: async () => { activeEffects.splice(activeEffects.indexOf(eff), 1); } };
+        activeEffects.push(eff);
+        return eff;
+      })
+    },
+    async render(opts) { renderCalls.push(opts?.parts?.join(",") ?? ""); }
+  };
+
+  await onExecuteAuxiliaryAction(mockSheet, {}, { dataset: { strikeIndex: "0", auxIndex: "0" } });
+  await onUseAction(mockSheet, {}, { dataset: { itemId: "act-dp" } }); // activate
+  const afterActivate = { freq: duelingParry.system.frequency.value, chats: chatPosts };
+  await onUseAction(mockSheet, {}, { dataset: { itemId: "act-dp" } }); // deactivate
+  const afterDeactivate = { freq: duelingParry.system.frequency.value, chats: chatPosts };
+  await onUseAction(mockSheet, {}, { dataset: { itemId: "act-ras" } }); // systemAction.use
+  await onChannelElements(mockSheet, {}, { dataset: { itemId: "act-ce" } }); // channel on
+  const auraAfterOn = activeEffects.length;
+  await onChannelElements(mockSheet, {}, { dataset: { itemId: "act-ce" } }); // channel off
+  const auraAfterOff = activeEffects.length;
+
+  globalThis.fromUuid = prevFromUuid;
+  globalThis.game.pf2e = prevPf2e;
+  globalThis.ui = prevUi;
+
+  if (
+    renderCalls.length !== 6 ||
+    renderCalls.some(r => r !== "header,sheet") ||
+    afterActivate.freq !== 0 || afterActivate.chats !== 1 ||
+    afterDeactivate.freq !== 0 || afterDeactivate.chats !== 1 ||
+    auraAfterOn !== 1 || auraAfterOff !== 0
+  ) {
+    logFail(`[Issue #69 Refresh] renders=${JSON.stringify(renderCalls)}, activate=${JSON.stringify(afterActivate)}, deactivate=${JSON.stringify(afterDeactivate)}, aura=${auraAfterOn}->${auraAfterOff}`);
+  } else {
+    logPass("[Issue #69 Refresh] Aux actions, self-effect activate/deactivate (no extra chat/frequency #66), systemAction.use, and Channel Elements all render ['header', 'sheet'] immediately.");
+  }
+} catch (err) {
+  logFail(`Immediate refresh verification threw an error: ${err.stack || err.message}`);
+}
+
+// 6.16 Kineticist Blast Wrapping, Mobile Dialog Centering & Race-Safe Actor Switching
+console.log("\n--- 6.16 Kineticist Blast Wrapping, Mobile Dialog Centering & Race-Safe Actor Switching ---");
+try {
+  // 1. Elemental Blast damage-type buttons wrap cleanly instead of overlapping via m-flex-1
+  const blastCardHbs = fs.readFileSync(path.join(rootDir, "templates/parts/actions/elemental-blast-card.hbs"), "utf-8");
+  const blastDtLine = blastCardHbs.split("\n").find(l => l.includes("blast-dt-btn")) ?? "";
+  const sheetCssText = fs.readFileSync(path.join(rootDir, "styles/pf2e-mobile.css"), "utf-8");
+  const blastDtCssMatch = sheetCssText.match(/\.pf2e-mobile-sheet \.blast-dt-btn\s*\{([^}]*)\}/);
+
+  if (!blastDtLine.includes("m-flex-auto") || blastDtLine.includes("m-flex-1") || !blastDtCssMatch?.[1]?.includes("white-space: nowrap")) {
+    logFail(`[Kineticist UI #1] Blast damage-type button missing m-flex-auto / nowrap or still has m-flex-1: line="${blastDtLine.trim()}"`);
+  } else {
+    logPass("[Kineticist UI #1] Elemental Blast damage-type buttons use m-flex-auto and white-space: nowrap so 4 Weapon Infusion types wrap cleanly.");
+  }
+
+  // 2. Full-bleed sheet pins below dialogs (z-index: 90 !important), Foundry dialogs center in viewport, and DialogV2 prompts are modal
+  const sheetZMatches = sheetCssText.match(/z-index:\s*90\s*!important;/g) ?? [];
+  const hasDialogCentering = sheetCssText.includes(":is(.application, .window-app):has(> .window-header):not(.pf2e-mobile-sheet)")
+    && sheetCssText.includes("left: 50% !important;")
+    && sheetCssText.includes("transform: translate(-50%, -50%) !important;")
+    && sheetCssText.includes("max-width: calc(100vw - 16px) !important;");
+  const promptsSource = fs.readFileSync(path.join(rootDir, "scripts/apps/sheet-helpers/sheet-prompts.js"), "utf-8");
+  const dialogV2Calls = (promptsSource.match(/(?:DialogV2\.prompt|new DialogV2)\s*\(/g) ?? []).length;
+  const modalTrueCount = (promptsSource.match(/\bmodal:\s*true\b/g) ?? []).length;
+
+  if (sheetZMatches.length < 2 || !hasDialogCentering || dialogV2Calls === 0 || modalTrueCount !== dialogV2Calls) {
+    logFail(`[Kineticist UI #2] Dialog layering/centering mismatch: zMatches=${sheetZMatches.length}, hasDialogCentering=${hasDialogCentering}, dialogV2Calls=${dialogV2Calls}, modalTrueCount=${modalTrueCount}`);
+  } else {
+    logPass(`[Kineticist UI #2] Mobile sheet stays at z-index: 90 !important, framed Foundry dialogs center inside viewport, and all ${dialogV2Calls} DialogV2 prompts use modal: true.`);
+  }
+
+  // 3. Race-safe actor switching: renders target sheet before closing previous, removes stray sheets, handles out-of-order rapid switches
+  const { onSwitchActor } = await import("../scripts/apps/sheet-helpers/header-handlers.js");
+  const prevActors = globalThis.game.actors;
+  const prevInstances = globalThis.foundry.applications.instances;
+  const prevUi = globalThis.ui;
+  const prevDoc = globalThis.document;
+
+  const events = [];
+  const instances = new Map();
+  let orphanRemoved = false;
+  let sheet1RenderedDuringRender = false;
+  let sheet1Ref = null;
+
+  class MockMobileSheet {
+    constructor({ document: doc }) {
+      this.id = doc.id;
+      this.document = doc;
+      this.actor = doc;
+      this.rendered = false;
+      this._waitPromise = null;
+      this.element = { classList: { contains: c => c === "pf2e-mobile-sheet" }, remove: () => {} };
+    }
+    async render() {
+      if (this._waitPromise) await this._waitPromise;
+      if (this.actor.id === "a2" && sheet1Ref) {
+        sheet1RenderedDuringRender = sheet1Ref.rendered === true;
+      }
+      events.push(`render:${this.actor.id}`);
+      this.rendered = true;
+      instances.set(this.id, this);
+    }
+    async close() {
+      events.push(`close:${this.actor.id}`);
+      this.rendered = false;
+      instances.delete(this.id);
+    }
+  }
+
+  const a1 = { id: "a1", name: "Azhara", type: "character" };
+  const a2 = { id: "a2", name: "Watson", type: "character" };
+  const a3 = { id: "a3", name: "Enaq Wrul", type: "character" };
+  const sheet1 = new MockMobileSheet({ document: a1 });
+  const sheet2 = new MockMobileSheet({ document: a2 });
+  const sheet3 = new MockMobileSheet({ document: a3 });
+  const straySheet = new MockMobileSheet({ document: { id: "stray", name: "Stray", type: "character" } });
+  a1._mobileSheetInstance = sheet1;
+  a2._mobileSheetInstance = sheet2;
+  a3._mobileSheetInstance = sheet3;
+  sheet1Ref = sheet1;
+
+  sheet1.rendered = true;
+  straySheet.rendered = true;
+  instances.set(sheet1.id, sheet1);
+  instances.set(straySheet.id, straySheet);
+
+  const orphanEl = { classList: { contains: () => true }, remove: () => { orphanRemoved = true; } };
+  globalThis.game.actors = new Map([["a1", a1], ["a2", a2], ["a3", a3]]);
+  globalThis.foundry.applications.instances = instances;
+  globalThis.ui = { ...(prevUi || {}), windows: {} };
+  globalThis.document = {
+    ...(prevDoc || {}),
+    querySelectorAll: (sel) => sel === ".pf2e-mobile-sheet" ? [sheet2.element, orphanEl] : []
+  };
+
+  // Subtest A: normal switch renders a2 before closing a1, closes straySheet, removes orphan DOM node
+  await onSwitchActor(sheet1, {}, { value: "a2" });
+  const testAOk =
+    events[0] === "render:a2" &&
+    sheet1RenderedDuringRender &&
+    !sheet1.rendered &&
+    !straySheet.rendered &&
+    sheet2.rendered &&
+    orphanRemoved &&
+    instances.size === 1 &&
+    instances.get("a2") === sheet2;
+
+  // Subtest B: rapid out-of-order switch (slow a2, fast a3) closes late a2 and keeps only a3
+  sheet1.rendered = true;
+  sheet2.rendered = false;
+  sheet3.rendered = false;
+  instances.clear();
+  instances.set(sheet1.id, sheet1);
+  let resolveSlowRender;
+  sheet2._waitPromise = new Promise(resolve => { resolveSlowRender = resolve; });
+
+  const slowSwitch = onSwitchActor(sheet1, {}, { value: "a2" });
+  await Promise.resolve();
+  const fastSwitch = onSwitchActor(sheet1, {}, { value: "a3" });
+  await fastSwitch;
+  resolveSlowRender();
+  await slowSwitch;
+
+  const testBOk =
+    !sheet1.rendered &&
+    !sheet2.rendered &&
+    sheet3.rendered &&
+    instances.size === 1 &&
+    instances.get("a3") === sheet3;
+
+  globalThis.game.actors = prevActors;
+  globalThis.foundry.applications.instances = prevInstances;
+  globalThis.ui = prevUi;
+  globalThis.document = prevDoc;
+
+  if (!testAOk || !testBOk) {
+    logFail(`[Kineticist UI #3] Actor switching race/cleanup failed: testAOk=${testAOk}, testBOk=${testBOk}, events=${JSON.stringify(events)}`);
+  } else {
+    logPass("[Kineticist UI #3] Actor switcher renders target sheet before closing old sheet, cleans stray sheets/DOM nodes, and prevents out-of-order rapid switch stacking.");
+  }
+} catch (err) {
+  logFail(`Kineticist UI / actor switching verification threw an error: ${err.stack || err.message}`);
 }
 
 
