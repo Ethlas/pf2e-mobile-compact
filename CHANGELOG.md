@@ -6,6 +6,12 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+### Kingdom sheet uses only pf2e-kingmaker-tools formulas (Issue #43)
+
+- **Removed mobile Resource Dice roll buttons & handler (`templates/kingdom/kingdom-turn.hbs`, `styles/kingdom.css`, `scripts/kingdom/kingdom-actions.js`, `scripts/kingdom/kingdom-handlers.js`, `scripts/apps/mobile-sheet.js`)**: removed the `rollKingdomResourceDice` buttons from both **Resources & Commodities** (switching `.km-rp-row` to 2 columns while keeping `Dice: ...` in the card header) and **Turn Flow → Upkeep → 3. Collect Resources**, along with the unused `onRollKingdomResourceDice` handler, since Resource Dice collection is executed by the GM in `pf2e-kingmaker-tools` on desktop.
+- **No fabricated Kingdom fallback formulas (`scripts/kingdom/kingdom-context.js`)**: `applyKingdomFlagFallback` and `normalizeKingdomViewData` no longer fabricate fallback formulas for Resource Dice, consumption, or ability modifiers (preserving `consumption: 0` as well), and `km.rdNowDisplay` now reads `km.resourceDiceIncome` directly so a numeric `resourceDiceContext.now.value` (`0`) no longer masks the dice formula.
+- **Kingdom templates placeholder (`templates/kingdom/kingdom-turn.hbs`, `templates/kingdom/kingdom-sheet-tab.hbs`)**: show `—` in the Turn tab and omit the parenthetical dice suffix on the Kingdom sheet tile when `resourceDiceIncome` is unavailable.
+
 ### Immediate header and sheet refresh for action & auxiliary toggles (Issue #69, Stage 1)
 
 - **Immediate `["header", "sheet"]` re-render on auxiliary and action execution (`scripts/apps/sheet-helpers/actions-handlers.js`)**: `onExecuteAuxiliaryAction` now re-renders `["header", "sheet"]` after `aux.execute` and fallback carry-type updates instead of returning silently.

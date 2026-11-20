@@ -26,7 +26,6 @@ export {
   dispatchKingdomSheetAction,
   onRollKingdomSkillCheck,
   onPerformKingdomActivity,
-  onRollKingdomResourceDice,
   onPostKingdomActivityChat,
   onSkipCollectTaxes,
   onClaimKingdomRefuge,

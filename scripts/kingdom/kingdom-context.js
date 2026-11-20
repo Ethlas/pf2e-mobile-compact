@@ -147,14 +147,6 @@ export function applyKingdomFlagFallback(partyActor, km) {
       prev: { value: flag.resourcePoints.prev ?? 0 }
     };
   }
-  if (!km.resourceDice) {
-    km.resourceDice = {
-      number: (flag.level ?? 1) + 4,
-      faces: 6,
-      bonus: { value: flag.resourceDice?.bonus ?? 0 },
-      penalty: { value: flag.resourceDice?.penalty ?? 0 }
-    };
-  }
 
   if (!km.commoditiesContext && flag.commodities) {
     km.commoditiesContext = Object.entries(flag.commodities).map(([type, data]) => ({
@@ -182,32 +174,6 @@ export function applyKingdomFlagFallback(partyActor, km) {
       normal: { name: `workSites.${type}.normal`, value: data?.normal ?? 0 },
       resource: { name: `workSites.${type}.resource`, value: data?.resource ?? 0 }
     }));
-  }
-
-  if (!km.consumption && flag.consumption) {
-    const base = flag.consumption.base ?? 0;
-    const red = flag.consumption.reduction ?? 0;
-    km.consumption = {
-      total: Math.max(0, base - red),
-      base: { value: base },
-      reduction: { value: red }
-    };
-  }
-
-  if (!km.abilities && flag.abilityScores) {
-    km.abilities = Object.entries(flag.abilityScores).map(([type, score]) => {
-      const s = Number(score ?? 10);
-      return {
-        type,
-        name: type.charAt(0) + type.slice(1).toLowerCase(),
-        score: s,
-        modifier: Math.floor((s - 10) / 2),
-        ruinName: "",
-        ruinScore: 0,
-        ruinPenalty: 0,
-        ruinThreshold: 10
-      };
-    });
   }
 
   if (!km.skills && flag.skillRanks) {
@@ -337,7 +303,7 @@ export function normalizeKingdomViewData(partyActor, km) {
 
   km.rpNowInput = km.resourcePointsContext?.now ?? km.resourcePoints?.now ?? { name: "resourcePoints.now", value: 0 };
   km.rpNextInput = km.resourcePointsContext?.next ?? km.resourcePoints?.prev ?? { name: "resourcePoints.next", value: 0 };
-  km.rdNowDisplay = km.resourceDiceContext?.now?.value ?? km.resourceDiceIncome ?? `${km.resourceDice?.number ?? 5}d${km.resourceDice?.faces ?? 6}`;
+  km.rdNowDisplay = typeof km.resourceDiceIncome === "string" ? km.resourceDiceIncome.trim() : "";
   km.rdNextDisplay = km.resourceDiceContext?.next?.value ?? "";
 
   if (km.commoditiesContext && !Array.isArray(km.commoditiesContext) && km.commoditiesContext.now) {

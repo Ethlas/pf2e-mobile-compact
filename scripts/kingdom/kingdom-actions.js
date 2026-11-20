@@ -246,39 +246,6 @@ export async function onPerformKingdomActivity(sheet, event, target) {
 }
 
 /**
- * Rolls Kingdom Resource Dice into chat.
- */
-export async function onRollKingdomResourceDice(sheet, event) {
-  event?.stopPropagation?.();
-  const partyActor = getPartyActor(sheet.actor);
-  if (!partyActor) return;
-
-  const flag = partyActor.getFlag?.("pf2e-kingmaker-tools", "kingdom-sheet")
-    || partyActor.flags?.["pf2e-kingmaker-tools"]?.["kingdom-sheet"]
-    || {};
-  const campaign = partyActor.system?.campaign;
-
-  const level = Number(flag.level ?? campaign?.level ?? 1);
-  const count = level + 4;
-  const bonus = Number(flag.resourceDice?.bonus ?? campaign?.resourceDice?.bonus ?? 0);
-  const formula = bonus ? `${count}d6 + ${bonus}` : `${count}d6`;
-
-  const rollAction = async () => {
-    const roll = new Roll(formula);
-    await roll.evaluate();
-    await roll.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor: partyActor }),
-      flavor: `<strong>Kingdom Resource Dice</strong> (Level ${level})`
-    });
-  };
-
-  await PhysicalDiceManager.withPhysicalMode({
-    title: "Kingdom Resource Dice",
-    actor: partyActor
-  }, rollAction, sheet.rollMode === "physical" || sheet._rollMode === "physical");
-}
-
-/**
  * Posts the activity's details or official chat card to chat.
  */
 export async function onPostKingdomActivityChat(sheet, event, target) {

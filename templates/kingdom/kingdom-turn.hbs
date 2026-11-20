@@ -38,7 +38,7 @@
       <div class="km-card km-resources-card">
         <div class="km-card-header">
           <span><i class="fa-solid fa-coins"></i> Resources &amp; Commodities</span>
-          <span class="km-card-sub">Dice: {{km.rdNowDisplay}}</span>
+          <span class="km-card-sub">Dice: {{#if km.rdNowDisplay}}{{km.rdNowDisplay}}{{else}}—{{/if}}</span>
         </div>
         <div class="km-rp-row">
           <div class="km-rp-pill primary">
@@ -49,10 +49,6 @@
             <span class="km-rp-label">RP Next Turn</span>
             <span class="km-rp-val">{{km.rpNextInput.value}} RP</span>
           </div>
-          <button type="button" class="km-rp-pill clickable m-flex-col m-align-center" data-action="rollKingdomResourceDice" title="Roll Resource Dice ({{km.rdNowDisplay}})">
-            <span class="km-rp-label">Resource Dice</span>
-            <span class="km-rp-val">{{km.rdNowDisplay}} <i class="fa-solid fa-dice-d6"></i></span>
-          </button>
         </div>
 
         <div class="km-commodities-grid">
@@ -216,13 +212,7 @@
                 <div class="km-upkeep-grid">
                   <div class="km-upkeep-step"><strong>1. Assign Leadership:</strong> Check vacancies &amp; new roles</div>
                   <div class="km-upkeep-step"><strong>2. Adjust Unrest:</strong> Current Unrest {{../kingdomHeader.unrest}} ({{../kingdomHeader.unrestPenalty}})</div>
-                  <div class="km-upkeep-step m-flex-row m-align-center m-justify-between">
-                    <span><strong>3. Collect Resources:</strong> Roll {{../km.rdNowDisplay}} (+1 {{../kingdomHeader.fameType}})</span>
-                    <button type="button" class="btn-action-roll m-compact m-inline-flex m-align-center m-justify-center m-text-base m-semibold m-color-strong"
-                            data-action="rollKingdomResourceDice" title="Roll Resource Dice ({{../km.rdNowDisplay}})">
-                      <i class="fa-solid fa-dice-d6"></i>
-                    </button>
-                  </div>
+                  <div class="km-upkeep-step"><strong>3. Collect Resources:</strong> Roll {{#if ../km.rdNowDisplay}}{{../km.rdNowDisplay}}{{else}}—{{/if}} (+1 {{../kingdomHeader.fameType}})</div>
                   <div class="km-upkeep-step"><strong>4. Pay Consumption:</strong> {{#if ../km.consumption.total}}{{../km.consumption.total}}{{else}}{{../km.consumption}}{{/if}} Food</div>
                 </div>
               </div>
