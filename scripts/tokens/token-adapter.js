@@ -563,6 +563,10 @@ function enhanceLivePlaceableForMobile(placeable, tokenDoc) {
     placeable._pf2eMobileFlankPatched = true;
   }
 
+  if (typeof placeable.showFloatyText !== "function") placeable.showFloatyText = async () => {};
+  if (typeof placeable._onApplyStatusEffect !== "function") placeable._onApplyStatusEffect = () => {};
+  if (typeof placeable.drawEffects !== "function") placeable.drawEffects = async () => {};
+
   return placeable;
 }
 
@@ -726,7 +730,12 @@ export function getTargetableToken(tokenId) {
     },
     destroy() {
       this.children = [];
-    }
+    },
+
+    // PF2e / Foundry Token placeable visual no-op stubs in headless mobile mode
+    async showFloatyText() {},
+    _onApplyStatusEffect() {},
+    async drawEffects() {}
   };
 
   if (!getSafeTokenObject(tokenDoc)) {

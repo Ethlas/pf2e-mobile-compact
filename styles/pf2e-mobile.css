@@ -120,7 +120,7 @@ body.pf2e-fullscreen .pf2e-mobile-sheet,
   border: none;
   box-shadow: none;
   transform: none !important;
-  z-index: 100;
+  z-index: 90 !important;
   background: var(--pf2e-theme-bg, #1a1a1a);
 }
 /* Ensure full bleed on narrow mobile viewports even if body class is delayed */
@@ -138,7 +138,7 @@ body.pf2e-fullscreen .pf2e-mobile-sheet,
     border: none;
     box-shadow: none;
     transform: none !important;
-    z-index: 100;
+    z-index: 90 !important;
   }
 }
 body.pf2e-mobile-active .pf2e-mobile-sheet .window-header,
@@ -153,6 +153,24 @@ body.pf2e-fullscreen .pf2e-mobile-sheet .resize-handle,
 .pf2e-mobile-sheet.fullscreen-mode .window-resize-handle,
 .pf2e-mobile-sheet.fullscreen-mode .resize-handle {
   display: none !important;
+}
+/* Keep Foundry & system dialogs/prompts centered inside the mobile viewport and above the full-bleed sheet */
+body.pf2e-mobile-active > :is(.application, .window-app):has(> .window-header):not(.pf2e-mobile-sheet):not(.pf2e-mobile-compendium-picker):not(.km-mobile-hidden-proxy):not(.pf2e-mobile-km-dialog):not([id^="kmCheck-"]):not([id^="kmStructureBrowser"]):not(#combat-dock):not(.combat-dock),
+body.pf2e-fullscreen > :is(.application, .window-app):has(> .window-header):not(.pf2e-mobile-sheet):not(.pf2e-mobile-compendium-picker):not(.km-mobile-hidden-proxy):not(.pf2e-mobile-km-dialog):not([id^="kmCheck-"]):not([id^="kmStructureBrowser"]):not(#combat-dock):not(.combat-dock) {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) !important;
+  min-width: min(260px, calc(100vw - 16px)) !important;
+  max-width: calc(100vw - 16px) !important;
+  max-height: calc(100dvh - 24px) !important;
+  margin: 0 !important;
+}
+body.pf2e-mobile-active > :is(.application, .window-app):has(> .window-header):not(.pf2e-mobile-sheet):not(.pf2e-mobile-compendium-picker):not(.km-mobile-hidden-proxy):not(.pf2e-mobile-km-dialog):not([id^="kmCheck-"]):not([id^="kmStructureBrowser"]):not(#combat-dock):not(.combat-dock) > .window-content,
+body.pf2e-fullscreen > :is(.application, .window-app):has(> .window-header):not(.pf2e-mobile-sheet):not(.pf2e-mobile-compendium-picker):not(.km-mobile-hidden-proxy):not(.pf2e-mobile-km-dialog):not([id^="kmCheck-"]):not([id^="kmStructureBrowser"]):not(#combat-dock):not(.combat-dock) > .window-content {
+  overflow-y: auto;
 }
 .pf2e-mobile-sheet .window-content {
   padding: 0 !important;
@@ -1206,6 +1224,7 @@ body.pf2e-mobile-active select:not(:is(.pf2e-mobile-sheet, .pf2e-mobile-compendi
 }
 .pf2e-mobile-sheet .blast-dt-btn {
   border: 1px solid var(--m-border);
+  white-space: nowrap;
   opacity: 0.65;
   transition: opacity 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }

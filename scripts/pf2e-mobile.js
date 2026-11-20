@@ -482,8 +482,8 @@ export function patchUserActiveTokens() {
             if (!tokenDoc) return [];
             if (linked && !tokenDoc.actorLink) return [];
             if (document) return [tokenDoc];
-            const adapter = getTargetableToken(tokenDoc.id) ?? tokenDoc;
-            return adapter ? [adapter] : [tokenDoc];
+            const adapter = getTargetableToken(tokenDoc.id);
+            return adapter ? [adapter] : [];
           }
 
           // 2. World actor: resolve tokens from active scene matching this.id
@@ -498,8 +498,7 @@ export function patchUserActiveTokens() {
           }
           if (matchingDocs.length > 0) {
             if (document) return matchingDocs;
-            const adapters = matchingDocs.map(tDoc => getTargetableToken(tDoc.id) ?? tDoc).filter(Boolean);
-            return adapters.length > 0 ? adapters : matchingDocs;
+            return matchingDocs.map(tDoc => getTargetableToken(tDoc.id)).filter(Boolean);
           }
         }
         return res;

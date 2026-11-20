@@ -562,6 +562,9 @@ export async function onToggleFullscreen(sheet, event, target) {
   }
 }
 
+let actorSwitchSeq = 0;
+let activeSwitchTarget = null;
+
 /**
  * Ensures we always retrieve or construct the PF2eMobileSheet instance for the target actor
  * when switching actors from within the mobile sheet.
@@ -580,6 +583,63 @@ function getMobileSheetForActor(actor, currentSheet) {
     return actor._mobileSheetInstance;
   }
   return actor.sheet;
+}
+
+/**
+ * Closes any other rendered mobile sheet instances and removes leftover DOM nodes so
+ * only `keepSheet` remains open after switching actors.
+ * @param {object} keepSheet
+ * @param {Function|null} [SheetClass=null]
+ * @returns {Promise<void>}
+ */
+export async function closeOtherMobileSheets(keepSheet, SheetClass = null) {
+  const candidates = new Set([
+    ...(globalThis.foundry?.applications?.instances?.values?.() ?? []),
+    ...Object.values(globalThis.ui?.windows ?? {})
+  ]);
+
+  for (const inst of candidates) {
+    if (!inst || inst === keepSheet || typeof inst.close !== "function") continue;
+    const isMobileSheet = (SheetClass && SheetClass !== Object && inst instanceof SheetClass)
+      || Boolean(inst.element?.classList?.contains?.("pf2e-mobile-sheet"))
+      || inst.constructor?.name === "PF2eMobileSheet";
+    if (!isMobileSheet) continue;
+    try {
+      await inst.close({ animate: false });
+    } catch {}
+  }
+
+  try {
+    const domSheets = globalThis.document?.querySelectorAll?.(".pf2e-mobile-sheet") ?? [];
+    for (const el of domSheets) {
+      if (el && el !== keepSheet?.element && typeof el.remove === "function") {
+        el.remove();
+      }
+    }
+  } catch {}
+}
+
+/**
+ * Renders `targetSheet` before closing `sheet` and any extra open mobile sheets,
+ * preventing 0-sheet flashes and stale out-of-order switches when changing actors rapidly.
+ * @param {object} sheet
+ * @param {object} targetSheet
+ * @returns {Promise<void>}
+ */
+async function switchToMobileSheet(sheet, targetSheet) {
+  const switchId = ++actorSwitchSeq;
+  activeSwitchTarget = targetSheet;
+  await targetSheet.render(targetSheet.rendered ? { force: true, parts: ["header", "sheet"] } : { force: true });
+  if (switchId !== actorSwitchSeq) {
+    if (targetSheet !== activeSwitchTarget && typeof targetSheet.close === "function") {
+      await targetSheet.close({ animate: false }).catch(() => {});
+    }
+    return;
+  }
+  if (sheet && sheet !== targetSheet && typeof sheet.close === "function") {
+    await sheet.close({ animate: false });
+  }
+  await closeOtherMobileSheets(targetSheet, sheet?.constructor);
 }
 
 /**
@@ -604,11 +664,10 @@ export async function onSwitchActor(sheet, event, target) {
       return;
     }
 
-    await sheet.close({ animate: false });
     const targetSheet = getMobileSheetForActor(partyActor, sheet);
     targetSheet._isKingdomMode = true;
     targetSheet._activeTab = "turn";
-    await targetSheet.render(targetSheet.rendered ? { force: true, parts: ["header", "sheet"] } : { force: true });
+    await switchToMobileSheet(sheet, targetSheet);
     return;
   }
 
@@ -626,13 +685,12 @@ export async function onSwitchActor(sheet, event, target) {
   if (!newActor) return;
 
   console.log(`PF2e Mobile Compact | Switching character to ${newActor.name}`);
-  await sheet.close({ animate: false });
   const targetSheet = getMobileSheetForActor(newActor, sheet);
   targetSheet._isKingdomMode = false;
   if (newActor.type === "party" && (!targetSheet._activeTab || targetSheet._activeTab === "turn")) {
     targetSheet._activeTab = "stash";
   }
-  await targetSheet.render(targetSheet.rendered ? { force: true, parts: ["header", "sheet"] } : { force: true });
+  await switchToMobileSheet(sheet, targetSheet);
 }
 
 
