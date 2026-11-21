@@ -6,6 +6,8 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+- **Respect `disableCanvas` in PIXI stage/ticker state & consolidate canvas helpers (Issue #44, `scripts/utils/sheet-utils.js`, `scripts/pf2e-mobile.js`)**: `applyMobileCanvasState()` now keeps `canvas.app.stage.renderable`, `interactiveChildren`, and `canvas.app.ticker` active (at 1x resolution / 15 FPS) when `disableCanvas` is `false` and suspends them only when `disableCanvas` is `true`, and removes the duplicate `isMobileCanvasDisabled`, `setMobileCanvasDisabled`, and `optimizeCanvasForMobile` copies from `scripts/pf2e-mobile.js` by re-exporting them from `scripts/utils/sheet-utils.js`.
+
 ### Kingdom sheet uses only pf2e-kingmaker-tools formulas (Issue #43)
 
 - **Removed mobile Resource Dice roll buttons & handler (`templates/kingdom/kingdom-turn.hbs`, `styles/kingdom.css`, `scripts/kingdom/kingdom-actions.js`, `scripts/kingdom/kingdom-handlers.js`, `scripts/apps/mobile-sheet.js`)**: removed the `rollKingdomResourceDice` buttons from both **Resources & Commodities** (switching `.km-rp-row` to 2 columns while keeping `Dice: ...` in the card header) and **Turn Flow → Upkeep → 3. Collect Resources**, along with the unused `onRollKingdomResourceDice` handler, since Resource Dice collection is executed by the GM in `pf2e-kingmaker-tools` on desktop.

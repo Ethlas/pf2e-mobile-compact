@@ -302,10 +302,9 @@ export function isMobileCanvasDisabled() {
 /**
  * Applies the current mobile canvas state.
  * When `disableCanvas` is true, sets `CONFIG.Canvas.disabled = true` in memory so Foundry v14 skips
- * `Canvas#initialize()` and texture loading during mobile sessions.
- * When `disableCanvas` is false, allows `Canvas#initialize()` so `canvas.tokens` and PF2e system flanking
- * exist in memory, while still pausing the background PIXI frame loop behind the full-screen mobile sheet
- * to prevent mobile WebKit GPU out-of-memory crashes.
+ * `Canvas#initialize()` and texture loading during mobile sessions, and suspends PIXI stage rendering and ticker.
+ * When `disableCanvas` is false, keeps the PIXI stage and ticker active at 1x resolution / 15 FPS so token
+ * animations, geometry, and PF2e system flanking update natively.
  */
 export function applyMobileCanvasState() {
   const disableCanvas = isMobileCanvasDisabled();
@@ -332,15 +331,19 @@ export function applyMobileCanvasState() {
       canvasObj.app.renderer.resolution = 1;
     }
     if (canvasObj.app.stage) {
-      canvasObj.app.stage.renderable = false;
-      canvasObj.app.stage.interactiveChildren = false;
+      canvasObj.app.stage.renderable = !disableCanvas;
+      canvasObj.app.stage.interactiveChildren = !disableCanvas;
     }
-    if (canvasObj.weather?.clear) {
+    if (disableCanvas && canvasObj.weather?.clear) {
       canvasObj.weather.clear();
     }
     if (canvasObj.app.ticker) {
       canvasObj.app.ticker.maxFPS = 15;
-      canvasObj.app.ticker.stop?.();
+      if (disableCanvas) {
+        canvasObj.app.ticker.stop?.();
+      } else if (!canvasObj.app.ticker.started) {
+        canvasObj.app.ticker.start?.();
+      }
     }
   } catch (err) {
     console.warn("PF2e Mobile Compact | applyMobileCanvasState warning:", err);
