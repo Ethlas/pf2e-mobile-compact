@@ -2,14 +2,14 @@
  * Entry point for pf2e-mobile-compact module.
  */
 import { PF2eMobileSheet } from "./apps/mobile-sheet.js";
-import { isMobileDevice, isIOSDevice, shouldActivateMobile, getStoredRollMode, ensureSafeCanvasTokens } from "./utils/sheet-utils.js";
+import { isMobileDevice, isIOSDevice, shouldActivateMobile, getStoredRollMode, ensureSafeCanvasTokens, isMobileCanvasDisabled, setMobileCanvasDisabled, applyMobileCanvasState as optimizeCanvasForMobile } from "./utils/sheet-utils.js";
 import { restoreChatElement } from "./apps/sheet-helpers/chat-handler.js";
 import { migrateActorPropertyRunes } from "./apps/sheet-helpers/rune-handlers.js";
 import { ensureMobileViewButton } from "./utils/view-mode.js";
 import { getTargetableToken } from "./tokens/token-adapter.js";
 import { isMobileAudioDisabled, setMobileAudioDisabled, applyMobileAudioSuppression, restoreMobileAudioPlayback, patchAudioMethods } from "./audio/mobile-audio.js";
 
-export { isMobileDevice, isIOSDevice, shouldActivateMobile, isMobileAudioDisabled, setMobileAudioDisabled };
+export { isMobileDevice, isIOSDevice, shouldActivateMobile, isMobileAudioDisabled, setMobileAudioDisabled, isMobileCanvasDisabled, setMobileCanvasDisabled, optimizeCanvasForMobile };
 
 /**
  * Injects or updates the viewport meta tag with `viewport-fit=cover` (for iPhone Notch / Dynamic Island
@@ -109,87 +109,6 @@ export function setupKeepAlive() {
       }
     }
   });
-}
-
-/**
- * Returns whether the user has opted to disable the WebGL canvas on mobile.
- * Defaults to false (Canvas Enabled) and persists across mobile sessions via
- * localStorage and Foundry client settings.
- * @returns {boolean}
- */
-export function isMobileCanvasDisabled() {
-  try {
-    const stored = localStorage.getItem("pf2e-mobile-compact.disableCanvas");
-    if (stored === "true") return true;
-    if (stored === "false") return false;
-  } catch {}
-  try {
-    if (game?.settings?.settings?.has?.("pf2e-mobile-compact.disableCanvas")) {
-      return Boolean(game.settings.get("pf2e-mobile-compact", "disableCanvas"));
-    }
-  } catch {}
-  return false;
-}
-
-/**
- * Updates and persists the user's mobile canvas disable preference across sessions.
- * @param {boolean} disabled
- * @returns {Promise<boolean>}
- */
-export async function setMobileCanvasDisabled(disabled) {
-  const nextState = Boolean(disabled);
-  try {
-    localStorage.setItem("pf2e-mobile-compact.disableCanvas", nextState ? "true" : "false");
-  } catch {}
-  try {
-    if (game?.settings?.settings?.has?.("pf2e-mobile-compact.disableCanvas")) {
-      await game.settings.set("pf2e-mobile-compact", "disableCanvas", nextState);
-    }
-  } catch {}
-  optimizeCanvasForMobile();
-  return nextState;
-}
-
-/**
- * Optimizes PixiJS canvas WebGL resolution and framerate on mobile (1x resolution, 15 FPS).
- * By default, keeps the canvas stage and ticker active so token animations, geometry, and flanking
- * update natively. If the user enables the `disableCanvas` setting, suspends the ticker and stage rendering.
- */
-export function optimizeCanvasForMobile() {
-  ensureSafeCanvasTokens();
-  const disableCanvas = isMobileCanvasDisabled();
-  if (typeof document !== "undefined" && document.body) {
-    document.body.classList.toggle("pf2e-canvas-disabled", disableCanvas);
-  }
-
-  try {
-    if (typeof PIXI !== "undefined") {
-      if (PIXI.settings) PIXI.settings.RESOLUTION = 1;
-      if (PIXI.Ticker?.shared) PIXI.Ticker.shared.maxFPS = 15;
-      if (PIXI.Ticker?.system) PIXI.Ticker.system.maxFPS = 15;
-    }
-  } catch {}
-
-  if (!canvas?.app) return;
-  try {
-    if (canvas.app.renderer) {
-      canvas.app.renderer.resolution = 1;
-    }
-    if (canvas.app.stage) {
-      canvas.app.stage.renderable = false;
-      canvas.app.stage.interactiveChildren = false;
-    }
-    if (canvas.weather?.clear) {
-      canvas.weather.clear();
-    }
-    if (canvas.app.ticker) {
-      canvas.app.ticker.maxFPS = 15;
-      canvas.app.ticker.stop();
-    }
-    console.log(`PF2e Mobile Compact | Canvas WebGL ticker paused & stage rendering suspended for mobile GPU memory protection (disableCanvas=${disableCanvas}).`);
-  } catch (err) {
-    console.warn("PF2e Mobile Compact | optimizeCanvasForMobile warning:", err);
-  }
 }
 
 /**

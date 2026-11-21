@@ -1138,9 +1138,11 @@ try {
     collectSceneCandidateTokens
   } = await import("./apps/sheet-helpers/sheet-prompts.js");
   const {
+    applyMobileCanvasState,
     isMobileCanvasDisabled,
     setMobileCanvasDisabled
   } = await import("./utils/sheet-utils.js");
+  const { optimizeCanvasForMobile } = await import("./pf2e-mobile.js");
 
   // 1. iOS Frozen Animation Distance Check
   const testSceneDims = { dimensions: { size: 100, distance: 5 } };
@@ -1288,8 +1290,15 @@ try {
     logPass("[Issue #16 Flanking & Tiny Distance] Tiny tokens snap to 5-ft grid steps with PF2e 5-10-5 diagonals (25 ft, never 23 ft); headless flanking allows Stunned 1-2 but blocks Stunned 3+, Controlled, Fleeing, Blinded, and Unconscious.");
   }
 
-  // 4. Canvas Default Enabled & Persistent Setting Toggle (CONFIG.Canvas.disabled)
+  // 4. Canvas Default Enabled & Persistent Setting Toggle (CONFIG.Canvas.disabled & PIXI stage/ticker state)
   globalThis.CONFIG = { ...(globalThis.CONFIG || {}), Canvas: { disabled: false } };
+  globalThis.canvas = {
+    app: {
+      renderer: { resolution: 2 },
+      stage: { renderable: true, interactiveChildren: true },
+      ticker: { maxFPS: 60, started: true, start() { this.started = true; }, stop() { this.started = false; } }
+    }
+  };
   const mockStorage = new Map();
   globalThis.localStorage = {
     getItem: (k) => mockStorage.get(k) ?? null,
@@ -1301,20 +1310,29 @@ try {
   const afterDisable = isMobileCanvasDisabled();
   const configDisabledWhenTrue = globalThis.CONFIG.Canvas.disabled;
   const noCanvasPolluted = mockStorage.has("core.noCanvas");
+  const stageDisabled = globalThis.canvas.app.stage.renderable === false && globalThis.canvas.app.stage.interactiveChildren === false;
+  const tickerStopped = globalThis.canvas.app.ticker.started === false;
   await setMobileCanvasDisabled(false);
   const afterReEnable = isMobileCanvasDisabled();
   const configDisabledWhenFalse = globalThis.CONFIG.Canvas.disabled;
+  const stageEnabled = globalThis.canvas.app.stage.renderable === true && globalThis.canvas.app.stage.interactiveChildren === true;
+  const tickerStarted = globalThis.canvas.app.ticker.started === true;
   if (
+    optimizeCanvasForMobile !== applyMobileCanvasState ||
     defaultCanvasDisabled !== false ||
     afterDisable !== true ||
     configDisabledWhenTrue !== true ||
     noCanvasPolluted ||
+    !stageDisabled ||
+    !tickerStopped ||
     afterReEnable !== false ||
-    configDisabledWhenFalse !== false
+    configDisabledWhenFalse !== false ||
+    !stageEnabled ||
+    !tickerStarted
   ) {
-    logFail(`[Issue #16 Canvas Toggle] Expected default=false, afterDisable=true (CONFIG.Canvas.disabled=true, no core.noCanvas), afterReEnable=false; got ${defaultCanvasDisabled}, ${afterDisable} (${configDisabledWhenTrue}, polluted=${noCanvasPolluted}), ${afterReEnable} (${configDisabledWhenFalse})`);
+    logFail(`[Issue #16/#44 Canvas Toggle] Failed: default=${defaultCanvasDisabled}, disable=${afterDisable}/${configDisabledWhenTrue}/stageOff=${stageDisabled}/tickerOff=${tickerStopped}, reEnable=${afterReEnable}/${configDisabledWhenFalse}/stageOn=${stageEnabled}/tickerOn=${tickerStarted}, consolidated=${optimizeCanvasForMobile === applyMobileCanvasState}, polluted=${noCanvasPolluted}`);
   } else {
-    logPass("[Issue #16 Canvas Toggle] Canvas is enabled by default (disableCanvas=false), sets CONFIG.Canvas.disabled=true when disabled without polluting core.noCanvas, and persists user toggle state across sessions.");
+    logPass("[Issue #16/#44 Canvas Toggle] Canvas is enabled by default (disableCanvas=false) keeping PIXI stage & ticker active, suspends them only when disableCanvas=true without polluting core.noCanvas, and consolidates helpers.");
   }
 
   // 4b. ensureSafeCanvasTokens Fallback (app.ticker, stage, tokens, layer stubs, socket stubs)
