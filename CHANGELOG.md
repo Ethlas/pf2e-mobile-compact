@@ -6,6 +6,8 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+- **Abort Party Stash / Currency transfers cleanly on Cancel or close and settle Spell Preset dialog on close (Issues #45 & #46, `scripts/apps/sheet-helpers/party-handlers.js`, `scripts/apps/sheet-helpers/spell-presets-handlers.js`)**: added `rejectClose: false` and explicit result type/shape checks (`result?.recipient`, `typeof confirmed !== "number"`, `typeof result !== "object"`) to the three `DialogV2.wait` prompts in `party-handlers.js` so clicking Cancel (`"cancel"`) or closing via `X`/`Escape` (`null`) aborts without transferring or rejecting; attached a one-shot `dialog.addEventListener?.("close", () => resolve(null), { once: true })` listener in `onSaveSpellPreset` so dismissing the dialog resolves cleanly instead of leaving the promise pending.
+
 - **Respect `disableCanvas` in PIXI stage/ticker state & consolidate canvas helpers (Issue #44, `scripts/utils/sheet-utils.js`, `scripts/pf2e-mobile.js`)**: `applyMobileCanvasState()` now keeps `canvas.app.stage.renderable`, `interactiveChildren`, and `canvas.app.ticker` active (at 1x resolution / 15 FPS) when `disableCanvas` is `false` and suspends them only when `disableCanvas` is `true`, and removes the duplicate `isMobileCanvasDisabled`, `setMobileCanvasDisabled`, and `optimizeCanvasForMobile` copies from `scripts/pf2e-mobile.js` by re-exporting them from `scripts/utils/sheet-utils.js`.
 
 ### Kingdom sheet uses only pf2e-kingmaker-tools formulas (Issue #43)
