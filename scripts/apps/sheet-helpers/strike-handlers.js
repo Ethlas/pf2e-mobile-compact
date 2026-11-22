@@ -149,29 +149,40 @@ function buildAmmunitionData(ammunition) {
 
 /**
  * Normalizes weapon auxiliary actions, including Modular `aux.options` (PF2e object map or array).
+ * Preserves each entry's original `index` into `strike.auxiliaryActions` while hiding redundant
+ * Reload/Unload entries (e.g. from `pf2e-ranged-combat`) when the native ammo section covers them.
  * @param {object[]} auxiliaryActions
+ * @param {object|null} ammunition
  * @returns {object[]}
  */
-function buildAuxiliaryActions(auxiliaryActions) {
-  return (auxiliaryActions ?? []).map((aux, aIdx) => {
-    const rawOptions = aux.options
-      ? (Array.isArray(aux.options) ? aux.options : Object.values(aux.options))
-      : [];
-    const options = rawOptions.map(opt => ({
-      value: String(opt.value ?? ""),
-      label: t(opt.label ?? opt.value ?? ""),
-      selected: !!opt.selected
-    }));
-    return {
-      index: aIdx,
-      label: t(aux.label ?? aux.action ?? "Action"),
-      glyph: aux.glyph ?? (aux.actions ? String(aux.actions) : ""),
-      annotation: aux.annotation ?? null,
-      purpose: aux.action ?? "",
-      options,
-      hasOptions: options.length > 0
-    };
-  });
+function buildAuxiliaryActions(auxiliaryActions, ammunition) {
+  return (auxiliaryActions ?? [])
+    .map((aux, aIdx) => {
+      const rawOptions = aux.options
+        ? (Array.isArray(aux.options) ? aux.options : Object.values(aux.options))
+        : [];
+      const options = rawOptions.map(opt => ({
+        value: String(opt.value ?? ""),
+        label: t(opt.label ?? opt.value ?? ""),
+        selected: !!opt.selected
+      }));
+      return {
+        index: aIdx,
+        label: t(aux.label ?? aux.action ?? "Action"),
+        glyph: aux.glyph ?? (aux.actions ? String(aux.actions) : ""),
+        annotation: aux.annotation ?? null,
+        purpose: aux.action ?? "",
+        options,
+        hasOptions: options.length > 0
+      };
+    })
+    .filter(aux => {
+      if (!ammunition?.requiresReload || aux.annotation || aux.hasOptions) return true;
+      const labelLower = aux.label.trim().toLowerCase();
+      if (ammunition.remaining > 0 && labelLower === "reload") return false;
+      if (ammunition.hasLoaded && labelLower === "unload") return false;
+      return true;
+    });
 }
 
 /**
@@ -192,7 +203,8 @@ export function prepareStrikesContext(actor) {
       ? rawTraits.map(tr => typeof tr === "string" ? { label: t(tr) } : { label: t(tr.label ?? tr.name ?? "") })
       : [];
 
-    const auxActions = buildAuxiliaryActions(action.auxiliaryActions);
+    const ammunition = buildAmmunitionData(action.ammunition);
+    const auxActions = buildAuxiliaryActions(action.auxiliaryActions, ammunition);
     const primary = buildUsageData(action, idx, null);
     const altUsages = (action.altUsages ?? []).map((u, uIdx) => buildUsageData(u, idx, uIdx));
     const isRanged = !!item?.isRanged;
@@ -223,7 +235,7 @@ export function prepareStrikesContext(actor) {
       hasMetaBadges: traits.length > 0 || isMelee || isThrown || isRanged || !!rangeIncrement,
       ready: action.ready,
       altUsages,
-      ammunition: buildAmmunitionData(action.ammunition)
+      ammunition
     };
   });
 }

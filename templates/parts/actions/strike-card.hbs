@@ -115,7 +115,7 @@
   <div class="strike-ammo-section m-flex-col m-gap-6">
     {{#if strike.ammunition.requiresReload}}
       {{#each strike.ammunition.loaded as |loaded|}}
-      <div class="strike-ammo-loaded m-flex-row m-align-center m-gap-6 {{#if loaded.isSelected}}selected{{/if}}" data-item-id="{{loaded.id}}">
+      <div class="strike-ammo-loaded m-flex-row m-align-center m-gap-6 {{#if (and ../strike.ammunition.hasMultipleLoaded loaded.isSelected)}}selected{{/if}}" data-item-id="{{loaded.id}}">
         {{#if ../strike.ammunition.hasMultipleLoaded}}
         <button type="button" class="strike-ammo-pick m-compact m-flex-row m-align-center m-gap-6 m-flex-1 m-min-w-0 m-text-sm {{#if loaded.isSelected}}m-color-strong m-bold{{else}}m-color-soft{{/if}}" data-action="selectStrikeAmmo" data-strike-index="{{../strike.index}}" data-ammo-id="{{loaded.id}}" aria-pressed="{{#if loaded.isSelected}}true{{else}}false{{/if}}" {{#if loaded.isSelected}}disabled{{/if}} title="Select {{loaded.name}}">
           <i class="fa-solid {{#if loaded.isSelected}}fa-circle-check m-color-success{{else}}fa-circle m-color-dim{{/if}}" aria-hidden="true"></i>
@@ -145,7 +145,7 @@
           {{/if}}
         {{else if strike.ammunition.hasCompatible}}
           <label class="m-text-xs m-semibold m-color-muted m-shrink-0" for="strike-reload-{{strike.index}}">{{strike.ammunition.emptyLabel}}</label>
-          <select id="strike-reload-{{strike.index}}" class="strike-ammo-select m-compact m-flex-1 m-min-w-0 m-text-base m-color-normal">
+          <select id="strike-reload-{{strike.index}}" class="strike-ammo-select m-compact m-flex-1 m-min-w-0 m-truncate m-text-base m-color-normal">
             {{#each strike.ammunition.compatible as |ammo|}}
             <option value="{{ammo.id}}" {{#if ammo.selected}}selected{{/if}}>{{ammo.label}}</option>
             {{/each}}
@@ -170,7 +170,7 @@
           <i class="fas fa-crosshairs" aria-hidden="true"></i>
           <span>Ammo</span>
         </label>
-        <select id="strike-ammo-{{strike.index}}" class="strike-ammo-select m-compact m-flex-1 m-min-w-0 m-text-base m-color-normal" data-change-action="linkStrikeAmmo" data-strike-index="{{strike.index}}">
+        <select id="strike-ammo-{{strike.index}}" class="strike-ammo-select m-compact m-flex-1 m-min-w-0 m-truncate m-text-base m-color-normal" data-change-action="linkStrikeAmmo" data-strike-index="{{strike.index}}">
           <option value="">{{strike.ammunition.noAmmoLabel}}</option>
           {{#each strike.ammunition.compatible as |ammo|}}
           <option value="{{ammo.id}}" {{#if ammo.selected}}selected{{/if}}>{{ammo.label}}</option>
@@ -193,7 +193,7 @@
           {{/if}}
           <span class="aux-label m-medium">{{aux.label}}</span>
         </label>
-        <select id="strike-mod-{{../strike.index}}-{{aux.index}}" class="strike-aux-select m-compact m-text-base m-color-normal" data-change-action="executeAuxiliaryAction" data-strike-index="{{../strike.index}}" data-aux-index="{{aux.index}}">
+        <select id="strike-mod-{{../strike.index}}-{{aux.index}}" class="strike-aux-select m-compact m-truncate m-text-base m-color-normal" data-change-action="executeAuxiliaryAction" data-strike-index="{{../strike.index}}" data-aux-index="{{aux.index}}">
           {{#each aux.options as |opt|}}
           <option value="{{opt.value}}" {{#if opt.selected}}selected{{/if}}>{{opt.label}}</option>
           {{/each}}

@@ -3321,6 +3321,12 @@ try {
           doubleBarrel: { selected: false },
           variants: [{ label: "+12", roll: async () => {} }],
           damage: async () => {},
+          auxiliaryActions: [
+            { label: "Unload", action: "interact", glyph: "1" },
+            { label: "Reload", action: "interact", glyph: "1" },
+            { label: "Next Chamber", action: "interact", glyph: "1" },
+            { label: "Draw (1H)", action: "interact", annotation: "draw", glyph: "1" }
+          ],
           ammunition: {
             requiresReload: true,
             reloadGlyph: "1",
@@ -3353,7 +3359,12 @@ try {
     strikesCtx[3].ammunition?.reloadGlyph === "1" &&
     strikesCtx[3].ammunition?.emptyLabel === "1 empty" &&
     strikesCtx[3].ammunition?.loaded[0]?.isSelected === true &&
-    strikesCtx[3].ammunition?.hasSingleCompatible === true;
+    strikesCtx[3].ammunition?.hasSingleCompatible === true &&
+    strikesCtx[3].auxiliaryActions.length === 2 &&
+    strikesCtx[3].auxiliaryActions[0].label === "Next Chamber" &&
+    strikesCtx[3].auxiliaryActions[0].index === 2 &&
+    strikesCtx[3].auxiliaryActions[1].label === "Draw (1H)" &&
+    strikesCtx[3].auxiliaryActions[1].index === 3;
 
   if (!ctxOk) {
     logFail(`[Issues #59/#60] prepareStrikesContext mismatch: ${JSON.stringify(strikesCtx)}`);
