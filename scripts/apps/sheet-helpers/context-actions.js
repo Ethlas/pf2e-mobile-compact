@@ -4,6 +4,7 @@
  */
 import { enrichDescriptionCached, getGlyph, parseActionCostInfo, PROFICIENCY_RANK_LETTERS, PROFICIENCY_RANK_NAMES } from "../../utils/sheet-utils.js";
 import { prepareElementalBlastsContext } from "./elemental-blast-handlers.js";
+import { prepareStrikesContext } from "./strike-handlers.js";
 
 const PF2E_SKILL_SLUGS = new Set([
   "acrobatics",
@@ -190,51 +191,8 @@ export async function prepareActionsContext(actor, sheet, context) {
     context.elementalBlasts = [];
   });
 
-  // Strikes Context (with Weapon Image, Traits, MAP Variants, Damage, and Auxiliary Actions)
-  const strikesList = Array.isArray(actor.system?.actions)
-    ? actor.system.actions
-    : (Array.isArray(actor.actions) ? actor.actions : []);
-
-  context.strikes = strikesList.map((action, idx) => {
-    const item = action.item;
-    const rawTraits = action.traits ?? item?.system?.traits?.value ?? [];
-    const traits = Array.isArray(rawTraits)
-      ? rawTraits.map(t => typeof t === "string" ? { label: t } : { label: t.label ?? t.name ?? "" })
-      : [];
-
-    const auxActions = (action.auxiliaryActions ?? []).map((aux, aIdx) => ({
-      index: aIdx,
-      label: aux.label ?? aux.action ?? "Action",
-      glyph: aux.glyph ?? (aux.actions ? String(aux.actions) : ""),
-      annotation: aux.annotation ?? null,
-      purpose: aux.action ?? ""
-    }));
-
-    return {
-      index: idx,
-      label: action.label ?? action.name ?? "Strike",
-      type: action.type ?? "strike",
-      glyph: action.glyph ?? (action.actionCost ? String(action.actionCost.value || 1) : "1"),
-      img: item?.img || "systems/pf2e/icons/default-icons/melee.svg",
-      variants: (action.variants ?? []).map((v, vIdx) => ({
-        index: vIdx,
-        label: v.label
-      })),
-      damage: !!action.damage,
-      critical: typeof action.critical === "function",
-      damageFormula: item?.system?.damage?.dice
-        ? `${item.system.damage.dice}${item.system.damage.die}`
-        : (action.damageFormula ?? "Damage"),
-      traits,
-      auxiliaryActions: auxActions,
-      hasAuxiliary: auxActions.length > 0,
-      isRanged: !!item?.isRanged,
-      isMelee: !!item?.isMelee,
-      isThrown: !!item?.isThrown,
-      rangeIncrement: item?.range?.increment ?? null,
-      ready: action.ready
-    };
-  });
+  // Strikes Context (with Alternate Usages, Trait Toggles, Modular Aux Actions, and Ammunition)
+  context.strikes = prepareStrikesContext(actor);
 
   // Character Actions Preparation (Matching PF2e ActorSheet actions tab)
   const encounterActions = [];

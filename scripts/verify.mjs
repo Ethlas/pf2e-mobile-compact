@@ -3086,6 +3086,408 @@ try {
   logFail(`Kineticist UI / actor switching verification threw an error: ${err.stack || err.message}`);
 }
 
+// 6.17 Alternate Weapon Usages, Trait Toggles, Modular Aux & Ammunition (Issues #59 & #60)
+console.log("\n--- 6.17 Alternate Weapon Usages, Trait Toggles, Modular Aux & Ammunition (Issues #59 & #60) ---");
+try {
+  const {
+    prepareStrikesContext,
+    onExecuteStrike,
+    onExecuteDamage,
+    onExecuteCritical,
+    onExecuteAuxiliaryAction,
+    onToggleWeaponTrait,
+    onLinkStrikeAmmo,
+    onReloadStrikeAmmo,
+    onUnloadStrikeAmmo,
+    onSelectStrikeAmmo
+  } = await import("../scripts/apps/sheet-helpers/strike-handlers.js");
+
+  const prevConfigPf2e = globalThis.CONFIG.PF2E;
+  const prevTargets = globalThis.game.user.targets;
+  const prevScenes = globalThis.game.scenes;
+  const prevCanvas = globalThis.canvas;
+  const prevUi = globalThis.ui;
+
+  globalThis.CONFIG.PF2E = {
+    ...(prevConfigPf2e || {}),
+    damageTypes: { piercing: "Piercing", slashing: "Slashing", bludgeoning: "Bludgeoning" }
+  };
+
+  const strikeCalls = [];
+  const toggleUpdates = [];
+  const auxExecCalls = [];
+  const weaponUpdates = [];
+  const attachCalls = [];
+  const detachCalls = [];
+  const warnCalls = [];
+  const renderCalls = [];
+
+  const daggerItem = {
+    id: "wpn-dagger",
+    img: "systems/pf2e/icons/equipment/weapons/dagger.webp",
+    isMelee: true,
+    isRanged: false,
+    isThrown: false,
+    system: { damage: { dice: 1, die: "d4", damageType: "piercing" } }
+  };
+  const thrownDaggerItem = {
+    id: "wpn-dagger",
+    img: daggerItem.img,
+    isMelee: false,
+    isRanged: true,
+    isThrown: true,
+    altUsageType: "thrown",
+    range: { increment: 10 },
+    system: { damage: { dice: 1, die: "d4", damageType: "piercing" } }
+  };
+
+  const comboMeleeToggle = {
+    versatile: { selected: null },
+    update: async (payload) => toggleUpdates.push({ target: "combo-melee", ...payload })
+  };
+  const comboPrimaryToggle = {
+    doubleBarrel: { selected: false },
+    versatile: { selected: null },
+    update: async (payload) => toggleUpdates.push({ target: "combo-primary", ...payload })
+  };
+  const comboPrimaryItem = {
+    id: "wpn-combo",
+    isMelee: false,
+    isRanged: true,
+    isThrown: false,
+    range: { increment: 30 },
+    system: {
+      damage: { dice: 1, die: "d6", damageType: "piercing" },
+      traits: { toggles: comboPrimaryToggle }
+    }
+  };
+  const comboMeleeItem = {
+    id: "wpn-combo",
+    isMelee: true,
+    isRanged: false,
+    isThrown: false,
+    altUsageType: "melee",
+    system: {
+      damage: { dice: 1, die: "d6", damageType: "piercing" },
+      traits: { toggles: comboMeleeToggle }
+    }
+  };
+
+  const bowItem = {
+    id: "wpn-bow",
+    isMelee: false,
+    isRanged: true,
+    range: { increment: 60 },
+    system: { damage: { dice: 1, die: "d6", damageType: "piercing" } },
+    update: async (data) => weaponUpdates.push({ weapon: "bow", data })
+  };
+
+  const subTalisman = { id: "sub-tal", name: "Owl Charm", isOfType: () => false };
+  const subBullet1 = { id: "sub-b1", name: "Round 1", quantity: 1, isOfType: (t) => t === "ammo", isAmmoFor: () => true, detach: async (opts) => detachCalls.push({ id: "sub-b1", opts }) };
+  const subBullet2 = { id: "sub-b2", name: "Silver Round", quantity: 1, isOfType: (t) => t === "ammo", isAmmoFor: () => true, detach: async (opts) => detachCalls.push({ id: "sub-b2", opts }) };
+  const subEmpty = { id: "sub-empty", name: "Spent", quantity: 0, isOfType: (t) => t === "ammo", isAmmoFor: () => true };
+
+  const pistolItem = {
+    id: "wpn-pistol",
+    name: "Double-Barrel Pistol",
+    isMelee: false,
+    isRanged: true,
+    range: { increment: 20 },
+    system: { ammo: { capacity: 2 }, damage: { dice: 1, die: "d4", damageType: "piercing" } },
+    _source: {
+      system: {
+        subitems: [
+          { _id: "sub-tal", sort: 0 },
+          { _id: "sub-b1", sort: 1 },
+          { _id: "sub-empty", sort: 2 },
+          { _id: "sub-b2", sort: 3 }
+        ]
+      }
+    },
+    subitems: new Map([
+      ["sub-tal", subTalisman],
+      ["sub-b1", subBullet1],
+      ["sub-empty", subEmpty],
+      ["sub-b2", subBullet2]
+    ]),
+    attach: async (ammo, opts) => attachCalls.push({ ammoId: ammo.id, opts }),
+    update: async (data) => weaponUpdates.push({ weapon: "pistol", data })
+  };
+
+  // Override subitems for single-loaded capacity 2 check in prepareStrikesContext, while keeping reload capacity test
+  const ammoArrow = { id: "ammo-arrow", name: "Arrows", quantity: 20, isOfType: (t) => t === "ammo" };
+  const ammoBullet = { id: "inv-b1", name: "Firearm Ammunition", quantity: 9, isOfType: (t) => t === "ammo" };
+  const ammoDepleted = { id: "inv-empty", name: "Spent Cartridges", quantity: 0, isOfType: (t) => t === "ammo" };
+
+  const mockStrikesActor = {
+    id: "actor-ranged",
+    name: "Lyra & Stride",
+    items: new Map([
+      ["ammo-arrow", ammoArrow],
+      ["inv-b1", ammoBullet],
+      ["inv-empty", ammoDepleted]
+    ]),
+    system: {
+      actions: [
+        {
+          label: "Dagger",
+          item: daggerItem,
+          ready: true,
+          traits: [{ name: "attack", label: "Attack" }],
+          variants: [
+            { label: "+11", roll: async (opts) => strikeCalls.push({ kind: "dagger-melee", variant: 0, opts }) },
+            { label: "+7", roll: async (opts) => strikeCalls.push({ kind: "dagger-melee", variant: 1, opts }) },
+            { label: "+3", roll: async (opts) => strikeCalls.push({ kind: "dagger-melee", variant: 2, opts }) }
+          ],
+          damage: async (opts) => strikeCalls.push({ kind: "dagger-melee-dmg", opts }),
+          critical: async (opts) => strikeCalls.push({ kind: "dagger-melee-crit", opts }),
+          versatileOptions: [
+            { value: "piercing", label: "Piercing", glyph: "dagger", selected: true },
+            { value: "slashing", label: "PF2E.TraitVersatileS", glyph: "axe", selected: false }
+          ],
+          altUsages: [
+            {
+              label: "Dagger",
+              item: thrownDaggerItem,
+              variants: [
+                { label: "+13", roll: async (opts) => strikeCalls.push({ kind: "dagger-thrown", variant: 0, opts }) },
+                { label: "+9", roll: async (opts) => strikeCalls.push({ kind: "dagger-thrown", variant: 1, opts }) },
+                { label: "+5", roll: async (opts) => strikeCalls.push({ kind: "dagger-thrown", variant: 2, opts }) }
+              ],
+              damage: async (opts) => strikeCalls.push({ kind: "dagger-thrown-dmg", opts }),
+              critical: async (opts) => strikeCalls.push({ kind: "dagger-thrown-crit", opts })
+            }
+          ]
+        },
+        {
+          label: "Triggerbrand",
+          item: comboPrimaryItem,
+          ready: true,
+          doubleBarrel: { selected: false },
+          variants: [{ label: "+12", roll: async () => {} }],
+          damage: async () => {},
+          critical: async () => {},
+          auxiliaryActions: [
+            {
+              label: "Modular",
+              glyph: "1",
+              action: "interact",
+              options: {
+                "0": { value: "0", label: "Bludgeoning", selected: true },
+                "1": { value: "1", label: "Slashing", selected: false }
+              },
+              execute: async (opts) => auxExecCalls.push({ idx: 0, opts })
+            },
+            {
+              label: "Sheathe",
+              glyph: "1",
+              action: "interact",
+              execute: async (opts) => auxExecCalls.push({ idx: 1, opts })
+            }
+          ],
+          altUsages: [
+            {
+              label: "Triggerbrand",
+              item: comboMeleeItem,
+              variants: [{ label: "+10", roll: async () => {} }],
+              damage: async () => {},
+              critical: async () => {},
+              versatileOptions: [
+                { value: "piercing", label: "Piercing", selected: true },
+                { value: "slashing", label: "PF2E.TraitVersatileS", selected: false }
+              ]
+            }
+          ]
+        },
+        {
+          label: "Shortbow",
+          item: bowItem,
+          ready: true,
+          variants: [{ label: "+12", roll: async () => {} }],
+          damage: async () => {},
+          ammunition: {
+            requiresReload: false,
+            compatible: [{ id: "ammo-arrow", label: "Arrows (20)" }],
+            selected: { id: "ammo-arrow", compatible: true },
+            loaded: [],
+            capacity: 0,
+            remaining: 0
+          }
+        },
+        {
+          label: "Double-Barrel Pistol",
+          item: pistolItem,
+          ready: true,
+          doubleBarrel: { selected: false },
+          variants: [{ label: "+12", roll: async () => {} }],
+          damage: async () => {},
+          ammunition: {
+            requiresReload: true,
+            reloadGlyph: "1",
+            capacity: 2,
+            remaining: 1,
+            compatible: [{ id: "inv-b1", label: "Firearm Ammunition (9)" }],
+            selected: { id: "sub-b1", compatible: true },
+            loaded: [{ id: "sub-b1", name: "Firearm Ammunition", quantity: 1, max: 2 }]
+          }
+        }
+      ]
+    }
+  };
+
+  const strikesCtx = prepareStrikesContext(mockStrikesActor);
+  const ctxOk =
+    strikesCtx.length === 4 &&
+    strikesCtx[0].altUsages.length === 1 &&
+    strikesCtx[0].altUsages[0].modeLabel === "Thrown" &&
+    strikesCtx[0].altUsages[0].rangeIncrement === 10 &&
+    strikesCtx[0].versatileOptions.length === 2 &&
+    strikesCtx[1].doubleBarrel?.selected === false &&
+    strikesCtx[1].altUsages[0].modeLabel === "Melee" &&
+    strikesCtx[1].altUsages[0].versatileOptions.length === 2 &&
+    strikesCtx[1].auxiliaryActions[0].hasOptions === true &&
+    strikesCtx[1].auxiliaryActions[0].options.length === 2 &&
+    strikesCtx[2].ammunition?.requiresReload === false &&
+    strikesCtx[2].ammunition?.compatible[0]?.selected === true &&
+    strikesCtx[3].ammunition?.requiresReload === true &&
+    strikesCtx[3].ammunition?.reloadGlyph === "1" &&
+    strikesCtx[3].ammunition?.emptyLabel === "1 empty" &&
+    strikesCtx[3].ammunition?.loaded[0]?.isSelected === true &&
+    strikesCtx[3].ammunition?.hasSingleCompatible === true;
+
+  if (!ctxOk) {
+    logFail(`[Issues #59/#60] prepareStrikesContext mismatch: ${JSON.stringify(strikesCtx)}`);
+  } else {
+    logPass("[Issues #59/#60] prepareStrikesContext prepares altUsages (Thrown/Melee), versatile/doubleBarrel toggles, modular aux.options, bow ammo, and reload/magazine state.");
+  }
+
+  // Test altUsage rolls & headless flanking guard (melee injects flankOpts, thrown does NOT)
+  const enemyTokenDoc = { id: "enemy-1", name: "Goblin", actorId: "enemy-actor", actor: { id: "enemy-actor" }, x: 200, y: 100, width: 1, height: 1 };
+  enemyTokenDoc._object = { _isMobileAdapter: true, id: "enemy-1", name: "Goblin", actor: enemyTokenDoc.actor, document: enemyTokenDoc, setTarget: async () => {} };
+  const selfTokenDoc = { id: "self-tok", name: "Lyra", actorId: "actor-ranged", actor: mockStrikesActor, x: 100, y: 100, width: 1, height: 1 };
+  selfTokenDoc._object = { _isMobileAdapter: true, id: "self-tok", name: "Lyra", actor: mockStrikesActor, document: selfTokenDoc, isFlanking: () => true, setTarget: async () => {} };
+  const mockStrikeTokens = [selfTokenDoc, enemyTokenDoc];
+  const mockStrikeScene = {
+    id: "scene-strikes",
+    grid: { size: 100, distance: 5 },
+    tokens: {
+      contents: mockStrikeTokens,
+      get: (id) => mockStrikeTokens.find(t => t.id === id) ?? null,
+      find: (fn) => mockStrikeTokens.find(fn) ?? null
+    }
+  };
+  globalThis.game.user.targets = new Set([enemyTokenDoc._object]);
+  globalThis.game.scenes = { active: mockStrikeScene, viewed: mockStrikeScene, current: mockStrikeScene };
+  globalThis.canvas = { scene: mockStrikeScene, ready: false };
+  globalThis.ui = { ...(prevUi || {}), notifications: { warn: (m) => warnCalls.push(m), info: () => {} } };
+
+  const mockStrikeSheet = {
+    actor: mockStrikesActor,
+    rollMode: "digital",
+    render: async (opts) => renderCalls.push(opts)
+  };
+
+  await onExecuteStrike(mockStrikeSheet, {}, { dataset: { strikeIndex: "0", variantIndex: "0" } });
+  await onExecuteStrike(mockStrikeSheet, {}, { dataset: { strikeIndex: "0", altUsage: "0", variantIndex: "1" } });
+  await onExecuteDamage(mockStrikeSheet, {}, { dataset: { strikeIndex: "0", altUsage: "0" } });
+  await onExecuteCritical(mockStrikeSheet, {}, { dataset: { strikeIndex: "0", altUsage: "0" } });
+
+  const rollOk =
+    strikeCalls.length === 4 &&
+    strikeCalls[0].kind === "dagger-melee" &&
+    strikeCalls[0].opts.options?.includes("self:flanking") &&
+    strikeCalls[1].kind === "dagger-thrown" &&
+    strikeCalls[1].variant === 1 &&
+    strikeCalls[1].opts.altUsage === "thrown" &&
+    !strikeCalls[1].opts.options &&
+    strikeCalls[2].kind === "dagger-thrown-dmg" &&
+    strikeCalls[3].kind === "dagger-thrown-crit";
+
+  if (!rollOk) {
+    logFail(`[Issue #59] altUsage strike/damage/critical or flanking guard failed: ${JSON.stringify(strikeCalls)}`);
+  } else {
+    logPass("[Issue #59] Thrown/alternate usage attack, damage, and critical handlers pass altUsage and omit melee flanking on ranged/thrown attacks.");
+  }
+
+  // Test onToggleWeaponTrait (double-barrel + versatile on altUsage + versatile reset on base type)
+  await onToggleWeaponTrait(mockStrikeSheet, {}, { dataset: { strikeIndex: "1", trait: "double-barrel" } });
+  await onToggleWeaponTrait(mockStrikeSheet, {}, { dataset: { strikeIndex: "1", altUsage: "0", trait: "versatile", value: "slashing" } });
+  await onToggleWeaponTrait(mockStrikeSheet, {}, { dataset: { strikeIndex: "1", altUsage: "0", trait: "versatile", value: "piercing" } });
+
+  const toggleOk =
+    toggleUpdates.length === 3 &&
+    toggleUpdates[0].target === "combo-primary" && toggleUpdates[0].trait === "double-barrel" && toggleUpdates[0].selected === true &&
+    toggleUpdates[1].target === "combo-melee" && toggleUpdates[1].trait === "versatile" && toggleUpdates[1].selected === "slashing" &&
+    toggleUpdates[2].target === "combo-melee" && toggleUpdates[2].trait === "versatile" && toggleUpdates[2].selected === null;
+
+  if (!toggleOk) {
+    logFail(`[Issue #59] onToggleWeaponTrait failed: ${JSON.stringify(toggleUpdates)}`);
+  } else {
+    logPass("[Issue #59] onToggleWeaponTrait handles double-barrel toggle, altUsage versatile selection, and reset to base damage type.");
+  }
+
+  // Test Modular select + standard auxiliary action
+  await onExecuteAuxiliaryAction(mockStrikeSheet, {}, { tagName: "SELECT", value: "1", dataset: { strikeIndex: "1", auxIndex: "0" } });
+  await onExecuteAuxiliaryAction(mockStrikeSheet, {}, { tagName: "BUTTON", dataset: { strikeIndex: "1", auxIndex: "1" } });
+
+  const auxOk =
+    auxExecCalls.length === 2 &&
+    auxExecCalls[0].idx === 0 && auxExecCalls[0].opts.selection === "1" &&
+    auxExecCalls[1].idx === 1 && "event" in auxExecCalls[1].opts;
+
+  if (!auxOk) {
+    logFail(`[Issue #59] Modular/standard aux execution failed: ${JSON.stringify(auxExecCalls)}`);
+  } else {
+    logPass("[Issue #59] Modular <select> passes { selection } to aux.execute while button aux actions pass { event }.");
+  }
+
+  // Test Ammunition handlers: link, reload (single, fill, depleted guard), unload, select
+  await onLinkStrikeAmmo(mockStrikeSheet, {}, { value: "ammo-arrow", dataset: { strikeIndex: "2" } });
+  await onLinkStrikeAmmo(mockStrikeSheet, {}, { value: "", dataset: { strikeIndex: "2" } });
+
+  // Reduce pistol loaded subitems to 1 round for reload remainingSpace test, then restore full map for selectStrikeAmmo
+  const savedSubitems = pistolItem.subitems;
+  pistolItem.subitems = new Map([["sub-b1", subBullet1]]);
+  await onReloadStrikeAmmo(mockStrikeSheet, {}, { dataset: { strikeIndex: "3", ammoId: "inv-b1" } });
+  pistolItem.subitems = new Map();
+  await onReloadStrikeAmmo(mockStrikeSheet, {}, { dataset: { strikeIndex: "3", ammoId: "inv-b1", reloadAll: "true" } });
+  await onReloadStrikeAmmo(mockStrikeSheet, {}, { dataset: { strikeIndex: "3", ammoId: "inv-empty" } });
+  pistolItem.subitems = savedSubitems;
+
+  await onUnloadStrikeAmmo(mockStrikeSheet, {}, { dataset: { strikeIndex: "3", ammoId: "sub-b1" } });
+  await onSelectStrikeAmmo(mockStrikeSheet, {}, { dataset: { strikeIndex: "3", ammoId: "sub-b2" } });
+
+  const pistolSubUpdate = weaponUpdates.find(u => u.weapon === "pistol")?.data?.["system.subitems"] ?? [];
+  const ammoOk =
+    weaponUpdates[0]?.weapon === "bow" && weaponUpdates[0]?.data?.system?.selectedAmmoId === "ammo-arrow" &&
+    weaponUpdates[1]?.weapon === "bow" && weaponUpdates[1]?.data?.system?.selectedAmmoId === null &&
+    attachCalls.length === 2 &&
+    attachCalls[0].ammoId === "inv-b1" && attachCalls[0].opts.quantity === 1 &&
+    attachCalls[1].ammoId === "inv-b1" && attachCalls[1].opts.quantity === 2 &&
+    warnCalls.length === 1 &&
+    detachCalls.length === 1 && detachCalls[0].id === "sub-b1" && detachCalls[0].opts.skipConfirm === true &&
+    pistolSubUpdate.length === 3 &&
+    pistolSubUpdate.find(s => s._id === "sub-tal")?.sort === 0 &&
+    pistolSubUpdate.find(s => s._id === "sub-b2")?.sort === 1 &&
+    pistolSubUpdate.find(s => s._id === "sub-b1")?.sort === 2 &&
+    !pistolSubUpdate.some(s => s._id === "sub-empty") &&
+    renderCalls.length >= 8;
+
+  if (!ammoOk) {
+    logFail(`[Issue #60] Ammunition handlers failed: weaponUpdates=${JSON.stringify(weaponUpdates)}, attach=${JSON.stringify(attachCalls)}, detach=${JSON.stringify(detachCalls)}, warns=${JSON.stringify(warnCalls)}`);
+  } else {
+    logPass("[Issue #60] Ammunition linking, reload (single, fill, depleted guard), unload, and multi-ammo selection verified.");
+  }
+
+  globalThis.CONFIG.PF2E = prevConfigPf2e;
+  globalThis.game.user.targets = prevTargets;
+  globalThis.game.scenes = prevScenes;
+  globalThis.canvas = prevCanvas;
+  globalThis.ui = prevUi;
+} catch (err) {
+  logFail(`Alternate weapon usages & ammunition verification threw an error: ${err.stack || err.message}`);
+}
+
 
 // 7. Foundry VTT AI Content Policy Compliance Audit (https://foundryvtt.com/article/ai-policy/)
 console.log("\n--- 7. Foundry VTT AI Content Policy Compliance Audit ---");

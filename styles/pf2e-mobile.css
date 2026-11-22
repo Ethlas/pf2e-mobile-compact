@@ -1190,7 +1190,43 @@ body.pf2e-mobile-active select:not(:is(.pf2e-mobile-sheet, .pf2e-mobile-compendi
   background: #7b1241;
   border: 1px solid #ad1457;
 }
-/* Weapon Auxiliary Actions Row */
+/* Weapon Ammunition & Auxiliary Actions */
+.pf2e-mobile-sheet .strike-ammo-section {
+  padding-top: 6px;
+  border-top: 1px solid var(--m-border-subtle);
+}
+.pf2e-mobile-sheet .strike-ammo-loaded {
+  padding: 4px 6px;
+  background: var(--m-surface-1);
+  border: 1px solid var(--m-border-subtle);
+  border-radius: 4px;
+}
+.pf2e-mobile-sheet .strike-ammo-loaded.selected {
+  border-color: var(--m-accent);
+}
+.pf2e-mobile-sheet .strike-card .strike-ammo-pick {
+  min-width: 0;
+  padding: 0 4px;
+  background: transparent;
+  border-color: transparent;
+  text-align: left;
+}
+.pf2e-mobile-sheet .strike-card .strike-ammo-unload {
+  min-width: 38px;
+  width: 38px;
+  padding: 0;
+  background: var(--m-surface-3);
+  border: 1px solid var(--m-border);
+}
+.pf2e-mobile-sheet .strike-ammo-select,
+.pf2e-mobile-sheet .strike-aux-select {
+  padding: 0 8px;
+  max-width: 100%;
+  min-width: 0;
+}
+.pf2e-mobile-sheet .strike-aux-modular {
+  max-width: 100%;
+}
 .pf2e-mobile-sheet .strike-auxiliary-row {
   padding-top: 6px;
   border-top: 1px solid var(--m-border-subtle);
@@ -1222,17 +1258,20 @@ body.pf2e-mobile-active select:not(:is(.pf2e-mobile-sheet, .pf2e-mobile-compendi
 .pf2e-mobile-sheet .blast-cost-switch .subtab-btn {
   padding: 0 8px;
 }
+.pf2e-mobile-sheet .strike-trait-btn,
 .pf2e-mobile-sheet .blast-dt-btn {
   border: 1px solid var(--m-border);
   white-space: nowrap;
   opacity: 0.65;
   transition: opacity 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
+.pf2e-mobile-sheet .strike-trait-btn.selected,
 .pf2e-mobile-sheet .blast-dt-btn.selected {
   opacity: 1;
   border-color: var(--m-accent);
   box-shadow: 0 0 0 1px var(--m-accent);
 }
+.pf2e-mobile-sheet .strike-sub-header,
 .pf2e-mobile-sheet .blast-ranged-header {
   padding-top: 6px;
   border-top: 1px solid var(--m-border-subtle);

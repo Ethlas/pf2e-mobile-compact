@@ -24,7 +24,8 @@ import { prepareSpellsContext, formatSpell } from "./sheet-helpers/context-spell
 import { prepareActivationsContext } from "./sheet-helpers/context-activations.js";
 import { onTransferStashItem, onSendToPartyStash, onOpenPartyStash, onSwitchToPartyMember, onTransferCoins } from "./sheet-helpers/party-handlers.js";
 import { resolveTargetForAction, promptTargetSelection, promptVariantSelection, promptStatisticSelection, promptStrikeSelection } from "./sheet-helpers/sheet-prompts.js";
-import { onExecuteStrike, onExecuteDamage, onExecuteCritical, onExecuteAuxiliaryAction, onItemToChat, onUseAction, onRollActionCheck, onRollSkill, onToggleActionSummary } from "./sheet-helpers/actions-handlers.js";
+import { onItemToChat, onUseAction, onRollActionCheck, onRollSkill, onToggleActionSummary } from "./sheet-helpers/actions-handlers.js";
+import { onExecuteStrike, onExecuteDamage, onExecuteCritical, onExecuteAuxiliaryAction, onToggleWeaponTrait, onLinkStrikeAmmo, onReloadStrikeAmmo, onUnloadStrikeAmmo, onSelectStrikeAmmo } from "./sheet-helpers/strike-handlers.js";
 import { onUseConsumable, onApplyPoison, onDetachSubitem, onToggleInventorySection, onConfigureRunes, onToggleInvested, onManageCoins } from "./sheet-helpers/inventory-handlers.js";
 import { onChangeCarryType } from "./sheet-helpers/carry-type.js";
 import { onSwitchSpellSubTab, onToggleRankGroup, onOpenSpellPrepPicker, prepareSlot, onUnprepareSlot, onToggleSlotExpended, onResetDailySpells, onSaveSpellPreset, onApplySpellPreset, onDeleteSpellPreset, onOpenCompendiumPicker, onAdjustSlot, onAdjustFocus, onCastSpell, onRollSpellDamage, onToggleSignatureSpell, onRemoveSpell } from "./sheet-helpers/spells-handlers.js";
@@ -85,6 +86,11 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       executeDamage: PF2eMobileSheet._onExecuteDamage,
       executeCritical: PF2eMobileSheet._onExecuteCritical,
       executeAuxiliaryAction: PF2eMobileSheet._onExecuteAuxiliaryAction,
+      toggleWeaponTrait: PF2eMobileSheet._onToggleWeaponTrait,
+      linkStrikeAmmo: PF2eMobileSheet._onLinkStrikeAmmo,
+      reloadStrikeAmmo: PF2eMobileSheet._onReloadStrikeAmmo,
+      unloadStrikeAmmo: PF2eMobileSheet._onUnloadStrikeAmmo,
+      selectStrikeAmmo: PF2eMobileSheet._onSelectStrikeAmmo,
       channelElements: PF2eMobileSheet._onChannelElements,
       toggleBlastActionCost: PF2eMobileSheet._onToggleBlastActionCost,
       setBlastDamageType: PF2eMobileSheet._onSetBlastDamageType,
@@ -393,26 +399,13 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       }, 250);
     };
 
+    const tokenHooks = [
+      "createToken", "deleteToken", "updateToken", "moveToken", "canvasReady",
+      "createCombat", "deleteCombat", "updateCombat", "createCombatant", "deleteCombatant", "updateCombatant"
+    ];
     this._sceneHookIds.push(
-      { name: "createToken", id: Hooks.on("createToken", onTokenChange) },
-      { name: "deleteToken", id: Hooks.on("deleteToken", onTokenChange) },
-      { name: "updateToken", id: Hooks.on("updateToken", onTokenChange) },
-      { name: "moveToken", id: Hooks.on("moveToken", onTokenChange) },
-      {
-        name: "targetToken",
-        id: Hooks.on("targetToken", (user) => {
-          if (user.id === game.user.id && this.rendered) {
-            this.render({ parts: ["header"] });
-          }
-        })
-      },
-      { name: "canvasReady", id: Hooks.on("canvasReady", onTokenChange) },
-      { name: "createCombat", id: Hooks.on("createCombat", onTokenChange) },
-      { name: "deleteCombat", id: Hooks.on("deleteCombat", onTokenChange) },
-      { name: "updateCombat", id: Hooks.on("updateCombat", onTokenChange) },
-      { name: "createCombatant", id: Hooks.on("createCombatant", onTokenChange) },
-      { name: "deleteCombatant", id: Hooks.on("deleteCombatant", onTokenChange) },
-      { name: "updateCombatant", id: Hooks.on("updateCombatant", onTokenChange) },
+      ...tokenHooks.map(name => ({ name, id: Hooks.on(name, onTokenChange) })),
+      { name: "targetToken", id: Hooks.on("targetToken", (u) => { if (u.id === game.user.id && this.rendered) this.render({ parts: ["header"] }); }) },
       // Effect durations in the Character overview count down with the combat turn and world time
       { name: "updateCombat", id: Hooks.on("updateCombat", () => refreshOverviewDurations(this)) },
       { name: "updateWorldTime", id: Hooks.on("updateWorldTime", () => refreshOverviewDurations(this)) }
@@ -483,16 +476,8 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       context.strikes = context.strikes ?? [];
       context.elementalBlasts = context.elementalBlasts ?? [];
       context.characterActions = context.characterActions ?? {
-        actions: [],
-        reactions: [],
-        free: [],
-        skillActions: [],
-        exploration: [],
-        downtime: [],
-        hasEncounter: false,
-        hasSkillActions: false,
-        hasExploration: false,
-        hasDowntime: false
+        actions: [], reactions: [], free: [], skillActions: [], exploration: [], downtime: [],
+        hasEncounter: false, hasSkillActions: false, hasExploration: false, hasDowntime: false
       };
     }
 
@@ -605,6 +590,11 @@ export class PF2eMobileSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static async _onExecuteDamage(event, target) { return onExecuteDamage(this, event, target); }
   static async _onExecuteCritical(event, target) { return onExecuteCritical(this, event, target); }
   static async _onExecuteAuxiliaryAction(event, target) { return onExecuteAuxiliaryAction(this, event, target); }
+  static async _onToggleWeaponTrait(event, target) { return onToggleWeaponTrait(this, event, target); }
+  static async _onLinkStrikeAmmo(event, target) { return onLinkStrikeAmmo(this, event, target); }
+  static async _onReloadStrikeAmmo(event, target) { return onReloadStrikeAmmo(this, event, target); }
+  static async _onUnloadStrikeAmmo(event, target) { return onUnloadStrikeAmmo(this, event, target); }
+  static async _onSelectStrikeAmmo(event, target) { return onSelectStrikeAmmo(this, event, target); }
   static async _onChannelElements(event, target) { return onChannelElements(this, event, target); }
   static async _onToggleBlastActionCost(event, target) { return onToggleBlastActionCost(this, event, target); }
   static async _onSetBlastDamageType(event, target) { return onSetBlastDamageType(this, event, target); }
