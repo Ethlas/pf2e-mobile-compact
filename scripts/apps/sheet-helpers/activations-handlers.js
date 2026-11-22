@@ -284,14 +284,22 @@ export async function onCastItemSpell(sheet, event, target) {
   const itemType = target.dataset.itemType;
   const entryId = target.dataset.entryId;
 
-  const item = actor.items.get(itemId);
+  const entry = entryId ? actor.spellcasting?.get(entryId) : null;
+  const entryCollection = entryId ? actor.spellcasting?.collections?.get(entryId) : null;
+  const item = actor.items.get(itemId)
+    ?? entryCollection?.get(itemId)
+    ?? entry?.spells?.get(itemId);
   if (!item) {
     ui.notifications?.warn?.("Item not found.");
     return;
   }
 
   // Target prompt (supports AoE multi-target and Self)
-  const embeddedSpell = item.system?.spell ?? actor.spellcasting?.get(entryId)?.spells?.contents?.[0] ?? item;
+  const fallbackSpell = entryCollection?.get(itemId)
+    ?? entry?.spells?.get(itemId)
+    ?? entryCollection?.contents?.[0]
+    ?? entry?.spells?.contents?.[0];
+  const embeddedSpell = item.system?.spell ?? fallbackSpell ?? item;
   const spellName = item.system?.spell?.name ?? item.name;
   const isMultiOrArea = isMultiTargetOrAreaSpell(embeddedSpell);
   const targetToken = await resolveTargetsForSpell(sheet, embeddedSpell, `Cast ${spellName}`);
@@ -313,10 +321,10 @@ export async function onCastItemSpell(sheet, event, target) {
     }
 
     // Ephemeral entry fallback
-    const entry = actor.spellcasting?.get(entryId);
-    const spell = entry?.spells?.contents?.[0];
+    const spell = fallbackSpell ?? (item.type === "spell" ? item : null);
     if (entry && spell && typeof entry.cast === "function") {
-      await entry.cast(spell);
+      const rank = spell.rank ?? spell.system?.level?.value;
+      await entry.cast(spell, rank > 0 ? { rank } : {});
     } else if (spell && typeof spell.toMessage === "function") {
       await spell.toMessage();
     }

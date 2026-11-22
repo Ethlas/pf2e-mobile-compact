@@ -1643,6 +1643,129 @@ try {
   globalThis.DOMParser = origDOMParser;
   globalThis.fromUuid = origFromUuid;
 
+  // 4g. Ephemeral Item & Staff Spell Lookups (Issue #47)
+  const { onCastSpell } = await import("./apps/sheet-helpers/spells-handlers.js");
+  const { onCastItemSpell } = await import("./apps/sheet-helpers/activations-handlers.js");
+  const { onItemToChat } = await import("./apps/sheet-helpers/actions-handlers.js");
+
+  const castCalls = [];
+  const chatCalls = [];
+  const warnCalls = [];
+
+  const ephSpell1 = {
+    id: "eph-spell-1",
+    name: "Light",
+    type: "spell",
+    rank: 1,
+    isCantrip: true,
+    system: { level: { value: 0 }, traits: { value: ["cantrip"] }, description: { value: "" } },
+    toMessage: async (evt, opts) => chatCalls.push({ id: "eph-spell-1", opts })
+  };
+  const ephSpell2 = {
+    id: "eph-spell-2",
+    name: "Fireball",
+    type: "spell",
+    rank: 2,
+    isCantrip: false,
+    system: { level: { value: 2 }, traits: { value: ["fire"] }, description: { value: "" } },
+    toMessage: async (evt, opts) => chatCalls.push({ id: "eph-spell-2", opts })
+  };
+  const staffMemorySpell = {
+    id: "staff-mem-1",
+    name: "Burning Hands",
+    type: "spell",
+    rank: 1,
+    system: { level: { value: 1 }, traits: { value: ["fire"] }, description: { value: "" } },
+    toMessage: async (evt, opts) => chatCalls.push({ id: "staff-mem-1", opts })
+  };
+
+  const ephCollection = new Map([
+    [ephSpell1.id, ephSpell1],
+    [ephSpell2.id, ephSpell2]
+  ]);
+  ephCollection.contents = [ephSpell1, ephSpell2];
+
+  const ephEntry = {
+    id: "eph-item-entry-casting",
+    name: "Test Spell Server",
+    category: "items",
+    isEphemeral: true,
+    spells: null,
+    system: { category: "items", prepared: { value: "items" } },
+    cast: async (spell, opts) => castCalls.push({ spellId: spell.id, opts })
+  };
+
+  const mockEphActor = {
+    level: 5,
+    items: { contents: [], get: () => undefined },
+    conditions: { get: () => undefined },
+    spellcasting: {
+      contents: [ephEntry],
+      get: (id) => (id === ephEntry.id ? ephEntry : undefined),
+      collections: { get: (id) => (id === ephEntry.id ? ephCollection : undefined) }
+    },
+    getFlag: () => null,
+    getRollData: () => ({})
+  };
+  const mockEphSheet = {
+    actor: mockEphActor,
+    rollMode: "digital",
+    _collapsedRankGroups: new Set(),
+    _expandedActionIds: new Set(),
+    _activeStaffSpells: [staffMemorySpell],
+    render: () => {}
+  };
+
+  const ephContext = {};
+  await prepareActivationsContext(mockEphActor, mockEphSheet, ephContext);
+
+  const prevCanvas = globalThis.canvas;
+  const prevScenes = globalThis.game.scenes;
+  const prevTargets = globalThis.game.user?.targets;
+  const prevUi = globalThis.ui;
+  try {
+    globalThis.canvas = null;
+    globalThis.game.scenes = undefined;
+    if (globalThis.game.user) globalThis.game.user.targets = [];
+    globalThis.ui = {
+      ...(prevUi ?? {}),
+      notifications: { ...(prevUi?.notifications ?? {}), warn: (msg) => warnCalls.push(msg) }
+    };
+
+    await onCastSpell(mockEphSheet, {}, {
+      closest: () => null,
+      classList: { contains: () => false },
+      dataset: { itemId: ephSpell2.id, entryId: ephEntry.id, rank: "2" }
+    });
+    await onCastItemSpell(mockEphSheet, {}, {
+      dataset: { itemId: ephSpell2.id, entryId: ephEntry.id, itemType: "other" }
+    });
+    await onItemToChat(mockEphSheet, {}, {
+      dataset: { itemId: ephSpell2.id, entryId: ephEntry.id, rank: "2" }
+    });
+    await onItemToChat(mockEphSheet, {}, {
+      dataset: { itemId: staffMemorySpell.id, entryId: "missing-staff-entry", rank: "1" }
+    });
+  } finally {
+    globalThis.canvas = prevCanvas;
+    globalThis.game.scenes = prevScenes;
+    if (globalThis.game.user) globalThis.game.user.targets = prevTargets;
+    globalThis.ui = prevUi;
+  }
+
+  const otherIds = (ephContext.activations?.other ?? []).map(a => a.id);
+  const castOk = castCalls.length === 2
+    && castCalls[0].spellId === ephSpell2.id && castCalls[0].opts?.rank === 2
+    && castCalls[1].spellId === ephSpell2.id && castCalls[1].opts?.rank === 2;
+  const chatOk = chatCalls.length === 2
+    && chatCalls[0].id === ephSpell2.id && chatCalls[0].opts?.data?.castRank === 2
+    && chatCalls[1].id === staffMemorySpell.id && chatCalls[1].opts?.data?.castRank === 1;
+  if (otherIds.length !== 2 || otherIds[1] !== ephSpell2.id || !castOk || !chatOk || warnCalls.length > 0) {
+    logFail(`[Ephemeral & Staff Spell Lookups] Failed: otherIds=${JSON.stringify(otherIds)}, castCalls=${JSON.stringify(castCalls)}, chatCalls=${JSON.stringify(chatCalls)}, warns=${JSON.stringify(warnCalls)}`);
+  } else {
+    logPass("[Ephemeral & Staff Spell Lookups] otherActivations, onCastSpell, onCastItemSpell, and onItemToChat resolve collection & in-memory spells cleanly.");
+  }
+
   // 7. Headless No-Canvas TokenDocument.prototype.object Getter & Non-Recursive distanceTo Guard
   const { getTargetableToken } = await import("./tokens/token-adapter.js");
   class MockGetterTokenDoc {
