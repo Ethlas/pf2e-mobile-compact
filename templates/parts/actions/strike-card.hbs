@@ -1,0 +1,216 @@
+{{!--
+  Weapon strike card in the Attacks section (templates/parts/actions.hbs).
+  Displays the primary strike, versatile/double-barrel trait toggles, alternate usages
+  (thrown / combination melee), ammunition linking or reload/magazine state, and auxiliary actions.
+--}}
+<div class="m-action-card m-card strike-card m-flex-col m-gap-8 {{#if strike.ready}}ready{{/if}}">
+  <!-- Strike Header: Weapon Image, Glyph, Name, Traits, Range -->
+  <div class="m-flex-row m-align-center m-gap-10">
+    <img class="strike-img m-shrink-0" src="{{strike.img}}" alt="{{strike.label}}" />
+    <div class="m-flex-col m-gap-4 m-flex-1 m-min-w-0">
+      <div class="m-flex-row m-align-center m-gap-6">
+        <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base m-color-accent"><span class="action-glyph">{{strike.glyph}}</span></span>
+        <span class="action-name m-min-w-0 m-truncate"><strong>{{strike.label}}</strong></span>
+      </div>
+      {{#if strike.hasMetaBadges}}
+      <div class="action-traits m-flex-row m-wrap m-gap-4">
+        {{#each strike.traits as |trait|}}
+          <span class="trait-badge m-badge-neutral m-text-xs m-color-soft">{{trait.label}}</span>
+        {{/each}}
+        {{#if strike.isMelee}}<span class="trait-badge m-badge-neutral m-text-xs m-color-soft">Melee</span>{{/if}}
+        {{#if strike.isThrown}}<span class="trait-badge m-badge-neutral m-text-xs m-color-soft">Thrown</span>{{/if}}
+        {{#if strike.isRanged}}<span class="trait-badge m-badge-neutral m-text-xs m-color-soft">Ranged</span>{{/if}}
+        {{#if strike.rangeIncrement}}<span class="trait-badge m-badge-neutral m-text-xs m-color-soft">{{strike.rangeIncrement}} ft</span>{{/if}}
+      </div>
+      {{/if}}
+    </div>
+  </div>
+
+  <!-- Primary Trait Toggles (Double-Barrel / Versatile) -->
+  {{#if strike.hasTraitToggles}}
+  <div class="strike-trait-toggles m-flex-row m-wrap m-gap-6">
+    {{#if strike.doubleBarrel}}
+    <button type="button" class="strike-trait-btn m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-flex-auto m-text-xs m-bold {{#if strike.doubleBarrel.selected}}selected{{/if}}" data-action="toggleWeaponTrait" data-strike-index="{{strike.index}}" data-trait="double-barrel" aria-pressed="{{#if strike.doubleBarrel.selected}}true{{else}}false{{/if}}" title="{{strike.doubleBarrel.label}}">
+      <i class="fa-solid fa-fw fa-explosion" aria-hidden="true"></i>
+      <span>{{strike.doubleBarrel.label}}</span>
+    </button>
+    {{/if}}
+    {{#each strike.versatileOptions as |opt|}}
+    <button type="button" class="strike-trait-btn damage-type-badge damage-{{opt.value}} m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-flex-auto m-text-xs m-bold {{#if opt.selected}}selected{{/if}}" data-action="toggleWeaponTrait" data-strike-index="{{../strike.index}}" data-trait="versatile" data-value="{{opt.value}}" aria-pressed="{{#if opt.selected}}true{{else}}false{{/if}}" {{#if opt.selected}}disabled{{/if}} title="{{opt.title}}">
+      {{#if opt.glyph}}<i class="fa-solid fa-fw fa-{{opt.glyph}}" aria-hidden="true"></i>{{/if}}
+      <span>{{opt.label}}</span>
+    </button>
+    {{/each}}
+  </div>
+  {{/if}}
+
+  <!-- MAP Variants at the TOP (Prominent attack row) -->
+  <div class="strike-map-row m-flex-row m-gap-6">
+    {{#each strike.variants as |variant vIndex|}}
+    <button type="button" class="map-button m-text-full m-flex-row m-align-center m-justify-center m-flex-1 m-bold" data-action="executeStrike" data-strike-index="{{../strike.index}}" data-variant-index="{{vIndex}}" title="Attack Variant {{vIndex}}">
+      {{variant.label}}
+    </button>
+    {{/each}}
+  </div>
+
+  <!-- Damage and Critical Buttons Row -->
+  <div class="strike-damage-row m-flex-row m-gap-6">
+    {{#if strike.damage}}
+    <button type="button" class="variant-button damage-button m-flex-1 m-text-base m-color-strong" data-action="executeDamage" data-strike-index="{{strike.index}}" title="Roll Damage">
+      💥 {{strike.damageFormula}}
+    </button>
+    {{/if}}
+
+    {{#if strike.critical}}
+    <button type="button" class="variant-button critical-button m-flex-1 m-text-base m-bold m-color-strong" data-action="executeCritical" data-strike-index="{{strike.index}}" title="Roll Critical Damage">
+      ⚡ Crit
+    </button>
+    {{/if}}
+  </div>
+
+  <!-- Alternate Weapon Usages (Thrown, Combination Melee, Auto/Area Fire) -->
+  {{#each strike.altUsages as |usage|}}
+  <div class="strike-sub-header action-traits m-flex-row m-wrap m-align-center m-gap-4">
+    <span class="m-text-xs m-semibold m-color-muted"><i class="{{usage.modeIcon}}" aria-hidden="true"></i> {{usage.modeLabel}}{{#if usage.rangeIncrement}} · {{usage.rangeIncrement}} ft{{/if}}</span>
+  </div>
+  {{#if usage.hasTraitToggles}}
+  <div class="strike-trait-toggles m-flex-row m-wrap m-gap-6">
+    {{#if usage.doubleBarrel}}
+    <button type="button" class="strike-trait-btn m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-flex-auto m-text-xs m-bold {{#if usage.doubleBarrel.selected}}selected{{/if}}" data-action="toggleWeaponTrait" data-strike-index="{{usage.strikeIndex}}" data-alt-usage="{{usage.altIndex}}" data-trait="double-barrel" aria-pressed="{{#if usage.doubleBarrel.selected}}true{{else}}false{{/if}}" title="{{usage.doubleBarrel.label}}">
+      <i class="fa-solid fa-fw fa-explosion" aria-hidden="true"></i>
+      <span>{{usage.doubleBarrel.label}}</span>
+    </button>
+    {{/if}}
+    {{#each usage.versatileOptions as |opt|}}
+    <button type="button" class="strike-trait-btn damage-type-badge damage-{{opt.value}} m-compact m-inline-flex m-align-center m-justify-center m-gap-4 m-flex-auto m-text-xs m-bold {{#if opt.selected}}selected{{/if}}" data-action="toggleWeaponTrait" data-strike-index="{{usage.strikeIndex}}" data-alt-usage="{{usage.altIndex}}" data-trait="versatile" data-value="{{opt.value}}" aria-pressed="{{#if opt.selected}}true{{else}}false{{/if}}" {{#if opt.selected}}disabled{{/if}} title="{{opt.title}}">
+      {{#if opt.glyph}}<i class="fa-solid fa-fw fa-{{opt.glyph}}" aria-hidden="true"></i>{{/if}}
+      <span>{{opt.label}}</span>
+    </button>
+    {{/each}}
+  </div>
+  {{/if}}
+  <div class="strike-map-row m-flex-row m-gap-6">
+    {{#each usage.variants as |variant vIndex|}}
+    <button type="button" class="map-button m-text-full m-flex-row m-align-center m-justify-center m-flex-1 m-bold" data-action="executeStrike" data-strike-index="{{usage.strikeIndex}}" data-alt-usage="{{usage.altIndex}}" data-variant-index="{{vIndex}}" title="{{usage.modeLabel}} Attack Variant {{vIndex}}">
+      {{variant.label}}
+    </button>
+    {{/each}}
+  </div>
+  <div class="strike-damage-row m-flex-row m-gap-6">
+    {{#if usage.damage}}
+    <button type="button" class="variant-button damage-button m-flex-1 m-text-base m-color-strong" data-action="executeDamage" data-strike-index="{{usage.strikeIndex}}" data-alt-usage="{{usage.altIndex}}" title="Roll {{usage.modeLabel}} Damage">
+      💥 {{usage.damageFormula}}
+    </button>
+    {{/if}}
+    {{#if usage.critical}}
+    <button type="button" class="variant-button critical-button m-flex-1 m-text-base m-bold m-color-strong" data-action="executeCritical" data-strike-index="{{usage.strikeIndex}}" data-alt-usage="{{usage.altIndex}}" title="Roll {{usage.modeLabel}} Critical Damage">
+      ⚡ Crit
+    </button>
+    {{/if}}
+  </div>
+  {{/each}}
+
+  <!-- Ranged Weapon Ammunition (Reload/Magazine or Bow Linking) -->
+  {{#if strike.ammunition}}
+  <div class="strike-ammo-section m-flex-col m-gap-6">
+    {{#if strike.ammunition.requiresReload}}
+      {{#each strike.ammunition.loaded as |loaded|}}
+      <div class="strike-ammo-loaded m-flex-row m-align-center m-gap-6 {{#if (and ../strike.ammunition.hasMultipleLoaded loaded.isSelected)}}selected{{/if}}" data-item-id="{{loaded.id}}">
+        {{#if ../strike.ammunition.hasMultipleLoaded}}
+        <button type="button" class="strike-ammo-pick m-compact m-flex-row m-align-center m-gap-6 m-flex-1 m-min-w-0 m-text-sm {{#if loaded.isSelected}}m-color-strong m-bold{{else}}m-color-soft{{/if}}" data-action="selectStrikeAmmo" data-strike-index="{{../strike.index}}" data-ammo-id="{{loaded.id}}" aria-pressed="{{#if loaded.isSelected}}true{{else}}false{{/if}}" {{#if loaded.isSelected}}disabled{{/if}} title="Select {{loaded.name}}">
+          <i class="fa-solid {{#if loaded.isSelected}}fa-circle-check m-color-success{{else}}fa-circle m-color-dim{{/if}}" aria-hidden="true"></i>
+          <span class="m-truncate">{{loaded.name}}</span>
+        </button>
+        {{else}}
+        <span class="m-flex-1 m-min-w-0 m-truncate m-text-sm m-color-normal m-medium">{{loaded.name}}</span>
+        {{/if}}
+        <span class="m-badge-neutral m-text-xs m-semibold m-color-soft m-shrink-0">{{loaded.quantity}}{{#if loaded.showMax}}/{{loaded.max}}{{/if}}</span>
+        <button type="button" class="strike-ammo-unload m-compact m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-sm m-color-soft" data-action="unloadStrikeAmmo" data-strike-index="{{../strike.index}}" data-ammo-id="{{loaded.id}}" aria-label="Unload {{loaded.name}}" title="Unload {{loaded.name}}">
+          <i class="fa-solid fa-eject" aria-hidden="true"></i>
+        </button>
+      </div>
+      {{/each}}
+      {{#if strike.ammunition.remaining}}
+      <div class="strike-ammo-reload m-flex-row m-align-center m-wrap m-gap-6">
+        {{#if strike.ammunition.hasSingleCompatible}}
+          <button type="button" class="aux-action-btn m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-color-soft" data-action="reloadStrikeAmmo" data-strike-index="{{strike.index}}" data-ammo-id="{{strike.ammunition.singleCompatible.id}}" title="Reload {{strike.ammunition.singleCompatible.label}}">
+            {{#if strike.ammunition.reloadGlyph}}<span class="m-inline-flex m-align-center m-justify-center m-text-sm m-bold m-color-accent"><span class="action-glyph">{{strike.ammunition.reloadGlyph}}</span></span>{{/if}}
+            <span class="aux-label m-medium">Reload</span>
+            <span class="m-text-sm m-color-dim">({{strike.ammunition.singleCompatible.label}})</span>
+          </button>
+          {{#if strike.ammunition.canReloadAll}}
+          <button type="button" class="aux-action-btn m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-color-soft" data-action="reloadStrikeAmmo" data-strike-index="{{strike.index}}" data-ammo-id="{{strike.ammunition.singleCompatible.id}}" data-reload-all="true" title="Fill remaining capacity ({{strike.ammunition.remaining}})">
+            <span class="aux-label m-medium">Fill</span>
+          </button>
+          {{/if}}
+        {{else if strike.ammunition.hasCompatible}}
+          <label class="m-text-xs m-semibold m-color-muted m-shrink-0" for="strike-reload-{{strike.index}}">{{strike.ammunition.emptyLabel}}</label>
+          <select id="strike-reload-{{strike.index}}" class="strike-ammo-select m-compact m-flex-1 m-min-w-0 m-truncate m-text-base m-color-normal">
+            {{#each strike.ammunition.compatible as |ammo|}}
+            <option value="{{ammo.id}}" {{#if ammo.selected}}selected{{/if}}>{{ammo.label}}</option>
+            {{/each}}
+          </select>
+          <button type="button" class="aux-action-btn m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-color-soft" data-action="reloadStrikeAmmo" data-strike-index="{{strike.index}}" title="Reload">
+            {{#if strike.ammunition.reloadGlyph}}<span class="m-inline-flex m-align-center m-justify-center m-text-sm m-bold m-color-accent"><span class="action-glyph">{{strike.ammunition.reloadGlyph}}</span></span>{{/if}}
+            <span class="aux-label m-medium">Reload</span>
+          </button>
+          {{#if strike.ammunition.canReloadAll}}
+          <button type="button" class="aux-action-btn m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-color-soft" data-action="reloadStrikeAmmo" data-strike-index="{{strike.index}}" data-reload-all="true" title="Fill remaining capacity ({{strike.ammunition.remaining}})">
+            <span class="aux-label m-medium">Fill</span>
+          </button>
+          {{/if}}
+        {{else}}
+          <span class="m-text-xs m-color-muted">{{strike.ammunition.emptyLabel}} · No compatible ammo</span>
+        {{/if}}
+      </div>
+      {{/if}}
+    {{else}}
+      <div class="strike-ammo-row m-flex-row m-align-center m-gap-6">
+        <label class="m-inline-flex m-align-center m-gap-4 m-text-xs m-semibold m-color-muted m-shrink-0" for="strike-ammo-{{strike.index}}">
+          <i class="fas fa-crosshairs" aria-hidden="true"></i>
+          <span>Ammo</span>
+        </label>
+        <select id="strike-ammo-{{strike.index}}" class="strike-ammo-select m-compact m-flex-1 m-min-w-0 m-truncate m-text-base m-color-normal" data-change-action="linkStrikeAmmo" data-strike-index="{{strike.index}}">
+          <option value="">{{strike.ammunition.noAmmoLabel}}</option>
+          {{#each strike.ammunition.compatible as |ammo|}}
+          <option value="{{ammo.id}}" {{#if ammo.selected}}selected{{/if}}>{{ammo.label}}</option>
+          {{/each}}
+        </select>
+      </div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  <!-- Weapon Auxiliary Actions: Draw, Sheathe, Drop, Change Grip, Modular -->
+  {{#if strike.hasAuxiliary}}
+  <div class="strike-auxiliary-row m-flex-row m-wrap m-align-center m-gap-6">
+    {{#each strike.auxiliaryActions as |aux|}}
+      {{#if aux.hasOptions}}
+      <div class="strike-aux-modular m-inline-flex m-align-center m-gap-4">
+        <label class="m-inline-flex m-align-center m-gap-4 m-text-md m-color-soft m-shrink-0" for="strike-mod-{{../strike.index}}-{{aux.index}}">
+          {{#if aux.glyph}}
+          <span class="m-inline-flex m-align-center m-justify-center m-text-sm m-bold m-color-accent"><span class="action-glyph">{{aux.glyph}}</span></span>
+          {{/if}}
+          <span class="aux-label m-medium">{{aux.label}}</span>
+        </label>
+        <select id="strike-mod-{{../strike.index}}-{{aux.index}}" class="strike-aux-select m-compact m-truncate m-text-base m-color-normal" data-change-action="executeAuxiliaryAction" data-strike-index="{{../strike.index}}" data-aux-index="{{aux.index}}">
+          {{#each aux.options as |opt|}}
+          <option value="{{opt.value}}" {{#if opt.selected}}selected{{/if}}>{{opt.label}}</option>
+          {{/each}}
+        </select>
+      </div>
+      {{else}}
+      <button type="button" class="aux-action-btn m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-color-soft" data-action="executeAuxiliaryAction" data-strike-index="{{../strike.index}}" data-aux-index="{{aux.index}}" title="{{aux.label}}">
+        {{#if aux.glyph}}
+          <span class="m-inline-flex m-align-center m-justify-center m-text-sm m-bold m-color-accent"><span class="action-glyph">{{aux.glyph}}</span></span>
+        {{/if}}
+          <span class="aux-label m-medium">{{aux.label}}</span>
+        {{#if aux.annotation}}
+        <span class="m-text-sm m-color-dim">({{aux.annotation}})</span>
+        {{/if}}
+      </button>
+      {{/if}}
+    {{/each}}
+  </div>
+  {{/if}}
+</div>

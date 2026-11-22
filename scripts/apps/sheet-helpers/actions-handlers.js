@@ -1,5 +1,5 @@
 import { PhysicalDiceManager } from "../../rolls/physical-dice-interceptor.js";
-import { getOriginToken, setTargetToken, getTargetableToken } from "../../tokens/token-adapter.js";
+import { getOriginToken, getTargetableToken } from "../../tokens/token-adapter.js";
 import {
   resolveTargetForAction,
   promptVariantSelection,
@@ -8,174 +8,13 @@ import {
 } from "./sheet-prompts.js";
 import { onUseConsumable } from "./inventory-handlers.js";
 
-/**
- * Action handler: execute strike attack roll with target prompt.
- * @param {object} sheet
- * @param {Event} event
- * @param {HTMLElement} target
- */
-export async function onExecuteStrike(sheet, event, target) {
-  const strikeIndex = parseInt(target.dataset.strikeIndex, 10);
-  const variantIndex = parseInt(target.dataset.variantIndex, 10);
-  const strike = sheet.actor.system.actions?.[strikeIndex];
-  if (!strike) return;
-
-  const variant = strike.variants?.[variantIndex];
-  if (!variant) return;
-
-  // Ensure origin token adapter is initialized and synchronized on scene TokenDocument
-  const originToken = getOriginToken(sheet.actor);
-
-  // Resolve target: use pre-selected target or prompt user (exclude Self for weapon Strikes)
-  const targetToken = await resolveTargetForAction(sheet, `${strike.label} (${variant.label})`, { includeSelf: false });
-  if (targetToken === false) return; // User cancelled prompt
-
-  // Ensure target is synchronized in Foundry user targets
-  if (targetToken?.id) {
-    await setTargetToken(targetToken.id);
-  }
-
-  const rollOptions = {
-    event,
-    target: targetToken || undefined
-  };
-  if (originToken) {
-    rollOptions.token = originToken.document ?? originToken;
-  }
-
-  // When running with canvas disabled or not ready, ensure flanking roll options are injected
-  if (originToken && targetToken && typeof originToken.isFlanking === "function") {
-    const reach = sheet.actor.getReach?.({ action: "attack", weapon: strike.item }) ?? 5;
-    const isFlanked = originToken.isFlanking(targetToken, { reach });
-    const isCanvasDisabled = !canvas?.ready || canvas?.app?.stage?.renderable === false;
-    if (isFlanked && isCanvasDisabled) {
-      const flankOpts = ["self:flanking", "target:flanked", "target:condition:off-guard"];
-      rollOptions.options = flankOpts;
-      rollOptions.extraRollOptions = flankOpts;
-    }
-  }
-
-  await PhysicalDiceManager.withPhysicalMode({
-    title: `${strike.label} (${variant.label})`,
-    subtitle: "Attack Roll",
-    target: targetToken,
-    actor: sheet.actor
-  }, async () => {
-    if (typeof variant.roll === "function") {
-      await variant.roll(rollOptions);
-    }
-  }, sheet.rollMode === "physical");
-}
-
-/**
- * Action handler: execute damage roll with target prompt.
- * @param {object} sheet
- * @param {Event} event
- * @param {HTMLElement} target
- */
-export async function onExecuteDamage(sheet, event, target) {
-  const strikeIndex = parseInt(target.dataset.strikeIndex, 10);
-  const strike = sheet.actor.system.actions?.[strikeIndex];
-  if (!strike) return;
-
-  // Ensure origin token adapter is initialized
-  const originToken = getOriginToken(sheet.actor);
-
-  // Resolve target: use pre-selected target or prompt user (exclude Self for weapon Strikes)
-  const targetToken = await resolveTargetForAction(sheet, `${strike.label} (Damage)`, { includeSelf: false });
-  if (targetToken === false) return; // User cancelled prompt
-
-  if (targetToken?.id) {
-    await setTargetToken(targetToken.id);
-  }
-
-  const rollOptions = { event, target: targetToken || undefined };
-  if (originToken) rollOptions.token = originToken.document ?? originToken;
-
-  await PhysicalDiceManager.withPhysicalMode({
-    title: `${strike.label}`,
-    subtitle: "Damage Roll",
-    target: targetToken,
-    actor: sheet.actor
-  }, async () => {
-    if (typeof strike.damage === "function") {
-      await strike.damage(rollOptions);
-    }
-  }, sheet.rollMode === "physical");
-}
-
-/**
- * Action handler: execute critical damage roll with target prompt.
- * @param {object} sheet
- * @param {Event} event
- * @param {HTMLElement} target
- */
-export async function onExecuteCritical(sheet, event, target) {
-  const strikeIndex = parseInt(target.dataset.strikeIndex, 10);
-  const strike = sheet.actor.system.actions?.[strikeIndex];
-  if (!strike) return;
-
-  // Ensure origin token adapter is initialized
-  const originToken = getOriginToken(sheet.actor);
-
-  // Resolve target: use pre-selected target or prompt user (exclude Self for weapon Strikes)
-  const targetToken = await resolveTargetForAction(sheet, `${strike.label} (Critical)`, { includeSelf: false });
-  if (targetToken === false) return; // User cancelled prompt
-
-  if (targetToken?.id) {
-    await setTargetToken(targetToken.id);
-  }
-
-  const rollOptions = { event, target: targetToken || undefined };
-  if (originToken) rollOptions.token = originToken.document ?? originToken;
-
-  await PhysicalDiceManager.withPhysicalMode({
-    title: `${strike.label}`,
-    subtitle: "Critical Damage Roll",
-    target: targetToken,
-    actor: sheet.actor
-  }, async () => {
-    if (typeof strike.critical === "function") {
-      await strike.critical(rollOptions);
-    }
-  }, sheet.rollMode === "physical");
-}
-
-/**
- * Action handler: execute a weapon auxiliary action (draw, sheathe, drop, reload, change grip).
- * @param {object} sheet
- * @param {Event} event
- * @param {HTMLElement} target
- */
-export async function onExecuteAuxiliaryAction(sheet, event, target) {
-  const strikeIndex = parseInt(target.dataset.strikeIndex, 10);
-  const auxIndex = parseInt(target.dataset.auxIndex, 10);
-  const strike = sheet.actor.system.actions?.[strikeIndex];
-  if (!strike) return;
-
-  const aux = strike.auxiliaryActions?.[auxIndex];
-  if (typeof aux?.execute === "function") {
-    await aux.execute({ event });
-    await sheet.render?.({ parts: ["header", "sheet"] });
-    return;
-  }
-
-  // Fallback if aux.execute is not directly available
-  const weapon = strike.item;
-  if (!weapon) return;
-  const purpose = aux?.action ?? aux?.purpose ?? target.dataset.purpose ?? "";
-
-  if (purpose === "draw") {
-    await weapon.update({ "system.equipped.carryType": "held", "system.equipped.handsHeld": 1 });
-    await sheet.render?.({ parts: ["header", "sheet"] });
-  } else if (purpose === "sheathe") {
-    await weapon.update({ "system.equipped.carryType": "worn", "system.equipped.handsHeld": 0 });
-    await sheet.render?.({ parts: ["header", "sheet"] });
-  } else if (purpose === "drop") {
-    await weapon.update({ "system.equipped.carryType": "dropped", "system.equipped.handsHeld": 0 });
-    await sheet.render?.({ parts: ["header", "sheet"] });
-  }
-}
+// Strike, alternate-usage, trait-toggle, and ammunition handlers live in strike-handlers.js
+export {
+  onExecuteStrike,
+  onExecuteDamage,
+  onExecuteCritical,
+  onExecuteAuxiliaryAction
+} from "./strike-handlers.js";
 
 /**
  * Action handler: send item / ability card to chat.

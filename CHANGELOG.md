@@ -6,6 +6,12 @@ All notable changes and technical implementation milestones for **PF2e Mobile Sh
 
 ## [Unreleased]
 
+- **Alternate weapon usages, versatile/double-barrel toggles, modular auxiliary options, and ranged weapon ammunition (Issues #59 & #60, `scripts/apps/sheet-helpers/strike-handlers.js`, `scripts/apps/sheet-helpers/context-actions.js`, `scripts/apps/sheet-helpers/actions-handlers.js`, `scripts/apps/mobile-sheet.js`, `templates/parts/actions/strike-card.hbs`, `templates/parts/actions.hbs`, `styles/pf2e-mobile.css`)**:
+  - Extracted strike context preparation and weapon strike handlers into `scripts/apps/sheet-helpers/strike-handlers.js` (mirroring `elemental-blast-handlers.js`) and extracted `templates/parts/actions/strike-card.hbs` (mirroring `elemental-blast-card.hbs`).
+  - Added `strike.altUsages` attack, damage, critical, and trait toggle rows on strike cards (supporting thrown weapons, combination firearms/melee modes, and area/auto-fire), routing `data-alt-usage` through `resolveStrike` and omitting melee flanking roll options on ranged/thrown attacks.
+  - Added `versatileOptions` and `doubleBarrel` toggle buttons (`toggleWeaponTrait`) delegating to `weapon.system.traits.toggles.update(...)`, plus touch-friendly `<select data-change-action="executeAuxiliaryAction">` controls when a Modular auxiliary action exposes `aux.options`.
+  - Added ranged ammunition controls (`linkStrikeAmmo`, `reloadStrikeAmmo`, `unloadStrikeAmmo`, `selectStrikeAmmo`) for both non-reloadable bows (`selectedAmmoId`) and reloadable/repeating firearms and crossbows (`weapon.attach`, `subitem.detach`, and subitem chamber sorting).
+
 - **Resolve ephemeral item and in-memory staff spells from spellcasting collections (`scripts/apps/sheet-helpers/context-activations.js`, `scripts/apps/sheet-helpers/spells-handlers.js`, `scripts/apps/sheet-helpers/activations-handlers.js`, `scripts/apps/sheet-helpers/actions-handlers.js`, `templates/parts/spells/spell-card.hbs`, Issue #47)**:
   - `prepareActivationsContext` now passes `actor` to `isItemSpellcastingEntry(e, actor)` and falls back to `actor.spellcasting.collections.get(entry.id)` when `entry.spells` is `null` (as used by PF2e's `ItemSpellcasting` and `pf2e-dailies` `ActivationSpellcasting`).
   - `onCastSpell` and `onCastItemSpell` check `entryCollection?.get(itemId)` and `entry?.spells?.get(itemId)` before `actor.items.get(itemId)`, and `onCastItemSpell`'s ephemeral fallback targets the tapped spell with `{ rank }` instead of always falling back to `contents[0]`.

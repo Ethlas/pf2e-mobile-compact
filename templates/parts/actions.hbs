@@ -56,70 +56,7 @@
           {{/each}}
         {{/if}}
         {{#each strikes as |strike index|}}
-        <div class="m-action-card m-card strike-card m-flex-col m-gap-8 {{#if strike.ready}}ready{{/if}}">
-          <!-- Strike Header: Weapon Image, Name, Glyph, Traits, Badge -->
-          <div class="m-flex-row m-align-center m-gap-10">
-            <img class="strike-img m-shrink-0" src="{{strike.img}}" alt="{{strike.label}}" />
-            <div class="m-flex-col m-gap-4 m-flex-1 m-min-w-0">
-              <div class="m-flex-row m-align-center m-gap-6">
-                <span class="action-cost-glyph m-inline-flex m-align-center m-justify-center m-shrink-0 m-text-base m-color-accent"><span class="action-glyph">{{strike.glyph}}</span></span>
-                <span class="action-name m-min-w-0 m-truncate"><strong>{{strike.label}}</strong></span>
-              </div>
-              {{#if strike.traits.length}}
-              <div class="action-traits m-flex-row m-wrap m-gap-4">
-                {{#each strike.traits as |trait|}}
-                  <span class="trait-badge m-badge-neutral m-text-xs m-color-soft">{{trait.label}}</span>
-                {{/each}}
-                {{#if strike.isMelee}}<span class="trait-badge m-badge-neutral m-text-xs m-color-soft">Melee</span>{{/if}}
-                {{#if strike.isThrown}}<span class="trait-badge m-badge-neutral m-text-xs m-color-soft">Thrown</span>{{/if}}
-                {{#if strike.isRanged}}<span class="trait-badge m-badge-neutral m-text-xs m-color-soft">Ranged</span>{{/if}}
-                {{#if strike.rangeIncrement}}<span class="trait-badge m-badge-neutral m-text-xs m-color-soft">{{strike.rangeIncrement}} ft</span>{{/if}}
-              </div>
-              {{/if}}
-            </div>
-          </div>
-
-          <!-- MAP Variants at the TOP (Prominent attack row) -->
-          <div class="strike-map-row m-flex-row m-gap-6">
-            {{#each strike.variants as |variant vIndex|}}
-            <button type="button" class="map-button m-text-full m-flex-row m-align-center m-justify-center m-flex-1 m-bold" data-action="executeStrike" data-strike-index="{{index}}" data-variant-index="{{vIndex}}" title="Attack Variant {{vIndex}}">
-              {{variant.label}}
-            </button>
-            {{/each}}
-          </div>
-
-          <!-- Damage and Critical Buttons Row -->
-          <div class="strike-damage-row m-flex-row m-gap-6">
-            {{#if strike.damage}}
-            <button type="button" class="variant-button damage-button m-flex-1 m-text-base m-color-strong" data-action="executeDamage" data-strike-index="{{index}}" title="Roll Damage">
-              💥 {{strike.damageFormula}}
-            </button>
-            {{/if}}
-
-            {{#if strike.critical}}
-            <button type="button" class="variant-button critical-button m-flex-1 m-text-base m-bold m-color-strong" data-action="executeCritical" data-strike-index="{{index}}" title="Roll Critical Damage">
-              ⚡ Crit
-            </button>
-            {{/if}}
-          </div>
-
-          <!-- Weapon Auxiliary Actions: Draw, Sheathe, Drop, Reload, Change Grip -->
-          {{#if strike.hasAuxiliary}}
-          <div class="strike-auxiliary-row m-flex-row m-wrap m-gap-6">
-            {{#each strike.auxiliaryActions as |aux|}}
-            <button type="button" class="aux-action-btn m-compact m-inline-flex m-align-center m-gap-4 m-text-md m-color-soft" data-action="executeAuxiliaryAction" data-strike-index="{{index}}" data-aux-index="{{aux.index}}" title="{{aux.label}}">
-              {{#if aux.glyph}}
-                <span class="m-inline-flex m-align-center m-justify-center m-text-sm m-bold m-color-accent"><span class="action-glyph">{{aux.glyph}}</span></span>
-              {{/if}}
-                <span class="aux-label m-medium">{{aux.label}}</span>
-              {{#if aux.annotation}}
-              <span class="m-text-sm m-color-dim">({{aux.annotation}})</span>
-              {{/if}}
-            </button>
-            {{/each}}
-          </div>
-          {{/if}}
-        </div>
+        {{> "modules/pf2e-mobile-compact/templates/parts/actions/strike-card.hbs" strike=strike index=index}}
         {{/each}}
         {{#unless (or elementalBlasts.length strikes.length)}}
         <p class="empty-hint">No strikes configured on this character.</p>
