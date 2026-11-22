@@ -115,7 +115,7 @@
 
     <!-- Chat is always shown; the damage/healing button, when the spell has one, fills the rest of the row -->
     <div class="m-drawer-row m-flex-row">
-      <button type="button" class="btn-action-chat m-compact m-inline-flex m-align-center m-gap-4 m-text-base m-color-normal" data-action="itemToChat" data-item-id="{{#if sourceItemId}}{{sourceItemId}}{{else}}{{spell.id}}{{/if}}" data-rank="{{rank}}" title="Send to Chat">
+      <button type="button" class="btn-action-chat m-compact m-inline-flex m-align-center m-gap-4 m-text-base m-color-normal" data-action="itemToChat" data-item-id="{{#if sourceItemId}}{{sourceItemId}}{{else}}{{spell.id}}{{/if}}" data-entry-id="{{spell.entryId}}" data-rank="{{rank}}" title="Send to Chat">
         <i class="fas fa-message"></i>
       </button>
 

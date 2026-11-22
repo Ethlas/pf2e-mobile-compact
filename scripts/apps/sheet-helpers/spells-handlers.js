@@ -417,7 +417,10 @@ export async function onCastSpell(sheet, event, target) {
   const slotIndex = target.dataset.slotIndex !== undefined ? parseInt(target.dataset.slotIndex, 10) : NaN;
 
   const entry = sheet.actor.spellcasting?.get(entryId);
-  const spell = sheet.actor.items.get(itemId);
+  const entryCollection = sheet.actor.spellcasting?.collections?.get(entryId);
+  const spell = entryCollection?.get(itemId)
+    ?? entry?.spells?.get(itemId)
+    ?? sheet.actor.items.get(itemId);
   if (!entry || !spell) return;
 
   // Resource validation

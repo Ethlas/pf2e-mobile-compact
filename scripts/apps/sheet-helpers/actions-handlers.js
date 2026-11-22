@@ -185,8 +185,15 @@ export async function onExecuteAuxiliaryAction(sheet, event, target) {
  */
 export async function onItemToChat(sheet, event, target) {
   const itemId = target.dataset.itemId;
-  // Conditions are looked up like pf2e's effects panel does: some only exist in memory (actor.conditions)
-  const item = sheet.actor.conditions?.get?.(itemId) ?? sheet.actor.items.get(itemId);
+  const entryId = target.dataset.entryId;
+  const entry = entryId ? sheet.actor.spellcasting?.get(entryId) : null;
+  const entryCollection = entryId ? sheet.actor.spellcasting?.collections?.get(entryId) : null;
+  // Conditions and ephemeral item/staff spells may only exist in memory rather than actor.items
+  const item = sheet.actor.conditions?.get?.(itemId)
+    ?? sheet.actor.items.get(itemId)
+    ?? entryCollection?.get(itemId)
+    ?? entry?.spells?.get(itemId)
+    ?? sheet._activeStaffSpells?.find(s => (s.id || s._id) === itemId);
   if (!item) return;
 
   const rank = parseInt(target.dataset.rank, 10);

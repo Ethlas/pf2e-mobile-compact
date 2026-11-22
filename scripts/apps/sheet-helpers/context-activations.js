@@ -445,7 +445,7 @@ export async function prepareActivationsContext(actor, sheet, context) {
   // ==========================================================
   const otherActivations = [];
   const otherItemEntries = allEntries.filter(e => {
-    if (!isItemSpellcastingEntry(e)) return false;
+    if (!isItemSpellcastingEntry(e, actor)) return false;
     if (staffData?.entryId && e.id === staffData.entryId) return false;
     if (wands.some(w => w.entryId === e.id)) return false;
     if (scrolls.some(s => s.entryId === e.id)) return false;
@@ -453,7 +453,10 @@ export async function prepareActivationsContext(actor, sheet, context) {
   });
 
   for (const entry of otherItemEntries) {
-    for (const spell of entry.spells?.contents ?? []) {
+    const entrySpells = entry.spells?.contents?.length
+      ? entry.spells.contents
+      : (actor.spellcasting?.collections?.get(entry.id)?.contents ?? []);
+    for (const spell of entrySpells) {
       const formatted = await formatSpell(actor, sheet, spell, entry.id, {
         cardKey: `item-${entry.id}-${spell.id}`
       });
