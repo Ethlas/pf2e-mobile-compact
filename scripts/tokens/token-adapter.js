@@ -733,6 +733,8 @@ export function getTargetableToken(tokenId) {
     },
 
     // PF2e / Foundry Token placeable visual no-op stubs in headless mobile mode
+    renderFlags: { set() {}, clear() {}, has() { return false; } },
+    async animate() {},
     async showFloatyText() {},
     _onApplyStatusEffect() {},
     async drawEffects() {}
@@ -741,9 +743,10 @@ export function getTargetableToken(tokenId) {
   if (!getSafeTokenObject(tokenDoc)) {
     try {
       Object.defineProperty(tokenDoc, "object", {
-        value: adapter,
-        configurable: true,
-        writable: true
+        get() {
+          return (this._object || this._destroyed) ? (this._object ?? null) : adapter;
+        },
+        configurable: true
       });
     } catch {}
   }

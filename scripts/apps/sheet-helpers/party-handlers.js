@@ -52,9 +52,10 @@ export async function promptItemTransfer(sheet, item, partyMembers, defaultRecip
 
   const DialogClass = foundry.applications?.api?.DialogV2 ?? globalThis.Dialog;
   if (foundry.applications?.api?.DialogV2?.wait) {
-    return await foundry.applications.api.DialogV2.wait({
+    const result = await foundry.applications.api.DialogV2.wait({
       window: { title: `Transfer Item: ${item.name}` },
       content,
+      rejectClose: false,
       buttons: [
         {
           action: "transfer",
@@ -92,6 +93,7 @@ export async function promptItemTransfer(sheet, item, partyMembers, defaultRecip
         }
       }
     });
+    return result?.recipient ? result : null;
   }
 
   // Classic Dialog fallback
@@ -214,6 +216,7 @@ export async function onSendToPartyStash(sheet, event, target) {
       const confirmed = await foundry.applications.api.DialogV2.wait({
         window: { title: `Deposit to Party Stash` },
         content,
+        rejectClose: false,
         buttons: [
           {
             action: "send",
@@ -233,7 +236,7 @@ export async function onSendToPartyStash(sheet, event, target) {
           if (allBtn && input) allBtn.addEventListener("click", () => { input.value = maxQty; });
         }
       });
-      if (!confirmed) return;
+      if (typeof confirmed !== "number") return;
       quantity = confirmed;
     } else {
       quantity = await new Promise((resolve) => {
@@ -399,6 +402,7 @@ export async function onTransferCoins(sheet, event, target) {
     const result = await foundry.applications.api.DialogV2.wait({
       window: { title: "Transfer Currency" },
       content,
+      rejectClose: false,
       buttons: [
         {
           action: "transfer",
@@ -425,7 +429,7 @@ export async function onTransferCoins(sheet, event, target) {
       }
     });
 
-    if (!result) return;
+    if (!result || typeof result !== "object") return;
     const { dir, memId, coins } = result;
     const targetMember = partyMembers.find(m => m.id === memId);
     if (!targetMember) return;

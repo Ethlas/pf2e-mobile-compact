@@ -11,7 +11,7 @@
 export async function onSaveSpellPreset(sheet, event, target) {
   const name = await new Promise(resolve => {
     const DialogClass = foundry.applications?.api?.DialogV2 ?? Dialog;
-    new DialogClass({
+    const dialog = new DialogClass({
       window: { title: "Save Spell Preset" },
       content: `<div style="margin-bottom: 10px;">
         <label style="display:block; margin-bottom: 5px; font-weight: bold;">Preset Name:</label>
@@ -32,7 +32,9 @@ export async function onSaveSpellPreset(sheet, event, target) {
         icon: "fa-solid fa-times",
         callback: () => resolve(null)
       }]
-    }).render(true);
+    });
+    dialog.addEventListener?.("close", () => resolve(null), { once: true });
+    dialog.render(true);
   });
 
   if (!name) return;
